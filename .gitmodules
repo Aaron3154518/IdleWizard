@@ -1,0 +1,3 @@
+[submodule "include/GameEngine"]
+	path = include/GameEngine
+	url = https://github.com/Aaron3154518/GameEngine.git

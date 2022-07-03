@@ -36,6 +36,7 @@ OBJS = $(patsubst $(SRC)/%.cpp,$(OBJ)/%.o,$1) $(patsubst $(SRC)/%.cpp,$(OBJ)/%.o
 .PHONY: all clean
 
 all: IdleWizard
+	@$(BIN)/IdleWizard
 
 IdleWizard: $(call OBJS,$(SRC)/IdleWizard.cpp)
 	$(CXX) $(CXXFLAGS) $^ -o $(BIN)/$@ $(INCLUDE_PATHS) $(LIBRARY_PATHS) $(LINKER_FLAGS)

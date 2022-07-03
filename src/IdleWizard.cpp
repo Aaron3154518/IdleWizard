@@ -4,7 +4,7 @@
 
 int main(int argc, char* argv[]) {
     RenderSystem::Options options;
-    options.title = "Game System Test";
+    options.title = "Idle Wizard";
     options.maximize = true;
 
     GameSystem::Init(options);

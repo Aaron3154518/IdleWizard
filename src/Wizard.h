@@ -6,6 +6,7 @@
 #include <RenderSystem/TextureBuilder.h>
 #include <ServiceSystem/Component.h>
 #include <ServiceSystem/CoreServices/RenderService.h>
+#include <ServiceSystem/MouseService/DragService.h>
 #include <ServiceSystem/MouseService/MouseService.h>
 #include <ServiceSystem/ServiceSystem.h>
 
@@ -19,10 +20,16 @@ class Wizard : public Component {
    private:
     void init();
 
+    void setImage(const std::string& img);
+
+    RectData mBorder;
     RenderData mImg;
-    UIComponentPtr mPos = std::make_shared<UIComponent>(Rect(), 1);
+
+    DragComponentPtr mPos = std::make_shared<DragComponent>(Rect(), 1, 500);
     RenderObservable::SubscriptionPtr mRenderSub;
     MouseObservable::SubscriptionPtr mMouseSub;
+    DragObservable::SubscriptionPtr mDragSub;
+
     const static std::string IMGS[];
     int imgIdx = 0;
 };

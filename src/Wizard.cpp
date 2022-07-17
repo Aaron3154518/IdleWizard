@@ -3,6 +3,7 @@
 // WizardBase
 const Rect WizardBase::BORDER_RECT(0, 0, 500, 500);
 const Rect WizardBase::IMG_RECT(0, 0, 100, 100);
+const FontData WizardBase::FONT{-1, IMG_RECT.h() / 4, "|"};
 
 WizardBase::WizardBase(WizardId id)
     : mId(id), mComp(std::make_shared<DragComponent>(Rect(), 1, 250)) {}
@@ -98,13 +99,46 @@ void Wizard::onClick(Event::MouseButton b, bool clicked) {
 
 void Wizard::shootFireball(WizardId target) {
     mFireballs.push_back(std::move(ComponentFactory<Fireball>::New(
-        mComp->rect.cX(), mComp->rect.cY(), target)));
+        mComp->rect.cX(), mComp->rect.cY(), mId, target, mPower)));
 }
 
 // Crystal
-Crystal::Crystal() : WizardBase(WizardId::CRYSTAL) {}
+Crystal::Crystal() : WizardBase(WizardId::CRYSTAL) {
+    mMagicText.tData.font = AssetManager::getFont(FONT);
+    mMagicText.tData.text = mMagic.toString();
+    mMagicText.renderText();
+}
 
-void Crystal::init() { WizardBase::init(); }
+void Crystal::init() {
+    WizardBase::init();
+    ServiceSystem::Get<RenderService, RenderObservable>()->updateSubscription(
+        mRenderSub, std::bind(&Crystal::onRender, this, std::placeholders::_1));
+    mTargetSub =
+        ServiceSystem::Get<FireballService, TargetObservable>()->subscribe(
+            std::bind(&Crystal::onHit, this, std::placeholders::_1,
+                      std::placeholders::_2),
+            std::make_shared<WizardId>(mId));
+    mTargetSub->setUnsubscriber(unsub);
+}
+
+void Crystal::onRender(SDL_Renderer* r) {
+    WizardBase::onRender(r);
+
+    mMagicText.dest =
+        Rect(mComp->rect.x(), mComp->rect.y(), mComp->rect.w(), 0);
+    mMagicText.dest.setHeight(FONT.h, Rect::Align::BOT_RIGHT);
+    mMagicText.fitToTexture();
+    TextureBuilder().draw(mMagicText);
+}
+void Crystal::onHit(WizardId src, Number val) {
+    switch (src) {
+        case WizardId::WIZARD:
+            mMagic += val;
+            mMagicText.tData.text = mMagic.toString();
+            mMagicText.renderText();
+            break;
+    }
+}
 
 // Catalyst
 Catalyst::Catalyst() : WizardBase(WizardId::CATALYST) {}

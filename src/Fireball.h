@@ -11,6 +11,7 @@
 #include <ServiceSystem/Observable.h>
 #include <ServiceSystem/Service.h>
 #include <ServiceSystem/ServiceSystem.h>
+#include <Utils/Number.h>
 #include <Utils/Time.h>
 
 #include "WizardIds.h"
@@ -31,13 +32,21 @@ class FireballObservable : public FireballObservableBase {
     SDL_FPoint mTargets[WizardId::size];
 };
 
-class FireballService : public Service<FireballObservable> {};
+typedef Observable<Number, void(WizardId, Number), WizardId>
+    TargetObservableBase;
+
+class TargetObservable : public TargetObservableBase {
+   public:
+    void next(WizardId target, Number val, WizardId src);
+};
+
+class FireballService : public Service<FireballObservable, TargetObservable> {};
 
 class Fireball : public Component {
     friend class FireballObservable;
 
    public:
-    Fireball(float cX, float cY, WizardId target);
+    Fireball(float cX, float cY, WizardId src, WizardId target, Number val);
     ~Fireball() = default;
 
     bool dead() const;
@@ -49,6 +58,7 @@ class Fireball : public Component {
 
     void onRender(SDL_Renderer* renderer);
 
+    WizardId mSrcId;
     std::shared_ptr<WizardId> mTargetId;
     SDL_FPoint mTargetPos{0, 0};
     UIComponentPtr mComp;
@@ -58,6 +68,8 @@ class Fireball : public Component {
     UpdateObservable::SubscriptionPtr mUpdateSub;
     RenderObservable::SubscriptionPtr mRenderSub;
     FireballObservable::SubscriptionPtr mFireballSub;
+
+    Number mVal;
 
     const static int MAX_SPEED;
     const static int COLLIDE_ERR;

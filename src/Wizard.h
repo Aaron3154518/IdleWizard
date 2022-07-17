@@ -50,6 +50,7 @@ class WizardBase : public Component {
 
     const static Rect BORDER_RECT, IMG_RECT;
     const static std::string IMGS[];
+    const static FontData FONT;
 };
 
 class Wizard : public WizardBase {
@@ -64,6 +65,7 @@ class Wizard : public WizardBase {
 
     void shootFireball(WizardId target);
 
+    Number mPower = Number(1);
     std::vector<std::unique_ptr<Fireball>> mFireballs;
 };
 
@@ -73,6 +75,15 @@ class Crystal : public WizardBase {
 
    private:
     void init();
+
+    void onRender(SDL_Renderer* r);
+    void onHit(WizardId src, Number val);
+
+    TextRenderData mMagicText;
+
+    TargetObservable::SubscriptionPtr mTargetSub;
+
+    Number mMagic;
 };
 
 class Catalyst : public WizardBase {

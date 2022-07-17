@@ -30,14 +30,28 @@ void FireballObservable::next(WizardId id, SDL_FPoint pos) {
     }
 }
 
+// TargetObservable
+void TargetObservable::next(WizardId target, Number val, WizardId src) {
+    removeUnsubscribed();
+
+    for (auto sub : mSubscriptions) {
+        if (*sub->getData() == target) {
+            (*sub)(src, val);
+        }
+    }
+}
+
 // Fireball
 const int Fireball::MAX_SPEED = 150;
 const int Fireball::COLLIDE_ERR = 10;
 const std::string Fireball::IMG = "res/projectiles/fireball.png";
 
-Fireball::Fireball(float cX, float cY, WizardId target)
+Fireball::Fireball(float cX, float cY, WizardId src, WizardId target,
+                   Number val)
     : mComp(std::make_shared<UIComponent>(Rect(), 0)),
-      mTargetId(std::make_shared<WizardId>(target)) {
+      mTargetId(std::make_shared<WizardId>(target)),
+      mSrcId(src),
+      mVal(val) {
     mImg.texture = AssetManager::getTexture(IMG);
     mImg.dest = Rect(0, 0, 50, 50);
     mImg.fitToTexture();
@@ -69,6 +83,8 @@ void Fireball::onUpdate(Time dt) {
     // Check in case we were moved onto the target
     if (mag < COLLIDE_ERR) {
         unsub.unsubscribe();
+        ServiceSystem::Get<FireballService, TargetObservable>()->next(
+            *mTargetId, mVal, mSrcId);
     } else {
         mComp->rect.move(MAX_SPEED * dt.s(), dx, dy);
         mImg.dest = mComp->rect;

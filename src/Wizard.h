@@ -25,6 +25,9 @@ class Wizard : public Component {
    private:
     void init();
 
+    void onRender(SDL_Renderer* r);
+    void onClick(Event::MouseButton b, bool clicked);
+
     void setPos(float x, float y);
 
     void setImage(const std::string& img);
@@ -33,7 +36,6 @@ class Wizard : public Component {
 
     const WizardId mId;
 
-    SDL_FPoint mPos;
     RectData mBorder;
     RenderData mImg;
 

@@ -15,17 +15,20 @@
 
 #include "WizardIds.h"
 
-typedef Observable<SDL_Point, void(SDL_Point), WizardId> FireballObservableBase;
+typedef Observable<SDL_FPoint, void(SDL_FPoint), WizardId>
+    FireballObservableBase;
 
 class FireballObservable : public FireballObservableBase {
    public:
-    SubscriptionPtr subscribe(Subscription::Function func, std::shared_ptr<WizardId> id);
-    void updateSubscriptionData(SubscriptionPtr sub, std::shared_ptr<WizardId> id);
+    SubscriptionPtr subscribe(Subscription::Function func,
+                              std::shared_ptr<WizardId> id);
+    void updateSubscriptionData(SubscriptionPtr sub,
+                                std::shared_ptr<WizardId> id);
 
-    void next(WizardId id, SDL_Point pos);
+    void next(WizardId id, SDL_FPoint pos);
 
    private:
-    SDL_Point mTargets[WizardId::size];
+    SDL_FPoint mTargets[WizardId::size];
 };
 
 class FireballService : public Service<FireballObservable> {};
@@ -34,7 +37,7 @@ class Fireball : public Component {
     friend class FireballObservable;
 
    public:
-    Fireball(SDL_Point c, WizardId target);
+    Fireball(float cX, float cY, WizardId target);
     ~Fireball() = default;
 
     bool dead() const;
@@ -42,15 +45,12 @@ class Fireball : public Component {
    private:
     void init();
 
-    void setPos(float x, float y);
-
     void onUpdate(Time dt);
 
     void onRender(SDL_Renderer* renderer);
 
     std::shared_ptr<WizardId> mTargetId;
-    SDL_Point mTargetPos{0, 0};
-    SDL_FPoint mPos;
+    SDL_FPoint mTargetPos{0, 0};
     UIComponentPtr mComp;
 
     RenderData mImg;

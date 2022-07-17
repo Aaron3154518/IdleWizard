@@ -17,13 +17,6 @@
 #include "Fireball.h"
 #include "WizardIds.h"
 
-struct xorshift32_state {
-    uint32_t a;
-};
-
-/* The state word must be initialized to non-zero */
-uint32_t xorshift32(xorshift32_state state);
-
 class Wizard : public Component {
    public:
     Wizard(WizardId id);

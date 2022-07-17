@@ -63,11 +63,11 @@ class Wizard : public WizardBase {
 
     void onRender(SDL_Renderer* r);
     void onClick(Event::MouseButton b, bool clicked);
-    void onWizardUpdate(const ParameterList& params);
+    void onWizardUpdate(const ParameterList<WizardParams>& params);
 
     void shootFireball(WizardId target);
 
-    WizardUpdateObservable::SubscriptionPtr mWizUpdateSub;
+    WizardParameters::SubscriptionPtr mWizUpdateSub;
 
     Number mBasePower = Number(1);
     Number mPower = Number(1);

@@ -78,9 +78,8 @@ void Wizard::init() {
                              std::placeholders::_2));
 
     mWizUpdateSub =
-        ServiceSystem::Get<WizardUpdateService, WizardUpdateObservable>()
-            ->subscribe(std::bind(&Wizard::onWizardUpdate, this,
-                                  std::placeholders::_1));
+        ServiceSystem::Get<WizardUpdateService, WizardParameters>()->subscribe(
+            std::bind(&Wizard::onWizardUpdate, this, std::placeholders::_1));
     mWizUpdateSub->setUnsubscriber(unsub);
 }
 
@@ -103,9 +102,9 @@ void Wizard::onClick(Event::MouseButton b, bool clicked) {
     }
 }
 
-void Wizard::onWizardUpdate(const ParameterList& params) {
+void Wizard::onWizardUpdate(const ParameterList<WizardParams>& params) {
     auto wizUpdate =
-        ServiceSystem::Get<WizardUpdateService, WizardUpdateObservable>();
+        ServiceSystem::Get<WizardUpdateService, WizardParameters>();
 
     mPower = mBasePower;
     mPower *= wizUpdate->getParam(WizardParams::CrystalMagic, Number(1));
@@ -150,7 +149,7 @@ void Crystal::onHit(WizardId src, Number val) {
             mMagic += val;
             mMagicText.tData.text = mMagic.toString();
             mMagicText.renderText();
-            ServiceSystem::Get<WizardUpdateService, WizardUpdateObservable>()
+            ServiceSystem::Get<WizardUpdateService, WizardParameters>()
                 ->setParam(WizardParams::CrystalMagic, mMagic.logTenCopy() + 1);
             break;
     }

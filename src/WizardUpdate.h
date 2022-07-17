@@ -9,29 +9,46 @@
 #include <Utils/Number.h>
 
 #include <unordered_map>
-typedef std::unordered_map<int, Number> ParameterList;
 
-typedef Observable<const ParameterList&, void(const ParameterList&)>
-    WizardUpdateObservableBase;
+#include "WizardIds.h"
 
-class WizardUpdateObservable : public WizardUpdateObservableBase,
+template <class K>
+using ParameterList = std::unordered_map<K, Number>;
+
+template <class K>
+using WizardUpdateObservableBase =
+    Observable<const ParameterList<K>&, void(const ParameterList<K>&)>;
+
+template <class K>
+class WizardUpdateObservable : public WizardUpdateObservableBase<K>,
                                public Component {
    public:
     WizardUpdateObservable() = default;
 
-    void setParam(int key, Number val);
-    const Number& getParam(int key, Number defVal);
+    void setParam(K key, Number val) { mParams[key] = val; }
+    const Number& getParam(K key, Number defVal) {
+        auto it = mParams.find(key);
+        return it != mParams.end() ? it->second : defVal;
+    }
 
    private:
-    void init();
+    void init() {
+        mUpdateSub =
+            ServiceSystem::Get<UpdateService, UpdateObservable>()->subscribe(
+                std::bind(&WizardUpdateObservable::onUpdate, this,
+                          std::placeholders::_1));
+        mUpdateSub->setUnsubscriber(unsub);
+    }
 
-    void onUpdate(Time dt);
+    void onUpdate(Time dt) { WizardUpdateObservableBase<K>::next(mParams); }
 
     UpdateObservable::SubscriptionPtr mUpdateSub;
 
-    ParameterList mParams;
+    ParameterList<K> mParams;
 };
 
-class WizardUpdateService : public Service<WizardUpdateObservable> {};
+typedef WizardUpdateObservable<WizardParams> WizardParameters;
+
+class WizardUpdateService : public Service<WizardParameters> {};
 
 #endif

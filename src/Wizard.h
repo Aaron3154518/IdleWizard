@@ -22,6 +22,10 @@ class WizardBase : public Component {
    public:
     virtual ~WizardBase();
 
+    const static Rect BORDER_RECT, IMG_RECT;
+    const static std::string IMGS[];
+    const static FontData FONT;
+
    protected:
     WizardBase(WizardId id);
 
@@ -48,10 +52,6 @@ class WizardBase : public Component {
     std::uniform_int_distribution<> dist =
         std::uniform_int_distribution<>(1, WizardId::size - 1);
     std::uniform_real_distribution<> rDist;
-
-    const static Rect BORDER_RECT, IMG_RECT;
-    const static std::string IMGS[];
-    const static FontData FONT;
 };
 
 class Wizard : public WizardBase {

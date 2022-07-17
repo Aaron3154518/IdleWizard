@@ -6,7 +6,8 @@ const Rect WizardBase::IMG_RECT(0, 0, 100, 100);
 const FontData WizardBase::FONT{-1, IMG_RECT.H() / 4, "|"};
 
 WizardBase::WizardBase(WizardId id)
-    : mId(id), mComp(std::make_shared<DragComponent>(Rect(), 1, 250)) {}
+    : mId(id),
+      mComp(std::make_shared<DragComponent>(Rect(), Elevation::WIZARDS, 250)) {}
 WizardBase::~WizardBase() {}
 
 void WizardBase::init() {

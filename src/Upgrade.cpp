@@ -59,7 +59,22 @@ void UpgradeScroller::onRender(SDL_Renderer* r) {
     mTexData.dest = mDragComp->rect;
     TextureBuilder().draw(mTexData);
 }
-void UpgradeScroller::onClick(Event::MouseButton b, bool clicked) {}
+void UpgradeScroller::onClick(Event::MouseButton b, bool clicked) {
+    if (clicked) {
+        for (auto pair : mFrontRects) {
+            if (SDL_PointInRect(&b.clickPos, pair.first)) {
+                std::cerr << mUpgrades.at(pair.second) << std::endl;
+                return;
+            }
+        }
+        for (auto pair : mBackRects) {
+            if (SDL_PointInRect(&b.clickPos, pair.first)) {
+                std::cerr << mUpgrades.at(pair.second) << std::endl;
+                return;
+            }
+        }
+    }
+}
 void UpgradeScroller::onDrag(int mouseX, int mouseY, float mouseDx,
                              float mouseDy) {
     scroll(-mouseDx);
@@ -110,6 +125,7 @@ void UpgradeScroller::draw() {
 
     // Pair <angle, index>
     std::forward_list<std::pair<float, int>> back, front;
+    int backLen = 0, frontLen = 0;
 
     for (int i = NUM_STEPS; i >= 0; i--) {
         int sign = 1;
@@ -120,8 +136,10 @@ void UpgradeScroller::draw() {
                 std::pair<float, int> pair = std::make_pair(angle, idx);
                 if (angle < M_PI) {
                     back.push_front(pair);
+                    backLen++;
                 } else {
                     front.push_front(pair);
+                    frontLen++;
                 }
             }
             sign *= -1;
@@ -131,13 +149,13 @@ void UpgradeScroller::draw() {
     TextRenderData tData;
     tData.tData.font = AssetManager::getFont(WizardBase::FONT);
     auto drawAngle = [this, HALF_PI, TWO_PI, ERR, w, cX, cY, a, b, &tData](
-                         float angle, int val) {
+                         float angle, int val) -> Rect {
         float angleDiff1 = fmod(angle + 3 * HALF_PI, TWO_PI);
         float angleDiff2 = fmod(5 * HALF_PI - angle, TWO_PI);
         float angleDiff = fmin(angleDiff1, angleDiff2);
         Rect rect(0, 0, w * angleDiff / M_PI, w * angleDiff / M_PI);
         if (rect.Empty()) {
-            return;
+            return rect;
         }
 
         float x = cX + a * cos(angle);
@@ -149,13 +167,21 @@ void UpgradeScroller::draw() {
         tData.renderText();
         tData.fitToTexture();
         mTex.draw(tData);
+
+        return rect;
     };
 
+    mBackRects = std::vector<std::pair<Rect, int>>(backLen);
+    mFrontRects = std::vector<std::pair<Rect, int>>(frontLen);
+    int i = 0;
     for (auto pair : back) {
-        drawAngle(pair.first, mUpgrades.at(pair.second));
+        mBackRects.at(i++) = std::make_pair(
+            drawAngle(pair.first, mUpgrades.at(pair.second)), pair.second);
     }
 
+    i = 0;
     for (auto pair : front) {
-        drawAngle(pair.first, mUpgrades.at(pair.second));
+        mFrontRects.at(i++) = std::make_pair(
+            drawAngle(pair.first, mUpgrades.at(pair.second)), pair.second);
     }
 }

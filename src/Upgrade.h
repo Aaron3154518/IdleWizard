@@ -22,6 +22,8 @@
 
 #include "WizardIds.h"
 
+class Upgrade {};
+
 class UpgradeScroller : public Component {
    public:
     UpgradeScroller();
@@ -40,6 +42,7 @@ class UpgradeScroller : public Component {
     void draw();
 
     std::vector<int> mUpgrades = {1, 1, 2, 3, 5, 8, 13, 21, 35, 56};
+    std::vector<std::pair<Rect, int>> mBackRects, mFrontRects;
 
     float mScroll = 0, mScrollV = 0;
     RectData mBkgrnd;

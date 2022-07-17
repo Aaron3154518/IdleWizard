@@ -17,6 +17,13 @@
 #include "Fireball.h"
 #include "WizardIds.h"
 
+struct xorshift32_state {
+    uint32_t a;
+};
+
+/* The state word must be initialized to non-zero */
+uint32_t xorshift32(xorshift32_state state);
+
 class Wizard : public Component {
    public:
     Wizard(WizardId id);
@@ -46,9 +53,9 @@ class Wizard : public Component {
 
     std::vector<std::unique_ptr<Fireball>> mFireballs;
 
-    std::random_device rd;
-    std::mt19937 gen;
+    std::mt19937 gen = std::mt19937(rand());
     std::uniform_int_distribution<> dist;
+    std::uniform_real_distribution<> rDist;
 
     const static Rect BORDER_RECT, IMG_RECT;
     const static std::string IMGS[];

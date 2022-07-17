@@ -1,6 +1,15 @@
 #include "Wizard.h"
 
-// Wizard;
+uint32_t xorshift32(xorshift32_state state) {
+    /* Algorithm "xor" from p. 4 of Marsaglia, "Xorshift RNGs" */
+    uint32_t x = state.a;
+    x ^= x << 13;
+    x ^= x >> 17;
+    x ^= x << 5;
+    return state.a = x;
+}
+
+// Wizard
 const Rect Wizard::BORDER_RECT(0, 0, 500, 500), Wizard::IMG_RECT(0, 0, 100,
                                                                  100);
 const std::string Wizard::IMGS[] = {"res/wizards/crystal.png",
@@ -10,14 +19,13 @@ const std::string Wizard::IMGS[] = {"res/wizards/crystal.png",
 Wizard::Wizard(WizardId id)
     : mId(id),
       mComp(std::make_shared<DragComponent>(Rect(), 1, 250)),
-      gen(rd()),
       dist(1, WizardId::size - 1) {}
 
 void Wizard::init() {
     mBorder.set(BORDER_RECT, 2, true);
 
-    setPos(BORDER_RECT.cX(), BORDER_RECT.cY());
     setImage(IMGS[mId]);
+    setPos(rDist(gen) * BORDER_RECT.w(), rDist(gen) * BORDER_RECT.h());
 
     mComp->onDrag = [this](int x, int y, float dx, float dy) { setPos(x, y); };
     mComp->onDragStart = []() {};

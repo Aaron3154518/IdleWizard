@@ -14,6 +14,10 @@
 #include <Utils/Colors.h>
 #include <Utils/Event.h>
 #include <Utils/Number.h>
+#include <Utils/Rect.h>
+
+#include <cmath>
+#include <vector>
 
 #include "WizardIds.h"
 

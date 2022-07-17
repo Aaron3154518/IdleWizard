@@ -17,22 +17,21 @@
 #include "Fireball.h"
 #include "WizardIds.h"
 
-class Wizard : public Component {
+class WizardBase : public Component {
    public:
-    Wizard(WizardId id);
-    ~Wizard() = default;
+    virtual ~WizardBase();
 
-   private:
-    void init();
+   protected:
+    WizardBase(WizardId id);
 
-    void onRender(SDL_Renderer* r);
-    void onClick(Event::MouseButton b, bool clicked);
+    virtual void init();
+
+    virtual void onRender(SDL_Renderer* r);
+    virtual void onClick(Event::MouseButton b, bool clicked);
 
     void setPos(float x, float y);
 
     void setImage(const std::string& img);
-
-    void shootFireball(WizardId target);
 
     const WizardId mId;
 
@@ -44,15 +43,44 @@ class Wizard : public Component {
     MouseObservable::SubscriptionPtr mMouseSub;
     DragObservable::SubscriptionPtr mDragSub;
 
-    std::vector<std::unique_ptr<Fireball>> mFireballs;
-
     std::mt19937 gen = std::mt19937(rand());
-    std::uniform_int_distribution<> dist;
+    std::uniform_int_distribution<> dist =
+        std::uniform_int_distribution<>(1, WizardId::size - 1);
     std::uniform_real_distribution<> rDist;
 
     const static Rect BORDER_RECT, IMG_RECT;
     const static std::string IMGS[];
-    int imgIdx = 0;
+};
+
+class Wizard : public WizardBase {
+   public:
+    Wizard();
+
+   private:
+    void init();
+
+    void onRender(SDL_Renderer* r);
+    void onClick(Event::MouseButton b, bool clicked);
+
+    void shootFireball(WizardId target);
+
+    std::vector<std::unique_ptr<Fireball>> mFireballs;
+};
+
+class Crystal : public WizardBase {
+   public:
+    Crystal();
+
+   private:
+    void init();
+};
+
+class Catalyst : public WizardBase {
+   public:
+    Catalyst();
+
+   private:
+    void init();
 };
 
 #endif

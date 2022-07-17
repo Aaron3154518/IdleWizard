@@ -15,9 +15,9 @@ int main(int argc, char* argv[]) {
 
     GameSystem::Init(options);
 
-    std::unique_ptr<Wizard> wizard = ComponentFactory<Wizard>::New(WizardId::WIZARD);
-    std::unique_ptr<Wizard> catalyst = ComponentFactory<Wizard>::New(WizardId::CATALYST);
-    std::unique_ptr<Wizard> crystal = ComponentFactory<Wizard>::New(WizardId::CRYSTAL);
+    std::unique_ptr<Wizard> wizard = ComponentFactory<Wizard>::New();
+    std::unique_ptr<Crystal> catalyst = ComponentFactory<Crystal>::New();
+    std::unique_ptr<Catalyst> crystal = ComponentFactory<Catalyst>::New();
 
     GameSystem::Run();
 

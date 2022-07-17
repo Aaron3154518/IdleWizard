@@ -16,6 +16,7 @@
 
 #include "Fireball.h"
 #include "WizardIds.h"
+#include "WizardUpdate.h"
 
 class WizardBase : public Component {
    public:
@@ -62,9 +63,13 @@ class Wizard : public WizardBase {
 
     void onRender(SDL_Renderer* r);
     void onClick(Event::MouseButton b, bool clicked);
+    void onWizardUpdate(const ParameterList& params);
 
     void shootFireball(WizardId target);
 
+    WizardUpdateObservable::SubscriptionPtr mWizUpdateSub;
+
+    Number mBasePower = Number(1);
     Number mPower = Number(1);
     std::vector<std::unique_ptr<Fireball>> mFireballs;
 };

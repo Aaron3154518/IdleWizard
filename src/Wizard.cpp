@@ -3,7 +3,7 @@
 // WizardBase
 const Rect WizardBase::BORDER_RECT(0, 0, 500, 500);
 const Rect WizardBase::IMG_RECT(0, 0, 100, 100);
-const FontData WizardBase::FONT{-1, IMG_RECT.h() / 4, "|"};
+const FontData WizardBase::FONT{-1, IMG_RECT.H() / 4, "|"};
 
 WizardBase::WizardBase(WizardId id)
     : mId(id), mComp(std::make_shared<DragComponent>(Rect(), 1, 250)) {}
@@ -76,6 +76,12 @@ void Wizard::init() {
     ServiceSystem::Get<MouseService, MouseObservable>()->updateSubscription(
         mMouseSub, std::bind(&Wizard::onClick, this, std::placeholders::_1,
                              std::placeholders::_2));
+
+    mWizUpdateSub =
+        ServiceSystem::Get<WizardUpdateService, WizardUpdateObservable>()
+            ->subscribe(std::bind(&Wizard::onWizardUpdate, this,
+                                  std::placeholders::_1));
+    mWizUpdateSub->setUnsubscriber(unsub);
 }
 
 void Wizard::onRender(SDL_Renderer* r) {
@@ -95,6 +101,14 @@ void Wizard::onClick(Event::MouseButton b, bool clicked) {
     if (clicked) {
         shootFireball(WizardId::CRYSTAL);
     }
+}
+
+void Wizard::onWizardUpdate(const ParameterList& params) {
+    auto wizUpdate =
+        ServiceSystem::Get<WizardUpdateService, WizardUpdateObservable>();
+
+    mPower = mBasePower;
+    mPower *= wizUpdate->getParam(WizardParams::CrystalMagic, Number(1));
 }
 
 void Wizard::shootFireball(WizardId target) {
@@ -136,6 +150,8 @@ void Crystal::onHit(WizardId src, Number val) {
             mMagic += val;
             mMagicText.tData.text = mMagic.toString();
             mMagicText.renderText();
+            ServiceSystem::Get<WizardUpdateService, WizardUpdateObservable>()
+                ->setParam(WizardParams::CrystalMagic, mMagic.logTenCopy() + 1);
             break;
     }
 }

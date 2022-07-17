@@ -17,6 +17,7 @@
 #include <Utils/Rect.h>
 
 #include <cmath>
+#include <forward_list>
 #include <vector>
 
 #include "WizardIds.h"
@@ -33,6 +34,12 @@ class UpgradeScroller : public Component {
     void onClick(Event::MouseButton b, bool clicked);
     void onDrag(int mouseX, int mouseY, float mouseDx, float mouseDy);
     void onDragStart();
+
+    void scroll(float dScroll);
+    float maxScroll() const;
+    void draw();
+
+    std::vector<int> mUpgrades = {1, 1, 2, 3, 5, 8, 13, 21, 35, 56};
 
     float mScroll = 0, mScrollV = 0;
     RectData mBkgrnd;

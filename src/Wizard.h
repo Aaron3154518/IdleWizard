@@ -68,16 +68,16 @@ class Wizard : public WizardBase {
     bool onTimer();
     void onWizardUpdate(const ParameterList<WizardParams>& params);
 
-    void shootFireball(WizardId target);
+    void shootFireball();
 
     TimerObservable::SubscriptionPtr mTimerSub;
     WizardParameters::SubscriptionPtr mWizUpdateSub;
 
+    WizardId mTarget = WizardId::CRYSTAL;
     std::vector<std::shared_ptr<Upgrade>> mUpgrades;
-    bool boughtPower = false;
+    bool mBoughtPower = false;
 
-    Number mBasePower = Number(1);
-    Number mPower = Number(1);
+    Number mBasePower = Number(1), mPower = Number(1);
     std::vector<std::unique_ptr<Fireball>> mFireballs;
 };
 
@@ -91,10 +91,9 @@ class Crystal : public WizardBase {
     void onRender(SDL_Renderer* r);
     void onHit(WizardId src, Number val);
 
-    TextRenderData mMagicText;
-
     TargetObservable::SubscriptionPtr mTargetSub;
 
+    TextRenderData mMagicText;
     Number mMagic;
 };
 
@@ -104,6 +103,14 @@ class Catalyst : public WizardBase {
 
    private:
     void init();
+
+    void onRender(SDL_Renderer* r);
+    void onHit(WizardId src, Number val);
+
+    TargetObservable::SubscriptionPtr mTargetSub;
+
+    TextRenderData mMagicText;
+    Number mMagic, mCapacity = Number(100);
 };
 
 #endif

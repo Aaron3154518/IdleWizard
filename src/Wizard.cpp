@@ -69,15 +69,29 @@ void WizardBase::setImage(const std::string& img) {
 
 // Wizard
 Wizard::Wizard() : WizardBase(WizardId::WIZARD) {
-    std::shared_ptr<Upgrade> powerUpgrade = std::make_shared<Upgrade>();
-    powerUpgrade->onClick = [this]() {
-        mBasePower *= 2;
-        boughtPower = true;
+    std::shared_ptr<Upgrade> upgrade;
+
+    // Target Upgrade
+    upgrade = std::make_shared<Upgrade>();
+    upgrade->onClick = [this]() {
+        mTarget = mTarget == WizardId::CRYSTAL ? WizardId::CATALYST
+                                               : WizardId::CRYSTAL;
     };
-    powerUpgrade->status = [this]() {
-        return boughtPower ? Upgrade::Status::BOUGHT : Upgrade::Status::CAN_BUY;
+    upgrade->status = [this]() { return Upgrade::Status::CAN_BUY; };
+    mUpgrades.push_back(upgrade);
+
+    // Power Upgrade
+    upgrade = std::make_shared<Upgrade>();
+    upgrade->onClick = [this]() {
+        ServiceSystem::Get<WizardUpdateService, WizardParameters>()->setParam(
+            WizardParams::WizardPowerUpgrade, 1);
+        mBoughtPower = true;
     };
-    mUpgrades.push_back(powerUpgrade);
+    upgrade->status = [this]() {
+        return mBoughtPower ? Upgrade::Status::BOUGHT
+                            : Upgrade::Status::CAN_BUY;
+    };
+    mUpgrades.push_back(upgrade);
 }
 
 void Wizard::init() {
@@ -119,7 +133,7 @@ void Wizard::onClick(Event::MouseButton b, bool clicked) {
 }
 
 bool Wizard::onTimer() {
-    shootFireball(WizardId::CRYSTAL);
+    shootFireball();
     return true;
 }
 
@@ -128,12 +142,14 @@ void Wizard::onWizardUpdate(const ParameterList<WizardParams>& params) {
         ServiceSystem::Get<WizardUpdateService, WizardParameters>();
 
     mPower = mBasePower;
-    mPower *= wizUpdate->getParam(WizardParams::CrystalMagic, Number(1));
+    mPower += wizUpdate->getParam(WizardParams::WizardPowerUpgrade, 0);
+    mPower *= wizUpdate->getParam(WizardParams::CrystalMagic, 1);
+    mPower *= wizUpdate->getParam(WizardParams::CatalystMagic, 1);
 }
 
-void Wizard::shootFireball(WizardId target) {
+void Wizard::shootFireball() {
     mFireballs.push_back(std::move(ComponentFactory<Fireball>::New(
-        mComp->rect.cX(), mComp->rect.cY(), mId, target, mPower)));
+        mComp->rect.cX(), mComp->rect.cY(), mId, mTarget, mPower)));
 }
 
 // Crystal
@@ -177,6 +193,45 @@ void Crystal::onHit(WizardId src, Number val) {
 }
 
 // Catalyst
-Catalyst::Catalyst() : WizardBase(WizardId::CATALYST) {}
+Catalyst::Catalyst() : WizardBase(WizardId::CATALYST) {
+    mMagicText.tData.font = AssetManager::getFont(FONT);
+    mMagicText.tData.text = mMagic.toString() + "/" + mCapacity.toString();
+    mMagicText.renderText();
+}
 
-void Catalyst::init() { WizardBase::init(); }
+void Catalyst::init() {
+    WizardBase::init();
+    ServiceSystem::Get<RenderService, RenderObservable>()->updateSubscription(
+        mRenderSub,
+        std::bind(&Catalyst::onRender, this, std::placeholders::_1));
+    mTargetSub =
+        ServiceSystem::Get<FireballService, TargetObservable>()->subscribe(
+            std::bind(&Catalyst::onHit, this, std::placeholders::_1,
+                      std::placeholders::_2),
+            std::make_shared<WizardId>(mId));
+    mTargetSub->setUnsubscriber(unsub);
+}
+
+void Catalyst::onHit(WizardId src, Number val) {
+    switch (src) {
+        case WizardId::WIZARD:
+            mMagic = max(min(mMagic + val, mCapacity), 0);
+            mMagicText.tData.text =
+                mMagic.toString() + "/" + mCapacity.toString();
+            mMagicText.renderText();
+            ServiceSystem::Get<WizardUpdateService, WizardParameters>()
+                ->setParam(WizardParams::CatalystMagic,
+                           mMagic.logTenCopy() + 1);
+            break;
+    }
+}
+
+void Catalyst::onRender(SDL_Renderer* r) {
+    WizardBase::onRender(r);
+
+    mMagicText.dest =
+        Rect(mComp->rect.x(), mComp->rect.y2(), mComp->rect.w(), 0);
+    mMagicText.dest.setHeight(FONT.h, Rect::Align::TOP_LEFT);
+    mMagicText.fitToTexture();
+    TextureBuilder().draw(mMagicText);
+}

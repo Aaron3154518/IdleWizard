@@ -18,11 +18,32 @@
 
 #include <cmath>
 #include <forward_list>
+#include <functional>
 #include <vector>
 
 #include "WizardIds.h"
 
-class Upgrade {};
+struct Upgrade {
+    enum Status : uint8_t {
+        BOUGHT = 0,
+        CAN_BUY,
+        CANT_BUY,
+    };
+
+    std::function<void()> onClick = []() {};
+    std::function<Status()> status = []() { return Status::CANT_BUY; };
+    std::function<SharedTexture()> getDescription = []() {
+        return makeSharedTexture();
+    };
+};
+
+typedef std::vector<std::shared_ptr<Upgrade>> UpgradeList;
+typedef Observable<const UpgradeList&, void(const UpgradeList&)>
+    UpgradeObservableBase;
+
+class UpgradeObservable : public UpgradeObservableBase {};
+
+class UpgradeService : public Service<UpgradeObservable> {};
 
 class UpgradeScroller : public Component {
    public:
@@ -36,12 +57,13 @@ class UpgradeScroller : public Component {
     void onClick(Event::MouseButton b, bool clicked);
     void onDrag(int mouseX, int mouseY, float mouseDx, float mouseDy);
     void onDragStart();
+    void onSetUpgrades(const UpgradeList& list);
 
     void scroll(float dScroll);
     float maxScroll() const;
     void draw();
 
-    std::vector<int> mUpgrades = {1, 1, 2, 3, 5, 8, 13, 21, 35, 56};
+    std::vector<std::weak_ptr<Upgrade>> mUpgrades;
     std::vector<std::pair<Rect, int>> mBackRects, mFrontRects;
 
     float mScroll = 0, mScrollV = 0;
@@ -55,6 +77,7 @@ class UpgradeScroller : public Component {
     RenderObservable::SubscriptionPtr mRenderSub;
     MouseObservable::SubscriptionPtr mMouseSub;
     DragObservable::SubscriptionPtr mDragSub;
+    UpgradeObservable::SubscriptionPtr mUpgradeSub;
 };
 
 #endif

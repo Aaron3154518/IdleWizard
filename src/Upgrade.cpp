@@ -41,6 +41,11 @@ void UpgradeScroller::init() {
     mDragSub =
         ServiceSystem::Get<DragService, DragObservable>()->subscribe(mDragComp);
     mDragSub->setUnsubscriber(unsub);
+    mUpgradeSub =
+        ServiceSystem::Get<UpgradeService, UpgradeObservable>()->subscribe(
+            std::bind(&UpgradeScroller::onSetUpgrades, this,
+                      std::placeholders::_1));
+    mUpgradeSub->setUnsubscriber(unsub);
 }
 
 void UpgradeScroller::onUpdate(Time dt) {
@@ -63,13 +68,23 @@ void UpgradeScroller::onClick(Event::MouseButton b, bool clicked) {
     if (clicked) {
         for (auto pair : mFrontRects) {
             if (SDL_PointInRect(&b.clickPos, pair.first)) {
-                std::cerr << mUpgrades.at(pair.second) << std::endl;
+                auto up = mUpgrades.at(pair.second).lock();
+                if (!up) {
+                    draw();
+                } else if (up->status() == Upgrade::Status::CAN_BUY) {
+                    up->onClick();
+                }
                 return;
             }
         }
         for (auto pair : mBackRects) {
             if (SDL_PointInRect(&b.clickPos, pair.first)) {
-                std::cerr << mUpgrades.at(pair.second) << std::endl;
+                auto up = mUpgrades.at(pair.second).lock();
+                if (!up) {
+                    draw();
+                } else if (up->status() == Upgrade::Status::CAN_BUY) {
+                    up->onClick();
+                }
                 return;
             }
         }
@@ -81,6 +96,14 @@ void UpgradeScroller::onDrag(int mouseX, int mouseY, float mouseDx,
     mScrollV = mouseDx;
 }
 void UpgradeScroller::onDragStart() { mScrollV = 0; }
+void UpgradeScroller::onSetUpgrades(const UpgradeList& list) {
+    mUpgrades.resize(list.size());
+    for (int i = 0; i < list.size(); i++) {
+        mUpgrades.at(i) = list.at(i);
+    }
+    draw();
+    scroll(0);
+}
 
 void UpgradeScroller::scroll(float dScroll) {
     mScroll = fmax(fmin(mScroll + dScroll, maxScroll()), 0);
@@ -92,6 +115,15 @@ float UpgradeScroller::maxScroll() const {
 }
 
 void UpgradeScroller::draw() {
+    for (auto it = mUpgrades.begin(); it != mUpgrades.end(); ++it) {
+        if (!it->lock()) {
+            it = mUpgrades.erase(it);
+            if (it == mUpgrades.end()) {
+                break;
+            }
+        }
+    }
+
     mTex.draw(mBkgrnd);
 
     const float w = mDragComp->rect.h() / 2;
@@ -149,7 +181,7 @@ void UpgradeScroller::draw() {
     TextRenderData tData;
     tData.tData.font = AssetManager::getFont(WizardBase::FONT);
     auto drawAngle = [this, HALF_PI, TWO_PI, ERR, w, cX, cY, a, b, &tData](
-                         float angle, int val) -> Rect {
+                         float angle, std::shared_ptr<Upgrade> up) -> Rect {
         float angleDiff1 = fmod(angle + 3 * HALF_PI, TWO_PI);
         float angleDiff2 = fmod(5 * HALF_PI - angle, TWO_PI);
         float angleDiff = fmin(angleDiff1, angleDiff2);
@@ -162,7 +194,25 @@ void UpgradeScroller::draw() {
         float y = cY - b * sin(angle);
         rect.setPos(x, y, Rect::Align::CENTER);
 
-        tData.tData.text = std::to_string(val);
+        RectData rd;
+        if (!up) {
+            rd.color = WHITE;
+        } else {
+            switch (up->status()) {
+                case Upgrade::Status::BOUGHT:
+                    rd.color = BLUE;
+                    break;
+                case Upgrade::Status::CAN_BUY:
+                    rd.color = GREEN;
+                    break;
+                case Upgrade::Status::CANT_BUY:
+                    rd.color = RED;
+                    break;
+            }
+        }
+        mTex.draw(rd.set(rect, -3));
+
+        tData.tData.text = std::to_string((int)up.get());
         tData.dest = rect;
         tData.renderText();
         tData.fitToTexture();
@@ -176,12 +226,14 @@ void UpgradeScroller::draw() {
     int i = 0;
     for (auto pair : back) {
         mBackRects.at(i++) = std::make_pair(
-            drawAngle(pair.first, mUpgrades.at(pair.second)), pair.second);
+            drawAngle(pair.first, mUpgrades.at(pair.second).lock()),
+            pair.second);
     }
 
     i = 0;
     for (auto pair : front) {
         mFrontRects.at(i++) = std::make_pair(
-            drawAngle(pair.first, mUpgrades.at(pair.second)), pair.second);
+            drawAngle(pair.first, mUpgrades.at(pair.second).lock()),
+            pair.second);
     }
 }

@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "Fireball.h"
+#include "Upgrade.h"
 #include "WizardIds.h"
 #include "WizardUpdate.h"
 
@@ -68,6 +69,9 @@ class Wizard : public WizardBase {
     void shootFireball(WizardId target);
 
     WizardParameters::SubscriptionPtr mWizUpdateSub;
+
+    std::vector<std::shared_ptr<Upgrade>> mUpgrades;
+    bool boughtPower = false;
 
     Number mBasePower = Number(1);
     Number mPower = Number(1);

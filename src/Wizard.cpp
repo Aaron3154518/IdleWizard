@@ -67,7 +67,17 @@ void WizardBase::setImage(const std::string& img) {
 }
 
 // Wizard
-Wizard::Wizard() : WizardBase(WizardId::WIZARD) {}
+Wizard::Wizard() : WizardBase(WizardId::WIZARD) {
+    std::shared_ptr<Upgrade> powerUpgrade = std::make_shared<Upgrade>();
+    powerUpgrade->onClick = [this]() {
+        mBasePower *= 2;
+        boughtPower = true;
+    };
+    powerUpgrade->status = [this]() {
+        return boughtPower ? Upgrade::Status::BOUGHT : Upgrade::Status::CAN_BUY;
+    };
+    mUpgrades.push_back(powerUpgrade);
+}
 
 void Wizard::init() {
     WizardBase::init();
@@ -98,8 +108,13 @@ void Wizard::onRender(SDL_Renderer* r) {
 }
 
 void Wizard::onClick(Event::MouseButton b, bool clicked) {
+    auto upgradeObservable =
+        ServiceSystem::Get<UpgradeService, UpgradeObservable>();
     if (clicked) {
+        upgradeObservable->next(mUpgrades);
         shootFireball(WizardId::CRYSTAL);
+    } else {
+        upgradeObservable->next({});
     }
 }
 

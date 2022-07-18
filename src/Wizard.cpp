@@ -68,6 +68,9 @@ void WizardBase::setImage(const std::string& img) {
 }
 
 // Wizard
+const std::string Wizard::POWER_UP_IMG = "res/upgrades/fireball_upgrade.png";
+const std::string Wizard::SPEED_UP_IMG = "res/upgrades/speed_upgrade.png";
+
 Wizard::Wizard() : WizardBase(WizardId::WIZARD) {
     std::shared_ptr<Upgrade> upgrade;
 
@@ -78,6 +81,9 @@ Wizard::Wizard() : WizardBase(WizardId::WIZARD) {
                                                : WizardId::CRYSTAL;
     };
     upgrade->status = [this]() { return Upgrade::Status::CAN_BUY; };
+    upgrade->getImage = [this]() {
+        return AssetManager::getTexture(WIZ_IMGS[mTarget]);
+    };
     mUpgrades.push_back(upgrade);
 
     // Power Upgrade
@@ -91,6 +97,9 @@ Wizard::Wizard() : WizardBase(WizardId::WIZARD) {
         return mPowerBought ? Upgrade::Status::BOUGHT
                             : Upgrade::Status::CAN_BUY;
     };
+    upgrade->getImage = [this]() {
+        return AssetManager::getTexture(POWER_UP_IMG);
+    };
     mUpgrades.push_back(upgrade);
 
     // Speed Upgrade
@@ -102,6 +111,9 @@ Wizard::Wizard() : WizardBase(WizardId::WIZARD) {
     upgrade->status = [this]() {
         return mSpeedBoughtCnt < 5 ? Upgrade::Status::CAN_BUY
                                    : Upgrade::Status::BOUGHT;
+    };
+    upgrade->getImage = [this]() {
+        return AssetManager::getTexture(SPEED_UP_IMG);
     };
     mUpgrades.push_back(upgrade);
 }

@@ -61,6 +61,8 @@ void UpgradeScroller::onUpdate(Time dt) {
     }
 }
 void UpgradeScroller::onRender(SDL_Renderer* r) {
+    draw();
+
     mTexData.dest = mDragComp->rect;
     TextureBuilder().draw(mTexData);
 }
@@ -101,20 +103,19 @@ void UpgradeScroller::onSetUpgrades(const UpgradeList& list) {
     for (int i = 0; i < list.size(); i++) {
         mUpgrades.at(i) = list.at(i);
     }
-    draw();
     scroll(0);
 }
 
 void UpgradeScroller::scroll(float dScroll) {
     mScroll = fmax(fmin(mScroll + dScroll, maxScroll()), 0);
-    draw();
+    computeRects();
 }
 float UpgradeScroller::maxScroll() const {
     return mDragComp->rect.w() * (mUpgrades.size() - 1) /
            floor(mDragComp->rect.w() * 2 / mDragComp->rect.h());
 }
 
-void UpgradeScroller::draw() {
+void UpgradeScroller::computeRects() {
     for (auto it = mUpgrades.begin(); it != mUpgrades.end(); ++it) {
         if (!it->lock()) {
             it = mUpgrades.erase(it);
@@ -123,8 +124,6 @@ void UpgradeScroller::draw() {
             }
         }
     }
-
-    mTex.draw(mBkgrnd);
 
     const float w = mDragComp->rect.h() / 2;
     float a = (mDragComp->rect.w() - w) / 2;
@@ -178,22 +177,36 @@ void UpgradeScroller::draw() {
         } while (sign == -1 && i != 0 && i != NUM_STEPS);
     }
 
-    TextRenderData tData;
-    tData.tData.font = AssetManager::getFont(WizardBase::FONT);
-    auto drawAngle = [this, HALF_PI, TWO_PI, ERR, w, cX, cY, a, b, &tData](
-                         float angle, std::shared_ptr<Upgrade> up) -> Rect {
+    auto getRect = [HALF_PI, TWO_PI, ERR, w, cX, cY, a,
+                    b](float angle) -> Rect {
         float angleDiff1 = fmod(angle + 3 * HALF_PI, TWO_PI);
         float angleDiff2 = fmod(5 * HALF_PI - angle, TWO_PI);
         float angleDiff = fmin(angleDiff1, angleDiff2);
         Rect rect(0, 0, w * angleDiff / M_PI, w * angleDiff / M_PI);
-        if (rect.Empty()) {
-            return rect;
-        }
 
         float x = cX + a * cos(angle);
         float y = cY - b * sin(angle);
         rect.setPos(x, y, Rect::Align::CENTER);
 
+        return rect;
+    };
+
+    mBackRects = std::vector<std::pair<Rect, int>>(backLen);
+    mFrontRects = std::vector<std::pair<Rect, int>>(frontLen);
+    int i = 0;
+    for (auto pair : back) {
+        mBackRects.at(i++) = std::make_pair(getRect(pair.first), pair.second);
+    }
+
+    i = 0;
+    for (auto pair : front) {
+        mFrontRects.at(i++) = std::make_pair(getRect(pair.first), pair.second);
+    }
+}
+void UpgradeScroller::draw() {
+    mTex.draw(mBkgrnd);
+
+    auto drawUpgrade = [this](Rect r, std::shared_ptr<Upgrade> up) {
         RectData rd;
         if (!up) {
             rd.color = WHITE;
@@ -210,30 +223,24 @@ void UpgradeScroller::draw() {
                     break;
             }
         }
-        mTex.draw(rd.set(rect, -3));
+        mTex.draw(rd.set(r, 3));
 
-        tData.tData.text = std::to_string((int)up.get());
-        tData.dest = rect;
-        tData.renderText();
-        tData.fitToTexture();
-        mTex.draw(tData);
-
-        return rect;
+        if (up) {
+            RenderData rData;
+            rData.texture = up->getImage();
+            if (rData.texture) {
+                rData.dest = r;
+                rData.fitToTexture();
+                mTex.draw(rData);
+            }
+        }
     };
 
-    mBackRects = std::vector<std::pair<Rect, int>>(backLen);
-    mFrontRects = std::vector<std::pair<Rect, int>>(frontLen);
-    int i = 0;
-    for (auto pair : back) {
-        mBackRects.at(i++) = std::make_pair(
-            drawAngle(pair.first, mUpgrades.at(pair.second).lock()),
-            pair.second);
+    for (auto pair : mBackRects) {
+        drawUpgrade(pair.first, mUpgrades.at(pair.second).lock());
     }
 
-    i = 0;
-    for (auto pair : front) {
-        mFrontRects.at(i++) = std::make_pair(
-            drawAngle(pair.first, mUpgrades.at(pair.second).lock()),
-            pair.second);
+    for (auto pair : mFrontRects) {
+        drawUpgrade(pair.first, mUpgrades.at(pair.second).lock());
     }
 }

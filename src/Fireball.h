@@ -51,6 +51,8 @@ class Fireball : public Component {
 
     bool dead() const;
 
+    const static std::string IMG;
+
    private:
     void init();
 
@@ -73,7 +75,6 @@ class Fireball : public Component {
 
     const static int MAX_SPEED;
     const static int COLLIDE_ERR;
-    const static std::string IMG;
 };
 
 #endif

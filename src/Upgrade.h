@@ -32,6 +32,9 @@ struct Upgrade {
 
     std::function<void()> onClick = []() {};
     std::function<Status()> status = []() { return Status::CANT_BUY; };
+    std::function<SharedTexture()> getImage = []() {
+        return makeSharedTexture();
+    };
     std::function<SharedTexture()> getDescription = []() {
         return makeSharedTexture();
     };
@@ -61,6 +64,8 @@ class UpgradeScroller : public Component {
 
     void scroll(float dScroll);
     float maxScroll() const;
+
+    void computeRects();
     void draw();
 
     std::vector<std::weak_ptr<Upgrade>> mUpgrades;

@@ -85,11 +85,23 @@ Wizard::Wizard() : WizardBase(WizardId::WIZARD) {
     upgrade->onClick = [this]() {
         ServiceSystem::Get<WizardUpdateService, WizardParameters>()->setParam(
             WizardParams::WizardPowerUpgrade, 1);
-        mBoughtPower = true;
+        mPowerBought = true;
     };
     upgrade->status = [this]() {
-        return mBoughtPower ? Upgrade::Status::BOUGHT
+        return mPowerBought ? Upgrade::Status::BOUGHT
                             : Upgrade::Status::CAN_BUY;
+    };
+    mUpgrades.push_back(upgrade);
+
+    // Speed Upgrade
+    upgrade = std::make_shared<Upgrade>();
+    upgrade->onClick = [this]() {
+        mSpeedBoughtCnt++;
+        mTimerSub->getData()->length = 1000 * pow(.75, mSpeedBoughtCnt);
+    };
+    upgrade->status = [this]() {
+        return mSpeedBoughtCnt < 5 ? Upgrade::Status::CAN_BUY
+                                   : Upgrade::Status::BOUGHT;
     };
     mUpgrades.push_back(upgrade);
 }

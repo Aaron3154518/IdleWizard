@@ -75,7 +75,8 @@ class Wizard : public WizardBase {
 
     WizardId mTarget = WizardId::CRYSTAL;
     std::vector<std::shared_ptr<Upgrade>> mUpgrades;
-    bool mBoughtPower = false;
+    bool mPowerBought = false;
+    uint8_t mSpeedBoughtCnt = 0;
 
     Number mBasePower = Number(1), mPower = Number(1);
     std::vector<std::unique_ptr<Fireball>> mFireballs;

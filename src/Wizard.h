@@ -6,9 +6,10 @@
 #include <RenderSystem/TextureBuilder.h>
 #include <ServiceSystem/Component.h>
 #include <ServiceSystem/CoreServices/RenderService.h>
-#include <ServiceSystem/MouseService/DragService.h>
-#include <ServiceSystem/MouseService/MouseService.h>
+#include <ServiceSystem/EventServices/DragService.h>
+#include <ServiceSystem/EventServices/MouseService.h>
 #include <ServiceSystem/ServiceSystem.h>
+#include <ServiceSystem/UpdateServices/TimerService.h>
 
 #include <memory>
 #include <random>
@@ -64,10 +65,12 @@ class Wizard : public WizardBase {
 
     void onRender(SDL_Renderer* r);
     void onClick(Event::MouseButton b, bool clicked);
+    bool onTimer();
     void onWizardUpdate(const ParameterList<WizardParams>& params);
 
     void shootFireball(WizardId target);
 
+    TimerObservable::SubscriptionPtr mTimerSub;
     WizardParameters::SubscriptionPtr mWizUpdateSub;
 
     std::vector<std::shared_ptr<Upgrade>> mUpgrades;

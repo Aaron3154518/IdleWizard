@@ -1,7 +1,7 @@
 #include "Wizard.h"
 
 // WizardBase
-const Rect WizardBase::BORDER_RECT(0, 0, 500, 500);
+const Rect WizardBase::BORDER_RECT(0, 100, 500, 500);
 const Rect WizardBase::IMG_RECT(0, 0, 100, 100);
 const FontData WizardBase::FONT{-1, IMG_RECT.H() / 4, "|"};
 
@@ -14,7 +14,8 @@ void WizardBase::init() {
     mBorder.set(BORDER_RECT, 2, true);
 
     setImage(WIZ_IMGS[mId]);
-    setPos(rDist(gen) * BORDER_RECT.w(), rDist(gen) * BORDER_RECT.h());
+    setPos(rDist(gen) * BORDER_RECT.w() + BORDER_RECT.x(),
+           rDist(gen) * BORDER_RECT.h() + BORDER_RECT.y());
 
     mComp->onDrag = [this](int x, int y, float dx, float dy) { setPos(x, y); };
     mComp->onDragStart = []() {};
@@ -88,6 +89,9 @@ void Wizard::init() {
         mMouseSub, std::bind(&Wizard::onClick, this, std::placeholders::_1,
                              std::placeholders::_2));
 
+    mTimerSub = ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
+        std::bind(&Wizard::onTimer, this), 1000);
+    mTimerSub->setUnsubscriber(unsub);
     mWizUpdateSub =
         ServiceSystem::Get<WizardUpdateService, WizardParameters>()->subscribe(
             std::bind(&Wizard::onWizardUpdate, this, std::placeholders::_1));
@@ -108,14 +112,15 @@ void Wizard::onRender(SDL_Renderer* r) {
 }
 
 void Wizard::onClick(Event::MouseButton b, bool clicked) {
-    auto upgradeObservable =
-        ServiceSystem::Get<UpgradeService, UpgradeObservable>();
     if (clicked) {
-        upgradeObservable->next(mUpgrades);
-        shootFireball(WizardId::CRYSTAL);
-    } else {
-        upgradeObservable->next({});
+        ServiceSystem::Get<UpgradeService, UpgradeObservable>()->next(
+            mUpgrades);
     }
+}
+
+bool Wizard::onTimer() {
+    shootFireball(WizardId::CRYSTAL);
+    return true;
 }
 
 void Wizard::onWizardUpdate(const ParameterList<WizardParams>& params) {

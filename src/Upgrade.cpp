@@ -6,8 +6,8 @@
 UpgradeScroller::UpgradeScroller()
     : mDragComp(
           std::make_shared<DragComponent>(Rect(), Elevation::UPGRADES, -1)) {
-    mDragComp->rect = Rect(0, 0, WizardBase::BORDER_RECT.w(),
-                           WizardBase::BORDER_RECT.h() / 5);
+    mDragComp->rect =
+        Rect(0, 0, WizardBase::BORDER_RECT.w(), WizardBase::BORDER_RECT.y());
     mDragComp->rect.setPosX(WizardBase::BORDER_RECT.halfW(),
                             Rect::Align::CENTER);
 

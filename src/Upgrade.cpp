@@ -6,10 +6,10 @@
 UpgradeScroller::UpgradeScroller()
     : mDragComp(
           std::make_shared<DragComponent>(Rect(), Elevation::UPGRADES, -1)) {
-    mDragComp->rect =
-        Rect(0, 0, WizardBase::BORDER_RECT.w(), WizardBase::BORDER_RECT.y());
-    mDragComp->rect.setPosX(WizardBase::BORDER_RECT.halfW(),
-                            Rect::Align::CENTER);
+    SDL_Point screenDim = RenderSystem::getWindowSize();
+    mDragComp->rect = Rect(0, 0, screenDim.x,
+                           fmin(screenDim.y / 5, WizardBase::IMG_RECT.h()));
+    mDragComp->rect.setPosX(screenDim.x / 2, Rect::Align::CENTER);
 
     mTex = TextureBuilder(mDragComp->rect.W(), mDragComp->rect.H());
     mTexData.texture = mTex.getTexture();
@@ -24,6 +24,10 @@ void UpgradeScroller::init() {
     mDragComp->onDragStart = std::bind(&UpgradeScroller::onDragStart, this);
     mDragComp->onDragEnd = []() {};
 
+    mResizeSub =
+        ServiceSystem::Get<ResizeService, ResizeObservable>()->subscribe(
+            std::bind(&UpgradeScroller::onResize, this, std::placeholders::_1));
+    mResizeSub->setUnsubscriber(unsub);
     mUpdateSub =
         ServiceSystem::Get<UpdateService, UpdateObservable>()->subscribe(
             std::bind(&UpgradeScroller::onUpdate, this, std::placeholders::_1));
@@ -48,6 +52,16 @@ void UpgradeScroller::init() {
     mUpgradeSub->setUnsubscriber(unsub);
 }
 
+void UpgradeScroller::onResize(ResizeData data) {
+    mDragComp->rect =
+        Rect(0, 0, data.newW, fmin(data.newH / 5, WizardBase::IMG_RECT.h()));
+    mDragComp->rect.setPosX(data.newW / 2, Rect::Align::CENTER);
+
+    mTex = TextureBuilder(mDragComp->rect.W(), mDragComp->rect.H());
+    mTexData.texture = mTex.getTexture();
+
+    computeRects();
+}
 void UpgradeScroller::onUpdate(Time dt) {
     if (!mDragComp->dragging) {
         scroll(-mScrollV * dt.s());

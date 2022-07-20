@@ -60,6 +60,10 @@ Fireball::Fireball(float cX, float cY, WizardId src, WizardId target,
 }
 
 void Fireball::init() {
+    mResizeSub =
+        ServiceSystem::Get<ResizeService, ResizeObservable>()->subscribe(
+            std::bind(&Fireball::onResize, this, std::placeholders::_1));
+    mResizeSub->setUnsubscriber(unsub);
     mUpdateSub =
         ServiceSystem::Get<UpdateService, UpdateObservable>()->subscribe(
             std::bind(&Fireball::onUpdate, this, std::placeholders::_1));
@@ -72,9 +76,20 @@ void Fireball::init() {
         ServiceSystem::Get<FireballService, FireballObservable>()->subscribe(
             [this](SDL_FPoint p) { mTargetPos = p; }, mTargetId);
     mFireballSub->setUnsubscriber(unsub);
+    std::cerr << "Init: " << this << " " << mResizeSub.get() << " "
+              << mUpdateSub.get() << " " << mRenderSub.get() << " "
+              << mFireballSub.get() << std::endl;
+    std::cerr << "MUnsub: " << unsub.mSubscribed.get() << std::endl;
 }
 
-bool Fireball::dead() const { return unsub; }
+bool Fireball::dead() const { return !unsub; }
+
+void Fireball::onResize(ResizeData data) {
+    std::cerr << "Resize: " << this << " " << mResizeSub.get() << std::endl;
+    mComp->rect.moveFactor((float)data.newW / data.oldW,
+                           (float)data.newH / data.oldH);
+    std::cerr << "Did " << std::endl;
+}
 
 void Fireball::onUpdate(Time dt) {
     float dx = mTargetPos.x - mComp->rect.cX(),
@@ -82,6 +97,12 @@ void Fireball::onUpdate(Time dt) {
     float mag = std::sqrt(dx * dx + dy * dy);
     // Check in case we were moved onto the target
     if (mag < COLLIDE_ERR) {
+        std::cerr << "Unsubscribe: " << this << std::endl;
+        mDead = true;
+        std::cerr << mResizeSub.get() << " " << mUpdateSub.get() << " "
+                  << mRenderSub.get() << " " << mFireballSub.get() << " : "
+                  << mDead << std::endl;
+        std::cerr << " MUnsub After: " << unsub.mSubscribed.get() << std::endl;
         unsub.unsubscribe();
         ServiceSystem::Get<FireballService, TargetObservable>()->next(
             *mTargetId, mVal, mSrcId);

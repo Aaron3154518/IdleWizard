@@ -1,7 +1,6 @@
 #include "Wizard.h"
 
 // WizardBase
-const Rect WizardBase::BORDER_RECT(0, 100, 500, 500);
 const Rect WizardBase::IMG_RECT(0, 0, 100, 100);
 const FontData WizardBase::FONT{-1, IMG_RECT.H() / 4, "|"};
 
@@ -11,16 +10,18 @@ WizardBase::WizardBase(WizardId id)
 WizardBase::~WizardBase() {}
 
 void WizardBase::init() {
-    mBorder.set(BORDER_RECT, 2, true);
-
     setImage(WIZ_IMGS[mId]);
-    setPos(rDist(gen) * BORDER_RECT.w() + BORDER_RECT.x(),
-           rDist(gen) * BORDER_RECT.h() + BORDER_RECT.y());
+    SDL_Point screenDim = RenderSystem::getWindowSize();
+    setPos(rDist(gen) * screenDim.x, rDist(gen) * screenDim.y);
 
     mComp->onDrag = [this](int x, int y, float dx, float dy) { setPos(x, y); };
     mComp->onDragStart = []() {};
     mComp->onDragEnd = []() {};
 
+    mResizeSub =
+        ServiceSystem::Get<ResizeService, ResizeObservable>()->subscribe(
+            std::bind(&WizardBase::onResize, this, std::placeholders::_1));
+    mResizeSub->setUnsubscriber(unsub);
     mRenderSub =
         ServiceSystem::Get<RenderService, RenderObservable>()->subscribe(
             std::bind(&WizardBase::onRender, this, std::placeholders::_1),
@@ -36,6 +37,11 @@ void WizardBase::init() {
     mDragSub->setUnsubscriber(unsub);
 }
 
+void WizardBase::onResize(ResizeData data) {
+    setPos((float)mComp->rect.cX() * data.newW / data.oldW,
+           (float)mComp->rect.cY() * data.newH / data.oldH);
+}
+
 void WizardBase::onRender(SDL_Renderer* r) {
     if (mComp->dragging) {
         RectData rd;
@@ -45,15 +51,14 @@ void WizardBase::onRender(SDL_Renderer* r) {
     }
 
     TextureBuilder().draw(mImg);
-
-    TextureBuilder().draw(mBorder);
 }
 
 void WizardBase::onClick(Event::MouseButton b, bool clicked) {}
 
 void WizardBase::setPos(float x, float y) {
+    SDL_Point screenDim = RenderSystem::getWindowSize();
     mComp->rect.setPos(x, y, Rect::Align::CENTER);
-    mComp->rect.fitWithin(BORDER_RECT);
+    mComp->rect.fitWithin(Rect(0, 0, screenDim.x, screenDim.y));
     mImg.dest = mComp->rect;
     ServiceSystem::Get<FireballService, FireballObservable>()->next(
         mId, {mComp->rect.cX(), mComp->rect.cY()});
@@ -140,8 +145,10 @@ void Wizard::onRender(SDL_Renderer* r) {
     WizardBase::onRender(r);
 
     for (auto it = mFireballs.begin(); it != mFireballs.end(); ++it) {
-        if (!(*it)->dead()) {
+        if ((*it)->dead()) {
+            std::cerr << "Erase: " << it->get() << std::endl;
             it = mFireballs.erase(it);
+            std::cerr << "Done" << std::endl;
             if (it == mFireballs.end()) {
                 break;
             }
@@ -174,6 +181,7 @@ void Wizard::onWizardUpdate(const ParameterList<WizardParams>& params) {
 void Wizard::shootFireball() {
     mFireballs.push_back(std::move(ComponentFactory<Fireball>::New(
         mComp->rect.cX(), mComp->rect.cY(), mId, mTarget, mPower)));
+    std::cerr << "Shoot: " << mFireballs.back().get() << std::endl;
 }
 
 // Crystal

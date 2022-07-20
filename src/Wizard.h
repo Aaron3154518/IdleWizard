@@ -8,6 +8,7 @@
 #include <ServiceSystem/CoreServices/RenderService.h>
 #include <ServiceSystem/EventServices/DragService.h>
 #include <ServiceSystem/EventServices/MouseService.h>
+#include <ServiceSystem/EventServices/ResizeService.h>
 #include <ServiceSystem/ServiceSystem.h>
 #include <ServiceSystem/UpdateServices/TimerService.h>
 
@@ -24,7 +25,7 @@ class WizardBase : public Component {
    public:
     virtual ~WizardBase();
 
-    const static Rect BORDER_RECT, IMG_RECT;
+    const static Rect IMG_RECT;
     const static std::string IMGS[];
     const static FontData FONT;
 
@@ -33,6 +34,7 @@ class WizardBase : public Component {
 
     virtual void init();
 
+    virtual void onResize(ResizeData data);
     virtual void onRender(SDL_Renderer* r);
     virtual void onClick(Event::MouseButton b, bool clicked);
 
@@ -42,10 +44,10 @@ class WizardBase : public Component {
 
     const WizardId mId;
 
-    RectData mBorder;
     RenderData mImg;
 
     DragComponentPtr mComp;
+    ResizeObservable::SubscriptionPtr mResizeSub;
     RenderObservable::SubscriptionPtr mRenderSub;
     MouseObservable::SubscriptionPtr mMouseSub;
     DragObservable::SubscriptionPtr mDragSub;

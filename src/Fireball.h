@@ -8,6 +8,7 @@
 #include <ServiceSystem/Component.h>
 #include <ServiceSystem/CoreServices/RenderService.h>
 #include <ServiceSystem/CoreServices/UpdateService.h>
+#include <ServiceSystem/EventServices/ResizeService.h>
 #include <ServiceSystem/Observable.h>
 #include <ServiceSystem/Service.h>
 #include <ServiceSystem/ServiceSystem.h>
@@ -47,7 +48,6 @@ class Fireball : public Component {
 
    public:
     Fireball(float cX, float cY, WizardId src, WizardId target, Number val);
-    ~Fireball() = default;
 
     bool dead() const;
 
@@ -58,8 +58,10 @@ class Fireball : public Component {
 
     void onUpdate(Time dt);
 
+    void onResize(ResizeData data);
     void onRender(SDL_Renderer* renderer);
 
+    bool mDead = false;
     WizardId mSrcId;
     std::shared_ptr<WizardId> mTargetId;
     SDL_FPoint mTargetPos{0, 0};
@@ -67,6 +69,7 @@ class Fireball : public Component {
 
     RenderData mImg;
 
+    ResizeObservable::SubscriptionPtr mResizeSub;
     UpdateObservable::SubscriptionPtr mUpdateSub;
     RenderObservable::SubscriptionPtr mRenderSub;
     FireballObservable::SubscriptionPtr mFireballSub;

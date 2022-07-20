@@ -8,6 +8,7 @@
 #include <ServiceSystem/CoreServices/UpdateService.h>
 #include <ServiceSystem/EventServices/DragService.h>
 #include <ServiceSystem/EventServices/MouseService.h>
+#include <ServiceSystem/EventServices/ResizeService.h>
 #include <ServiceSystem/Observable.h>
 #include <ServiceSystem/Service.h>
 #include <ServiceSystem/ServiceSystem.h>
@@ -55,6 +56,7 @@ class UpgradeScroller : public Component {
    private:
     void init();
 
+    void onResize(ResizeData data);
     void onUpdate(Time dt);
     void onRender(SDL_Renderer* r);
     void onClick(Event::MouseButton b, bool clicked);
@@ -78,6 +80,7 @@ class UpgradeScroller : public Component {
 
     DragComponentPtr mDragComp;
 
+    ResizeObservable::SubscriptionPtr mResizeSub;
     UpdateObservable::SubscriptionPtr mUpdateSub;
     RenderObservable::SubscriptionPtr mRenderSub;
     MouseObservable::SubscriptionPtr mMouseSub;

@@ -16,6 +16,6 @@ const std::string WIZ_IMGS[WizardId::size + 1] = {WIZ_DIR + "crystal.png",
 
 enum WizardParams : int { CrystalMagic = 0, CatalystMagic, WizardPowerUpgrade };
 
-enum Elevation { WIZARDS = 1, UPGRADES = 2 };
+enum Elevation { WIZARDS = 2, UPGRADES = 1 };
 
 #endif

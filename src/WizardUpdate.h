@@ -17,12 +17,15 @@ using ParameterList = std::unordered_map<K, Number>;
 
 template <class K>
 using WizardUpdateObservableBase =
-    Observable<const ParameterList<K>&, void(const ParameterList<K>&)>;
+    ForwardObservable<void(const ParameterList<K>&)>;
 
 template <class K>
 class WizardUpdateObservable : public WizardUpdateObservableBase<K>,
                                public Component {
    public:
+    using WizardUpdateObservableBase<K>::subscribe;
+    using WizardUpdateObservableBase<K>::next;
+
     WizardUpdateObservable() = default;
 
     void setParam(K key, Number val) { mParams[key] = val; }
@@ -37,10 +40,9 @@ class WizardUpdateObservable : public WizardUpdateObservableBase<K>,
             ServiceSystem::Get<UpdateService, UpdateObservable>()->subscribe(
                 std::bind(&WizardUpdateObservable::onUpdate, this,
                           std::placeholders::_1));
-        mUpdateSub->setUnsubscriber(unsub);
     }
 
-    void onUpdate(Time dt) { WizardUpdateObservableBase<K>::next(mParams); }
+    void onUpdate(Time dt) { next(mParams); }
 
     UpdateObservable::SubscriptionPtr mUpdateSub;
 

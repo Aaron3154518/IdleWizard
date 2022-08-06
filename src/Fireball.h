@@ -17,27 +17,26 @@
 
 #include "WizardIds.h"
 
-typedef Observable<SDL_FPoint, void(SDL_FPoint), WizardId>
-    FireballObservableBase;
+typedef Observable<void(SDL_FPoint), WizardId> FireballObservableBase;
 
 class FireballObservable : public FireballObservableBase {
    public:
-    SubscriptionPtr subscribe(Subscription::Function func,
-                              std::shared_ptr<WizardId> id);
-    void updateSubscriptionData(SubscriptionPtr sub,
-                                std::shared_ptr<WizardId> id);
+    enum : size_t { FUNC = 0, DATA };
 
     void next(WizardId id, SDL_FPoint pos);
 
    private:
+    void onSubscribe(SubscriptionPtr sub);
+
     SDL_FPoint mTargets[WizardId::size];
 };
 
-typedef Observable<Number, void(WizardId, Number), WizardId>
-    TargetObservableBase;
+typedef Observable<void(WizardId, Number), WizardId> TargetObservableBase;
 
 class TargetObservable : public TargetObservableBase {
    public:
+    enum : size_t { FUNC = 0, DATA };
+
     void next(WizardId target, Number val, WizardId src);
 };
 
@@ -62,10 +61,9 @@ class Fireball : public Component {
     void onRender(SDL_Renderer* renderer);
 
     bool mDead = false;
-    WizardId mSrcId;
-    std::shared_ptr<WizardId> mTargetId;
+    WizardId mSrcId, mTargetId;
     SDL_FPoint mTargetPos{0, 0};
-    UIComponentPtr mComp;
+    UIComponentPtr mPos;
 
     RenderData mImg;
 

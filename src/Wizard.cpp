@@ -6,7 +6,8 @@ const FontData WizardBase::FONT{-1, IMG_RECT.H() / 4, "|"};
 
 WizardBase::WizardBase(WizardId id)
     : mId(id),
-      mComp(std::make_shared<DragComponent>(Rect(), Elevation::WIZARDS, 250)) {}
+      mPos(std::make_shared<UIComponent>(Rect(), Elevation::WIZARDS)),
+      mDrag(std::make_shared<DragComponent>(250)) {}
 WizardBase::~WizardBase() {}
 
 void WizardBase::init() {
@@ -14,39 +15,32 @@ void WizardBase::init() {
     SDL_Point screenDim = RenderSystem::getWindowSize();
     setPos(rDist(gen) * screenDim.x, rDist(gen) * screenDim.y);
 
-    mComp->onDrag = [this](int x, int y, float dx, float dy) { setPos(x, y); };
-    mComp->onDragStart = []() {};
-    mComp->onDragEnd = []() {};
-
     mResizeSub =
         ServiceSystem::Get<ResizeService, ResizeObservable>()->subscribe(
             std::bind(&WizardBase::onResize, this, std::placeholders::_1));
-    mResizeSub->setUnsubscriber(unsub);
     mRenderSub =
         ServiceSystem::Get<RenderService, RenderObservable>()->subscribe(
             std::bind(&WizardBase::onRender, this, std::placeholders::_1),
-            mComp);
-    mRenderSub->setUnsubscriber(unsub);
+            mPos);
     mMouseSub = ServiceSystem::Get<MouseService, MouseObservable>()->subscribe(
         std::bind(&WizardBase::onClick, this, std::placeholders::_1,
                   std::placeholders::_2),
-        mComp);
-    mMouseSub->setUnsubscriber(unsub);
-    mDragSub =
-        ServiceSystem::Get<DragService, DragObservable>()->subscribe(mComp);
-    mDragSub->setUnsubscriber(unsub);
+        mPos);
+    mDragSub = ServiceSystem::Get<DragService, DragObservable>()->subscribe(
+        []() {}, [this](int x, int y, float dx, float dy) { setPos(x, y); },
+        []() {}, mPos, mDrag);
 }
 
 void WizardBase::onResize(ResizeData data) {
-    setPos((float)mComp->rect.cX() * data.newW / data.oldW,
-           (float)mComp->rect.cY() * data.newH / data.oldH);
+    setPos((float)mPos->rect.cX() * data.newW / data.oldW,
+           (float)mPos->rect.cY() * data.newH / data.oldH);
 }
 
 void WizardBase::onRender(SDL_Renderer* r) {
-    if (mComp->dragging) {
+    if (mDrag->dragging) {
         RectData rd;
         rd.color = GRAY;
-        rd.set(mComp->rect, 5);
+        rd.set(mPos->rect, 5);
         TextureBuilder().draw(rd);
     }
 
@@ -57,19 +51,19 @@ void WizardBase::onClick(Event::MouseButton b, bool clicked) {}
 
 void WizardBase::setPos(float x, float y) {
     SDL_Point screenDim = RenderSystem::getWindowSize();
-    mComp->rect.setPos(x, y, Rect::Align::CENTER);
-    mComp->rect.fitWithin(Rect(0, 0, screenDim.x, screenDim.y));
-    mImg.dest = mComp->rect;
+    mPos->rect.setPos(x, y, Rect::Align::CENTER);
+    mPos->rect.fitWithin(Rect(0, 0, screenDim.x, screenDim.y));
+    mImg.dest = mPos->rect;
     ServiceSystem::Get<FireballService, FireballObservable>()->next(
-        mId, {mComp->rect.cX(), mComp->rect.cY()});
+        mId, {mPos->rect.cX(), mPos->rect.cY()});
 }
 
 void WizardBase::setImage(const std::string& img) {
     mImg.texture = AssetManager::getTexture(img);
     mImg.dest = IMG_RECT;
-    mImg.dest.setPos(mComp->rect.cX(), mComp->rect.cY(), Rect::Align::CENTER);
+    mImg.dest.setPos(mPos->rect.cX(), mPos->rect.cY(), Rect::Align::CENTER);
     mImg.fitToTexture();
-    mComp->rect = mImg.dest;
+    mPos->rect = mImg.dest;
 }
 
 // Wizard
@@ -111,7 +105,8 @@ Wizard::Wizard() : WizardBase(WizardId::WIZARD) {
     upgrade = std::make_shared<Upgrade>();
     upgrade->onClick = [this]() {
         mSpeedBoughtCnt++;
-        mTimerSub->getData()->length = 1000 * pow(.75, mSpeedBoughtCnt);
+        mTimerSub->get<TimerObservable::DATA>().length =
+            1000 * pow(.75, mSpeedBoughtCnt);
     };
     upgrade->status = [this]() {
         return mSpeedBoughtCnt < 5 ? Upgrade::Status::CAN_BUY
@@ -126,19 +121,19 @@ Wizard::Wizard() : WizardBase(WizardId::WIZARD) {
 void Wizard::init() {
     WizardBase::init();
 
-    ServiceSystem::Get<RenderService, RenderObservable>()->updateSubscription(
-        mRenderSub, std::bind(&Wizard::onRender, this, std::placeholders::_1));
-    ServiceSystem::Get<MouseService, MouseObservable>()->updateSubscription(
-        mMouseSub, std::bind(&Wizard::onClick, this, std::placeholders::_1,
-                             std::placeholders::_2));
+    mRenderSub =
+        ServiceSystem::Get<RenderService, RenderObservable>()->subscribe(
+            std::bind(&Wizard::onRender, this, std::placeholders::_1), mPos);
+    mMouseSub = ServiceSystem::Get<MouseService, MouseObservable>()->subscribe(
+        std::bind(&Wizard::onClick, this, std::placeholders::_1,
+                  std::placeholders::_2),
+        mPos);
 
     mTimerSub = ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
-        std::bind(&Wizard::onTimer, this), 1000);
-    mTimerSub->setUnsubscriber(unsub);
+        std::bind(&Wizard::onTimer, this), Timer(1000));
     mWizUpdateSub =
         ServiceSystem::Get<WizardUpdateService, WizardParameters>()->subscribe(
             std::bind(&Wizard::onWizardUpdate, this, std::placeholders::_1));
-    mWizUpdateSub->setUnsubscriber(unsub);
 }
 
 void Wizard::onRender(SDL_Renderer* r) {
@@ -146,9 +141,7 @@ void Wizard::onRender(SDL_Renderer* r) {
 
     for (auto it = mFireballs.begin(); it != mFireballs.end(); ++it) {
         if ((*it)->dead()) {
-            std::cerr << "Erase: " << it->get() << std::endl;
             it = mFireballs.erase(it);
-            std::cerr << "Done" << std::endl;
             if (it == mFireballs.end()) {
                 break;
             }
@@ -180,8 +173,7 @@ void Wizard::onWizardUpdate(const ParameterList<WizardParams>& params) {
 
 void Wizard::shootFireball() {
     mFireballs.push_back(std::move(ComponentFactory<Fireball>::New(
-        mComp->rect.cX(), mComp->rect.cY(), mId, mTarget, mPower)));
-    std::cerr << "Shoot: " << mFireballs.back().get() << std::endl;
+        mPos->rect.cX(), mPos->rect.cY(), mId, mTarget, mPower)));
 }
 
 // Crystal
@@ -193,21 +185,20 @@ Crystal::Crystal() : WizardBase(WizardId::CRYSTAL) {
 
 void Crystal::init() {
     WizardBase::init();
-    ServiceSystem::Get<RenderService, RenderObservable>()->updateSubscription(
-        mRenderSub, std::bind(&Crystal::onRender, this, std::placeholders::_1));
+    mRenderSub =
+        ServiceSystem::Get<RenderService, RenderObservable>()->subscribe(
+            std::bind(&Crystal::onRender, this, std::placeholders::_1), mPos);
     mTargetSub =
         ServiceSystem::Get<FireballService, TargetObservable>()->subscribe(
             std::bind(&Crystal::onHit, this, std::placeholders::_1,
                       std::placeholders::_2),
-            std::make_shared<WizardId>(mId));
-    mTargetSub->setUnsubscriber(unsub);
+            mId);
 }
 
 void Crystal::onRender(SDL_Renderer* r) {
     WizardBase::onRender(r);
 
-    mMagicText.dest =
-        Rect(mComp->rect.x(), mComp->rect.y(), mComp->rect.w(), 0);
+    mMagicText.dest = Rect(mPos->rect.x(), mPos->rect.y(), mPos->rect.w(), 0);
     mMagicText.dest.setHeight(FONT.h, Rect::Align::BOT_RIGHT);
     mMagicText.fitToTexture();
     TextureBuilder().draw(mMagicText);
@@ -233,15 +224,14 @@ Catalyst::Catalyst() : WizardBase(WizardId::CATALYST) {
 
 void Catalyst::init() {
     WizardBase::init();
-    ServiceSystem::Get<RenderService, RenderObservable>()->updateSubscription(
-        mRenderSub,
-        std::bind(&Catalyst::onRender, this, std::placeholders::_1));
+    mRenderSub =
+        ServiceSystem::Get<RenderService, RenderObservable>()->subscribe(
+            std::bind(&Catalyst::onRender, this, std::placeholders::_1), mPos);
     mTargetSub =
         ServiceSystem::Get<FireballService, TargetObservable>()->subscribe(
             std::bind(&Catalyst::onHit, this, std::placeholders::_1,
                       std::placeholders::_2),
-            std::make_shared<WizardId>(mId));
-    mTargetSub->setUnsubscriber(unsub);
+            mId);
 }
 
 void Catalyst::onHit(WizardId src, Number val) {
@@ -261,8 +251,7 @@ void Catalyst::onHit(WizardId src, Number val) {
 void Catalyst::onRender(SDL_Renderer* r) {
     WizardBase::onRender(r);
 
-    mMagicText.dest =
-        Rect(mComp->rect.x(), mComp->rect.y2(), mComp->rect.w(), 0);
+    mMagicText.dest = Rect(mPos->rect.x(), mPos->rect.y2(), mPos->rect.w(), 0);
     mMagicText.dest.setHeight(FONT.h, Rect::Align::TOP_LEFT);
     mMagicText.fitToTexture();
     TextureBuilder().draw(mMagicText);

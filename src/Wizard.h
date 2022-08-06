@@ -46,7 +46,8 @@ class WizardBase : public Component {
 
     RenderData mImg;
 
-    DragComponentPtr mComp;
+    UIComponentPtr mPos;
+    DragComponentPtr mDrag;
     ResizeObservable::SubscriptionPtr mResizeSub;
     RenderObservable::SubscriptionPtr mRenderSub;
     MouseObservable::SubscriptionPtr mMouseSub;

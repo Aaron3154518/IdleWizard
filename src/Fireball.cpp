@@ -1,42 +1,27 @@
 #include "Fireball.h"
 
 // FireballObservable
-FireballObservable::SubscriptionPtr FireballObservable::subscribe(
-    Subscription::Function func, std::shared_ptr<WizardId> id) {
-    func(mTargets[*id]);
-    return FireballObservableBase::subscribe(func, id);
-}
-
-void FireballObservable::updateSubscriptionData(SubscriptionPtr sub,
-                                                std::shared_ptr<WizardId> id) {
-    if (*id == WizardId::size) {
-        throw std::runtime_error("Cannot use WizardId::size as a target");
-    }
-    FireballObservableBase::updateSubscriptionData(sub, id);
-    (*sub)(mTargets[*id]);
+void FireballObservable::onSubscribe(SubscriptionPtr sub) {
+    sub->get<FUNC>()(mTargets[sub->get<DATA>()]);
 }
 
 void FireballObservable::next(WizardId id, SDL_FPoint pos) {
-    removeUnsubscribed();
-
     if (id == WizardId::size) {
         throw std::runtime_error("Cannot use WizardId::size as a target");
     }
     mTargets[id] = pos;
-    for (auto sub : mSubscriptions) {
-        if (*sub->getData() == id) {
-            (*sub)(pos);
+    for (auto sub : *this) {
+        if (sub->get<DATA>() == id) {
+            sub->get<FUNC>()(pos);
         }
     }
 }
 
 // TargetObservable
 void TargetObservable::next(WizardId target, Number val, WizardId src) {
-    removeUnsubscribed();
-
-    for (auto sub : mSubscriptions) {
-        if (*sub->getData() == target) {
-            (*sub)(src, val);
+    for (auto sub : *this) {
+        if (sub->get<DATA>() == target) {
+            sub->get<FUNC>()(src, val);
         }
     }
 }
@@ -48,67 +33,55 @@ const std::string Fireball::IMG = "res/projectiles/fireball.png";
 
 Fireball::Fireball(float cX, float cY, WizardId src, WizardId target,
                    Number val)
-    : mComp(std::make_shared<UIComponent>(Rect(), 0)),
-      mTargetId(std::make_shared<WizardId>(target)),
+    : mPos(std::make_shared<UIComponent>(Rect(), 0)),
+      mTargetId(target),
       mSrcId(src),
       mVal(val) {
     mImg.texture = AssetManager::getTexture(IMG);
     mImg.dest = Rect(0, 0, 50, 50);
     mImg.fitToTexture();
     mImg.dest.setPos(cX, cY, Rect::Align::CENTER);
-    mComp->rect = mImg.dest;
+    mPos->rect = mImg.dest;
 }
 
 void Fireball::init() {
     mResizeSub =
         ServiceSystem::Get<ResizeService, ResizeObservable>()->subscribe(
             std::bind(&Fireball::onResize, this, std::placeholders::_1));
-    mResizeSub->setUnsubscriber(unsub);
     mUpdateSub =
         ServiceSystem::Get<UpdateService, UpdateObservable>()->subscribe(
             std::bind(&Fireball::onUpdate, this, std::placeholders::_1));
-    mUpdateSub->setUnsubscriber(unsub);
     mRenderSub =
         ServiceSystem::Get<RenderService, RenderObservable>()->subscribe(
-            std::bind(&Fireball::onRender, this, std::placeholders::_1), mComp);
-    mRenderSub->setUnsubscriber(unsub);
+            std::bind(&Fireball::onRender, this, std::placeholders::_1), mPos);
     mFireballSub =
         ServiceSystem::Get<FireballService, FireballObservable>()->subscribe(
             [this](SDL_FPoint p) { mTargetPos = p; }, mTargetId);
-    mFireballSub->setUnsubscriber(unsub);
-    std::cerr << "Init: " << this << " " << mResizeSub.get() << " "
-              << mUpdateSub.get() << " " << mRenderSub.get() << " "
-              << mFireballSub.get() << std::endl;
-    std::cerr << "MUnsub: " << unsub.mSubscribed.get() << std::endl;
 }
 
-bool Fireball::dead() const { return !unsub; }
+bool Fireball::dead() const { return mDead; }
 
 void Fireball::onResize(ResizeData data) {
-    std::cerr << "Resize: " << this << " " << mResizeSub.get() << std::endl;
-    mComp->rect.moveFactor((float)data.newW / data.oldW,
-                           (float)data.newH / data.oldH);
-    std::cerr << "Did " << std::endl;
+    mPos->rect.moveFactor((float)data.newW / data.oldW,
+                          (float)data.newH / data.oldH);
 }
 
 void Fireball::onUpdate(Time dt) {
-    float dx = mTargetPos.x - mComp->rect.cX(),
-          dy = mTargetPos.y - mComp->rect.cY();
+    float dx = mTargetPos.x - mPos->rect.cX(),
+          dy = mTargetPos.y - mPos->rect.cY();
     float mag = std::sqrt(dx * dx + dy * dy);
     // Check in case we were moved onto the target
     if (mag < COLLIDE_ERR) {
-        std::cerr << "Unsubscribe: " << this << std::endl;
         mDead = true;
-        std::cerr << mResizeSub.get() << " " << mUpdateSub.get() << " "
-                  << mRenderSub.get() << " " << mFireballSub.get() << " : "
-                  << mDead << std::endl;
-        std::cerr << " MUnsub After: " << unsub.mSubscribed.get() << std::endl;
-        unsub.unsubscribe();
         ServiceSystem::Get<FireballService, TargetObservable>()->next(
-            *mTargetId, mVal, mSrcId);
+            mTargetId, mVal, mSrcId);
+        mResizeSub.reset();
+        mRenderSub.reset();
+        mUpdateSub.reset();
+        mFireballSub.reset();
     } else {
-        mComp->rect.move(MAX_SPEED * dt.s(), dx, dy);
-        mImg.dest = mComp->rect;
+        mPos->rect.move(MAX_SPEED * dt.s(), dx, dy);
+        mImg.dest = mPos->rect;
     }
 }
 

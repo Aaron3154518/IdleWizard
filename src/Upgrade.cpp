@@ -4,66 +4,58 @@
 
 // UpgradeScroller
 UpgradeScroller::UpgradeScroller()
-    : mDragComp(
-          std::make_shared<DragComponent>(Rect(), Elevation::UPGRADES, -1)) {
+    : mPos(std::make_shared<UIComponent>(Rect(), Elevation::UPGRADES)),
+      mDrag(std::make_shared<DragComponent>(-1)) {
     SDL_Point screenDim = RenderSystem::getWindowSize();
-    mDragComp->rect = Rect(0, 0, screenDim.x,
-                           fmin(screenDim.y / 5, WizardBase::IMG_RECT.h()));
-    mDragComp->rect.setPosX(screenDim.x / 2, Rect::Align::CENTER);
+    mPos->rect = Rect(0, 0, screenDim.x,
+                      fmin(screenDim.y / 5, WizardBase::IMG_RECT.h()));
+    mPos->rect.setPosX(screenDim.x / 2, Rect::Align::CENTER);
 
-    mTex = TextureBuilder(mDragComp->rect.W(), mDragComp->rect.H());
+    mTex = TextureBuilder(mPos->rect.W(), mPos->rect.H());
     mTexData.texture = mTex.getTexture();
 
     mBkgrnd.color = GRAY;
 }
 
 void UpgradeScroller::init() {
-    mDragComp->onDrag = std::bind(&UpgradeScroller::onDrag, this,
-                                  std::placeholders::_1, std::placeholders::_2,
-                                  std::placeholders::_3, std::placeholders::_4);
-    mDragComp->onDragStart = std::bind(&UpgradeScroller::onDragStart, this);
-    mDragComp->onDragEnd = []() {};
-
     mResizeSub =
         ServiceSystem::Get<ResizeService, ResizeObservable>()->subscribe(
             std::bind(&UpgradeScroller::onResize, this, std::placeholders::_1));
-    mResizeSub->setUnsubscriber(unsub);
     mUpdateSub =
         ServiceSystem::Get<UpdateService, UpdateObservable>()->subscribe(
             std::bind(&UpgradeScroller::onUpdate, this, std::placeholders::_1));
-    mUpdateSub->setUnsubscriber(unsub);
     mRenderSub =
         ServiceSystem::Get<RenderService, RenderObservable>()->subscribe(
             std::bind(&UpgradeScroller::onRender, this, std::placeholders::_1),
-            mDragComp);
-    mRenderSub->setUnsubscriber(unsub);
+            mPos);
     mMouseSub = ServiceSystem::Get<MouseService, MouseObservable>()->subscribe(
         std::bind(&UpgradeScroller::onClick, this, std::placeholders::_1,
                   std::placeholders::_2),
-        mDragComp);
-    mMouseSub->setUnsubscriber(unsub);
-    mDragSub =
-        ServiceSystem::Get<DragService, DragObservable>()->subscribe(mDragComp);
-    mDragSub->setUnsubscriber(unsub);
+        mPos);
+    mDragSub = ServiceSystem::Get<DragService, DragObservable>()->subscribe(
+        std::bind(&UpgradeScroller::onDragStart, this),
+        std::bind(&UpgradeScroller::onDrag, this, std::placeholders::_1,
+                  std::placeholders::_2, std::placeholders::_3,
+                  std::placeholders::_4),
+        []() {}, mPos, mDrag);
     mUpgradeSub =
         ServiceSystem::Get<UpgradeService, UpgradeObservable>()->subscribe(
             std::bind(&UpgradeScroller::onSetUpgrades, this,
                       std::placeholders::_1));
-    mUpgradeSub->setUnsubscriber(unsub);
 }
 
 void UpgradeScroller::onResize(ResizeData data) {
-    mDragComp->rect =
+    mPos->rect =
         Rect(0, 0, data.newW, fmin(data.newH / 5, WizardBase::IMG_RECT.h()));
-    mDragComp->rect.setPosX(data.newW / 2, Rect::Align::CENTER);
+    mPos->rect.setPosX(data.newW / 2, Rect::Align::CENTER);
 
-    mTex = TextureBuilder(mDragComp->rect.W(), mDragComp->rect.H());
+    mTex = TextureBuilder(mPos->rect.W(), mPos->rect.H());
     mTexData.texture = mTex.getTexture();
 
     computeRects();
 }
 void UpgradeScroller::onUpdate(Time dt) {
-    if (!mDragComp->dragging) {
+    if (!mDrag->dragging) {
         scroll(-mScrollV * dt.s());
 
         mScrollV /= pow(100, dt.s());
@@ -77,7 +69,7 @@ void UpgradeScroller::onUpdate(Time dt) {
 void UpgradeScroller::onRender(SDL_Renderer* r) {
     draw();
 
-    mTexData.dest = mDragComp->rect;
+    mTexData.dest = mPos->rect;
     TextureBuilder().draw(mTexData);
 }
 void UpgradeScroller::onClick(Event::MouseButton b, bool clicked) {
@@ -125,8 +117,8 @@ void UpgradeScroller::scroll(float dScroll) {
     computeRects();
 }
 float UpgradeScroller::maxScroll() const {
-    return mDragComp->rect.w() * (mUpgrades.size() - 1) /
-           floor(mDragComp->rect.w() * 2 / mDragComp->rect.h());
+    return mPos->rect.w() * (mUpgrades.size() - 1) /
+           floor(mPos->rect.w() * 2 / mPos->rect.h());
 }
 
 void UpgradeScroller::computeRects() {
@@ -139,18 +131,18 @@ void UpgradeScroller::computeRects() {
         }
     }
 
-    const float w = mDragComp->rect.h() / 2;
-    float a = (mDragComp->rect.w() - w) / 2;
-    float b = (mDragComp->rect.h() - w) / 2;
+    const float w = mPos->rect.h() / 2;
+    float a = (mPos->rect.w() - w) / 2;
+    float b = (mPos->rect.h() - w) / 2;
 
     const float TWO_PI = 2 * M_PI;
     const float HALF_PI = M_PI / 2;
-    const int NUM_STEPS = floor(mDragComp->rect.w() / w);
+    const int NUM_STEPS = floor(mPos->rect.w() / w);
     const float STEP = M_PI / NUM_STEPS;
     const float ERR = 1e-5;
 
     // Compute total scroll angle
-    float scrollAngle = mScroll * TWO_PI / (mDragComp->rect.w() * 2);
+    float scrollAngle = mScroll * TWO_PI / (mPos->rect.w() * 2);
     // Check number of steps passed, Use .5 - ERR so we don't round up at .5
     int baseIdx = floor(scrollAngle / STEP + .5 - ERR);
     // Constrain scroll angle to [0, 2PI)
@@ -165,8 +157,8 @@ void UpgradeScroller::computeRects() {
         minTheta = HALF_PI - STEP + minTheta;
     }
 
-    float cX = mDragComp->rect.halfW();
-    float cY = mDragComp->rect.halfH() - w / 4;
+    float cX = mPos->rect.halfW();
+    float cY = mPos->rect.halfH() - w / 4;
 
     // Pair <angle, index>
     std::forward_list<std::pair<float, int>> back, front;

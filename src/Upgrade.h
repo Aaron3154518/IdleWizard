@@ -42,8 +42,7 @@ struct Upgrade {
 };
 
 typedef std::vector<std::shared_ptr<Upgrade>> UpgradeList;
-typedef Observable<const UpgradeList&, void(const UpgradeList&)>
-    UpgradeObservableBase;
+typedef ForwardObservable<void(const UpgradeList&)> UpgradeObservableBase;
 
 class UpgradeObservable : public UpgradeObservableBase {};
 
@@ -78,7 +77,8 @@ class UpgradeScroller : public Component {
     TextureBuilder mTex;
     RenderData mTexData;
 
-    DragComponentPtr mDragComp;
+    UIComponentPtr mPos;
+    DragComponentPtr mDrag;
 
     ResizeObservable::SubscriptionPtr mResizeSub;
     UpdateObservable::SubscriptionPtr mUpdateSub;

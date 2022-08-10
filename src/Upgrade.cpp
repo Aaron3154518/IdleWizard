@@ -147,6 +147,7 @@ void UpgradeScroller::onHover(SDL_Point mouse) {
             ServiceSystem::Get<RenderService, RenderObservable>()->subscribe(
                 [rData](SDL_Renderer* r) { TextureBuilder().draw(rData); },
                 std::make_shared<UIComponent>(rData.dest, Elevation::OVERLAYS));
+        mUpDescRenderSub->get<RenderObservable::DATA>()->mouse = false;
     };
 
     SDL_Point relMouse{mouse.x - mPos->rect.X(), mouse.y - mPos->rect.Y()};

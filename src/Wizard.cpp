@@ -87,6 +87,8 @@ Wizard::Wizard() : WizardBase(WizardId::WIZARD) {
     });
     upgrade->setDescriptionHandler([this]() {
         TextRenderData rData;
+        rData.tData.bkgrnd = LGRAY;
+        rData.tData.bkgrnd.a = 100;
         rData.tData.font = AssetManager::getFont(WizardBase::FONT);
         rData.tData.text =
             "Change the Wizard's target\nCurrent target: " + WIZ_NAMES[mTarget];

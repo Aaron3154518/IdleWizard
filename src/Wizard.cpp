@@ -85,6 +85,15 @@ Wizard::Wizard() : WizardBase(WizardId::WIZARD) {
         rData.texture = AssetManager::getTexture(WIZ_IMGS[mTarget]);
         return rData;
     });
+    upgrade->setDescriptionHandler([this]() {
+        TextRenderData rData;
+        rData.tData.font = AssetManager::getFont(WizardBase::FONT);
+        rData.tData.text =
+            "Change the Wizard's target\nCurrent target: " + WIZ_NAMES[mTarget];
+        rData.tData.w = RenderSystem::getWindowSize().x / 5;
+        rData.texture = rData.tData.renderTextWrapped();
+        return rData;
+    });
     mUpgrades.push_back(upgrade);
 
     // Power Upgrade

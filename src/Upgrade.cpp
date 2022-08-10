@@ -65,6 +65,10 @@ void UpgradeScroller::init() {
                   std::placeholders::_2, std::placeholders::_3,
                   std::placeholders::_4),
         []() {}, mPos, mDrag);
+    mHoverSub = ServiceSystem::Get<HoverService, HoverObservable>()->subscribe(
+        []() {},
+        std::bind(&UpgradeScroller::onHover, this, std::placeholders::_1),
+        std::bind(&UpgradeScroller::onMouseLeave, this), mPos);
     mUpgradeSub =
         ServiceSystem::Get<UpgradeService, UpgradeObservable>()->subscribe(
             std::bind(&UpgradeScroller::onSetUpgrades, this,
@@ -96,8 +100,11 @@ void UpgradeScroller::onUpdate(Time dt) {
 void UpgradeScroller::onRender(SDL_Renderer* r) {
     draw();
 
+    // Draw texture
     mTexData.dest = mPos->rect;
     TextureBuilder().draw(mTexData);
+
+    // Draw uprade description
 }
 void UpgradeScroller::onClick(Event::MouseButton b, bool clicked) {
     if (clicked) {
@@ -131,6 +138,38 @@ void UpgradeScroller::onDrag(int mouseX, int mouseY, float mouseDx,
     mScrollV = mouseDx;
 }
 void UpgradeScroller::onDragStart() { mScrollV = 0; }
+void UpgradeScroller::onHover(SDL_Point mouse) {
+    mUpDescRenderSub.reset();
+    auto onDescription = [this, &mouse](RenderData rData) {
+        rData.fitToTexture();
+        rData.dest.setPos(mouse.x, mouse.y);
+        mUpDescRenderSub =
+            ServiceSystem::Get<RenderService, RenderObservable>()->subscribe(
+                [rData](SDL_Renderer* r) { TextureBuilder().draw(rData); },
+                std::make_shared<UIComponent>(rData.dest, Elevation::OVERLAYS));
+    };
+
+    SDL_Point relMouse{mouse.x - mPos->rect.X(), mouse.y - mPos->rect.Y()};
+    for (auto pair : mFrontRects) {
+        if (SDL_PointInRect(&relMouse, pair.first)) {
+            auto upgrade = mUpgrades[pair.second].lock();
+            if (upgrade) {
+                upgrade->requestDescription(onDescription);
+            }
+            return;
+        }
+    }
+    for (auto pair : mBackRects) {
+        if (SDL_PointInRect(&relMouse, pair.first)) {
+            auto upgrade = mUpgrades[pair.second].lock();
+            if (upgrade) {
+                upgrade->requestDescription(onDescription);
+            }
+            return;
+        }
+    }
+}
+void UpgradeScroller::onMouseLeave() { mUpDescRenderSub.reset(); }
 void UpgradeScroller::onSetUpgrades(const UpgradeList& list) {
     mUpgrades.resize(list.size());
     for (int i = 0; i < list.size(); i++) {

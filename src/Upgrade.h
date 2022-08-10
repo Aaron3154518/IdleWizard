@@ -24,7 +24,10 @@
 
 #include "WizardIds.h"
 
+typedef ReplyObservable<RenderData()> RenderReply;
+
 struct Upgrade {
+   public:
     enum Status : uint8_t {
         BOUGHT = 0,
         CAN_BUY,
@@ -33,12 +36,18 @@ struct Upgrade {
 
     std::function<void()> onClick = []() {};
     std::function<Status()> status = []() { return Status::CANT_BUY; };
-    std::function<SharedTexture()> getImage = []() {
-        return makeSharedTexture();
-    };
-    std::function<SharedTexture()> getDescription = []() {
-        return makeSharedTexture();
-    };
+
+    void setImgHandler(std::function<RenderData()> func);
+
+    void requestImg(std::function<void(RenderData)> func);
+
+    void setDescriptionHandler(std::function<RenderData()> func);
+
+    void requestDescription(std::function<void(RenderData)> func);
+
+   private:
+    RenderReply mImgReply, mDescReply;
+    RenderReply::RequestObservable::SubscriptionPtr mImgHandler, mDescHandler;
 };
 
 typedef std::vector<std::shared_ptr<Upgrade>> UpgradeList;

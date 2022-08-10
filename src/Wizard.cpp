@@ -80,9 +80,11 @@ Wizard::Wizard() : WizardBase(WizardId::WIZARD) {
                                                : WizardId::CRYSTAL;
     };
     upgrade->status = [this]() { return Upgrade::Status::CAN_BUY; };
-    upgrade->getImage = [this]() {
-        return AssetManager::getTexture(WIZ_IMGS[mTarget]);
-    };
+    upgrade->setImgHandler([this]() {
+        RenderData rData;
+        rData.texture = AssetManager::getTexture(WIZ_IMGS[mTarget]);
+        return rData;
+    });
     mUpgrades.push_back(upgrade);
 
     // Power Upgrade
@@ -96,9 +98,11 @@ Wizard::Wizard() : WizardBase(WizardId::WIZARD) {
         return mPowerBought ? Upgrade::Status::BOUGHT
                             : Upgrade::Status::CAN_BUY;
     };
-    upgrade->getImage = [this]() {
-        return AssetManager::getTexture(POWER_UP_IMG);
-    };
+    upgrade->setImgHandler([this]() {
+        RenderData rData;
+        rData.texture = AssetManager::getTexture(POWER_UP_IMG);
+        return rData;
+    });
     mUpgrades.push_back(upgrade);
 
     // Speed Upgrade
@@ -112,9 +116,11 @@ Wizard::Wizard() : WizardBase(WizardId::WIZARD) {
         return mSpeedBoughtCnt < 5 ? Upgrade::Status::CAN_BUY
                                    : Upgrade::Status::BOUGHT;
     };
-    upgrade->getImage = [this]() {
-        return AssetManager::getTexture(SPEED_UP_IMG);
-    };
+    upgrade->setImgHandler([this]() {
+        RenderData rData;
+        rData.texture = AssetManager::getTexture(SPEED_UP_IMG);
+        return rData;
+    });
     mUpgrades.push_back(upgrade);
 }
 

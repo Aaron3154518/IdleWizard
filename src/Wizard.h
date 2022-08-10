@@ -83,7 +83,7 @@ class Wizard : public WizardBase {
     bool mPowerBought = false;
     uint8_t mSpeedBoughtCnt = 0;
 
-    Number mBasePower = Number(1), mPower = Number(1);
+    Number mBasePower = 1, mPower = 1;
     std::vector<std::unique_ptr<Fireball>> mFireballs;
 };
 

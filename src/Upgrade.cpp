@@ -2,6 +2,27 @@
 
 #include "Wizard.h"
 
+// Upgrade
+void Upgrade::setImgHandler(std::function<RenderData()> func) {
+    mImgHandler = mImgReply.subscribeToRequest(func);
+}
+
+void Upgrade::requestImg(std::function<void(RenderData)> func) {
+    RenderReply::ResponseObservable::SubscriptionPtr tmpSub =
+        mImgReply.subscribeToResponse(func);
+    mImgReply.next();
+}
+
+void Upgrade::setDescriptionHandler(std::function<RenderData()> func) {
+    mDescHandler = mDescReply.subscribeToRequest(func);
+}
+
+void Upgrade::requestDescription(std::function<void(RenderData)> func) {
+    RenderReply::ResponseObservable::SubscriptionPtr tmpSub =
+        mDescReply.subscribeToResponse(func);
+    mDescReply.next();
+}
+
 // UpgradeScroller
 UpgradeScroller::UpgradeScroller()
     : mPos(std::make_shared<UIComponent>(Rect(), Elevation::UPGRADES)),
@@ -232,13 +253,11 @@ void UpgradeScroller::draw() {
         mTex.draw(rd.set(r, 3));
 
         if (up) {
-            RenderData rData;
-            rData.texture = up->getImage();
-            if (rData.texture) {
+            up->requestImg([this, &r](RenderData rData) {
                 rData.dest = r;
                 rData.fitToTexture();
                 mTex.draw(rData);
-            }
+            });
         }
     };
 

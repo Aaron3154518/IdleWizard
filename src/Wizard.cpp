@@ -98,11 +98,7 @@ Wizard::Wizard() : WizardBase(WizardId::WIZARD) {
         return mPowerBought ? Upgrade::Status::BOUGHT
                             : Upgrade::Status::CAN_BUY;
     };
-    upgrade->setImgHandler([this]() {
-        RenderData rData;
-        rData.texture = AssetManager::getTexture(POWER_UP_IMG);
-        return rData;
-    });
+    upgrade->setImg(POWER_UP_IMG);
     mUpgrades.push_back(upgrade);
 
     // Speed Upgrade
@@ -116,11 +112,7 @@ Wizard::Wizard() : WizardBase(WizardId::WIZARD) {
         return mSpeedBoughtCnt < 5 ? Upgrade::Status::CAN_BUY
                                    : Upgrade::Status::BOUGHT;
     };
-    upgrade->setImgHandler([this]() {
-        RenderData rData;
-        rData.texture = AssetManager::getTexture(SPEED_UP_IMG);
-        return rData;
-    });
+    upgrade->setImg(SPEED_UP_IMG);
     mUpgrades.push_back(upgrade);
 }
 

@@ -37,6 +37,8 @@ struct Upgrade {
     std::function<void()> onClick = []() {};
     std::function<Status()> status = []() { return Status::CANT_BUY; };
 
+    void setImg(std::string img);
+    void setImg(SharedTexture img);
     void setImgHandler(std::function<RenderData()> func);
 
     void requestImg(std::function<void(RenderData)> func);
@@ -46,6 +48,7 @@ struct Upgrade {
     void requestDescription(std::function<void(RenderData)> func);
 
    private:
+    RenderData mImg;
     RenderReply mImgReply, mDescReply;
     RenderReply::RequestObservable::SubscriptionPtr mImgHandler, mDescHandler;
 };

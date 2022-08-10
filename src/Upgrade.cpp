@@ -3,6 +3,12 @@
 #include "Wizard.h"
 
 // Upgrade
+void Upgrade::setImg(std::string img) { setImg(AssetManager::getTexture(img)); }
+void Upgrade::setImg(SharedTexture img) {
+    mImg.texture = img;
+    setImgHandler([this]() { return mImg; });
+}
+
 void Upgrade::setImgHandler(std::function<RenderData()> func) {
     mImgHandler = mImgReply.subscribeToRequest(func);
 }

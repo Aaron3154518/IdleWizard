@@ -28,6 +28,9 @@
 typedef ReplyObservable<RenderData()> RenderReply;
 
 struct Upgrade {
+    template <class T>
+    using UpgradeFunc = std::function<T(Upgrade&)>;
+
    public:
     enum Status : uint8_t {
         BOUGHT = 0,
@@ -35,8 +38,15 @@ struct Upgrade {
         CANT_BUY,
     };
 
-    std::function<void()> onClick = []() {};
-    std::function<Status()> status = []() { return Status::CANT_BUY; };
+    Upgrade(int maxLvl);
+    ~Upgrade() = default;
+
+    void onClick();
+    Status getStatus();
+
+    void setOnLevel(UpgradeFunc<void> func);
+    void setGetCost(UpgradeFunc<Number> func);
+    void setCanBuy(UpgradeFunc<bool> func);
 
     void setImg(std::string img);
     void setImg(SharedTexture img);
@@ -57,18 +67,59 @@ struct Upgrade {
     const static SDL_Color DESC_BKGRND;
     const static FontData DESC_FONT;
 
+    // maxLevel < 0: Can buy infinitely
+    // maxLevel = 0: Can't buy
+    // maxLevel > 0: Can by maxLevel times
+    int mLevel = 0, mMaxLevel;
+    Number mCost = 0;
+
    private:
+    UpgradeFunc<void> mOnLevel = [](Upgrade& u) {};
+    UpgradeFunc<Number> mGetCost = [](Upgrade& u) { return 0; };
+    UpgradeFunc<bool> mCanBuy = [](Upgrade& u) { return false; };
+
     RenderData mImg, mDesc;
     RenderReply mImgReply, mDescReply;
     RenderReply::RequestObservable::SubscriptionPtr mImgHandler, mDescHandler;
 };
 
+typedef std::shared_ptr<Upgrade> UpgradePtr;
+typedef std::weak_ptr<Upgrade> UpgradeWPtr;
+typedef Observable<void(UpgradePtr), Number(UpgradePtr), bool(UpgradePtr),
+                   UpgradePtr>
+    UpgradeObservableBase;
+
+class UpgradeObservable : public UpgradeObservableBase {
+   public:
+    enum : size_t { ON_LEVEL = 0, GET_COST, CAN_BUY, DATA };
+
+    void onSubscribe(SubscriptionPtr sub);
+
+    void setScroll(double scroll);
+    void setRect(Rect r);
+
+    void click(SDL_Point mouse);
+    void draw(TextureBuilder tex);
+
+    const static SDL_Color BGKRND;
+
+   private:
+    Upgrade::Status getSubStatus(SubscriptionPtr sub);
+    void onSubClick(SubscriptionPtr sub);
+
+    void computeRects();
+
+    double mScroll;
+    Rect mRect;
+    std::vector<std::pair<Rect, SubscriptionWPtr>> mBackRects, mFrontRects;
+};
+
 typedef std::vector<std::shared_ptr<Upgrade>> UpgradeList;
-typedef ForwardObservable<void(const UpgradeList&)> UpgradeObservableBase;
+typedef ForwardObservable<void(const UpgradeList&)> UpgradeListObservableBase;
 
-class UpgradeObservable : public UpgradeObservableBase {};
+class UpgradeListObservable : public UpgradeListObservableBase {};
 
-class UpgradeService : public Service<UpgradeObservable> {};
+class UpgradeService : public Service<UpgradeListObservable> {};
 
 class UpgradeScroller : public Component {
    public:
@@ -93,16 +144,14 @@ class UpgradeScroller : public Component {
     void computeRects();
     void draw();
 
-    std::vector<std::weak_ptr<Upgrade>> mUpgrades;
-    std::vector<std::pair<Rect, int>> mBackRects, mFrontRects;
-
     float mScroll = 0, mScrollV = 0;
-    RectData mBkgrnd;
     TextureBuilder mTex;
     RenderData mTexData;
 
     UIComponentPtr mPos;
     DragComponentPtr mDrag;
+
+    UpgradeObservable mUpgrades;
 
     ResizeObservable::SubscriptionPtr mResizeSub;
     UpdateObservable::SubscriptionPtr mUpdateSub;
@@ -110,7 +159,7 @@ class UpgradeScroller : public Component {
     MouseObservable::SubscriptionPtr mMouseSub;
     DragObservable::SubscriptionPtr mDragSub;
     HoverObservable::SubscriptionPtr mHoverSub;
-    UpgradeObservable::SubscriptionPtr mUpgradeSub;
+    UpgradeListObservable::SubscriptionPtr mUpgradeSub;
 };
 
 #endif

@@ -6,6 +6,31 @@
 const SDL_Color Upgrade::DESC_BKGRND{175, 175, 175, 255};
 const FontData Upgrade::DESC_FONT{-1, 20, "|"};
 
+Upgrade::Upgrade(int maxLvl) : mMaxLevel(maxLvl) {}
+void Upgrade::onClick() {
+    if (mMaxLevel < 0 || mLevel < mMaxLevel) {
+        mLevel++;
+        mOnLevel(*this);
+        mCost = mGetCost(*this);
+    }
+}
+Upgrade::Status Upgrade::getStatus() {
+    if (mMaxLevel == 0) {
+        return Status::CANT_BUY;
+    }
+    if (mMaxLevel >= 0 && mLevel >= mMaxLevel) {
+        return Status::BOUGHT;
+    }
+    return mCanBuy(*this) ? Status::CAN_BUY : Status::CANT_BUY;
+}
+
+void Upgrade::setOnLevel(UpgradeFunc<void> func) { mOnLevel = func; }
+void Upgrade::setGetCost(UpgradeFunc<Number> func) {
+    mGetCost = func;
+    mCost = mGetCost(*this);
+}
+void Upgrade::setCanBuy(UpgradeFunc<bool> func) { mCanBuy = func; }
+
 void Upgrade::setImg(std::string img) { setImg(AssetManager::getTexture(img)); }
 void Upgrade::setImg(SharedTexture img) {
     mImg.texture = img;
@@ -64,6 +89,173 @@ SharedTexture Upgrade::CreateDescription(std::string text, int level,
     return CreateDescription(ss.str());
 }
 
+// UpgradeObservable
+const SDL_Color UpgradeObservable::BGKRND = GRAY;
+
+void UpgradeObservable::onSubscribe(SubscriptionPtr sub) {}
+
+void UpgradeObservable::setScroll(double scroll) {
+    mScroll = scroll;
+    computeRects();
+}
+void UpgradeObservable::setRect(Rect r) {
+    mRect = r;
+    computeRects();
+}
+
+Upgrade::Status UpgradeObservable::getSubStatus(SubscriptionPtr sub) {
+    UpgradePtr up = sub->get<DATA>();
+    if (up->mMaxLevel == 0) {
+        return Upgrade::Status::CANT_BUY;
+    }
+    if (up->mMaxLevel >= 0 && up->mLevel >= up->mMaxLevel) {
+        return Upgrade::Status::BOUGHT;
+    }
+    return sub->get<CAN_BUY>()(up) ? Upgrade::Status::CAN_BUY
+                                   : Upgrade::Status::CANT_BUY;
+}
+void UpgradeObservable::onSubClick(SubscriptionPtr sub) {
+    UpgradePtr up = sub->get<DATA>();
+    if (sub && getSubStatus(sub) == Upgrade::Status::CAN_BUY) {
+        if (up->mMaxLevel < 0 || up->mLevel < up->mMaxLevel) {
+            up->mLevel++;
+            sub->get<ON_LEVEL>()(up);
+            up->mCost = sub->get<GET_COST>()(up);
+        }
+    }
+}
+
+void UpgradeObservable::click(SDL_Point mouse) {
+    for (auto pair : mFrontRects) {
+        if (SDL_PointInRect(&mouse, pair.first)) {
+            onSubClick(pair.second.lock());
+            return;
+        }
+    }
+    for (auto pair : mBackRects) {
+        if (SDL_PointInRect(&mouse, pair.first)) {
+            onSubClick(pair.second.lock());
+            return;
+        }
+    }
+}
+
+void UpgradeObservable::draw(TextureBuilder tex) {
+    tex.draw(RectData{BGKRND});
+
+    auto drawUpgrade = [this, &tex](Rect r, SubscriptionPtr up) {
+        RectData rd;
+        if (!up) {
+            rd.color = WHITE;
+        } else {
+            switch (getSubStatus(up)) {
+                case Upgrade::Status::BOUGHT:
+                    rd.color = BLUE;
+                    break;
+                case Upgrade::Status::CAN_BUY:
+                    rd.color = GREEN;
+                    break;
+                case Upgrade::Status::CANT_BUY:
+                    rd.color = RED;
+                    break;
+            }
+        }
+        tex.draw(rd.set(r, 3));
+
+        if (up) {
+            up->get<DATA>()->requestImg([&tex, &r](RenderData rData) {
+                rData.dest = r;
+                rData.fitToTexture();
+                tex.draw(rData);
+            });
+        }
+    };
+
+    for (auto pair : mBackRects) {
+        drawUpgrade(pair.first, pair.second.lock());
+    }
+
+    for (auto pair : mFrontRects) {
+        drawUpgrade(pair.first, pair.second.lock());
+    }
+}
+
+void UpgradeObservable::computeRects() {
+    prune();
+
+    const float w = mRect.h() / 2;
+    float a = (mRect.w() - w) / 2;
+    float b = (mRect.h() - w) / 2;
+
+    const float TWO_PI = 2 * M_PI;
+    const float HALF_PI = M_PI / 2;
+    const int NUM_STEPS = floor(mRect.w() / w);
+    const float STEP = M_PI / NUM_STEPS;
+    const float ERR = 1e-5;
+
+    // Compute total scroll angle
+    float scrollAngle = mScroll * TWO_PI / (mRect.w() * 2);
+    // Check number of steps passed, Use .5 - ERR so we don't round up at .5
+    int baseIdx = floor(scrollAngle / STEP + .5 - ERR);
+    // Constrain scroll angle to [0, 2PI)
+    scrollAngle = fmod(scrollAngle, TWO_PI);
+    // Transform to CCW with 0 at 3PI/2
+    float theta = fmod(5 * HALF_PI - scrollAngle, TWO_PI);
+    // Find the step closest to PI/2
+    float minTheta = fmod((theta + 3 * HALF_PI), STEP);
+    if (minTheta + ERR < STEP - minTheta) {
+        minTheta += HALF_PI;
+    } else {
+        minTheta = HALF_PI - STEP + minTheta;
+    }
+
+    float cX = mRect.halfW();
+    float cY = mRect.halfH() - w / 4;
+
+    std::vector<float> rectAngles(mSubscriptions.size());
+    int backLen = 0, frontLen = 0;
+
+    for (int i = NUM_STEPS; i >= 0; i--) {
+        int sign = 1;
+        do {
+            float angle = fmod(minTheta + i * sign * STEP + TWO_PI, TWO_PI);
+            int idx = baseIdx - (NUM_STEPS - i) * sign;
+            if (idx >= 0 && idx < mSubscriptions.size()) {
+                rectAngles[idx] = angle;
+                if (angle < M_PI) {
+                    backLen++;
+                } else {
+                    frontLen++;
+                }
+            }
+            sign *= -1;
+        } while (sign == -1 && i != 0 && i != NUM_STEPS);
+    }
+
+    auto getRect = [HALF_PI, TWO_PI, ERR, w, cX, cY, a,
+                    b](float angle) -> Rect {
+        float angleDiff1 = fmod(angle + 3 * HALF_PI, TWO_PI);
+        float angleDiff2 = fmod(5 * HALF_PI - angle, TWO_PI);
+        float angleDiff = fmin(angleDiff1, angleDiff2);
+        Rect rect(0, 0, w * angleDiff / M_PI, w * angleDiff / M_PI);
+
+        float x = cX + a * cos(angle);
+        float y = cY - b * sin(angle);
+        rect.setPos(x, y, Rect::Align::CENTER);
+
+        return rect;
+    };
+
+    mBackRects.resize(backLen);
+    mFrontRects.resize(frontLen);
+    int i = 0, bIdx = 0, fIdx = 0;
+    for (auto sub : *this) {
+        float angle = rectAngles[i++];
+        (angle < M_PI ? mBackRects.at(bIdx++) : mFrontRects.at(fIdx++)) =
+            std::make_pair(getRect(angle), sub);
+    }
+}
+
 // UpgradeScroller
 UpgradeScroller::UpgradeScroller()
     : mPos(std::make_shared<UIComponent>(Rect(), Elevation::UPGRADES)),
@@ -75,8 +267,6 @@ UpgradeScroller::UpgradeScroller()
 
     mTex = TextureBuilder(mPos->rect.W(), mPos->rect.H());
     mTexData.texture = mTex.getTexture();
-
-    mBkgrnd.color = GRAY;
 }
 
 void UpgradeScroller::init() {
@@ -143,28 +333,6 @@ void UpgradeScroller::onRender(SDL_Renderer* r) {
 }
 void UpgradeScroller::onClick(Event::MouseButton b, bool clicked) {
     if (clicked) {
-        for (auto pair : mFrontRects) {
-            if (SDL_PointInRect(&b.clickPos, pair.first)) {
-                auto up = mUpgrades.at(pair.second).lock();
-                if (!up) {
-                    draw();
-                } else if (up->status() == Upgrade::Status::CAN_BUY) {
-                    up->onClick();
-                }
-                return;
-            }
-        }
-        for (auto pair : mBackRects) {
-            if (SDL_PointInRect(&b.clickPos, pair.first)) {
-                auto up = mUpgrades.at(pair.second).lock();
-                if (!up) {
-                    draw();
-                } else if (up->status() == Upgrade::Status::CAN_BUY) {
-                    up->onClick();
-                }
-                return;
-            }
-        }
     }
 }
 void UpgradeScroller::onDrag(int mouseX, int mouseY, float mouseDx,
@@ -319,7 +487,7 @@ void UpgradeScroller::draw() {
         if (!up) {
             rd.color = WHITE;
         } else {
-            switch (up->status()) {
+            switch (up->getStatus()) {
                 case Upgrade::Status::BOUGHT:
                     rd.color = BLUE;
                     break;

@@ -44,12 +44,21 @@ struct Upgrade {
 
     void requestImg(std::function<void(RenderData)> func);
 
+    void setDescription(std::string desc);
+    void setDescription(SharedTexture descTex);
     void setDescriptionHandler(std::function<RenderData()> func);
 
     void requestDescription(std::function<void(RenderData)> func);
 
+    static SharedTexture CreateDescription(std::string text);
+    static SharedTexture CreateDescription(std::string text, int level,
+                                           int maxLevel, Number cost,
+                                           Number effect);
+    const static SDL_Color DESC_BKGRND;
+    const static FontData DESC_FONT;
+
    private:
-    RenderData mImg;
+    RenderData mImg, mDesc;
     RenderReply mImgReply, mDescReply;
     RenderReply::RequestObservable::SubscriptionPtr mImgHandler, mDescHandler;
 };

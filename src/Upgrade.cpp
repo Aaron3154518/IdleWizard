@@ -3,6 +3,9 @@
 #include "Wizard.h"
 
 // Upgrade
+const SDL_Color Upgrade::DESC_BKGRND{175, 175, 175, 255};
+const FontData Upgrade::DESC_FONT{-1, 20, "|"};
+
 void Upgrade::setImg(std::string img) { setImg(AssetManager::getTexture(img)); }
 void Upgrade::setImg(SharedTexture img) {
     mImg.texture = img;
@@ -19,6 +22,14 @@ void Upgrade::requestImg(std::function<void(RenderData)> func) {
     mImgReply.next();
 }
 
+void Upgrade::setDescription(std::string desc) {
+    setDescription(CreateDescription(desc));
+}
+void Upgrade::setDescription(SharedTexture descTex) {
+    mDesc.texture = descTex;
+    setDescriptionHandler([this]() { return mDesc; });
+}
+
 void Upgrade::setDescriptionHandler(std::function<RenderData()> func) {
     mDescHandler = mDescReply.subscribeToRequest(func);
 }
@@ -27,6 +38,30 @@ void Upgrade::requestDescription(std::function<void(RenderData)> func) {
     RenderReply::ResponseObservable::SubscriptionPtr tmpSub =
         mDescReply.subscribeToResponse(func);
     mDescReply.next();
+}
+
+SharedTexture Upgrade::CreateDescription(std::string text) {
+    TextData tData;
+    tData.bkgrnd = DESC_BKGRND;
+    tData.font = AssetManager::getFont(DESC_FONT);
+    tData.w = RenderSystem::getWindowSize().x / 5;
+    tData.text = text;
+    return tData.renderTextWrapped();
+}
+SharedTexture Upgrade::CreateDescription(std::string text, int level,
+                                         int maxLevel, Number cost,
+                                         Number effect) {
+    std::stringstream ss;
+    ss << text << "\n" << effect << "\n";
+    if (maxLevel > 1) {
+        ss << level << "/" << maxLevel << ": ";
+    }
+    if (level < maxLevel) {
+        ss << "$" << cost;
+    } else {
+        ss << (maxLevel > 1 ? "Maxed" : "Bought");
+    }
+    return CreateDescription(ss.str());
 }
 
 // UpgradeScroller

@@ -86,14 +86,10 @@ Wizard::Wizard() : WizardBase(WizardId::WIZARD) {
         return rData;
     });
     upgrade->setDescriptionHandler([this]() {
-        TextRenderData rData;
-        rData.tData.bkgrnd = LGRAY;
-        rData.tData.bkgrnd.a = 100;
-        rData.tData.font = AssetManager::getFont(WizardBase::FONT);
-        rData.tData.text =
-            "Change the Wizard's target\nCurrent target: " + WIZ_NAMES[mTarget];
-        rData.tData.w = RenderSystem::getWindowSize().x / 5;
-        rData.texture = rData.tData.renderTextWrapped();
+        RenderData rData;
+        rData.texture = Upgrade::CreateDescription(
+            "Change the Wizard's target\nCurrent target: " +
+            WIZ_NAMES[mTarget]);
         return rData;
     });
     mUpgrades.push_back(upgrade);
@@ -110,6 +106,16 @@ Wizard::Wizard() : WizardBase(WizardId::WIZARD) {
                             : Upgrade::Status::CAN_BUY;
     };
     upgrade->setImg(POWER_UP_IMG);
+    upgrade->setDescriptionHandler([this]() {
+        RenderData rData;
+        Number effect =
+            ServiceSystem::Get<WizardUpdateService, WizardParameters>()
+                ->getParam(WizardParams::WizardPowerUpgrade, 0);
+        rData.texture =
+            Upgrade::CreateDescription("Increases Wizard base power by 1",
+                                       mPowerBought ? 1 : 0, 1, 0, effect);
+        return rData;
+    });
     mUpgrades.push_back(upgrade);
 
     // Speed Upgrade
@@ -124,6 +130,14 @@ Wizard::Wizard() : WizardBase(WizardId::WIZARD) {
                                    : Upgrade::Status::BOUGHT;
     };
     upgrade->setImg(SPEED_UP_IMG);
+    upgrade->setDescriptionHandler([this]() {
+        RenderData rData;
+        Number effect = 1000.0 / mTimerSub->get<TimerObservable::DATA>().length;
+        rData.texture =
+            Upgrade::CreateDescription("Increases Wizard fire rate by 33%",
+                                       mSpeedBoughtCnt, 5, 10, effect);
+        return rData;
+    });
     mUpgrades.push_back(upgrade);
 }
 

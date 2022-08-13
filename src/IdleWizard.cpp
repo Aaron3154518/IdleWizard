@@ -6,6 +6,7 @@
 
 #include "Upgrade.h"
 #include "Wizard.h"
+#include "WizardData.h"
 #include "WizardIds.h"
 
 int main(int argc, char* argv[]) {

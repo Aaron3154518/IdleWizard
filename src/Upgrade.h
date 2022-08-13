@@ -45,6 +45,8 @@ struct Upgrade {
 
     void drawDescription(TextureBuilder tex, SDL_Point offset = {0, 0}) const;
 
+    std::string getInfo() const;
+
     void updateInfo();
 
     static SharedTexture createDescription(std::string text);

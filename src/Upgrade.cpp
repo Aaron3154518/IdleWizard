@@ -37,7 +37,7 @@ void Upgrade::drawDescription(TextureBuilder tex, SDL_Point offset) const {
     tex.draw(descData);
 }
 
-void Upgrade::updateInfo() {
+std::string Upgrade::getInfo() const {
     std::stringstream ss;
     ss << mEffect;
     if (mMaxLevel >= 0) {
@@ -53,8 +53,10 @@ void Upgrade::updateInfo() {
             ss << (mMaxLevel > 1 ? "Maxed" : "Bought");
         }
     }
-    mInfo = createDescription(ss.str());
+    return ss.str();
 }
+
+void Upgrade::updateInfo() { mInfo = createDescription(getInfo()); }
 
 SharedTexture Upgrade::createDescription(std::string text) {
     if (text.empty()) {

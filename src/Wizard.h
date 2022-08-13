@@ -19,52 +19,15 @@
 
 #include "Fireball.h"
 #include "Upgrade.h"
+#include "WizardBase.h"
+#include "WizardData.h"
 #include "WizardIds.h"
-#include "WizardUpdate.h"
-
-class WizardBase : public Component {
-   public:
-    virtual ~WizardBase();
-
-    const static Rect IMG_RECT;
-    const static std::string IMGS[];
-    const static FontData FONT;
-
-   protected:
-    WizardBase(WizardId id);
-
-    virtual void init();
-
-    virtual void onResize(ResizeData data);
-    virtual void onRender(SDL_Renderer* r);
-    virtual void onClick(Event::MouseButton b, bool clicked);
-
-    void setPos(float x, float y);
-
-    void setImage(const std::string& img);
-
-    const WizardId mId;
-
-    RenderData mImg;
-
-    UIComponentPtr mPos;
-    DragComponentPtr mDrag;
-    ResizeObservable::SubscriptionPtr mResizeSub;
-    RenderObservable::SubscriptionPtr mRenderSub;
-    MouseObservable::SubscriptionPtr mMouseSub;
-    DragObservable::SubscriptionPtr mDragSub;
-
-    UpgradeListPtr mUpgrades = std::make_shared<UpgradeList>();
-
-    std::mt19937 gen = std::mt19937(rand());
-    std::uniform_int_distribution<> dist =
-        std::uniform_int_distribution<>(1, WizardId::size - 1);
-    std::uniform_real_distribution<> rDist;
-};
 
 class Wizard : public WizardBase {
    public:
     Wizard();
+
+    const std::shared_ptr<WizardData>& getData() const;
 
     const static std::string POWER_UP_IMG, SPEED_UP_IMG;
 
@@ -74,12 +37,14 @@ class Wizard : public WizardBase {
     void onRender(SDL_Renderer* r);
     void onClick(Event::MouseButton b, bool clicked);
     bool onTimer();
-    void onWizardUpdate(const ParameterList<WizardParams>& params);
+    void onWizardUpdate(const WizardsData& params);
 
     void shootFireball();
 
+    const std::shared_ptr<WizardData> mData = std::make_shared<WizardData>();
+
     TimerObservable::SubscriptionPtr mTimerSub;
-    WizardParameters::SubscriptionPtr<WizardParams> mWizUpdateSub;
+    WizardsDataObservable::SubscriptionPtr mWizUpdateSub;
     UpgradeList::SubscriptionPtr mTargetUp, mPowerUp, mSpeedUp;
 
     WizardId mTarget = WizardId::CRYSTAL;
@@ -92,32 +57,39 @@ class Crystal : public WizardBase {
    public:
     Crystal();
 
+    const std::shared_ptr<CrystalData>& getData() const;
+
    private:
     void init();
 
     void onRender(SDL_Renderer* r);
     void onHit(WizardId src, Number val);
 
+    const std::shared_ptr<CrystalData> mData = std::make_shared<CrystalData>();
+
     TargetObservable::SubscriptionPtr mTargetSub;
 
     TextRenderData mMagicText;
-    Number mMagic;
 };
 
 class Catalyst : public WizardBase {
    public:
     Catalyst();
 
+    const std::shared_ptr<CatalystData>& getData() const;
+
    private:
     void init();
 
     void onRender(SDL_Renderer* r);
     void onHit(WizardId src, Number val);
 
+    const std::shared_ptr<CatalystData> mData =
+        std::make_shared<CatalystData>();
+
     TargetObservable::SubscriptionPtr mTargetSub;
 
     TextRenderData mMagicText;
-    Number mMagic, mCapacity = Number(100);
 };
 
 #endif

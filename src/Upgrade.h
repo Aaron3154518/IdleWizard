@@ -28,25 +28,15 @@
 typedef ReplyObservable<RenderData()> RenderReply;
 
 struct Upgrade {
-    template <class T>
-    using UpgradeFunc = std::function<T(Upgrade&)>;
-
    public:
-    enum Status : uint8_t {
-        BOUGHT = 0,
-        CAN_BUY,
-        CANT_BUY,
-    };
+    Upgrade(int maxLevel);
 
-    Upgrade(int maxLvl);
-    ~Upgrade() = default;
-
-    void onClick();
-    Status getStatus();
-
-    void setOnLevel(UpgradeFunc<void> func);
-    void setGetCost(UpgradeFunc<Number> func);
-    void setCanBuy(UpgradeFunc<bool> func);
+    // maxLevel < 0: Can buy infinitely
+    // maxLevel = 0: Can't buy
+    // maxLevel > 0: Can by maxLevel times
+    int mMaxLevel;
+    int mLevel = 0;
+    Number mCost = 0;
 
     void setImg(std::string img);
     void setImg(SharedTexture img);
@@ -67,44 +57,37 @@ struct Upgrade {
     const static SDL_Color DESC_BKGRND;
     const static FontData DESC_FONT;
 
-    // maxLevel < 0: Can buy infinitely
-    // maxLevel = 0: Can't buy
-    // maxLevel > 0: Can by maxLevel times
-    int mLevel = 0, mMaxLevel;
-    Number mCost = 0;
-
    private:
-    UpgradeFunc<void> mOnLevel = [](Upgrade& u) {};
-    UpgradeFunc<Number> mGetCost = [](Upgrade& u) { return 0; };
-    UpgradeFunc<bool> mCanBuy = [](Upgrade& u) { return false; };
-
     RenderData mImg, mDesc;
     RenderReply mImgReply, mDescReply;
     RenderReply::RequestObservable::SubscriptionPtr mImgHandler, mDescHandler;
 };
-
 typedef std::shared_ptr<Upgrade> UpgradePtr;
-typedef std::weak_ptr<Upgrade> UpgradeWPtr;
-typedef Observable<void(UpgradePtr), Number(UpgradePtr), bool(UpgradePtr),
-                   UpgradePtr>
-    UpgradeObservableBase;
 
-class UpgradeObservable : public UpgradeObservableBase {
+// For managing multiple upgrades
+typedef Observable<void(Upgrade&), Number(Upgrade&), bool(Upgrade&), Upgrade>
+    UpgradeListBase;
+class UpgradeList : public UpgradeListBase {
    public:
     enum : size_t { ON_LEVEL = 0, GET_COST, CAN_BUY, DATA };
+    enum UpgradeStatus : uint8_t {
+        BOUGHT = 0,
+        BUYABLE,
+        CANT_BUY,
+    };
 
     void onSubscribe(SubscriptionPtr sub);
 
-    void setScroll(double scroll);
-    void setRect(Rect r);
+    int count() const;
 
-    void click(SDL_Point mouse);
-    void draw(TextureBuilder tex);
+    void onClick(SDL_Point mouse);
+    void onHover(SDL_Point mouse,
+                 std::function<void(RenderData)> onDescription);
 
-    const static SDL_Color BGKRND;
+    void draw(TextureBuilder tex, float scroll);
 
    private:
-    Upgrade::Status getSubStatus(SubscriptionPtr sub);
+    UpgradeStatus getSubStatus(SubscriptionPtr sub);
     void onSubClick(SubscriptionPtr sub);
 
     void computeRects();
@@ -113,17 +96,19 @@ class UpgradeObservable : public UpgradeObservableBase {
     Rect mRect;
     std::vector<std::pair<Rect, SubscriptionWPtr>> mBackRects, mFrontRects;
 };
+typedef std::shared_ptr<UpgradeList> UpgradeListPtr;
 
-typedef std::vector<std::shared_ptr<Upgrade>> UpgradeList;
-typedef ForwardObservable<void(const UpgradeList&)> UpgradeListObservableBase;
-
-class UpgradeListObservable : public UpgradeListObservableBase {};
+// For setting current UpgradeObservable
+class UpgradeListObservable : public ForwardObservable<void(UpgradeListPtr)> {};
 
 class UpgradeService : public Service<UpgradeListObservable> {};
 
+// For displaying current UpgradeObservable
 class UpgradeScroller : public Component {
    public:
     UpgradeScroller();
+
+    const static SDL_Color BGKRND;
 
    private:
     void init();
@@ -136,13 +121,10 @@ class UpgradeScroller : public Component {
     void onDragStart();
     void onHover(SDL_Point mouse);
     void onMouseLeave();
-    void onSetUpgrades(const UpgradeList& list);
+    void onSetUpgrades(UpgradeListPtr list);
 
     void scroll(float dScroll);
     float maxScroll() const;
-
-    void computeRects();
-    void draw();
 
     float mScroll = 0, mScrollV = 0;
     TextureBuilder mTex;
@@ -151,7 +133,7 @@ class UpgradeScroller : public Component {
     UIComponentPtr mPos;
     DragComponentPtr mDrag;
 
-    UpgradeObservable mUpgrades;
+    UpgradeListPtr mUpgrades;
 
     ResizeObservable::SubscriptionPtr mResizeSub;
     UpdateObservable::SubscriptionPtr mUpdateSub;

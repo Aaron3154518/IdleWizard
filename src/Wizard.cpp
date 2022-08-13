@@ -71,74 +71,62 @@ const std::string Wizard::POWER_UP_IMG = "res/upgrades/fireball_upgrade.png";
 const std::string Wizard::SPEED_UP_IMG = "res/upgrades/speed_upgrade.png";
 
 Wizard::Wizard() : WizardBase(WizardId::WIZARD) {
-    std::shared_ptr<Upgrade> upgrade;
-
     // Target Upgrade
-    upgrade = std::make_shared<Upgrade>();
-    upgrade->onClick = [this]() {
-        mTarget = mTarget == WizardId::CRYSTAL ? WizardId::CATALYST
-                                               : WizardId::CRYSTAL;
-    };
-    upgrade->status = [this]() { return Upgrade::Status::CAN_BUY; };
-    upgrade->setImgHandler([this]() {
+    mTargetUp = mUpgrades->subscribe(
+        [this](Upgrade& u) {
+            mTarget = mTarget == WizardId::CRYSTAL ? WizardId::CATALYST
+                                                   : WizardId::CRYSTAL;
+        },
+        [this](Upgrade& u) { return 0; }, [this](Upgrade& u) { return true; },
+        Upgrade(-1));
+    mTargetUp->get<UpgradeList::DATA>().setImgHandler([this]() {
         RenderData rData;
         rData.texture = AssetManager::getTexture(WIZ_IMGS[mTarget]);
         return rData;
     });
-    upgrade->setDescriptionHandler([this]() {
+    mTargetUp->get<UpgradeList::DATA>().setDescriptionHandler([this]() {
         RenderData rData;
         rData.texture = Upgrade::CreateDescription(
             "Change the Wizard's target\nCurrent target: " +
             WIZ_NAMES[mTarget]);
         return rData;
     });
-    mUpgrades.push_back(upgrade);
 
     // Power Upgrade
-    upgrade = std::make_shared<Upgrade>();
-    upgrade->onClick = [this]() {
-        ServiceSystem::Get<WizardUpdateService, WizardParameters>()->setParam(
-            WizardParams::WizardPowerUpgrade, 1);
-        mPowerBought = true;
-    };
-    upgrade->status = [this]() {
-        return mPowerBought ? Upgrade::Status::BOUGHT
-                            : Upgrade::Status::CAN_BUY;
-    };
-    upgrade->setImg(POWER_UP_IMG);
-    upgrade->setDescriptionHandler([this]() {
+    mPowerUp = mUpgrades->subscribe(
+        [this](Upgrade& u) {
+            ServiceSystem::Get<WizardUpdateService, WizardParameters>()
+                ->setParam(WizardParams::WizardPowerUpgrade, 1);
+        },
+        [this](Upgrade& u) { return 0; }, [this](Upgrade& u) { return true; },
+        Upgrade(1));
+    mPowerUp->get<UpgradeList::DATA>().setImg(POWER_UP_IMG);
+    mPowerUp->get<UpgradeList::DATA>().setDescriptionHandler([this]() {
         RenderData rData;
         Number effect =
             ServiceSystem::Get<WizardUpdateService, WizardParameters>()
                 ->getParam(WizardParams::WizardPowerUpgrade, 0);
-        rData.texture =
-            Upgrade::CreateDescription("Increases Wizard base power by 1",
-                                       mPowerBought ? 1 : 0, 1, 0, effect);
+        rData.texture = Upgrade::CreateDescription(
+            "Increases Wizard base power by 1", 0, 1, 0, effect);
         return rData;
     });
-    mUpgrades.push_back(upgrade);
 
     // Speed Upgrade
-    upgrade = std::make_shared<Upgrade>();
-    upgrade->onClick = [this]() {
-        mSpeedBoughtCnt++;
-        mTimerSub->get<TimerObservable::DATA>().length =
-            1000 * pow(.75, mSpeedBoughtCnt);
-    };
-    upgrade->status = [this]() {
-        return mSpeedBoughtCnt < 5 ? Upgrade::Status::CAN_BUY
-                                   : Upgrade::Status::BOUGHT;
-    };
-    upgrade->setImg(SPEED_UP_IMG);
-    upgrade->setDescriptionHandler([this]() {
+    mSpeedUp = mUpgrades->subscribe(
+        [this](Upgrade& u) {
+            mTimerSub->get<TimerObservable::DATA>().length =
+                1000 * pow(.75, u.mLevel);
+        },
+        [this](Upgrade& u) { return 0; }, [this](Upgrade& u) { return true; },
+        Upgrade(5));
+    mSpeedUp->get<UpgradeList::DATA>().setImg(SPEED_UP_IMG);
+    mSpeedUp->get<UpgradeList::DATA>().setDescriptionHandler([this]() {
         RenderData rData;
         Number effect = 1000.0 / mTimerSub->get<TimerObservable::DATA>().length;
-        rData.texture =
-            Upgrade::CreateDescription("Increases Wizard fire rate by 33%",
-                                       mSpeedBoughtCnt, 5, 10, effect);
+        rData.texture = Upgrade::CreateDescription(
+            "Increases Wizard fire rate by 33%", 0, 5, 10, effect);
         return rData;
     });
-    mUpgrades.push_back(upgrade);
 }
 
 void Wizard::init() {
@@ -174,7 +162,7 @@ void Wizard::onRender(SDL_Renderer* r) {
 
 void Wizard::onClick(Event::MouseButton b, bool clicked) {
     if (clicked) {
-        ServiceSystem::Get<UpgradeService, UpgradeObservable>()->next(
+        ServiceSystem::Get<UpgradeService, UpgradeListObservable>()->next(
             mUpgrades);
     }
 }

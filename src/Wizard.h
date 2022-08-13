@@ -53,6 +53,8 @@ class WizardBase : public Component {
     MouseObservable::SubscriptionPtr mMouseSub;
     DragObservable::SubscriptionPtr mDragSub;
 
+    UpgradeListPtr mUpgrades = std::make_shared<UpgradeList>();
+
     std::mt19937 gen = std::mt19937(rand());
     std::uniform_int_distribution<> dist =
         std::uniform_int_distribution<>(1, WizardId::size - 1);
@@ -77,11 +79,9 @@ class Wizard : public WizardBase {
 
     TimerObservable::SubscriptionPtr mTimerSub;
     WizardParameters::SubscriptionPtr mWizUpdateSub;
+    UpgradeList::SubscriptionPtr mTargetUp, mPowerUp, mSpeedUp;
 
     WizardId mTarget = WizardId::CRYSTAL;
-    std::vector<std::shared_ptr<Upgrade>> mUpgrades;
-    bool mPowerBought = false;
-    uint8_t mSpeedBoughtCnt = 0;
 
     Number mBasePower = 1, mPower = 1;
     std::vector<std::unique_ptr<Fireball>> mFireballs;

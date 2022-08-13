@@ -14,6 +14,7 @@
 #include <unordered_map>
 
 #include "WizardIds.h"
+#include "WizardTypes.h"
 
 typedef ForwardObservable<void()> ParameterObservableBase;
 class ParameterObservable : public ParameterObservableBase {};
@@ -31,92 +32,84 @@ struct ParameterList : public ParameterListBase {
 
 class ParameterMap : public ObservableBase {
    public:
-    template <class K>
-    ParameterSubscriptionPtr subscribe(WizardId id, K key,
+    template <WizardId id>
+    ParameterSubscriptionPtr subscribe(WizardType<id> key,
                                        std::function<void()> func) {
         func();
-        return _observable(id, key).subscribe(func);
+        return _observable<id>(key).subscribe(func);
     }
 
-    template <class K>
-    ParameterSubscriptionPtr subscribe(WizardId id,
-                                       std::initializer_list<K> keys,
-                                       std::function<void()> func) {
+    template <WizardId id>
+    ParameterSubscriptionPtr subscribe(
+        std::initializer_list<WizardType<id>> keys,
+        std::function<void()> func) {
         ParameterSubscriptionPtr sub;
-        for (K key : keys) {
+        for (auto key : keys) {
             if (!sub) {
-                sub = subscribe(id, key, func);
+                sub = subscribe<id>(key, func);
             } else {
-                _observable(id, key).subscribe(sub);
+                _observable<id>(key).subscribe(sub);
             }
         }
         return sub;
     }
 
-    template <class K, class... Ks>
+    template <WizardId id, WizardId... ids>
     ParameterSubscriptionPtr subscribe(
-        std::function<void()> func,
-        std::pair<WizardId, std::initializer_list<K>> keys,
-        std::pair<WizardId, std::initializer_list<Ks>>... tail) {
-        ParameterSubscriptionPtr sub = subscribe(keys.first, keys.second, func);
-        subscribe<Ks...>(sub, tail...);
+        std::function<void()> func, std::initializer_list<WizardType<id>> keys,
+        std::initializer_list<WizardType<ids>>... tail) {
+        ParameterSubscriptionPtr sub = subscribe<id>(keys, func);
+        subscribe<ids...>(sub, tail...);
         return sub;
     }
 
-    template <class K>
-    const Number& get(WizardId id, K key) {
-        return _parameter(id, key);
+    template <WizardId id>
+    const Number& get(WizardType<id> key) {
+        return _parameter<id>(key);
     }
 
-    template <class K>
-    void set(WizardId id, K key, const Number& val) {
-        _parameter(id, key) = val;
-        _observable(id, key).next();
+    template <WizardId id>
+    void set(WizardType<id> key, const Number& val) {
+        _parameter<id>(key) = val;
+        _observable<id>(key).next();
     }
 
    private:
-    template <class K>
-    void subscribe(WizardId id, std::initializer_list<K> keys,
+    template <WizardId id>
+    void subscribe(std::initializer_list<WizardType<id>> keys,
                    ParameterSubscriptionPtr sub) {
-        for (K key : keys) {
-            _observable(id, key).subscribe(sub);
+        for (auto key : keys) {
+            _observable<id>(key).subscribe(sub);
         }
     }
 
-    template <class... Ks>
+    template <WizardId...>
     void subscribe(ParameterSubscriptionPtr sub) {}
 
-    template <class K, class... Ks>
+    template <WizardId id, WizardId... ids>
     void subscribe(ParameterSubscriptionPtr sub,
-                   std::pair<WizardId, std::initializer_list<K>> keys,
-                   std::pair<WizardId, std::initializer_list<Ks>>... tail) {
-        subscribe(keys.first, keys.second, sub);
-        subscribe<Ks...>(sub, tail...);
+                   std::initializer_list<WizardType<id>> keys,
+                   std::initializer_list<WizardType<ids>>... tail) {
+        subscribe<id>(keys, sub);
+        subscribe<ids...>(sub, tail...);
     }
 
-    template <class K>
-    ParameterList<K>& _list(WizardId id, K key) {
-        if (typeid(K) != WIZ_DATA_TYPES.at(id)) {
-            throw std::runtime_error(
-                "ParameterMap::get(): " + WIZ_NAMES.at(id) +
-                " expected key of type " +
-                std::string(WIZ_DATA_TYPES.at(id).name()) +
-                " but received key of type " + std::string(typeid(K).name()));
-        }
+    template <WizardId id>
+    ParameterList<WizardType<id>>& _list(WizardType<id> key) {
         if (mParams.find(id) == mParams.end()) {
-            mParams[id] = std::make_unique<ParameterList<K>>();
+            mParams[id] = std::make_unique<ParameterList<WizardType<id>>>();
         }
-        return dynamic_cast<ParameterList<K>&>(*mParams[id]);
+        return dynamic_cast<ParameterList<WizardType<id>>&>(*mParams[id]);
     }
 
-    template <class K>
-    Number& _parameter(WizardId id, K key) {
-        return _list(id, key).mParameters[key];
+    template <WizardId id>
+    Number& _parameter(WizardType<id> key) {
+        return _list<id>(key).mParameters[key];
     }
 
-    template <class K>
-    ParameterObservable& _observable(WizardId id, K key) {
-        return _list(id, key).mObservables[key];
+    template <WizardId id>
+    ParameterObservable& _observable(WizardType<id> key) {
+        return _list<id>(key).mObservables[key];
     }
 
     std::unordered_map<WizardId, ParameterListPtr> mParams;

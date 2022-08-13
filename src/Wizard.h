@@ -22,6 +22,7 @@
 #include "WizardBase.h"
 #include "WizardData.h"
 #include "WizardIds.h"
+#include "WizardTypes.h"
 
 class Wizard : public WizardBase {
    public:

@@ -17,6 +17,7 @@
 
 #include "Fireball.h"
 #include "Upgrade.h"
+#include "WizardData.h"
 #include "WizardIds.h"
 
 class WizardBase : public Component {
@@ -50,6 +51,7 @@ class WizardBase : public Component {
     RenderObservable::SubscriptionPtr mRenderSub;
     MouseObservable::SubscriptionPtr mMouseSub;
     DragObservable::SubscriptionPtr mDragSub;
+    std::list<ParameterSubscriptionPtr> mParamSubs;
 
     UpgradeListPtr mUpgrades = std::make_shared<UpgradeList>();
 

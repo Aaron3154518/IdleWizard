@@ -13,11 +13,9 @@ WizardBase::WizardBase(WizardId id)
 WizardBase::~WizardBase() {}
 
 void WizardBase::init() {
-    setImage(WIZ_IMGS[mId]);
+    setImage(WIZ_IMGS.at(mId));
     SDL_Point screenDim = RenderSystem::getWindowSize();
     setPos(rDist(gen) * screenDim.x, rDist(gen) * screenDim.y);
-
-    ServiceSystem::Get<WizardsDataService, WizardsDataObservable>()->set(this);
 
     mResizeSub =
         ServiceSystem::Get<ResizeService, ResizeObservable>()->subscribe(

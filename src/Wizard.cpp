@@ -4,7 +4,11 @@
 const std::string Wizard::POWER_UP_IMG = "res/upgrades/fireball_upgrade.png";
 const std::string Wizard::SPEED_UP_IMG = "res/upgrades/speed_upgrade.png";
 
-Wizard::Wizard() : WizardBase(WizardId::WIZARD) {}
+Wizard::Wizard() : WizardBase(WizardId::WIZARD) {
+    auto params = ServiceSystem::Get<ParameterService, ParameterMap>();
+    params->set(WizardId::WIZARD, WizardParams::PowerUpgrade, 0);
+    params->set(WizardId::WIZARD, WizardParams::Speed, 1);
+}
 
 void Wizard::init() {
     WizardBase::init();
@@ -18,20 +22,34 @@ void Wizard::init() {
         mPos);
     mTimerSub = ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
         std::bind(&Wizard::onTimer, this), Timer(1000));
-    mWizUpdateSub =
-        ServiceSystem::Get<WizardsDataService, WizardsDataObservable>()
-            ->subscribe(std::bind(&Wizard::onWizardUpdate, this,
-                                  std::placeholders::_1));
+
+    mParamSubs.push_back(
+        ServiceSystem::Get<ParameterService, ParameterMap>()
+            ->subscribe<WizardParams::Params, CrystalParams::Params,
+                        CatalystParams::Params>(
+                std::bind(&Wizard::calcPower, this),
+                {WizardId::WIZARD,
+                 {
+                     WizardParams::PowerUpgrade,
+                 }},
+                {WizardId::CRYSTAL,
+                 {
+                     CrystalParams::MagicEffect,
+                 }},
+                {WizardId::CATALYST,
+                 {
+                     CatalystParams::MagicEffect,
+                 }}));
 
     // Target Upgrade
     Upgrade up{-1};
-    up.setImg(WIZ_IMGS[mTarget]);
+    up.setImg(WIZ_IMGS.at(mTarget));
     up.setDescription("Change the Wizard's target");
     mTargetUp = mUpgrades->subscribe(
         [this](Upgrade& u) {
             u.mLevel = u.mLevel % 2;
             mTarget = u.mLevel == 0 ? WizardId::CRYSTAL : WizardId::CATALYST;
-            u.mEffect = "Target: " + WIZ_NAMES[mTarget];
+            u.mEffect = "Target: " + WIZ_NAMES.at(mTarget);
         },
         [this](Upgrade& u) { return 0; }, [this](Upgrade& u) { return true; },
         up);
@@ -42,7 +60,8 @@ void Wizard::init() {
     up.setDescription("Increase Wizard base power by 1");
     mPowerUp = mUpgrades->subscribe(
         [this](Upgrade& u) {
-            mData->powerUp = u.mLevel;
+            ServiceSystem::Get<ParameterService, ParameterMap>()->set(
+                WizardId::WIZARD, WizardParams::PowerUpgrade, u.mLevel);
             u.mEffect = "+" + std::to_string(u.mLevel);
         },
         [this](Upgrade& u) { return 10; }, [this](Upgrade& u) { return true; },
@@ -56,8 +75,10 @@ void Wizard::init() {
         [this](Upgrade& u) {
             Timer& timer = mTimerSub->get<TimerObservable::DATA>();
             timer.length = 1000 * pow(.75, u.mLevel);
-            mData->speed = Number(1000) / timer.length;
-            u.mEffect = mData->speed.toString() + "x";
+            Number speed = Number(1000) / timer.length;
+            ServiceSystem::Get<ParameterService, ParameterMap>()->set(
+                WizardId::WIZARD, WizardParams::Speed, speed);
+            u.mEffect = speed.toString() + "x";
         },
         [this](Upgrade& u) { return (Number(1.5) ^ u.mLevel) * 100; },
         [this](Upgrade& u) { return true; }, up);
@@ -88,29 +109,37 @@ bool Wizard::onTimer() {
     return true;
 }
 
-void Wizard::onWizardUpdate(const WizardsData& params) {
-    mPower = mBasePower;
-    mPower += mData->powerUp;
-    mPower *= params.crystal->magicEffect;
-    mPower *= params.catalyst->magicEffect;
-}
-
 void Wizard::shootFireball() {
     mFireballs.push_back(std::move(ComponentFactory<Fireball>::New(
-        mPos->rect.cX(), mPos->rect.cY(), mId, mTarget, mPower)));
+        mPos->rect.cX(), mPos->rect.cY(), mId, mTarget,
+        ServiceSystem::Get<ParameterService, ParameterMap>()->get(
+            WizardId::WIZARD, WizardParams::Power))));
 }
 
-const std::shared_ptr<WizardData>& Wizard::getData() const { return mData; }
+void Wizard::calcPower() {
+    auto params = ServiceSystem::Get<ParameterService, ParameterMap>();
+    Number power =
+        (1 + params->get(WizardId::WIZARD, WizardParams::PowerUpgrade)) *
+        params->get(WizardId::CRYSTAL, CrystalParams::MagicEffect) *
+        params->get(WizardId::CATALYST, CatalystParams::MagicEffect);
+    params->set(WizardId::WIZARD, WizardParams::Power, power);
+}
 
 // Crystal
 Crystal::Crystal() : WizardBase(WizardId::CRYSTAL) {
-    mMagicText.tData.font = AssetManager::getFont(FONT);
-    mMagicText.tData.text = mData->magic.toString();
-    mMagicText.renderText();
+    auto params = ServiceSystem::Get<ParameterService, ParameterMap>();
+    params->set(WizardId::CRYSTAL, CrystalParams::Magic, 0);
 }
 
 void Crystal::init() {
     WizardBase::init();
+
+    auto params = ServiceSystem::Get<ParameterService, ParameterMap>();
+    mMagicText.tData.font = AssetManager::getFont(FONT);
+    mMagicText.tData.text =
+        params->get(WizardId::CRYSTAL, CrystalParams::Magic).toString();
+    mMagicText.renderText();
+
     mRenderSub =
         ServiceSystem::Get<RenderService, RenderObservable>()->subscribe(
             std::bind(&Crystal::onRender, this, std::placeholders::_1), mPos);
@@ -119,6 +148,10 @@ void Crystal::init() {
             std::bind(&Crystal::onHit, this, std::placeholders::_1,
                       std::placeholders::_2),
             mId);
+
+    mParamSubs.push_back(
+        params->subscribe(WizardId::CRYSTAL, CrystalParams::Magic,
+                          std::bind(&Crystal::calcMagicEffect, this)));
 }
 
 void Crystal::onRender(SDL_Renderer* r) {
@@ -133,26 +166,41 @@ void Crystal::onRender(SDL_Renderer* r) {
 void Crystal::onHit(WizardId src, Number val) {
     switch (src) {
         case WizardId::WIZARD:
-            mData->magic += val;
-            mMagicText.tData.text = mData->magic.toString();
+            auto params = ServiceSystem::Get<ParameterService, ParameterMap>();
+            Number magic =
+                params->get(WizardId::CRYSTAL, CrystalParams::Magic) + val;
+            params->set(WizardId::CRYSTAL, CrystalParams::Magic, magic);
+            mMagicText.tData.text = magic.toString();
             mMagicText.renderText();
-            mData->magicEffect = mData->magic.logTenCopy() + 1;
             break;
     }
 }
 
-const std::shared_ptr<CrystalData>& Crystal::getData() const { return mData; }
+void Crystal::calcMagicEffect() {
+    auto params = ServiceSystem::Get<ParameterService, ParameterMap>();
+    Number effect =
+        (params->get(WizardId::CRYSTAL, CrystalParams::Magic) + 1).logTen() + 1;
+    params->set(WizardId::CRYSTAL, CrystalParams::MagicEffect, effect);
+}
 
 // Catalyst
 Catalyst::Catalyst() : WizardBase(WizardId::CATALYST) {
-    mMagicText.tData.font = AssetManager::getFont(FONT);
-    mMagicText.tData.text =
-        mData->magic.toString() + "/" + mData->capacity.toString();
-    mMagicText.renderText();
+    auto params = ServiceSystem::Get<ParameterService, ParameterMap>();
+    params->set(WizardId::CATALYST, CatalystParams::Magic, 0);
+    params->set(WizardId::CATALYST, CatalystParams::Capacity, 100);
 }
 
 void Catalyst::init() {
     WizardBase::init();
+
+    auto params = ServiceSystem::Get<ParameterService, ParameterMap>();
+    mMagicText.tData.font = AssetManager::getFont(FONT);
+    mMagicText.tData.text =
+        params->get(WizardId::CATALYST, CatalystParams::Magic).toString() +
+        "/" +
+        params->get(WizardId::CATALYST, CatalystParams::Capacity).toString();
+    mMagicText.renderText();
+
     mRenderSub =
         ServiceSystem::Get<RenderService, RenderObservable>()->subscribe(
             std::bind(&Catalyst::onRender, this, std::placeholders::_1), mPos);
@@ -161,15 +209,25 @@ void Catalyst::init() {
             std::bind(&Catalyst::onHit, this, std::placeholders::_1,
                       std::placeholders::_2),
             mId);
+
+    mParamSubs.push_back(
+        params->subscribe(WizardId::CATALYST, CatalystParams::Magic,
+                          std::bind(&Catalyst::calcMagicEffect, this)));
 }
 
 void Catalyst::onHit(WizardId src, Number val) {
     switch (src) {
         case WizardId::WIZARD:
-            mData->magic = max(min(mData->magic + val, mData->capacity), 0);
-            mData->magicEffect = mData->magic.logTenCopy() + 1;
-            mMagicText.tData.text =
-                mData->magic.toString() + "/" + mData->capacity.toString();
+            auto params = ServiceSystem::Get<ParameterService, ParameterMap>();
+            Number cap =
+                params->get(WizardId::CATALYST, CatalystParams::Capacity);
+            Number magic = max(
+                min(params->get(WizardId::CRYSTAL, CrystalParams::Magic) + val,
+                    cap),
+                0);
+            ServiceSystem::Get<ParameterService, ParameterMap>()->set(
+                WizardId::CATALYST, CatalystParams::Magic, magic);
+            mMagicText.tData.text = magic.toString() + "/" + cap.toString();
             mMagicText.renderText();
             break;
     }
@@ -184,4 +242,10 @@ void Catalyst::onRender(SDL_Renderer* r) {
     TextureBuilder().draw(mMagicText);
 }
 
-const std::shared_ptr<CatalystData>& Catalyst::getData() const { return mData; }
+void Catalyst::calcMagicEffect() {
+    auto params = ServiceSystem::Get<ParameterService, ParameterMap>();
+    Number effect =
+        (params->get(WizardId::CATALYST, CatalystParams::Magic) + 1).logTen() +
+        1;
+    params->set(WizardId::CATALYST, CatalystParams::MagicEffect, effect);
+}

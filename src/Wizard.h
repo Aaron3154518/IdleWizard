@@ -27,8 +27,6 @@ class Wizard : public WizardBase {
    public:
     Wizard();
 
-    const std::shared_ptr<WizardData>& getData() const;
-
     const static std::string POWER_UP_IMG, SPEED_UP_IMG;
 
    private:
@@ -37,19 +35,16 @@ class Wizard : public WizardBase {
     void onRender(SDL_Renderer* r);
     void onClick(Event::MouseButton b, bool clicked);
     bool onTimer();
-    void onWizardUpdate(const WizardsData& params);
+
+    void calcPower();
 
     void shootFireball();
 
-    const std::shared_ptr<WizardData> mData = std::make_shared<WizardData>();
-
     TimerObservable::SubscriptionPtr mTimerSub;
-    WizardsDataObservable::SubscriptionPtr mWizUpdateSub;
     UpgradeList::SubscriptionPtr mTargetUp, mPowerUp, mSpeedUp;
 
     WizardId mTarget = WizardId::CRYSTAL;
 
-    Number mBasePower = 1, mPower = 1;
     std::vector<std::unique_ptr<Fireball>> mFireballs;
 };
 
@@ -57,15 +52,13 @@ class Crystal : public WizardBase {
    public:
     Crystal();
 
-    const std::shared_ptr<CrystalData>& getData() const;
-
    private:
     void init();
 
     void onRender(SDL_Renderer* r);
     void onHit(WizardId src, Number val);
 
-    const std::shared_ptr<CrystalData> mData = std::make_shared<CrystalData>();
+    void calcMagicEffect();
 
     TargetObservable::SubscriptionPtr mTargetSub;
 
@@ -76,16 +69,13 @@ class Catalyst : public WizardBase {
    public:
     Catalyst();
 
-    const std::shared_ptr<CatalystData>& getData() const;
-
    private:
     void init();
 
     void onRender(SDL_Renderer* r);
     void onHit(WizardId src, Number val);
 
-    const std::shared_ptr<CatalystData> mData =
-        std::make_shared<CatalystData>();
+    void calcMagicEffect();
 
     TargetObservable::SubscriptionPtr mTargetSub;
 

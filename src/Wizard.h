@@ -14,6 +14,7 @@
 
 #include <memory>
 #include <random>
+#include <string>
 #include <vector>
 
 #include "Fireball.h"
@@ -78,7 +79,7 @@ class Wizard : public WizardBase {
     void shootFireball();
 
     TimerObservable::SubscriptionPtr mTimerSub;
-    WizardParameters::SubscriptionPtr mWizUpdateSub;
+    WizardParameters::SubscriptionPtr<WizardParams> mWizUpdateSub;
     UpgradeList::SubscriptionPtr mTargetUp, mPowerUp, mSpeedUp;
 
     WizardId mTarget = WizardId::CRYSTAL;

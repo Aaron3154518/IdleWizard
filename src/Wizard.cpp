@@ -70,64 +70,7 @@ void WizardBase::setImage(const std::string& img) {
 const std::string Wizard::POWER_UP_IMG = "res/upgrades/fireball_upgrade.png";
 const std::string Wizard::SPEED_UP_IMG = "res/upgrades/speed_upgrade.png";
 
-Wizard::Wizard() : WizardBase(WizardId::WIZARD) {
-    // Target Upgrade
-    mTargetUp = mUpgrades->subscribe(
-        [this](Upgrade& u) {
-            mTarget = mTarget == WizardId::CRYSTAL ? WizardId::CATALYST
-                                                   : WizardId::CRYSTAL;
-        },
-        [this](Upgrade& u) { return 0; }, [this](Upgrade& u) { return true; },
-        Upgrade(-1));
-    mTargetUp->get<UpgradeList::DATA>().setImgHandler([this]() {
-        RenderData rData;
-        rData.texture = AssetManager::getTexture(WIZ_IMGS[mTarget]);
-        return rData;
-    });
-    mTargetUp->get<UpgradeList::DATA>().setDescriptionHandler([this]() {
-        RenderData rData;
-        rData.texture = Upgrade::CreateDescription(
-            "Change the Wizard's target\nCurrent target: " +
-            WIZ_NAMES[mTarget]);
-        return rData;
-    });
-
-    // Power Upgrade
-    mPowerUp = mUpgrades->subscribe(
-        [this](Upgrade& u) {
-            ServiceSystem::Get<WizardUpdateService, WizardParameters>()
-                ->setParam(WizardParams::WizardPowerUpgrade, 1);
-        },
-        [this](Upgrade& u) { return 0; }, [this](Upgrade& u) { return true; },
-        Upgrade(1));
-    mPowerUp->get<UpgradeList::DATA>().setImg(POWER_UP_IMG);
-    mPowerUp->get<UpgradeList::DATA>().setDescriptionHandler([this]() {
-        RenderData rData;
-        Number effect =
-            ServiceSystem::Get<WizardUpdateService, WizardParameters>()
-                ->getParam(WizardParams::WizardPowerUpgrade, 0);
-        rData.texture = Upgrade::CreateDescription(
-            "Increases Wizard base power by 1", 0, 1, 0, effect);
-        return rData;
-    });
-
-    // Speed Upgrade
-    mSpeedUp = mUpgrades->subscribe(
-        [this](Upgrade& u) {
-            mTimerSub->get<TimerObservable::DATA>().length =
-                1000 * pow(.75, u.mLevel);
-        },
-        [this](Upgrade& u) { return 0; }, [this](Upgrade& u) { return true; },
-        Upgrade(5));
-    mSpeedUp->get<UpgradeList::DATA>().setImg(SPEED_UP_IMG);
-    mSpeedUp->get<UpgradeList::DATA>().setDescriptionHandler([this]() {
-        RenderData rData;
-        Number effect = 1000.0 / mTimerSub->get<TimerObservable::DATA>().length;
-        rData.texture = Upgrade::CreateDescription(
-            "Increases Wizard fire rate by 33%", 0, 5, 10, effect);
-        return rData;
-    });
-}
+Wizard::Wizard() : WizardBase(WizardId::WIZARD) {}
 
 void Wizard::init() {
     WizardBase::init();
@@ -142,9 +85,46 @@ void Wizard::init() {
 
     mTimerSub = ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
         std::bind(&Wizard::onTimer, this), Timer(1000));
-    mWizUpdateSub =
-        ServiceSystem::Get<WizardUpdateService, WizardParameters>()->subscribe(
-            std::bind(&Wizard::onWizardUpdate, this, std::placeholders::_1));
+    mWizUpdateSub = WizardParameters::Subscribe<WizardParams>(
+        std::bind(&Wizard::onWizardUpdate, this, std::placeholders::_1));
+
+    // Target Upgrade
+    Upgrade up{-1};
+    up.setImg(WIZ_IMGS[mTarget]);
+    up.setDescription("Change the Wizard's target");
+    mTargetUp = mUpgrades->subscribe(
+        [this](Upgrade& u) {
+            mTarget = mTarget == WizardId::CRYSTAL ? WizardId::CATALYST
+                                                   : WizardId::CRYSTAL;
+            u.mEffect = "Target: " + WIZ_NAMES[mTarget];
+        },
+        [this](Upgrade& u) { return 0; }, [this](Upgrade& u) { return true; },
+        up);
+
+    // Power Upgrade
+    up = {1};
+    up.setImg(POWER_UP_IMG);
+    up.setDescription("Increase Wizard base power by 1");
+    mPowerUp = mUpgrades->subscribe(
+        [this](Upgrade& u) {
+            WizardParameters::Set(WizardParams::WizardPowerUpgrade, u.mLevel);
+            u.mEffect = "+" + std::to_string(u.mLevel);
+        },
+        [this](Upgrade& u) { return 10; }, [this](Upgrade& u) { return true; },
+        up);
+
+    // Speed Upgrade
+    up = {5};
+    up.setImg(SPEED_UP_IMG);
+    up.setDescription("Increase Wizard fire rate by 33%");
+    mSpeedUp = mUpgrades->subscribe(
+        [this](Upgrade& u) {
+            Timer& timer = mTimerSub->get<TimerObservable::DATA>();
+            timer.length = 1000 * pow(.75, u.mLevel);
+            u.mEffect = (Number(1000) / timer.length).toString() + "x";
+        },
+        [this](Upgrade& u) { return (Number(1.5) ^ u.mLevel) * 100; },
+        [this](Upgrade& u) { return true; }, up);
 }
 
 void Wizard::onRender(SDL_Renderer* r) {
@@ -173,13 +153,10 @@ bool Wizard::onTimer() {
 }
 
 void Wizard::onWizardUpdate(const ParameterList<WizardParams>& params) {
-    auto wizUpdate =
-        ServiceSystem::Get<WizardUpdateService, WizardParameters>();
-
     mPower = mBasePower;
-    mPower += wizUpdate->getParam(WizardParams::WizardPowerUpgrade, 0);
-    mPower *= wizUpdate->getParam(WizardParams::CrystalMagic, 1);
-    mPower *= wizUpdate->getParam(WizardParams::CatalystMagic, 1);
+    mPower += WizardParameters::Get(WizardParams::WizardPowerUpgrade, 0);
+    mPower *= WizardParameters::Get(WizardParams::CrystalMagic, 1);
+    mPower *= WizardParameters::Get(WizardParams::CatalystMagic, 1);
 }
 
 void Wizard::shootFireball() {
@@ -220,8 +197,8 @@ void Crystal::onHit(WizardId src, Number val) {
             mMagic += val;
             mMagicText.tData.text = mMagic.toString();
             mMagicText.renderText();
-            ServiceSystem::Get<WizardUpdateService, WizardParameters>()
-                ->setParam(WizardParams::CrystalMagic, mMagic.logTenCopy() + 1);
+            WizardParameters::Set(WizardParams::CrystalMagic,
+                                  mMagic.logTenCopy() + 1);
             break;
     }
 }
@@ -252,9 +229,8 @@ void Catalyst::onHit(WizardId src, Number val) {
             mMagicText.tData.text =
                 mMagic.toString() + "/" + mCapacity.toString();
             mMagicText.renderText();
-            ServiceSystem::Get<WizardUpdateService, WizardParameters>()
-                ->setParam(WizardParams::CatalystMagic,
-                           mMagic.logTenCopy() + 1);
+            WizardParameters::Set(WizardParams::CatalystMagic,
+                                  mMagic.logTenCopy() + 1);
             break;
     }
 }

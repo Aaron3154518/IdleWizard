@@ -49,8 +49,33 @@ class WizardUpdateObservable : public WizardUpdateObservableBase<K>,
     ParameterList<K> mParams;
 };
 
-typedef WizardUpdateObservable<WizardParams> WizardParameters;
+template <class K>
+class WizardUpdateService : public Service<WizardUpdateObservable<K>> {};
 
-class WizardUpdateService : public Service<WizardParameters> {};
+namespace WizardParameters {
+template <class K>
+using SubscriptionPtr = typename WizardUpdateObservable<K>::SubscriptionPtr;
+
+template <class K>
+const Number& Get(K key, Number defVal = 0) {
+    return ServiceSystem::Get<WizardUpdateService<K>,
+                              WizardUpdateObservable<K>>()
+        ->getParam(key, defVal);
+}
+
+template <class K>
+void Set(K key, Number val) {
+    ServiceSystem::Get<WizardUpdateService<K>, WizardUpdateObservable<K>>()
+        ->setParam(key, val);
+}
+
+template <class K>
+SubscriptionPtr<K> Subscribe(
+    std::function<void(const ParameterList<K>&)> func) {
+    return ServiceSystem::Get<WizardUpdateService<K>,
+                              WizardUpdateObservable<K>>()
+        ->subscribe(func);
+}
+}  // namespace WizardParameters
 
 #endif

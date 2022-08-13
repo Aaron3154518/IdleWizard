@@ -28,39 +28,29 @@
 typedef ReplyObservable<RenderData()> RenderReply;
 
 struct Upgrade {
-   public:
-    Upgrade(int maxLevel);
-
     // maxLevel < 0: Can buy infinitely
     // maxLevel = 0: Can't buy
     // maxLevel > 0: Can by maxLevel times
     int mMaxLevel;
     int mLevel = 0;
-    Number mCost = 0;
+    Number mCost;
+    std::string mEffect;
+    bool mIncludeInfo = true;
+
+    SharedTexture mImg, mDesc, mInfo;
 
     void setImg(std::string img);
-    void setImg(SharedTexture img);
-    void setImgHandler(std::function<RenderData()> func);
-
-    void requestImg(std::function<void(RenderData)> func);
 
     void setDescription(std::string desc);
-    void setDescription(SharedTexture descTex);
-    void setDescriptionHandler(std::function<RenderData()> func);
 
-    void requestDescription(std::function<void(RenderData)> func);
+    void drawDescription(TextureBuilder tex, SDL_Point offset = {0, 0}) const;
 
-    static SharedTexture CreateDescription(std::string text);
-    static SharedTexture CreateDescription(std::string text, int level,
-                                           int maxLevel, Number cost,
-                                           Number effect);
+    void updateInfo();
+
+    static SharedTexture createDescription(std::string text);
+
     const static SDL_Color DESC_BKGRND;
     const static FontData DESC_FONT;
-
-   private:
-    RenderData mImg, mDesc;
-    RenderReply mImgReply, mDescReply;
-    RenderReply::RequestObservable::SubscriptionPtr mImgHandler, mDescHandler;
 };
 typedef std::shared_ptr<Upgrade> UpgradePtr;
 
@@ -81,8 +71,8 @@ class UpgradeList : public UpgradeListBase {
     int count() const;
 
     void onClick(SDL_Point mouse);
-    void onHover(SDL_Point mouse,
-                 std::function<void(RenderData)> onDescription);
+    RenderObservable::SubscriptionPtr onHover(SDL_Point mouse,
+                                              SDL_Point relMouse);
 
     void draw(TextureBuilder tex, float scroll);
 

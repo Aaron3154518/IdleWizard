@@ -6,43 +6,61 @@
 const SDL_Color Upgrade::DESC_BKGRND{175, 175, 175, 255};
 const FontData Upgrade::DESC_FONT{-1, 20, "|"};
 
-Upgrade::Upgrade(int maxLvl) : mMaxLevel(maxLvl) {}
-
-void Upgrade::setImg(std::string img) { setImg(AssetManager::getTexture(img)); }
-void Upgrade::setImg(SharedTexture img) {
-    mImg.texture = img;
-    setImgHandler([this]() { return mImg; });
-}
-
-void Upgrade::setImgHandler(std::function<RenderData()> func) {
-    mImgHandler = mImgReply.subscribeToRequest(func);
-}
-
-void Upgrade::requestImg(std::function<void(RenderData)> func) {
-    RenderReply::ResponseObservable::SubscriptionPtr tmpSub =
-        mImgReply.subscribeToResponse(func);
-    mImgReply.next();
+void Upgrade::setImg(std::string img) {
+    mImg = AssetManager::getTexture(img);
+    updateInfo();
 }
 
 void Upgrade::setDescription(std::string desc) {
-    setDescription(CreateDescription(desc));
-}
-void Upgrade::setDescription(SharedTexture descTex) {
-    mDesc.texture = descTex;
-    setDescriptionHandler([this]() { return mDesc; });
+    mDesc = createDescription(desc);
 }
 
-void Upgrade::setDescriptionHandler(std::function<RenderData()> func) {
-    mDescHandler = mDescReply.subscribeToRequest(func);
+void Upgrade::drawDescription(TextureBuilder tex, SDL_Point offset) const {
+    RenderData descData;
+    descData.texture = mDesc;
+    descData.fitToTexture(Rect::TOP_LEFT);
+
+    if (mIncludeInfo && mInfo) {
+        RenderData infoData;
+        infoData.texture = mInfo;
+        infoData.fitToTexture(Rect::TOP_LEFT);
+        int w = std::max(descData.dest.W(), infoData.dest.W());
+        descData.dest.setPosX(w / 2, Rect::CENTER);
+        infoData.dest.setPos(w / 2, descData.dest.H(), Rect::CENTER,
+                             Rect::TOP_LEFT);
+
+        infoData.dest.move(offset.x, offset.y);
+        tex.draw(infoData);
+    }
+
+    descData.dest.move(offset.x, offset.y);
+    tex.draw(descData);
 }
 
-void Upgrade::requestDescription(std::function<void(RenderData)> func) {
-    RenderReply::ResponseObservable::SubscriptionPtr tmpSub =
-        mDescReply.subscribeToResponse(func);
-    mDescReply.next();
+void Upgrade::updateInfo() {
+    std::stringstream ss;
+    ss << mEffect;
+    if (mMaxLevel >= 0) {
+        if (!mEffect.empty()) {
+            ss << "\n";
+        }
+        if (mMaxLevel > 1) {
+            ss << mLevel << "/" << mMaxLevel << ": ";
+        }
+        if (mLevel < mMaxLevel) {
+            ss << "$" << mCost;
+        } else {
+            ss << (mMaxLevel > 1 ? "Maxed" : "Bought");
+        }
+    }
+    mInfo = createDescription(ss.str());
 }
 
-SharedTexture Upgrade::CreateDescription(std::string text) {
+SharedTexture Upgrade::createDescription(std::string text) {
+    if (text.empty()) {
+        return nullptr;
+    }
+
     TextData tData;
     tData.bkgrnd = DESC_BKGRND;
     tData.font = AssetManager::getFont(DESC_FONT);
@@ -50,24 +68,14 @@ SharedTexture Upgrade::CreateDescription(std::string text) {
     tData.text = text;
     return tData.renderTextWrapped();
 }
-SharedTexture Upgrade::CreateDescription(std::string text, int level,
-                                         int maxLevel, Number cost,
-                                         Number effect) {
-    std::stringstream ss;
-    ss << text << "\n" << effect << "\n";
-    if (maxLevel > 1) {
-        ss << level << "/" << maxLevel << ": ";
-    }
-    if (level < maxLevel) {
-        ss << "$" << cost;
-    } else {
-        ss << (maxLevel > 1 ? "Maxed" : "Bought");
-    }
-    return CreateDescription(ss.str());
-}
 
 // UpgradeList
-void UpgradeList::onSubscribe(SubscriptionPtr sub) {}
+void UpgradeList::onSubscribe(SubscriptionPtr sub) {
+    Upgrade& up = sub->get<DATA>();
+    sub->get<ON_LEVEL>()(up);
+    up.mCost = sub->get<GET_COST>()(up);
+    up.updateInfo();
+}
 
 UpgradeList::UpgradeStatus UpgradeList::getSubStatus(SubscriptionPtr sub) {
     Upgrade& up = sub->get<DATA>();
@@ -87,6 +95,7 @@ void UpgradeList::onSubClick(SubscriptionPtr sub) {
             up.mLevel++;
             sub->get<ON_LEVEL>()(up);
             up.mCost = sub->get<GET_COST>()(up);
+            up.updateInfo();
         }
     }
 }
@@ -108,26 +117,39 @@ void UpgradeList::onClick(SDL_Point mouse) {
     }
 }
 
-void UpgradeList::onHover(SDL_Point mouse,
-                          std::function<void(RenderData)> onDescription) {
+RenderObservable::SubscriptionPtr UpgradeList::onHover(SDL_Point mouse,
+                                                       SDL_Point relMouse) {
     for (auto pair : mFrontRects) {
-        if (SDL_PointInRect(&mouse, pair.first)) {
-            auto sub = pair.second.lock();
-            if (sub) {
-                sub->get<DATA>().requestDescription(onDescription);
-            }
-            return;
+        if (SDL_PointInRect(&relMouse, pair.first)) {
+            auto weakSub = pair.second;
+            return ServiceSystem::Get<RenderService, RenderObservable>()
+                ->subscribe(
+                    [weakSub, mouse](SDL_Renderer* r) {
+                        auto sub = weakSub.lock();
+                        if (sub) {
+                            sub->get<UpgradeList::DATA>().drawDescription(
+                                TextureBuilder(), mouse);
+                        }
+                    },
+                    std::make_shared<UIComponent>(Rect(), Elevation::OVERLAYS));
         }
     }
     for (auto pair : mBackRects) {
-        if (SDL_PointInRect(&mouse, pair.first)) {
-            auto sub = pair.second.lock();
-            if (sub) {
-                sub->get<DATA>().requestDescription(onDescription);
-            }
-            return;
+        if (SDL_PointInRect(&relMouse, pair.first)) {
+            auto weakSub = pair.second;
+            return ServiceSystem::Get<RenderService, RenderObservable>()
+                ->subscribe(
+                    [weakSub, mouse](SDL_Renderer* r) {
+                        auto sub = weakSub.lock();
+                        if (sub) {
+                            sub->get<UpgradeList::DATA>().drawDescription(
+                                TextureBuilder(), mouse);
+                        }
+                    },
+                    std::make_shared<UIComponent>(Rect(), Elevation::OVERLAYS));
         }
     }
+    return nullptr;
 }
 
 void UpgradeList::draw(TextureBuilder tex, float scroll) {
@@ -166,11 +188,11 @@ void UpgradeList::draw(TextureBuilder tex, float scroll) {
         tex.draw(rd.set(r, 3));
 
         if (sub) {
-            sub->get<DATA>().requestImg([&tex, &r](RenderData rData) {
-                rData.dest = r;
-                rData.fitToTexture();
-                tex.draw(rData);
-            });
+            RenderData rData;
+            rData.texture = sub->get<DATA>().mImg;
+            rData.dest = r;
+            rData.fitToTexture();
+            tex.draw(rData);
         }
     };
 
@@ -353,21 +375,11 @@ void UpgradeScroller::onHover(SDL_Point mouse) {
     mUpDescRenderSub.reset();
 
     if (mUpgrades) {
-        mUpgrades->onHover(
-            {mouse.x - mPos->rect.X(), mouse.y - mPos->rect.Y()},
-            [this, mouse](RenderData rData) {
-                rData.fitToTexture();
-                rData.dest.setPos(mouse.x, mouse.y);
-                mUpDescRenderSub =
-                    ServiceSystem::Get<RenderService, RenderObservable>()
-                        ->subscribe(
-                            [rData](SDL_Renderer* r) {
-                                TextureBuilder().draw(rData);
-                            },
-                            std::make_shared<UIComponent>(rData.dest,
-                                                          Elevation::OVERLAYS));
-                mUpDescRenderSub->get<RenderObservable::DATA>()->mouse = false;
-            });
+        mUpDescRenderSub = mUpgrades->onHover(
+            mouse, {mouse.x - mPos->rect.X(), mouse.y - mPos->rect.Y()});
+        if (mUpDescRenderSub) {
+            mUpDescRenderSub->get<RenderObservable::DATA>()->mouse = false;
+        }
     }
 }
 void UpgradeScroller::onMouseLeave() { mUpDescRenderSub.reset(); }

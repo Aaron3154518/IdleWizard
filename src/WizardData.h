@@ -157,6 +157,9 @@ struct ParamBase {
     virtual Number get() const;
 
     virtual void set(const Number& val) const;
+
+    virtual ParameterObservable::SubscriptionPtr subscribe(
+        std::function<void()> func) const;
 };
 
 template <WizardId id>
@@ -168,10 +171,24 @@ struct Param : public ParamBase {
 
     void set(const Number& val) const { Parameters()->set<id>(key, val); }
 
+    ParameterObservable::SubscriptionPtr subscribe(
+        std::function<void()> func) const {
+        return Parameters()->subscribe<id>(key, func);
+    }
+
     WizardType<id> key;
     const static WizardId ID = id;
 };
 
 typedef std::shared_ptr<ParamBase> ParamBasePtr;
+typedef std::shared_ptr<const ParamBase> ParamBaseConstPtr;
+
+template <WizardId id>
+using ParamPtr = std::shared_ptr<Param<id>>;
+
+template <WizardId id, WizardType<id> key>
+ParamPtr<id> NewParam() {
+    return std::make_shared<Param<id>>(key);
+}
 
 #endif

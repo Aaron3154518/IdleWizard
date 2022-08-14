@@ -8,3 +8,8 @@ std::shared_ptr<ParameterMap> Parameters() {
 Number ParamBase::get() const { return 0; }
 
 void ParamBase::set(const Number& val) const {}
+
+ParameterObservable::SubscriptionPtr ParamBase::subscribe(
+    std::function<void()> func) const {
+    return nullptr;
+}

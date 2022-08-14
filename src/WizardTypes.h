@@ -10,6 +10,9 @@ enum _ : uint8_t {
     Power = 0,
     PowerUpgrade,
     Speed,
+
+    PowerUpCost,
+    SpeedUpCost
 };
 }
 namespace CrystalParams {

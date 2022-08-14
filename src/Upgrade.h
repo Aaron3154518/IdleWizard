@@ -28,22 +28,103 @@
 
 typedef ReplyObservable<RenderData()> RenderReply;
 
-// Forward declaration
-class Upgrade;
+class Upgrade {
+   public:
+    struct MoneySource {
+        const static ParamBase NONE;
+        const static Param<CRYSTAL> CRYSTAL_MAGIC;
+    };
+
+    Upgrade() = default;
+    // No copying to avoid memory issues with parameter subscriptions
+    Upgrade(const Upgrade& other) = delete;
+    Upgrade& operator=(const Upgrade& other) = delete;
+
+    bool mIncludeInfo = true;
+
+    SharedTexture mImg, mDesc, mInfo;
+
+    int getMaxLevel() const;
+    int getLevel() const;
+    const std::string& getEffect() const;
+    bool hasCostSrc() const;
+    const ParamBase& getCostSrc() const;
+    bool hasMoneySrc() const;
+    const ParamBase& getMoneySrc() const;
+
+    Upgrade& setMaxLevel(int maxLevel);
+    Upgrade& setLevel(int level);
+    Upgrade& setEffect(std::string effect);
+    template <WizardId id>
+    Upgrade& setCostSource(const Param<id>& param) {
+        mCostSrc = std::make_unique<Param<id>>(param);
+        mCostSub = mCostSrc->subscribe(std::bind(&Upgrade::updateInfo, this));
+        return *this;
+    }
+    template <WizardId id, WizardType<id> key>
+    Upgrade& setCostSource() {
+        setCostSource(Param<id>(key));
+        return *this;
+    }
+    Upgrade& clearCostSource();
+    template <WizardId id>
+    Upgrade& setMoneySource(const Param<id>& param) {
+        mMoneySrc = std::make_unique<Param<id>>(param);
+        return *this;
+    }
+    template <WizardId id, WizardType<id> key>
+    Upgrade& setMoneySource() {
+        setMoneySource(Param<id>(key));
+        return *this;
+    }
+    Upgrade& clearMoneySource();
+    Upgrade& setImg(std::string img);
+    Upgrade& setDescription(std::string desc);
+
+    void drawDescription(TextureBuilder tex, SDL_Point offset = {0, 0}) const;
+
+    std::string getInfo() const;
+
+    void updateInfo();
+
+    static SharedTexture createDescription(std::string text);
+
+    // Default buy function
+    static bool DefCanBuy(std::shared_ptr<Upgrade> u);
+
+    const static SDL_Color DESC_BKGRND;
+    const static FontData DESC_FONT;
+
+   private:
+    // maxLevel < 0: Can buy infinitely
+    // maxLevel = 0: Can't buy
+    // maxLevel > 0: Can by maxLevel times
+    int mMaxLevel = 0;
+    int mLevel = 0;
+    std::string mEffect = "";
+
+    std::unique_ptr<ParamBase> mCostSrc, mMoneySrc;
+    ParameterObservable::SubscriptionPtr mCostSub;
+};
+
 typedef std::shared_ptr<Upgrade> UpgradePtr;
 
 // For managing multiple upgrades
-typedef Observable<void(Upgrade&), Number(Upgrade&), bool(Upgrade&), Upgrade>
+typedef Observable<void(UpgradePtr), bool(UpgradePtr), std::shared_ptr<Upgrade>>
     UpgradeListBase;
 class UpgradeList : public UpgradeListBase {
    public:
-    enum : size_t { ON_LEVEL = 0, GET_COST, CAN_BUY, DATA };
+    enum : size_t { ON_LEVEL = 0, CAN_BUY, DATA };
     enum UpgradeStatus : uint8_t {
         BOUGHT = 0,
         BUYABLE,
         CANT_BUY,
         NOT_BUYABLE,
     };
+
+    SubscriptionPtr subscribe(std::function<void(UpgradePtr)> func,
+                              UpgradePtr up);
+    SubscriptionPtr subscribe(UpgradePtr up);
 
     void onSubscribe(SubscriptionPtr sub);
 
@@ -54,6 +135,9 @@ class UpgradeList : public UpgradeListBase {
                                               SDL_Point relMouse);
 
     void draw(TextureBuilder tex, float scroll);
+
+    // Static functions
+    static UpgradePtr Get(SubscriptionPtr sub);
 
    private:
     UpgradeStatus getSubStatus(SubscriptionPtr sub);
@@ -66,51 +150,6 @@ class UpgradeList : public UpgradeListBase {
     std::vector<std::pair<Rect, SubscriptionWPtr>> mBackRects, mFrontRects;
 };
 typedef std::shared_ptr<UpgradeList> UpgradeListPtr;
-
-struct Upgrade {
-    struct CostSource {
-        const static ParamBasePtr NONE;
-        const static ParamBasePtr CRYSTAL_MAGIC;
-    };
-
-    // maxLevel < 0: Can buy infinitely
-    // maxLevel = 0: Can't buy
-    // maxLevel > 0: Can by maxLevel times
-    int mMaxLevel;
-    ParamBasePtr mCostSrc = CostSource::NONE;
-
-    int mLevel = 0;
-    Number mCost;
-    std::string mEffect;
-    bool mIncludeInfo = true;
-
-    SharedTexture mImg, mDesc, mInfo;
-
-    template <WizardId id>
-    void setCostSource(const Param<id>& param) {
-        mCostSrc = std::make_unique<Param<id>>(param);
-    }
-
-    void setImg(std::string img);
-
-    void setDescription(std::string desc);
-
-    void drawDescription(TextureBuilder tex, SDL_Point offset = {0, 0}) const;
-
-    std::string getInfo() const;
-
-    void updateInfo();
-
-    static SharedTexture createDescription(std::string text);
-
-    // Static functions
-    static Upgrade& Get(UpgradeList::SubscriptionPtr sub);
-    // Standard buy function
-    static bool CanBuy(Upgrade& u);
-
-    const static SDL_Color DESC_BKGRND;
-    const static FontData DESC_FONT;
-};
 
 // For setting current UpgradeObservable
 class UpgradeListObservable : public ForwardObservable<void(UpgradeListPtr)> {};

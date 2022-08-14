@@ -4,17 +4,51 @@
 const SDL_Color Upgrade::DESC_BKGRND{175, 175, 175, 255};
 const FontData Upgrade::DESC_FONT{-1, 20, "|"};
 
-const ParamBasePtr Upgrade::CostSource::NONE;
-const ParamBasePtr Upgrade::CostSource::CRYSTAL_MAGIC =
-    std::make_shared<Param<CRYSTAL>>(CrystalParams::Magic);
+const ParamBase Upgrade::MoneySource::NONE;
+const Param<CRYSTAL> Upgrade::MoneySource::CRYSTAL_MAGIC =
+    Param<CRYSTAL>(CrystalParams::Magic);
 
-void Upgrade::setImg(std::string img) {
-    mImg = AssetManager::getTexture(img);
-    updateInfo();
+int Upgrade::getMaxLevel() const { return mMaxLevel; }
+int Upgrade::getLevel() const { return mLevel; }
+const std::string& Upgrade::getEffect() const { return mEffect; }
+bool Upgrade::hasCostSrc() const { return (bool)mCostSrc; }
+const ParamBase& Upgrade::getCostSrc() const {
+    return hasCostSrc() ? *mCostSrc : MoneySource::NONE;
+}
+bool Upgrade::hasMoneySrc() const { return (bool)mMoneySrc; }
+const ParamBase& Upgrade::getMoneySrc() const {
+    return hasMoneySrc() ? *mMoneySrc : MoneySource::NONE;
 }
 
-void Upgrade::setDescription(std::string desc) {
+Upgrade& Upgrade::setMaxLevel(int maxLevel) {
+    mMaxLevel = maxLevel;
+    return *this;
+}
+Upgrade& Upgrade::setLevel(int level) {
+    mLevel = level;
+    return *this;
+}
+Upgrade& Upgrade::setEffect(std::string effect) {
+    mEffect = effect;
+    return *this;
+}
+Upgrade& Upgrade::clearCostSource() {
+    mCostSrc.reset();
+    mCostSub.reset();
+    return *this;
+}
+Upgrade& Upgrade::clearMoneySource() {
+    mMoneySrc.reset();
+    return *this;
+}
+Upgrade& Upgrade::setImg(std::string img) {
+    mImg = AssetManager::getTexture(img);
+    updateInfo();
+    return *this;
+}
+Upgrade& Upgrade::setDescription(std::string desc) {
     mDesc = createDescription(desc);
+    return *this;
 }
 
 void Upgrade::drawDescription(TextureBuilder tex, SDL_Point offset) const {
@@ -50,7 +84,9 @@ std::string Upgrade::getInfo() const {
             ss << mLevel << "/" << mMaxLevel << ": ";
         }
         if (mLevel < mMaxLevel) {
-            ss << "$" << mCost;
+            if (mCostSrc) {
+                ss << "$" << mCostSrc->get();
+            }
         } else {
             ss << (mMaxLevel > 1 ? "Maxed" : "Bought");
         }
@@ -73,44 +109,47 @@ SharedTexture Upgrade::createDescription(std::string text) {
     return tData.renderTextWrapped();
 }
 
-Upgrade& Upgrade::Get(UpgradeList::SubscriptionPtr sub) {
-    return sub->get<UpgradeList::DATA>();
-}
-
-bool Upgrade::CanBuy(Upgrade& u) {
-    return !u.mCostSrc || u.mCost <= u.mCostSrc->get();
+bool Upgrade::DefCanBuy(UpgradePtr u) {
+    return !u->mCostSrc || !u->mMoneySrc ||
+           u->mCostSrc->get() <= u->mMoneySrc->get();
 }
 
 // UpgradeList
+UpgradeList::SubscriptionPtr UpgradeList::subscribe(
+    std::function<void(UpgradePtr)> func, UpgradePtr up) {
+    return UpgradeListBase::subscribe(func, Upgrade::DefCanBuy, up);
+}
+UpgradeList::SubscriptionPtr UpgradeList::subscribe(UpgradePtr up) {
+    return UpgradeListBase::subscribe([](UpgradePtr u) {}, Upgrade::DefCanBuy,
+                                      up);
+}
+
 void UpgradeList::onSubscribe(SubscriptionPtr sub) {
-    Upgrade& up = sub->get<DATA>();
-    sub->get<ON_LEVEL>()(up);
-    up.mCost = sub->get<GET_COST>()(up);
-    up.updateInfo();
+    sub->get<ON_LEVEL>()(sub->get<DATA>());
 }
 
 UpgradeList::UpgradeStatus UpgradeList::getSubStatus(SubscriptionPtr sub) {
-    Upgrade& up = sub->get<DATA>();
-    if (up.mMaxLevel == 0) {
+    UpgradePtr up = sub->get<DATA>();
+    if (up->getMaxLevel() == 0) {
         return UpgradeStatus::NOT_BUYABLE;
     }
-    if (up.mMaxLevel > 0 && up.mLevel >= up.mMaxLevel) {
+    if (up->getMaxLevel() > 0 && up->getLevel() >= up->getMaxLevel()) {
         return UpgradeStatus::BOUGHT;
     }
     return sub->get<CAN_BUY>()(up) ? UpgradeStatus::BUYABLE
                                    : UpgradeStatus::CANT_BUY;
 }
 void UpgradeList::onSubClick(SubscriptionPtr sub) {
-    Upgrade& up = sub->get<DATA>();
-    if ((up.mMaxLevel < 0 || up.mLevel < up.mMaxLevel) &&
+    UpgradePtr up = sub->get<DATA>();
+    if ((up->getMaxLevel() < 0 || up->getLevel() < up->getMaxLevel()) &&
         getSubStatus(sub) == UpgradeStatus::BUYABLE) {
-        if (up.mCostSrc) {
-            up.mCostSrc->set(up.mCostSrc->get() - up.mCost);
+        if (up->hasMoneySrc() && up->hasCostSrc()) {
+            up->getMoneySrc().set(up->getMoneySrc().get() -
+                                  up->getCostSrc().get());
         }
-        up.mLevel++;
+        up->setLevel(up->getLevel() + 1);
         sub->get<ON_LEVEL>()(up);
-        up.mCost = sub->get<GET_COST>()(up);
-        up.updateInfo();
+        up->updateInfo();
     }
 }
 
@@ -141,7 +180,7 @@ RenderObservable::SubscriptionPtr UpgradeList::onHover(SDL_Point mouse,
                     [weakSub, mouse](SDL_Renderer* r) {
                         auto sub = weakSub.lock();
                         if (sub) {
-                            sub->get<UpgradeList::DATA>().drawDescription(
+                            sub->get<UpgradeList::DATA>()->drawDescription(
                                 TextureBuilder(), mouse);
                         }
                     },
@@ -156,7 +195,7 @@ RenderObservable::SubscriptionPtr UpgradeList::onHover(SDL_Point mouse,
                     [weakSub, mouse](SDL_Renderer* r) {
                         auto sub = weakSub.lock();
                         if (sub) {
-                            sub->get<UpgradeList::DATA>().drawDescription(
+                            sub->get<UpgradeList::DATA>()->drawDescription(
                                 TextureBuilder(), mouse);
                         }
                     },
@@ -206,7 +245,7 @@ void UpgradeList::draw(TextureBuilder tex, float scroll) {
 
         if (sub) {
             RenderData rData;
-            rData.texture = sub->get<DATA>().mImg;
+            rData.texture = sub->get<DATA>()->mImg;
             rData.dest = r;
             rData.fitToTexture();
             tex.draw(rData);
@@ -296,6 +335,10 @@ void UpgradeList::computeRects() {
         (angle < M_PI ? mBackRects.at(bIdx++) : mFrontRects.at(fIdx++)) =
             std::make_pair(getRect(angle), sub);
     }
+}
+
+UpgradePtr UpgradeList::Get(SubscriptionPtr sub) {
+    return sub->get<UpgradeList::DATA>();
 }
 
 // UpgradeScroller

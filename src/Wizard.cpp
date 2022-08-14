@@ -20,48 +20,55 @@ void Wizard::init() {
         std::bind(&Wizard::onTimer, this), Timer(1000));
 
     // Power Display
-    Upgrade up{0};
-    up.setImg(WIZ_IMGS.at(mId));
-    up.setDescription("Current power");
-    mPowerDisplay = mUpgrades->subscribe(
-        [](Upgrade& u) {}, [](Upgrade& u) { return 0; }, Upgrade::CanBuy, up);
+    UpgradePtr up = std::make_shared<Upgrade>();
+    up->setMaxLevel(0).setImg(WIZ_IMGS.at(mId)).setDescription("Current power");
+    mPowerDisplay = mUpgrades->subscribe(up);
 
     // Target Upgrade
-    up = {-1};
-    up.setImg(WIZ_IMGS.at(mTarget));
-    up.setDescription("Change the Wizard's target");
+    up = std::make_shared<Upgrade>();
+    up->setMaxLevel(-1)
+        .setImg(WIZ_IMGS.at(mTarget))
+        .setDescription("Change the Wizard's target");
     mTargetUp = mUpgrades->subscribe(
-        [this](Upgrade& u) {
-            u.mLevel = u.mLevel % 2;
-            mTarget = u.mLevel == 0 ? CRYSTAL : CATALYST;
-            u.mEffect = "Target: " + WIZ_NAMES.at(mTarget);
-            u.setImg(WIZ_IMGS.at(mTarget));
+        [this](UpgradePtr u) {
+            mTarget = u->getLevel() % 2 == 0 ? CRYSTAL : CATALYST;
+            u->setLevel(u->getLevel() % 2)
+                .setEffect("Target: " + WIZ_NAMES.at(mTarget))
+                .setImg(WIZ_IMGS.at(mTarget));
         },
-        [this](Upgrade& u) { return 0; }, Upgrade::CanBuy, up);
+        up);
 
     // Power Upgrade
-    up = {1, Upgrade::CostSource::CRYSTAL_MAGIC};
-    up.setImg(POWER_UP_IMG);
-    up.setDescription("Increase Wizard base power by 1");
+    up = std::make_shared<Upgrade>();
+    up->setMaxLevel(1)
+        .setCostSource<WIZARD, WizardParams::PowerUpCost>()
+        .setMoneySource(Upgrade::MoneySource::CRYSTAL_MAGIC)
+        .setImg(POWER_UP_IMG)
+        .setDescription("Increase Wizard base power by 1");
     mPowerUp = mUpgrades->subscribe(
-        [this](Upgrade& u) {
-            Parameters()->set<WIZARD>(WizardParams::PowerUpgrade, u.mLevel);
-            u.mEffect = "+" + std::to_string(u.mLevel);
+        [this](UpgradePtr u) {
+            Parameters()->set<WIZARD>(WizardParams::PowerUpgrade,
+                                      u->getLevel());
+            u->getCostSrc().set(25);
+            u->setEffect("+" + std::to_string(u->getLevel()));
         },
-        [this](Upgrade& u) { return 10; }, Upgrade::CanBuy, up);
+        up);
 
     // Speed Upgrade
-    up = {5, Upgrade::CostSource::CRYSTAL_MAGIC};
-    up.setImg(SPEED_UP_IMG);
-    up.setDescription("Increase Wizard fire rate by 33%");
+    up = std::make_shared<Upgrade>();
+    up->setMaxLevel(5)
+        .setCostSource<WIZARD, WizardParams::SpeedUpCost>()
+        .setMoneySource(Upgrade::MoneySource::CRYSTAL_MAGIC)
+        .setImg(SPEED_UP_IMG)
+        .setDescription("Increase Wizard fire rate by 33%");
     mSpeedUp = mUpgrades->subscribe(
-        [this](Upgrade& u) {
-            Number speed = (Number(4. / 3.) ^ u.mLevel);
+        [this](UpgradePtr u) {
+            Number speed = (Number(4. / 3.) ^ u->getLevel());
             Parameters()->set<WIZARD>(WizardParams::Speed, speed);
-            u.mEffect = speed.toString() + "x";
+            u->getCostSrc().set((Number(1.5) ^ u->getLevel()) * 100);
+            u->setEffect(speed.toString() + "x");
         },
-        [this](Upgrade& u) { return (Number(1.5) ^ u.mLevel) * 100; },
-        Upgrade::CanBuy, up);
+        up);
 
     auto params = Parameters();
     mParamSubs.push_back(
@@ -111,9 +118,9 @@ void Wizard::calcPower() {
                    max(1, params->get<WIZARD>(WizardParams::Speed) * 16 / 1000);
     params->set<WIZARD>(WizardParams::Power, power);
     if (mPowerDisplay) {
-        Upgrade& up = Upgrade::Get(mPowerDisplay);
-        up.mEffect = power.toString() + "x";
-        up.updateInfo();
+        UpgradeList::Get(mPowerDisplay)
+            ->setEffect(power.toString() + "x")
+            .updateInfo();
     }
 }
 
@@ -138,11 +145,11 @@ void Crystal::init() {
             mId);
 
     // Power Display
-    Upgrade up{0};
-    up.setImg(WIZ_IMGS.at(mId));
-    up.setDescription("Multiplier based on crystal damage");
-    mMagicEffectDisplay = mUpgrades->subscribe(
-        [](Upgrade& u) {}, [](Upgrade& u) { return 0; }, Upgrade::CanBuy, up);
+    UpgradePtr up = std::make_shared<Upgrade>();
+    up->setMaxLevel(0)
+        .setImg(WIZ_IMGS.at(mId))
+        .setDescription("Multiplier based on crystal damage");
+    mMagicEffectDisplay = mUpgrades->subscribe(up);
 
     auto params = Parameters();
     mParamSubs.push_back(params->subscribe<CRYSTAL>(
@@ -178,9 +185,9 @@ void Crystal::calcMagicEffect() {
         (params->get<CRYSTAL>(CrystalParams::Magic) + 1).logTen() + 1;
     params->set<CRYSTAL>(CrystalParams::MagicEffect, effect);
     if (mMagicEffectDisplay) {
-        Upgrade& up = Upgrade::Get(mMagicEffectDisplay);
-        up.mEffect = effect.toString() + "x";
-        up.updateInfo();
+        UpgradeList::Get(mMagicEffectDisplay)
+            ->setEffect(effect.toString() + "x")
+            .updateInfo();
     }
 }
 
@@ -212,11 +219,11 @@ void Catalyst::init() {
             mId);
 
     // Power Display
-    Upgrade up{0};
-    up.setImg(WIZ_IMGS.at(mId));
-    up.setDescription("Multiplier from stored magic");
-    mMagicEffectDisplay = mUpgrades->subscribe(
-        [](Upgrade& u) {}, [](Upgrade& u) { return 0; }, Upgrade::CanBuy, up);
+    UpgradePtr up = std::make_shared<Upgrade>();
+    up->setMaxLevel(0)
+        .setImg(WIZ_IMGS.at(mId))
+        .setDescription("Multiplier from stored magic");
+    mMagicEffectDisplay = mUpgrades->subscribe(up);
 
     auto params = Parameters();
     mParamSubs.push_back(params->subscribe<CATALYST>(
@@ -255,9 +262,9 @@ void Catalyst::calcMagicEffect() {
         (params->get<CATALYST>(CatalystParams::Magic) + 1).logTen() + 1;
     params->set<CATALYST>(CatalystParams::MagicEffect, effect);
     if (mMagicEffectDisplay) {
-        Upgrade& up = Upgrade::Get(mMagicEffectDisplay);
-        up.mEffect = effect.toString() + "x";
-        up.updateInfo();
+        UpgradeList::Get(mMagicEffectDisplay)
+            ->setEffect(effect.toString() + "x")
+            .updateInfo();
     }
 }
 

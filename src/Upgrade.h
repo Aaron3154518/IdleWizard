@@ -23,6 +23,7 @@
 #include <functional>
 #include <vector>
 
+#include "WizardData.h"
 #include "WizardIds.h"
 
 typedef ReplyObservable<RenderData()> RenderReply;
@@ -67,16 +68,28 @@ class UpgradeList : public UpgradeListBase {
 typedef std::shared_ptr<UpgradeList> UpgradeListPtr;
 
 struct Upgrade {
+    struct CostSource {
+        const static ParamBasePtr NONE;
+        const static ParamBasePtr CRYSTAL_MAGIC;
+    };
+
     // maxLevel < 0: Can buy infinitely
     // maxLevel = 0: Can't buy
     // maxLevel > 0: Can by maxLevel times
     int mMaxLevel;
+    ParamBasePtr mCostSrc = CostSource::NONE;
+
     int mLevel = 0;
     Number mCost;
     std::string mEffect;
     bool mIncludeInfo = true;
 
     SharedTexture mImg, mDesc, mInfo;
+
+    template <WizardId id>
+    void setCostSource(const Param<id>& param) {
+        mCostSrc = std::make_unique<Param<id>>(param);
+    }
 
     void setImg(std::string img);
 
@@ -90,7 +103,10 @@ struct Upgrade {
 
     static SharedTexture createDescription(std::string text);
 
+    // Static functions
     static Upgrade& Get(UpgradeList::SubscriptionPtr sub);
+    // Standard buy function
+    static bool CanBuy(Upgrade& u);
 
     const static SDL_Color DESC_BKGRND;
     const static FontData DESC_FONT;

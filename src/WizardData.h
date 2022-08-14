@@ -150,4 +150,28 @@ ParameterSubscriptionPtr KeySubscriber<Keys<id, keys...>, Tail...>::subscribe(
     return sub;
 }
 
+// Struct for storing params
+struct ParamBase {
+    virtual ~ParamBase() = default;
+
+    virtual Number get() const;
+
+    virtual void set(const Number& val) const;
+};
+
+template <WizardId id>
+struct Param : public ParamBase {
+    Param(WizardType<id> _key) : key(_key) {}
+    Param(const Param<id>* other) : Param(other.key) {}
+
+    Number get() const { return Parameters()->get<id>(key); }
+
+    void set(const Number& val) const { Parameters()->set<id>(key, val); }
+
+    WizardType<id> key;
+    const static WizardId ID = id;
+};
+
+typedef std::shared_ptr<ParamBase> ParamBasePtr;
+
 #endif

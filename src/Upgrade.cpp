@@ -4,6 +4,10 @@
 const SDL_Color Upgrade::DESC_BKGRND{175, 175, 175, 255};
 const FontData Upgrade::DESC_FONT{-1, 20, "|"};
 
+const ParamBasePtr Upgrade::CostSource::NONE;
+const ParamBasePtr Upgrade::CostSource::CRYSTAL_MAGIC =
+    std::make_shared<Param<CRYSTAL>>(CrystalParams::Magic);
+
 void Upgrade::setImg(std::string img) {
     mImg = AssetManager::getTexture(img);
     updateInfo();
@@ -73,6 +77,10 @@ Upgrade& Upgrade::Get(UpgradeList::SubscriptionPtr sub) {
     return sub->get<UpgradeList::DATA>();
 }
 
+bool Upgrade::CanBuy(Upgrade& u) {
+    return !u.mCostSrc || u.mCost <= u.mCostSrc->get();
+}
+
 // UpgradeList
 void UpgradeList::onSubscribe(SubscriptionPtr sub) {
     Upgrade& up = sub->get<DATA>();
@@ -94,13 +102,15 @@ UpgradeList::UpgradeStatus UpgradeList::getSubStatus(SubscriptionPtr sub) {
 }
 void UpgradeList::onSubClick(SubscriptionPtr sub) {
     Upgrade& up = sub->get<DATA>();
-    if (sub && getSubStatus(sub) == UpgradeStatus::BUYABLE) {
-        if (up.mMaxLevel < 0 || up.mLevel < up.mMaxLevel) {
-            up.mLevel++;
-            sub->get<ON_LEVEL>()(up);
-            up.mCost = sub->get<GET_COST>()(up);
-            up.updateInfo();
+    if ((up.mMaxLevel < 0 || up.mLevel < up.mMaxLevel) &&
+        getSubStatus(sub) == UpgradeStatus::BUYABLE) {
+        if (up.mCostSrc) {
+            up.mCostSrc->set(up.mCostSrc->get() - up.mCost);
         }
+        up.mLevel++;
+        sub->get<ON_LEVEL>()(up);
+        up.mCost = sub->get<GET_COST>()(up);
+        up.updateInfo();
     }
 }
 

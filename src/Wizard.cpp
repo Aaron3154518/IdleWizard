@@ -23,9 +23,8 @@ void Wizard::init() {
     Upgrade up{0};
     up.setImg(WIZ_IMGS.at(mId));
     up.setDescription("Current power");
-    mPowerDisplay =
-        mUpgrades->subscribe([](Upgrade& u) {}, [](Upgrade& u) { return 0; },
-                             [](Upgrade& u) { return true; }, up);
+    mPowerDisplay = mUpgrades->subscribe(
+        [](Upgrade& u) {}, [](Upgrade& u) { return 0; }, Upgrade::CanBuy, up);
 
     // Target Upgrade
     up = {-1};
@@ -38,11 +37,10 @@ void Wizard::init() {
             u.mEffect = "Target: " + WIZ_NAMES.at(mTarget);
             u.setImg(WIZ_IMGS.at(mTarget));
         },
-        [this](Upgrade& u) { return 0; }, [this](Upgrade& u) { return true; },
-        up);
+        [this](Upgrade& u) { return 0; }, Upgrade::CanBuy, up);
 
     // Power Upgrade
-    up = {1};
+    up = {1, Upgrade::CostSource::CRYSTAL_MAGIC};
     up.setImg(POWER_UP_IMG);
     up.setDescription("Increase Wizard base power by 1");
     mPowerUp = mUpgrades->subscribe(
@@ -50,11 +48,10 @@ void Wizard::init() {
             Parameters()->set<WIZARD>(WizardParams::PowerUpgrade, u.mLevel);
             u.mEffect = "+" + std::to_string(u.mLevel);
         },
-        [this](Upgrade& u) { return 10; }, [this](Upgrade& u) { return true; },
-        up);
+        [this](Upgrade& u) { return 10; }, Upgrade::CanBuy, up);
 
     // Speed Upgrade
-    up = {5};
+    up = {5, Upgrade::CostSource::CRYSTAL_MAGIC};
     up.setImg(SPEED_UP_IMG);
     up.setDescription("Increase Wizard fire rate by 33%");
     mSpeedUp = mUpgrades->subscribe(
@@ -64,7 +61,7 @@ void Wizard::init() {
             u.mEffect = speed.toString() + "x";
         },
         [this](Upgrade& u) { return (Number(1.5) ^ u.mLevel) * 100; },
-        [this](Upgrade& u) { return true; }, up);
+        Upgrade::CanBuy, up);
 
     auto params = Parameters();
     mParamSubs.push_back(
@@ -144,9 +141,8 @@ void Crystal::init() {
     Upgrade up{0};
     up.setImg(WIZ_IMGS.at(mId));
     up.setDescription("Multiplier based on crystal damage");
-    mMagicEffectDisplay =
-        mUpgrades->subscribe([](Upgrade& u) {}, [](Upgrade& u) { return 0; },
-                             [](Upgrade& u) { return true; }, up);
+    mMagicEffectDisplay = mUpgrades->subscribe(
+        [](Upgrade& u) {}, [](Upgrade& u) { return 0; }, Upgrade::CanBuy, up);
 
     auto params = Parameters();
     mParamSubs.push_back(params->subscribe<CRYSTAL>(
@@ -219,9 +215,8 @@ void Catalyst::init() {
     Upgrade up{0};
     up.setImg(WIZ_IMGS.at(mId));
     up.setDescription("Multiplier from stored magic");
-    mMagicEffectDisplay =
-        mUpgrades->subscribe([](Upgrade& u) {}, [](Upgrade& u) { return 0; },
-                             [](Upgrade& u) { return true; }, up);
+    mMagicEffectDisplay = mUpgrades->subscribe(
+        [](Upgrade& u) {}, [](Upgrade& u) { return 0; }, Upgrade::CanBuy, up);
 
     auto params = Parameters();
     mParamSubs.push_back(params->subscribe<CATALYST>(

@@ -65,6 +65,10 @@ void Fireball::init() {
     mFireballSub =
         ServiceSystem::Get<FireballService, FireballObservable>()->subscribe(
             [this](SDL_FPoint p) { mTargetPos = p; }, mTargetId);
+    mFireRingSub =
+        ServiceSystem::Get<FireRingService, FireRingObservable>()->subscribe(
+            std::bind(&Fireball::onFireRing, this, std::placeholders::_1),
+            mPos);
 
     launch(mTargetPos);
 }
@@ -99,6 +103,7 @@ void Fireball::onUpdate(Time dt) {
         mRenderSub.reset();
         mUpdateSub.reset();
         mFireballSub.reset();
+        mFireRingSub.reset();
     } else {
         float frac = fmax((ACCEL_ZONE / mag), 1) * ACCELERATION / mag;
         mA.x = dx * frac;
@@ -118,3 +123,10 @@ void Fireball::onUpdate(Time dt) {
 }
 
 void Fireball::onRender(SDL_Renderer* renderer) { TextureBuilder().draw(mImg); }
+
+void Fireball::onFireRing(const Number& effect) {
+    if (mSrcId == WIZARD && !mHitFireRing) {
+        mHitFireRing = true;
+        mVal ^= effect;
+    }
+}

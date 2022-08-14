@@ -9,8 +9,9 @@ const std::string Wizard::FIREBALL_IMG = "res/projectiles/fireball.png";
 
 Wizard::Wizard() : WizardBase(WIZARD) {
     auto params = Parameters();
-    params->set<WIZARD>(WizardParams::PowerUp, 0);
+    params->set<WIZARD>(WizardParams::Power, 1);
     params->set<WIZARD>(WizardParams::Speed, 1);
+    params->set<WIZARD>(WizardParams::PowerUp, 0);
     params->set<WIZARD>(WizardParams::MultiUp, 0);
     params->set<WIZARD>(WizardParams::PowerWizEffect, 1);
 }
@@ -219,6 +220,15 @@ void Crystal::onRender(SDL_Renderer* r) {
     mMagicText.dest.setHeight(FONT.h, Rect::Align::BOT_RIGHT);
     mMagicText.fitToTexture();
     TextureBuilder().draw(mMagicText);
+
+    for (auto it = mFireRings.begin(); it != mFireRings.end(); ++it) {
+        if ((*it)->dead()) {
+            it = mFireRings.erase(it);
+            if (it == mFireRings.end()) {
+                break;
+            }
+        }
+    }
 }
 
 void Crystal::onClick(Event::MouseButton b, bool clicked) {
@@ -241,6 +251,7 @@ void Crystal::onHit(WizardId src, const Number& val) {
             mMagicText.renderText();
         } break;
         case POWER_WIZARD: {
+            createFireRing();
         } break;
     }
 }
@@ -256,6 +267,13 @@ void Crystal::drawMagic() {
     mMagicText.tData.text =
         Parameters()->get<CRYSTAL>(CrystalParams::Magic).toString();
     mMagicText.renderText();
+}
+
+std::unique_ptr<FireRing>& Crystal::createFireRing() {
+    mFireRings.push_back(std::move(ComponentFactory<FireRing>::New(
+        SDL_Point{mPos->rect.CX(), mPos->rect.CY()},
+        Parameters()->get<POWER_WIZARD>(PowerWizardParams::FireRingEffect))));
+    return mFireRings.back();
 }
 
 // Catalyst
@@ -339,6 +357,7 @@ const std::string PowerWizard::FIREBALL_IMG = "res/projectiles/fireball2.png";
 PowerWizard::PowerWizard() : WizardBase(POWER_WIZARD) {
     auto params = Parameters();
     params->set<POWER_WIZARD>(PowerWizardParams::Power, 5);
+    params->set<POWER_WIZARD>(PowerWizardParams::FireRingEffect, 1);
     params->set<POWER_WIZARD>(PowerWizardParams::Speed, .25);
     params->set<POWER_WIZARD>(PowerWizardParams::Duration, 1000);
 }
@@ -363,6 +382,9 @@ void PowerWizard::init() {
     mPowerDisplay = mUpgrades->subscribe(up);
 
     auto params = Parameters();
+    mParamSubs.push_back(params->subscribe<POWER_WIZARD>(
+        PowerWizardParams::Power,
+        std::bind(&PowerWizard::calcFireRingEffect, this)));
     mParamSubs.push_back(
         params->subscribe<POWER_WIZARD>(PowerWizardParams::Speed, [this]() {
             Timer& timer = mTimerSub->get<TimerObservable::DATA>();
@@ -399,4 +421,12 @@ std::unique_ptr<Fireball>& PowerWizard::shootFireball() {
         Parameters()->get<POWER_WIZARD>(PowerWizardParams::Power),
         FIREBALL_IMG)));
     return mFireballs.back();
+}
+
+void PowerWizard::calcFireRingEffect() {
+    auto params = Parameters();
+    Number effect =
+        (params->get<POWER_WIZARD>(PowerWizardParams::Power).logTenCopy() + 1)
+            .sqrt();
+    params->set<POWER_WIZARD>(PowerWizardParams::FireRingEffect, effect);
 }

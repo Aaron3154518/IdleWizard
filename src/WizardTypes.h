@@ -55,6 +55,7 @@ enum _ : uint8_t {
 namespace PowerWizardParams {
 enum _ : uint8_t {
     Power = 0,
+    FireRingEffect,
     Speed,
     Duration,
 };

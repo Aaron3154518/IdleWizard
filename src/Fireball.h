@@ -15,6 +15,7 @@
 #include <Utils/Number.h>
 #include <Utils/Time.h>
 
+#include "FireRing.h"
 #include "WizardIds.h"
 
 typedef Observable<void(SDL_FPoint), WizardId> FireballObservableBase;
@@ -60,11 +61,11 @@ class Fireball : public Component {
     void init();
 
     void onUpdate(Time dt);
-
     void onResize(ResizeData data);
     void onRender(SDL_Renderer* renderer);
+    void onFireRing(const Number& effect);
 
-    bool mDead = false;
+    bool mDead = false, mHitFireRing = false;
     WizardId mSrcId, mTargetId;
     SDL_FPoint mTargetPos{0, 0}, mV{0, 0}, mA{0, 0};
     UIComponentPtr mPos;
@@ -75,6 +76,7 @@ class Fireball : public Component {
     UpdateObservable::SubscriptionPtr mUpdateSub;
     RenderObservable::SubscriptionPtr mRenderSub;
     FireballObservable::SubscriptionPtr mFireballSub;
+    FireRingObservable::SubscriptionPtr mFireRingSub;
 
     Number mVal;
 

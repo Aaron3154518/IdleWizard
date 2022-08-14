@@ -17,6 +17,7 @@
 #include <string>
 #include <vector>
 
+#include "FireRing.h"
 #include "Fireball.h"
 #include "Upgrade.h"
 #include "WizardBase.h"
@@ -67,8 +68,12 @@ class Crystal : public WizardBase {
     void calcMagicEffect();
     void drawMagic();
 
+    std::unique_ptr<FireRing>& createFireRing();
+
     TargetObservable::SubscriptionPtr mTargetSub;
     UpgradeList::SubscriptionPtr mMagicEffectDisplay;
+
+    std::vector<std::unique_ptr<FireRing>> mFireRings;
 
     TextRenderData mMagicText;
 };
@@ -103,6 +108,8 @@ class PowerWizard : public WizardBase {
 
     void onRender(SDL_Renderer* r);
     bool onTimer();
+
+    void calcFireRingEffect();
 
     std::unique_ptr<Fireball>& shootFireball();
 

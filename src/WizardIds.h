@@ -28,6 +28,6 @@ const WizardMap<std::string> WIZ_NAMES = {{CRYSTAL, "Crystal"},
                                           {WIZARD, "Wizard"},
                                           {POWER_WIZARD, "Power Wizard"}};
 
-enum Elevation { WIZARDS = 2, UPGRADES = 1, OVERLAYS = 10 };
+enum Elevation { EFFECTS = 0, UPGRADES = 1, WIZARDS = 2, OVERLAYS = 10 };
 
 #endif

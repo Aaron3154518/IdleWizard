@@ -28,19 +28,24 @@ class Wizard : public WizardBase {
    public:
     Wizard();
 
-    const static std::string POWER_UP_IMG, SPEED_UP_IMG, MULTI_UP_IMG;
+    const static std::string POWER_UP_IMG, SPEED_UP_IMG, MULTI_UP_IMG,
+        POWER_BKGRND, FIREBALL_IMG;
 
    private:
     void init();
 
     void onRender(SDL_Renderer* r);
     bool onTimer();
+    void onHit(WizardId src, const Number& val);
 
     void calcPower();
 
     std::unique_ptr<Fireball>& shootFireball();
 
-    TimerObservable::SubscriptionPtr mTimerSub;
+    RenderData mPowBkgrnd;
+
+    TimerObservable::SubscriptionPtr mTimerSub, mPowWizTimerSub;
+    TargetObservable::SubscriptionPtr mTargetSub;
     UpgradeList::SubscriptionPtr mPowerDisplay, mTargetUp, mPowerUp, mMultiUp;
 
     WizardId mTarget = CRYSTAL;
@@ -57,7 +62,7 @@ class Crystal : public WizardBase {
 
     void onRender(SDL_Renderer* r);
     void onClick(Event::MouseButton b, bool clicked);
-    void onHit(WizardId src, Number val);
+    void onHit(WizardId src, const Number& val);
 
     void calcMagicEffect();
     void drawMagic();
@@ -85,6 +90,26 @@ class Catalyst : public WizardBase {
     UpgradeList::SubscriptionPtr mMagicEffectDisplay;
 
     TextRenderData mMagicText;
+};
+
+class PowerWizard : public WizardBase {
+   public:
+    PowerWizard();
+
+    const static std::string FIREBALL_IMG;
+
+   private:
+    void init();
+
+    void onRender(SDL_Renderer* r);
+    bool onTimer();
+
+    std::unique_ptr<Fireball>& shootFireball();
+
+    TimerObservable::SubscriptionPtr mTimerSub;
+    UpgradeList::SubscriptionPtr mPowerDisplay;
+
+    std::vector<std::unique_ptr<Fireball>> mFireballs;
 };
 
 #endif

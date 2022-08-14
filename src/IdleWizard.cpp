@@ -20,6 +20,8 @@ int main(int argc, char* argv[]) {
     std::unique_ptr<Wizard> wizard = ComponentFactory<Wizard>::New();
     std::unique_ptr<Crystal> catalyst = ComponentFactory<Crystal>::New();
     std::unique_ptr<Catalyst> crystal = ComponentFactory<Catalyst>::New();
+    std::unique_ptr<PowerWizard> powerWizard =
+        ComponentFactory<PowerWizard>::New();
 
     GameSystem::Run();
 

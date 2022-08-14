@@ -25,7 +25,7 @@ SDL_FPoint FireballObservable::getPos(WizardId id) const {
 }
 
 // TargetObservable
-void TargetObservable::next(WizardId target, Number val, WizardId src) {
+void TargetObservable::next(WizardId target, const Number& val, WizardId src) {
     for (auto sub : *this) {
         if (sub->get<DATA>() == target) {
             sub->get<FUNC>()(src, val);
@@ -38,18 +38,17 @@ const int Fireball::COLLIDE_ERR = 10;
 const int Fireball::MAX_SPEED = 150;
 const int Fireball::ACCELERATION = 300;
 const int Fireball::ACCEL_ZONE = 100;
-const std::string Fireball::IMG = "res/projectiles/fireball.png";
 
-Fireball::Fireball(float cX, float cY, WizardId src, WizardId target,
-                   Number val)
+Fireball::Fireball(SDL_FPoint c, WizardId src, WizardId target, Number val,
+                   const std::string& img)
     : mPos(std::make_shared<UIComponent>(Rect(), 0)),
       mTargetId(target),
       mSrcId(src),
       mVal(val) {
-    mImg.texture = AssetManager::getTexture(IMG);
+    mImg.texture = AssetManager::getTexture(img);
     mImg.dest = Rect(0, 0, 50, 50);
     mImg.fitToTexture();
-    mImg.dest.setPos(cX, cY, Rect::Align::CENTER);
+    mImg.dest.setPos(c.x, c.y, Rect::Align::CENTER);
     mPos->rect = mImg.dest;
 }
 

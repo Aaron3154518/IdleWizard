@@ -33,13 +33,14 @@ class FireballObservable : public FireballObservableBase {
     SDL_FPoint mTargets[WizardId::size];
 };
 
-typedef Observable<void(WizardId, Number), WizardId> TargetObservableBase;
+typedef Observable<void(WizardId, const Number&), WizardId>
+    TargetObservableBase;
 
 class TargetObservable : public TargetObservableBase {
    public:
     enum : size_t { FUNC = 0, DATA };
 
-    void next(WizardId target, Number val, WizardId src);
+    void next(WizardId target, const Number& val, WizardId src);
 };
 
 class FireballService : public Service<FireballObservable, TargetObservable> {};
@@ -48,13 +49,12 @@ class Fireball : public Component {
     friend class FireballObservable;
 
    public:
-    Fireball(float cX, float cY, WizardId src, WizardId target, Number val);
+    Fireball(SDL_FPoint c, WizardId src, WizardId target, Number val,
+             const std::string& img);
 
     bool dead() const;
 
     void launch(SDL_FPoint target);
-
-    const static std::string IMG;
 
    private:
     void init();

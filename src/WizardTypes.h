@@ -5,32 +5,7 @@
 
 #include "WizardIds.h"
 
-namespace WizardParams {
-enum _ : uint8_t {
-    Power = 0,
-    Speed,
-    PowerUp,
-    MultiUp,
-
-    PowerUpCost,
-    SpeedUpCost,
-    MultiUpCost
-};
-}
-namespace CrystalParams {
-enum _ : uint8_t {
-    Magic = 0,
-    MagicEffect,
-};
-}
-namespace CatalystParams {
-enum _ : uint8_t {
-    Magic = 0,
-    MagicEffect,
-    Capacity,
-};
-}
-
+// Templates for matching wizards to param enums
 template <WizardId id, class T>
 struct Pair {};
 
@@ -50,10 +25,48 @@ struct WizardTypeMapImpl<_id, Pair<id, T>, Tail...>
                            typename WizardTypeMapImpl<_id, Tail...>::type>;
 };
 
+// Parameter enums
+namespace WizardParams {
+enum _ : uint8_t {
+    Power = 0,
+    Speed,
+    PowerUp,
+    MultiUp,
+    PowerWizEffect,
+
+    PowerUpCost,
+    SpeedUpCost,
+    MultiUpCost,
+};
+}
+namespace CrystalParams {
+enum _ : uint8_t {
+    Magic = 0,
+    MagicEffect,
+};
+}
+namespace CatalystParams {
+enum _ : uint8_t {
+    Magic = 0,
+    MagicEffect,
+    Capacity,
+};
+}
+namespace PowerWizardParams {
+enum _ : uint8_t {
+    Power = 0,
+    Speed,
+    Duration,
+};
+}
+
+// Wizard-parameter mappings
 template <WizardId id>
-using WizardTypeMap = WizardTypeMapImpl<id, Pair<WIZARD, WizardParams::_>,
-                                        Pair<CRYSTAL, CrystalParams::_>,
-                                        Pair<CATALYST, CatalystParams::_>>;
+using WizardTypeMap =
+    WizardTypeMapImpl<id, Pair<WIZARD, WizardParams::_>,
+                      Pair<CRYSTAL, CrystalParams::_>,
+                      Pair<CATALYST, CatalystParams::_>,
+                      Pair<POWER_WIZARD, PowerWizardParams::_>>;
 
 template <WizardId id>
 using WizardType = typename WizardTypeMap<id>::type;

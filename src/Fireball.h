@@ -25,10 +25,12 @@ class FireballObservable : public FireballObservableBase {
 
     void next(WizardId id, SDL_FPoint pos);
 
+    SDL_FPoint getPos(WizardId id) const;
+
    private:
     void onSubscribe(SubscriptionPtr sub);
 
-    SDL_FPoint mTargets[size];
+    SDL_FPoint mTargets[WizardId::size];
 };
 
 typedef Observable<void(WizardId, Number), WizardId> TargetObservableBase;
@@ -50,6 +52,8 @@ class Fireball : public Component {
 
     bool dead() const;
 
+    void launch(SDL_FPoint target);
+
     const static std::string IMG;
 
    private:
@@ -62,7 +66,7 @@ class Fireball : public Component {
 
     bool mDead = false;
     WizardId mSrcId, mTargetId;
-    SDL_FPoint mTargetPos{0, 0};
+    SDL_FPoint mTargetPos{0, 0}, mV{0, 0}, mA{0, 0};
     UIComponentPtr mPos;
 
     RenderData mImg;
@@ -74,8 +78,7 @@ class Fireball : public Component {
 
     Number mVal;
 
-    const static int MAX_SPEED;
-    const static int COLLIDE_ERR;
+    const static int COLLIDE_ERR, MAX_SPEED, ACCELERATION, ACCEL_ZONE;
 };
 
 #endif

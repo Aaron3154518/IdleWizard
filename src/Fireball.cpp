@@ -6,7 +6,7 @@ void FireballObservable::onSubscribe(SubscriptionPtr sub) {
 }
 
 void FireballObservable::next(WizardId id, SDL_FPoint pos) {
-    if (id == size) {
+    if (id == WizardId::size) {
         throw std::runtime_error("Cannot use size as a target");
     }
     mTargets[id] = pos;
@@ -15,6 +15,13 @@ void FireballObservable::next(WizardId id, SDL_FPoint pos) {
             sub->get<FUNC>()(pos);
         }
     }
+}
+
+SDL_FPoint FireballObservable::getPos(WizardId id) const {
+    if (id == WizardId::size) {
+        throw std::runtime_error("Cannot use size as a target");
+    }
+    return mTargets[id];
 }
 
 // TargetObservable
@@ -27,8 +34,10 @@ void TargetObservable::next(WizardId target, Number val, WizardId src) {
 }
 
 // Fireball
-const int Fireball::MAX_SPEED = 150;
 const int Fireball::COLLIDE_ERR = 10;
+const int Fireball::MAX_SPEED = 150;
+const int Fireball::ACCELERATION = 300;
+const int Fireball::ACCEL_ZONE = 100;
 const std::string Fireball::IMG = "res/projectiles/fireball.png";
 
 Fireball::Fireball(float cX, float cY, WizardId src, WizardId target,
@@ -57,9 +66,19 @@ void Fireball::init() {
     mFireballSub =
         ServiceSystem::Get<FireballService, FireballObservable>()->subscribe(
             [this](SDL_FPoint p) { mTargetPos = p; }, mTargetId);
+
+    launch(mTargetPos);
 }
 
 bool Fireball::dead() const { return mDead; }
+
+void Fireball::launch(SDL_FPoint target) {
+    // Start at half max speed
+    float dx = target.x - mPos->rect.cX(), dy = target.y - mPos->rect.cY();
+    float frac = MAX_SPEED / std::sqrt(dx * dx + dy * dy) / 2;
+    mV.x = dx * frac;
+    mV.y = dy * frac;
+}
 
 void Fireball::onResize(ResizeData data) {
     mPos->rect.moveFactor((float)data.newW / data.oldW,
@@ -67,6 +86,8 @@ void Fireball::onResize(ResizeData data) {
 }
 
 void Fireball::onUpdate(Time dt) {
+    float sec = dt.s();
+    float aCoeff = sec * sec / 2;
     float dx = mTargetPos.x - mPos->rect.cX(),
           dy = mTargetPos.y - mPos->rect.cY();
     float mag = std::sqrt(dx * dx + dy * dy);
@@ -80,7 +101,19 @@ void Fireball::onUpdate(Time dt) {
         mUpdateSub.reset();
         mFireballSub.reset();
     } else {
-        mPos->rect.move(MAX_SPEED * dt.s(), dx, dy);
+        float frac = fmax((ACCEL_ZONE / mag), 1) * ACCELERATION / mag;
+        mA.x = dx * frac;
+        mA.y = dy * frac;
+        mPos->rect.move(mV.x * sec + mA.y * aCoeff, mV.y * sec + mA.y * aCoeff);
+        mV.x += mA.x * sec;
+        mV.y += mA.y * sec;
+        // Cap speed
+        mag = std::sqrt(mV.x * mV.x + mV.y * mV.y);
+        if (mag > MAX_SPEED) {
+            frac = MAX_SPEED / mag;
+            mV.x *= frac;
+            mV.y *= frac;
+        }
         mImg.dest = mPos->rect;
     }
 }

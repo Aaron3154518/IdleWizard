@@ -38,7 +38,7 @@ class Wizard : public WizardBase {
 
     void calcPower();
 
-    void shootFireball(float offX = 0, float offY = 0);
+    std::unique_ptr<Fireball>& shootFireball();
 
     TimerObservable::SubscriptionPtr mTimerSub;
     UpgradeList::SubscriptionPtr mPowerDisplay, mTargetUp, mPowerUp, mMultiUp;

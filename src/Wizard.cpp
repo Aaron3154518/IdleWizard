@@ -107,18 +107,21 @@ void Wizard::onRender(SDL_Renderer* r) {
 
 bool Wizard::onTimer() {
     shootFireball();
+    // shootFireball();
     float Multi = Parameters()->get<WIZARD>(WizardParams::MultiUp).tofloat();
     if (rDist(gen) < Multi) {
-        shootFireball((rDist(gen) - .5) * IMG_RECT.w(),
-                      (rDist(gen) - .5) * IMG_RECT.h());
+        shootFireball()->launch(
+            {((float)rDist(gen) - .5f) * mPos->rect.w() + mPos->rect.cX(),
+             ((float)rDist(gen) - .5f) * mPos->rect.h() + mPos->rect.cY()});
     }
     return true;
 }
 
-void Wizard::shootFireball(float offX, float offY) {
+std::unique_ptr<Fireball>& Wizard::shootFireball() {
     mFireballs.push_back(std::move(ComponentFactory<Fireball>::New(
-        mPos->rect.cX() + offX, mPos->rect.cY() + offY, mId, mTarget,
+        mPos->rect.cX(), mPos->rect.cY(), mId, mTarget,
         Parameters()->get<WIZARD>(WizardParams::Power))));
+    return mFireballs.back();
 }
 
 void Wizard::calcPower() {

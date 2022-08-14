@@ -46,7 +46,7 @@ void Wizard::init() {
 
     // Power Upgrade
     up = std::make_shared<Upgrade>();
-    up->setMaxLevel(1)
+    up->setMaxLevel(5)
         .setCostSource<WIZARD, WizardParams::PowerUpCost>()
         .setMoneySource(Upgrade::ParamSources::CRYSTAL_MAGIC)
         .setEffectSource<WIZARD, WizardParams::PowerUp>(
@@ -56,7 +56,7 @@ void Wizard::init() {
     mPowerUp = mUpgrades->subscribe(
         [this](UpgradePtr u) {
             u->getEffectSrc().set(u->getLevel());
-            u->getCostSrc().set(25);
+            u->getCostSrc().set(25 * (Number(1.75) ^ u->getLevel()));
         },
         up);
 

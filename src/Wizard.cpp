@@ -3,6 +3,7 @@
 // Wizard
 const std::string Wizard::POWER_UP_IMG = "res/upgrades/fireball_upgrade.png";
 const std::string Wizard::SPEED_UP_IMG = "res/upgrades/speed_upgrade.png";
+const std::string Wizard::MULTI_UP_IMG = "res/upgrades/multi_upgrade.png";
 
 Wizard::Wizard() : WizardBase(WIZARD) {
     auto params = Parameters();
@@ -66,7 +67,7 @@ void Wizard::init() {
         .setMoneySource(Upgrade::ParamSources::CRYSTAL_MAGIC)
         .setEffectSource<WIZARD, WizardParams::MultiUp>(
             Upgrade::Defaults::PercentEffect)
-        .setImg(SPEED_UP_IMG)
+        .setImg(MULTI_UP_IMG)
         .setDescription("Increase double fireball chance by +5%");
     mMultiUp = mUpgrades->subscribe(
         [this](UpgradePtr u) {

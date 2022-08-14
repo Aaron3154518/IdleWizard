@@ -8,6 +8,7 @@ Wizard::Wizard() : WizardBase(WIZARD) {
     auto params = Parameters();
     params->set<WIZARD>(WizardParams::PowerUp, 0);
     params->set<WIZARD>(WizardParams::Speed, 1);
+    params->set<WIZARD>(WizardParams::MultiUp, 0);
 }
 
 void Wizard::init() {
@@ -61,13 +62,13 @@ void Wizard::init() {
     // Speed Upgrade
     up = std::make_shared<Upgrade>();
     up->setMaxLevel(20)
-        .setCostSource<WIZARD, WizardParams::DoubleChanceUpCost>()
+        .setCostSource<WIZARD, WizardParams::MultiUpCost>()
         .setMoneySource(Upgrade::ParamSources::CRYSTAL_MAGIC)
-        .setEffectSource<WIZARD, WizardParams::DoubleChanceUp>(
+        .setEffectSource<WIZARD, WizardParams::MultiUp>(
             Upgrade::Defaults::PercentEffect)
         .setImg(SPEED_UP_IMG)
         .setDescription("Increase double fireball chance by +5%");
-    mDoubleChanceUp = mUpgrades->subscribe(
+    mMultiUp = mUpgrades->subscribe(
         [this](UpgradePtr u) {
             u->getEffectSrc().set(Number(.05) * u->getLevel());
             u->getCostSrc().set((Number(1.5) ^ u->getLevel()) * 100);
@@ -105,9 +106,8 @@ void Wizard::onRender(SDL_Renderer* r) {
 
 bool Wizard::onTimer() {
     shootFireball();
-    float doubleChance =
-        Parameters()->get<WIZARD>(WizardParams::DoubleChanceUp).tofloat();
-    if (rDist(gen) < doubleChance) {
+    float Multi = Parameters()->get<WIZARD>(WizardParams::MultiUp).tofloat();
+    if (rDist(gen) < Multi) {
         shootFireball((rDist(gen) - .5) * IMG_RECT.w(),
                       (rDist(gen) - .5) * IMG_RECT.h());
     }

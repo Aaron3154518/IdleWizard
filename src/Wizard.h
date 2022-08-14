@@ -41,8 +41,7 @@ class Wizard : public WizardBase {
     void shootFireball(float offX = 0, float offY = 0);
 
     TimerObservable::SubscriptionPtr mTimerSub;
-    UpgradeList::SubscriptionPtr mPowerDisplay, mTargetUp, mPowerUp,
-        mDoubleChanceUp;
+    UpgradeList::SubscriptionPtr mPowerDisplay, mTargetUp, mPowerUp, mMultiUp;
 
     WizardId mTarget = CRYSTAL;
 

@@ -10,11 +10,11 @@ enum _ : uint8_t {
     Power = 0,
     Speed,
     PowerUp,
-    DoubleChanceUp,
+    MultiUp,
 
     PowerUpCost,
     SpeedUpCost,
-    DoubleChanceUpCost
+    MultiUpCost
 };
 }
 namespace CrystalParams {

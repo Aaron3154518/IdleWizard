@@ -47,7 +47,12 @@ void WizardBase::onRender(SDL_Renderer* r) {
     TextureBuilder().draw(mImg);
 }
 
-void WizardBase::onClick(Event::MouseButton b, bool clicked) {}
+void WizardBase::onClick(Event::MouseButton b, bool clicked) {
+    if (clicked) {
+        ServiceSystem::Get<UpgradeService, UpgradeListObservable>()->next(
+            mUpgrades);
+    }
+}
 
 void WizardBase::setPos(float x, float y) {
     SDL_Point screenDim = RenderSystem::getWindowSize();

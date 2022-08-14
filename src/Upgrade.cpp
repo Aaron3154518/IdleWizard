@@ -38,7 +38,7 @@ void Upgrade::drawDescription(TextureBuilder tex, SDL_Point offset) const {
 std::string Upgrade::getInfo() const {
     std::stringstream ss;
     ss << mEffect;
-    if (mMaxLevel >= 0) {
+    if (mMaxLevel > 0) {
         if (!mEffect.empty()) {
             ss << "\n";
         }
@@ -69,6 +69,10 @@ SharedTexture Upgrade::createDescription(std::string text) {
     return tData.renderTextWrapped();
 }
 
+Upgrade& Upgrade::Get(UpgradeList::SubscriptionPtr sub) {
+    return sub->get<UpgradeList::DATA>();
+}
+
 // UpgradeList
 void UpgradeList::onSubscribe(SubscriptionPtr sub) {
     Upgrade& up = sub->get<DATA>();
@@ -80,9 +84,9 @@ void UpgradeList::onSubscribe(SubscriptionPtr sub) {
 UpgradeList::UpgradeStatus UpgradeList::getSubStatus(SubscriptionPtr sub) {
     Upgrade& up = sub->get<DATA>();
     if (up.mMaxLevel == 0) {
-        return UpgradeStatus::CANT_BUY;
+        return UpgradeStatus::NOT_BUYABLE;
     }
-    if (up.mMaxLevel >= 0 && up.mLevel >= up.mMaxLevel) {
+    if (up.mMaxLevel > 0 && up.mLevel >= up.mMaxLevel) {
         return UpgradeStatus::BOUGHT;
     }
     return sub->get<CAN_BUY>()(up) ? UpgradeStatus::BUYABLE
@@ -100,7 +104,7 @@ void UpgradeList::onSubClick(SubscriptionPtr sub) {
     }
 }
 
-int UpgradeList::count() const { return mSubscriptions.size(); }
+int UpgradeList::size() const { return mSubscriptions.size(); }
 
 void UpgradeList::onClick(SDL_Point mouse) {
     for (auto pair : mFrontRects) {
@@ -182,6 +186,9 @@ void UpgradeList::draw(TextureBuilder tex, float scroll) {
                     break;
                 case UpgradeStatus::CANT_BUY:
                     rd.color = RED;
+                    break;
+                case UpgradeStatus::NOT_BUYABLE:
+                    rd.color = BLACK;
                     break;
             }
         }
@@ -391,6 +398,6 @@ void UpgradeScroller::scroll(float dScroll) {
     mScroll = fmax(fmin(mScroll + dScroll, maxScroll()), 0);
 }
 float UpgradeScroller::maxScroll() const {
-    return mPos->rect.w() * (mUpgrades ? mUpgrades->count() - 1 : 0) /
+    return mPos->rect.w() * (mUpgrades ? mUpgrades->size() - 1 : 0) /
            floor(mPos->rect.w() * 2 / mPos->rect.h());
 }

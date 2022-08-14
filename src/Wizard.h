@@ -34,7 +34,6 @@ class Wizard : public WizardBase {
     void init();
 
     void onRender(SDL_Renderer* r);
-    void onClick(Event::MouseButton b, bool clicked);
     bool onTimer();
 
     void calcPower();
@@ -42,7 +41,7 @@ class Wizard : public WizardBase {
     void shootFireball();
 
     TimerObservable::SubscriptionPtr mTimerSub;
-    UpgradeList::SubscriptionPtr mTargetUp, mPowerUp, mSpeedUp;
+    UpgradeList::SubscriptionPtr mPowerDisplay, mTargetUp, mPowerUp, mSpeedUp;
 
     WizardId mTarget = CRYSTAL;
 
@@ -60,8 +59,10 @@ class Crystal : public WizardBase {
     void onHit(WizardId src, Number val);
 
     void calcMagicEffect();
+    void drawMagic();
 
     TargetObservable::SubscriptionPtr mTargetSub;
+    UpgradeList::SubscriptionPtr mMagicEffectDisplay;
 
     TextRenderData mMagicText;
 };
@@ -77,8 +78,10 @@ class Catalyst : public WizardBase {
     void onHit(WizardId src, Number val);
 
     void calcMagicEffect();
+    void drawMagic();
 
     TargetObservable::SubscriptionPtr mTargetSub;
+    UpgradeList::SubscriptionPtr mMagicEffectDisplay;
 
     TextRenderData mMagicText;
 };

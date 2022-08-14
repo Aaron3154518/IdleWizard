@@ -16,22 +16,19 @@ void Wizard::init() {
     mRenderSub =
         ServiceSystem::Get<RenderService, RenderObservable>()->subscribe(
             std::bind(&Wizard::onRender, this, std::placeholders::_1), mPos);
-    mMouseSub = ServiceSystem::Get<MouseService, MouseObservable>()->subscribe(
-        std::bind(&Wizard::onClick, this, std::placeholders::_1,
-                  std::placeholders::_2),
-        mPos);
     mTimerSub = ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
         std::bind(&Wizard::onTimer, this), Timer(1000));
 
-    mParamSubs.push_back(
-        Parameters()
-            ->subscribe<Keys<WIZARD, WizardParams::PowerUpgrade>,
-                        Keys<CRYSTAL, CrystalParams::MagicEffect>,
-                        Keys<CATALYST, CatalystParams::MagicEffect>>(
-                std::bind(&Wizard::calcPower, this)));
+    // Power Display
+    Upgrade up{0};
+    up.setImg(WIZ_IMGS.at(mId));
+    up.setDescription("Current power");
+    mPowerDisplay =
+        mUpgrades->subscribe([](Upgrade& u) {}, [](Upgrade& u) { return 0; },
+                             [](Upgrade& u) { return true; }, up);
 
     // Target Upgrade
-    Upgrade up{-1};
+    up = {-1};
     up.setImg(WIZ_IMGS.at(mTarget));
     up.setDescription("Change the Wizard's target");
     mTargetUp = mUpgrades->subscribe(
@@ -39,6 +36,7 @@ void Wizard::init() {
             u.mLevel = u.mLevel % 2;
             mTarget = u.mLevel == 0 ? CRYSTAL : CATALYST;
             u.mEffect = "Target: " + WIZ_NAMES.at(mTarget);
+            u.setImg(WIZ_IMGS.at(mTarget));
         },
         [this](Upgrade& u) { return 0; }, [this](Upgrade& u) { return true; },
         up);
@@ -61,14 +59,27 @@ void Wizard::init() {
     up.setDescription("Increase Wizard fire rate by 33%");
     mSpeedUp = mUpgrades->subscribe(
         [this](Upgrade& u) {
-            Timer& timer = mTimerSub->get<TimerObservable::DATA>();
-            timer.length = 1000 * pow(.75, u.mLevel);
-            Number speed = Number(1000) / timer.length;
+            Number speed = (Number(4. / 3.) ^ u.mLevel);
             Parameters()->set<WIZARD>(WizardParams::Speed, speed);
             u.mEffect = speed.toString() + "x";
         },
         [this](Upgrade& u) { return (Number(1.5) ^ u.mLevel) * 100; },
         [this](Upgrade& u) { return true; }, up);
+
+    auto params = Parameters();
+    mParamSubs.push_back(
+        params->subscribe<
+            Keys<WIZARD, WizardParams::PowerUpgrade, WizardParams::Speed>,
+            Keys<CRYSTAL, CrystalParams::MagicEffect>,
+            Keys<CATALYST, CatalystParams::MagicEffect>>(
+            std::bind(&Wizard::calcPower, this)));
+    mParamSubs.push_back(
+        params->subscribe<WIZARD>(WizardParams::Speed, [this]() {
+            Timer& timer = mTimerSub->get<TimerObservable::DATA>();
+            timer.length = fmax(
+                1000 / Parameters()->get<WIZARD>(WizardParams::Speed).tofloat(),
+                16);
+        }));
 }
 
 void Wizard::onRender(SDL_Renderer* r) {
@@ -81,13 +92,6 @@ void Wizard::onRender(SDL_Renderer* r) {
                 break;
             }
         }
-    }
-}
-
-void Wizard::onClick(Event::MouseButton b, bool clicked) {
-    if (clicked) {
-        ServiceSystem::Get<UpgradeService, UpgradeListObservable>()->next(
-            mUpgrades);
     }
 }
 
@@ -106,8 +110,14 @@ void Wizard::calcPower() {
     auto params = Parameters();
     Number power = (1 + params->get<WIZARD>(WizardParams::PowerUpgrade)) *
                    params->get<CRYSTAL>(CrystalParams::MagicEffect) *
-                   params->get<CATALYST>(CatalystParams::MagicEffect);
+                   params->get<CATALYST>(CatalystParams::MagicEffect) *
+                   max(1, params->get<WIZARD>(WizardParams::Speed) * 16 / 1000);
     params->set<WIZARD>(WizardParams::Power, power);
+    if (mPowerDisplay) {
+        Upgrade& up = Upgrade::Get(mPowerDisplay);
+        up.mEffect = power.toString() + "x";
+        up.updateInfo();
+    }
 }
 
 // Crystal
@@ -119,11 +129,7 @@ Crystal::Crystal() : WizardBase(CRYSTAL) {
 void Crystal::init() {
     WizardBase::init();
 
-    auto params = Parameters();
     mMagicText.tData.font = AssetManager::getFont(FONT);
-    mMagicText.tData.text =
-        params->get<CRYSTAL>(CrystalParams::Magic).toString();
-    mMagicText.renderText();
 
     mRenderSub =
         ServiceSystem::Get<RenderService, RenderObservable>()->subscribe(
@@ -134,8 +140,19 @@ void Crystal::init() {
                       std::placeholders::_2),
             mId);
 
+    // Power Display
+    Upgrade up{0};
+    up.setImg(WIZ_IMGS.at(mId));
+    up.setDescription("Multiplier based on crystal damage");
+    mMagicEffectDisplay =
+        mUpgrades->subscribe([](Upgrade& u) {}, [](Upgrade& u) { return 0; },
+                             [](Upgrade& u) { return true; }, up);
+
+    auto params = Parameters();
     mParamSubs.push_back(params->subscribe<CRYSTAL>(
         CrystalParams::Magic, std::bind(&Crystal::calcMagicEffect, this)));
+    mParamSubs.push_back(params->subscribe<CRYSTAL>(
+        CrystalParams::Magic, std::bind(&Crystal::drawMagic, this)));
 }
 
 void Crystal::onRender(SDL_Renderer* r) {
@@ -164,6 +181,17 @@ void Crystal::calcMagicEffect() {
     Number effect =
         (params->get<CRYSTAL>(CrystalParams::Magic) + 1).logTen() + 1;
     params->set<CRYSTAL>(CrystalParams::MagicEffect, effect);
+    if (mMagicEffectDisplay) {
+        Upgrade& up = Upgrade::Get(mMagicEffectDisplay);
+        up.mEffect = effect.toString() + "x";
+        up.updateInfo();
+    }
+}
+
+void Crystal::drawMagic() {
+    mMagicText.tData.text =
+        Parameters()->get<CRYSTAL>(CrystalParams::Magic).toString();
+    mMagicText.renderText();
 }
 
 // Catalyst
@@ -176,12 +204,7 @@ Catalyst::Catalyst() : WizardBase(CATALYST) {
 void Catalyst::init() {
     WizardBase::init();
 
-    auto params = Parameters();
     mMagicText.tData.font = AssetManager::getFont(FONT);
-    mMagicText.tData.text =
-        params->get<CATALYST>(CatalystParams::Magic).toString() + "/" +
-        params->get<CATALYST>(CatalystParams::Capacity).toString();
-    mMagicText.renderText();
 
     mRenderSub =
         ServiceSystem::Get<RenderService, RenderObservable>()->subscribe(
@@ -192,21 +215,32 @@ void Catalyst::init() {
                       std::placeholders::_2),
             mId);
 
+    // Power Display
+    Upgrade up{0};
+    up.setImg(WIZ_IMGS.at(mId));
+    up.setDescription("Multiplier from stored magic");
+    mMagicEffectDisplay =
+        mUpgrades->subscribe([](Upgrade& u) {}, [](Upgrade& u) { return 0; },
+                             [](Upgrade& u) { return true; }, up);
+
+    auto params = Parameters();
     mParamSubs.push_back(params->subscribe<CATALYST>(
         CatalystParams::Magic, std::bind(&Catalyst::calcMagicEffect, this)));
+    mParamSubs.push_back(
+        params->subscribe<
+            Keys<CATALYST, CatalystParams::Magic, CatalystParams::Capacity>>(
+            std::bind(&Catalyst::drawMagic, this)));
 }
 
 void Catalyst::onHit(WizardId src, Number val) {
     switch (src) {
         case WIZARD:
             auto params = Parameters();
-            Number cap = params->get<CATALYST>(CatalystParams::Capacity);
-            Number magic = max(
-                min(params->get<CATALYST>(CatalystParams::Magic) + val, cap),
-                0);
-            Parameters()->set<CATALYST>(CatalystParams::Magic, magic);
-            mMagicText.tData.text = magic.toString() + "/" + cap.toString();
-            mMagicText.renderText();
+            Number magic =
+                max(min(params->get<CATALYST>(CatalystParams::Magic) + val,
+                        params->get<CATALYST>(CatalystParams::Capacity)),
+                    0);
+            params->set<CATALYST>(CatalystParams::Magic, magic);
             break;
     }
 }
@@ -225,4 +259,16 @@ void Catalyst::calcMagicEffect() {
     Number effect =
         (params->get<CATALYST>(CatalystParams::Magic) + 1).logTen() + 1;
     params->set<CATALYST>(CatalystParams::MagicEffect, effect);
+    if (mMagicEffectDisplay) {
+        Upgrade& up = Upgrade::Get(mMagicEffectDisplay);
+        up.mEffect = effect.toString() + "x";
+        up.updateInfo();
+    }
+}
+
+void Catalyst::drawMagic() {
+    mMagicText.tData.text =
+        Parameters()->get<CATALYST>(CatalystParams::Magic).toString() + "/" +
+        Parameters()->get<CATALYST>(CatalystParams::Capacity).toString();
+    mMagicText.renderText();
 }

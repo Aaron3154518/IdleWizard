@@ -27,6 +27,45 @@
 
 typedef ReplyObservable<RenderData()> RenderReply;
 
+// Forward declaration
+class Upgrade;
+typedef std::shared_ptr<Upgrade> UpgradePtr;
+
+// For managing multiple upgrades
+typedef Observable<void(Upgrade&), Number(Upgrade&), bool(Upgrade&), Upgrade>
+    UpgradeListBase;
+class UpgradeList : public UpgradeListBase {
+   public:
+    enum : size_t { ON_LEVEL = 0, GET_COST, CAN_BUY, DATA };
+    enum UpgradeStatus : uint8_t {
+        BOUGHT = 0,
+        BUYABLE,
+        CANT_BUY,
+        NOT_BUYABLE,
+    };
+
+    void onSubscribe(SubscriptionPtr sub);
+
+    int size() const;
+
+    void onClick(SDL_Point mouse);
+    RenderObservable::SubscriptionPtr onHover(SDL_Point mouse,
+                                              SDL_Point relMouse);
+
+    void draw(TextureBuilder tex, float scroll);
+
+   private:
+    UpgradeStatus getSubStatus(SubscriptionPtr sub);
+    void onSubClick(SubscriptionPtr sub);
+
+    void computeRects();
+
+    double mScroll;
+    Rect mRect;
+    std::vector<std::pair<Rect, SubscriptionWPtr>> mBackRects, mFrontRects;
+};
+typedef std::shared_ptr<UpgradeList> UpgradeListPtr;
+
 struct Upgrade {
     // maxLevel < 0: Can buy infinitely
     // maxLevel = 0: Can't buy
@@ -51,44 +90,11 @@ struct Upgrade {
 
     static SharedTexture createDescription(std::string text);
 
+    static Upgrade& Get(UpgradeList::SubscriptionPtr sub);
+
     const static SDL_Color DESC_BKGRND;
     const static FontData DESC_FONT;
 };
-typedef std::shared_ptr<Upgrade> UpgradePtr;
-
-// For managing multiple upgrades
-typedef Observable<void(Upgrade&), Number(Upgrade&), bool(Upgrade&), Upgrade>
-    UpgradeListBase;
-class UpgradeList : public UpgradeListBase {
-   public:
-    enum : size_t { ON_LEVEL = 0, GET_COST, CAN_BUY, DATA };
-    enum UpgradeStatus : uint8_t {
-        BOUGHT = 0,
-        BUYABLE,
-        CANT_BUY,
-    };
-
-    void onSubscribe(SubscriptionPtr sub);
-
-    int count() const;
-
-    void onClick(SDL_Point mouse);
-    RenderObservable::SubscriptionPtr onHover(SDL_Point mouse,
-                                              SDL_Point relMouse);
-
-    void draw(TextureBuilder tex, float scroll);
-
-   private:
-    UpgradeStatus getSubStatus(SubscriptionPtr sub);
-    void onSubClick(SubscriptionPtr sub);
-
-    void computeRects();
-
-    double mScroll;
-    Rect mRect;
-    std::vector<std::pair<Rect, SubscriptionWPtr>> mBackRects, mFrontRects;
-};
-typedef std::shared_ptr<UpgradeList> UpgradeListPtr;
 
 // For setting current UpgradeObservable
 class UpgradeListObservable : public ForwardObservable<void(UpgradeListPtr)> {};

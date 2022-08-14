@@ -8,11 +8,13 @@
 namespace WizardParams {
 enum _ : uint8_t {
     Power = 0,
-    PowerUpgrade,
     Speed,
+    PowerUp,
+    DoubleChanceUp,
 
     PowerUpCost,
-    SpeedUpCost
+    SpeedUpCost,
+    DoubleChanceUpCost
 };
 }
 namespace CrystalParams {

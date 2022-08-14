@@ -6,7 +6,7 @@ const std::string Wizard::SPEED_UP_IMG = "res/upgrades/speed_upgrade.png";
 
 Wizard::Wizard() : WizardBase(WIZARD) {
     auto params = Parameters();
-    params->set<WIZARD>(WizardParams::PowerUpgrade, 0);
+    params->set<WIZARD>(WizardParams::PowerUp, 0);
     params->set<WIZARD>(WizardParams::Speed, 1);
 }
 
@@ -47,7 +47,7 @@ void Wizard::init() {
     up->setMaxLevel(1)
         .setCostSource<WIZARD, WizardParams::PowerUpCost>()
         .setMoneySource(Upgrade::ParamSources::CRYSTAL_MAGIC)
-        .setEffectSource<WIZARD, WizardParams::PowerUpgrade>(
+        .setEffectSource<WIZARD, WizardParams::PowerUp>(
             Upgrade::Defaults::AdditiveEffect)
         .setImg(POWER_UP_IMG)
         .setDescription("Increase Wizard base power by 1");
@@ -60,16 +60,16 @@ void Wizard::init() {
 
     // Speed Upgrade
     up = std::make_shared<Upgrade>();
-    up->setMaxLevel(5)
-        .setCostSource<WIZARD, WizardParams::SpeedUpCost>()
+    up->setMaxLevel(20)
+        .setCostSource<WIZARD, WizardParams::DoubleChanceUpCost>()
         .setMoneySource(Upgrade::ParamSources::CRYSTAL_MAGIC)
-        .setEffectSource<WIZARD, WizardParams::Speed>(
-            Upgrade::Defaults::MultiplicativeEffect)
+        .setEffectSource<WIZARD, WizardParams::DoubleChanceUp>(
+            Upgrade::Defaults::PercentEffect)
         .setImg(SPEED_UP_IMG)
-        .setDescription("Increase Wizard fire rate by 33%");
-    mSpeedUp = mUpgrades->subscribe(
+        .setDescription("Increase double fireball chance by +5%");
+    mDoubleChanceUp = mUpgrades->subscribe(
         [this](UpgradePtr u) {
-            u->getEffectSrc().set(Number(4. / 3.) ^ u->getLevel());
+            u->getEffectSrc().set(Number(.05) * u->getLevel());
             u->getCostSrc().set((Number(1.5) ^ u->getLevel()) * 100);
         },
         up);
@@ -77,7 +77,7 @@ void Wizard::init() {
     auto params = Parameters();
     mParamSubs.push_back(
         params->subscribe<
-            Keys<WIZARD, WizardParams::PowerUpgrade, WizardParams::Speed>,
+            Keys<WIZARD, WizardParams::PowerUp, WizardParams::Speed>,
             Keys<CRYSTAL, CrystalParams::MagicEffect>,
             Keys<CATALYST, CatalystParams::MagicEffect>>(
             std::bind(&Wizard::calcPower, this)));
@@ -105,18 +105,24 @@ void Wizard::onRender(SDL_Renderer* r) {
 
 bool Wizard::onTimer() {
     shootFireball();
+    float doubleChance =
+        Parameters()->get<WIZARD>(WizardParams::DoubleChanceUp).tofloat();
+    if (rDist(gen) < doubleChance) {
+        shootFireball((rDist(gen) - .5) * IMG_RECT.w(),
+                      (rDist(gen) - .5) * IMG_RECT.h());
+    }
     return true;
 }
 
-void Wizard::shootFireball() {
+void Wizard::shootFireball(float offX, float offY) {
     mFireballs.push_back(std::move(ComponentFactory<Fireball>::New(
-        mPos->rect.cX(), mPos->rect.cY(), mId, mTarget,
+        mPos->rect.cX() + offX, mPos->rect.cY() + offY, mId, mTarget,
         Parameters()->get<WIZARD>(WizardParams::Power))));
 }
 
 void Wizard::calcPower() {
     auto params = Parameters();
-    Number power = (1 + params->get<WIZARD>(WizardParams::PowerUpgrade)) *
+    Number power = (1 + params->get<WIZARD>(WizardParams::PowerUp)) *
                    params->get<CRYSTAL>(CrystalParams::MagicEffect) *
                    params->get<CATALYST>(CatalystParams::MagicEffect) *
                    max(1, params->get<WIZARD>(WizardParams::Speed) * 16 / 1000);
@@ -137,6 +143,10 @@ void Crystal::init() {
     mRenderSub =
         ServiceSystem::Get<RenderService, RenderObservable>()->subscribe(
             std::bind(&Crystal::onRender, this, std::placeholders::_1), mPos);
+    mMouseSub = ServiceSystem::Get<MouseService, MouseObservable>()->subscribe(
+        std::bind(&Crystal::onClick, this, std::placeholders::_1,
+                  std::placeholders::_2),
+        mPos);
     mTargetSub =
         ServiceSystem::Get<FireballService, TargetObservable>()->subscribe(
             std::bind(&Crystal::onHit, this, std::placeholders::_1,
@@ -166,6 +176,15 @@ void Crystal::onRender(SDL_Renderer* r) {
     mMagicText.dest.setHeight(FONT.h, Rect::Align::BOT_RIGHT);
     mMagicText.fitToTexture();
     TextureBuilder().draw(mMagicText);
+}
+
+void Crystal::onClick(Event::MouseButton b, bool clicked) {
+    WizardBase::onClick(b, clicked);
+    if (clicked) {
+        auto params = Parameters();
+        params->set<CRYSTAL>(CrystalParams::Magic,
+                             params->get<CRYSTAL>(CrystalParams::Magic) * 10);
+    }
 }
 
 void Crystal::onHit(WizardId src, Number val) {

@@ -18,6 +18,9 @@ std::string Upgrade::Defaults::AdditiveEffect(const Number& effect) {
 std::string Upgrade::Defaults::MultiplicativeEffect(const Number& effect) {
     return effect.toString() + "x";
 }
+std::string Upgrade::Defaults::PercentEffect(const Number& effect) {
+    return (effect * 100).toString() + "%";
+}
 
 int Upgrade::getMaxLevel() const { return mMaxLevel; }
 int Upgrade::getLevel() const { return mLevel; }

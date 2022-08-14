@@ -38,10 +38,11 @@ class Wizard : public WizardBase {
 
     void calcPower();
 
-    void shootFireball();
+    void shootFireball(float offX = 0, float offY = 0);
 
     TimerObservable::SubscriptionPtr mTimerSub;
-    UpgradeList::SubscriptionPtr mPowerDisplay, mTargetUp, mPowerUp, mSpeedUp;
+    UpgradeList::SubscriptionPtr mPowerDisplay, mTargetUp, mPowerUp,
+        mDoubleChanceUp;
 
     WizardId mTarget = CRYSTAL;
 
@@ -56,6 +57,7 @@ class Crystal : public WizardBase {
     void init();
 
     void onRender(SDL_Renderer* r);
+    void onClick(Event::MouseButton b, bool clicked);
     void onHit(WizardId src, Number val);
 
     void calcMagicEffect();

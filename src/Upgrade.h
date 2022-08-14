@@ -37,6 +37,7 @@ class Upgrade {
         static bool CanBuy(std::shared_ptr<Upgrade> u);
         static std::string AdditiveEffect(const Number& effect);
         static std::string MultiplicativeEffect(const Number& effect);
+        static std::string PercentEffect(const Number& effect);
     };
 
     Upgrade() = default;

@@ -55,8 +55,6 @@ class WizardBase : public Component {
     UpgradeListPtr mUpgrades = std::make_shared<UpgradeList>();
 
     std::mt19937 gen = std::mt19937(rand());
-    std::uniform_int_distribution<> dist =
-        std::uniform_int_distribution<>(1, size - 1);
     std::uniform_real_distribution<> rDist;
 };
 

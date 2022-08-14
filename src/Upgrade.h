@@ -26,13 +26,17 @@
 #include "WizardData.h"
 #include "WizardIds.h"
 
-typedef ReplyObservable<RenderData()> RenderReply;
-
 class Upgrade {
    public:
-    struct MoneySource {
+    struct ParamSources {
         const static ParamBase NONE;
         const static Param<CRYSTAL> CRYSTAL_MAGIC;
+    };
+
+    struct Defaults {
+        static bool CanBuy(std::shared_ptr<Upgrade> u);
+        static std::string AdditiveEffect(const Number& effect);
+        static std::string MultiplicativeEffect(const Number& effect);
     };
 
     Upgrade() = default;
@@ -47,6 +51,8 @@ class Upgrade {
     int getMaxLevel() const;
     int getLevel() const;
     const std::string& getEffect() const;
+    bool hasEffectSrc() const;
+    const ParamBase& getEffectSrc() const;
     bool hasCostSrc() const;
     const ParamBase& getCostSrc() const;
     bool hasMoneySrc() const;
@@ -54,7 +60,25 @@ class Upgrade {
 
     Upgrade& setMaxLevel(int maxLevel);
     Upgrade& setLevel(int level);
-    Upgrade& setEffect(std::string effect);
+    Upgrade& setEffect(const std::string& effect);
+    template <WizardId id>
+    Upgrade& setEffectSource(
+        const Param<id>& param,
+        std::function<std::string(const Number&)> onEffect) {
+        mEffectSrc = std::make_unique<Param<id>>(param);
+        mEffectSub = mEffectSrc->subscribe([this, onEffect]() {
+            mEffect = onEffect(mEffectSrc->get());
+            updateInfo();
+        });
+        return *this;
+    }
+    template <WizardId id, WizardType<id> key>
+    Upgrade& setEffectSource(
+        std::function<std::string(const Number&)> onEffect) {
+        setEffectSource(Param<id>(key), onEffect);
+        return *this;
+    }
+    Upgrade& clearEffectSource();
     template <WizardId id>
     Upgrade& setCostSource(const Param<id>& param) {
         mCostSrc = std::make_unique<Param<id>>(param);
@@ -89,9 +113,6 @@ class Upgrade {
 
     static SharedTexture createDescription(std::string text);
 
-    // Default buy function
-    static bool DefCanBuy(std::shared_ptr<Upgrade> u);
-
     const static SDL_Color DESC_BKGRND;
     const static FontData DESC_FONT;
 
@@ -103,8 +124,8 @@ class Upgrade {
     int mLevel = 0;
     std::string mEffect = "";
 
-    std::unique_ptr<ParamBase> mCostSrc, mMoneySrc;
-    ParameterObservable::SubscriptionPtr mCostSub;
+    std::unique_ptr<ParamBase> mCostSrc, mMoneySrc, mEffectSrc;
+    ParameterObservable::SubscriptionPtr mCostSub, mEffectSub;
 };
 
 typedef std::shared_ptr<Upgrade> UpgradePtr;

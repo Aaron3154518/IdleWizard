@@ -21,7 +21,11 @@ void Wizard::init() {
 
     // Power Display
     UpgradePtr up = std::make_shared<Upgrade>();
-    up->setMaxLevel(0).setImg(WIZ_IMGS.at(mId)).setDescription("Current power");
+    up->setMaxLevel(0)
+        .setEffectSource<WIZARD, WizardParams::Power>(
+            Upgrade::Defaults::MultiplicativeEffect)
+        .setImg(WIZ_IMGS.at(mId))
+        .setDescription("Current power");
     mPowerDisplay = mUpgrades->subscribe(up);
 
     // Target Upgrade
@@ -42,15 +46,15 @@ void Wizard::init() {
     up = std::make_shared<Upgrade>();
     up->setMaxLevel(1)
         .setCostSource<WIZARD, WizardParams::PowerUpCost>()
-        .setMoneySource(Upgrade::MoneySource::CRYSTAL_MAGIC)
+        .setMoneySource(Upgrade::ParamSources::CRYSTAL_MAGIC)
+        .setEffectSource<WIZARD, WizardParams::PowerUpgrade>(
+            Upgrade::Defaults::AdditiveEffect)
         .setImg(POWER_UP_IMG)
         .setDescription("Increase Wizard base power by 1");
     mPowerUp = mUpgrades->subscribe(
         [this](UpgradePtr u) {
-            Parameters()->set<WIZARD>(WizardParams::PowerUpgrade,
-                                      u->getLevel());
+            u->getEffectSrc().set(u->getLevel());
             u->getCostSrc().set(25);
-            u->setEffect("+" + std::to_string(u->getLevel()));
         },
         up);
 
@@ -58,15 +62,15 @@ void Wizard::init() {
     up = std::make_shared<Upgrade>();
     up->setMaxLevel(5)
         .setCostSource<WIZARD, WizardParams::SpeedUpCost>()
-        .setMoneySource(Upgrade::MoneySource::CRYSTAL_MAGIC)
+        .setMoneySource(Upgrade::ParamSources::CRYSTAL_MAGIC)
+        .setEffectSource<WIZARD, WizardParams::Speed>(
+            Upgrade::Defaults::MultiplicativeEffect)
         .setImg(SPEED_UP_IMG)
         .setDescription("Increase Wizard fire rate by 33%");
     mSpeedUp = mUpgrades->subscribe(
         [this](UpgradePtr u) {
-            Number speed = (Number(4. / 3.) ^ u->getLevel());
-            Parameters()->set<WIZARD>(WizardParams::Speed, speed);
+            u->getEffectSrc().set(Number(4. / 3.) ^ u->getLevel());
             u->getCostSrc().set((Number(1.5) ^ u->getLevel()) * 100);
-            u->setEffect(speed.toString() + "x");
         },
         up);
 
@@ -117,11 +121,6 @@ void Wizard::calcPower() {
                    params->get<CATALYST>(CatalystParams::MagicEffect) *
                    max(1, params->get<WIZARD>(WizardParams::Speed) * 16 / 1000);
     params->set<WIZARD>(WizardParams::Power, power);
-    if (mPowerDisplay) {
-        UpgradeList::Get(mPowerDisplay)
-            ->setEffect(power.toString() + "x")
-            .updateInfo();
-    }
 }
 
 // Crystal
@@ -147,6 +146,8 @@ void Crystal::init() {
     // Power Display
     UpgradePtr up = std::make_shared<Upgrade>();
     up->setMaxLevel(0)
+        .setEffectSource<CRYSTAL, CrystalParams::MagicEffect>(
+            Upgrade::Defaults::MultiplicativeEffect)
         .setImg(WIZ_IMGS.at(mId))
         .setDescription("Multiplier based on crystal damage");
     mMagicEffectDisplay = mUpgrades->subscribe(up);
@@ -184,11 +185,6 @@ void Crystal::calcMagicEffect() {
     Number effect =
         (params->get<CRYSTAL>(CrystalParams::Magic) + 1).logTen() + 1;
     params->set<CRYSTAL>(CrystalParams::MagicEffect, effect);
-    if (mMagicEffectDisplay) {
-        UpgradeList::Get(mMagicEffectDisplay)
-            ->setEffect(effect.toString() + "x")
-            .updateInfo();
-    }
 }
 
 void Crystal::drawMagic() {
@@ -221,6 +217,8 @@ void Catalyst::init() {
     // Power Display
     UpgradePtr up = std::make_shared<Upgrade>();
     up->setMaxLevel(0)
+        .setEffectSource<CATALYST, CatalystParams::MagicEffect>(
+            Upgrade::Defaults::MultiplicativeEffect)
         .setImg(WIZ_IMGS.at(mId))
         .setDescription("Multiplier from stored magic");
     mMagicEffectDisplay = mUpgrades->subscribe(up);
@@ -261,11 +259,6 @@ void Catalyst::calcMagicEffect() {
     Number effect =
         (params->get<CATALYST>(CatalystParams::Magic) + 1).logTen() + 1;
     params->set<CATALYST>(CatalystParams::MagicEffect, effect);
-    if (mMagicEffectDisplay) {
-        UpgradeList::Get(mMagicEffectDisplay)
-            ->setEffect(effect.toString() + "x")
-            .updateInfo();
-    }
 }
 
 void Catalyst::drawMagic() {

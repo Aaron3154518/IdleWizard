@@ -4,20 +4,35 @@
 const SDL_Color Upgrade::DESC_BKGRND{175, 175, 175, 255};
 const FontData Upgrade::DESC_FONT{-1, 20, "|"};
 
-const ParamBase Upgrade::MoneySource::NONE;
-const Param<CRYSTAL> Upgrade::MoneySource::CRYSTAL_MAGIC =
+const ParamBase Upgrade::ParamSources::NONE;
+const Param<CRYSTAL> Upgrade::ParamSources::CRYSTAL_MAGIC =
     Param<CRYSTAL>(CrystalParams::Magic);
+
+bool Upgrade::Defaults::CanBuy(UpgradePtr u) {
+    return !u->mCostSrc || !u->mMoneySrc ||
+           u->mCostSrc->get() <= u->mMoneySrc->get();
+}
+std::string Upgrade::Defaults::AdditiveEffect(const Number& effect) {
+    return "+" + effect.toString();
+}
+std::string Upgrade::Defaults::MultiplicativeEffect(const Number& effect) {
+    return effect.toString() + "x";
+}
 
 int Upgrade::getMaxLevel() const { return mMaxLevel; }
 int Upgrade::getLevel() const { return mLevel; }
 const std::string& Upgrade::getEffect() const { return mEffect; }
+bool Upgrade::hasEffectSrc() const { return (bool)mEffectSrc; }
+const ParamBase& Upgrade::getEffectSrc() const {
+    return hasEffectSrc() ? *mEffectSrc : ParamSources::NONE;
+}
 bool Upgrade::hasCostSrc() const { return (bool)mCostSrc; }
 const ParamBase& Upgrade::getCostSrc() const {
-    return hasCostSrc() ? *mCostSrc : MoneySource::NONE;
+    return hasCostSrc() ? *mCostSrc : ParamSources::NONE;
 }
 bool Upgrade::hasMoneySrc() const { return (bool)mMoneySrc; }
 const ParamBase& Upgrade::getMoneySrc() const {
-    return hasMoneySrc() ? *mMoneySrc : MoneySource::NONE;
+    return hasMoneySrc() ? *mMoneySrc : ParamSources::NONE;
 }
 
 Upgrade& Upgrade::setMaxLevel(int maxLevel) {
@@ -28,8 +43,13 @@ Upgrade& Upgrade::setLevel(int level) {
     mLevel = level;
     return *this;
 }
-Upgrade& Upgrade::setEffect(std::string effect) {
+Upgrade& Upgrade::setEffect(const std::string& effect) {
     mEffect = effect;
+    return *this;
+}
+Upgrade& Upgrade::clearEffectSource() {
+    mEffectSrc.reset();
+    mEffectSub.reset();
     return *this;
 }
 Upgrade& Upgrade::clearCostSource() {
@@ -109,19 +129,14 @@ SharedTexture Upgrade::createDescription(std::string text) {
     return tData.renderTextWrapped();
 }
 
-bool Upgrade::DefCanBuy(UpgradePtr u) {
-    return !u->mCostSrc || !u->mMoneySrc ||
-           u->mCostSrc->get() <= u->mMoneySrc->get();
-}
-
 // UpgradeList
 UpgradeList::SubscriptionPtr UpgradeList::subscribe(
     std::function<void(UpgradePtr)> func, UpgradePtr up) {
-    return UpgradeListBase::subscribe(func, Upgrade::DefCanBuy, up);
+    return UpgradeListBase::subscribe(func, Upgrade::Defaults::CanBuy, up);
 }
 UpgradeList::SubscriptionPtr UpgradeList::subscribe(UpgradePtr up) {
-    return UpgradeListBase::subscribe([](UpgradePtr u) {}, Upgrade::DefCanBuy,
-                                      up);
+    return UpgradeListBase::subscribe([](UpgradePtr u) {},
+                                      Upgrade::Defaults::CanBuy, up);
 }
 
 void UpgradeList::onSubscribe(SubscriptionPtr sub) {

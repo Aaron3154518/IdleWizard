@@ -1,7 +1,5 @@
 #include "Upgrade.h"
 
-#include "Wizard.h"
-
 // Upgrade
 const SDL_Color Upgrade::DESC_BKGRND{175, 175, 175, 255};
 const FontData Upgrade::DESC_FONT{-1, 20, "|"};
@@ -285,13 +283,13 @@ void UpgradeList::computeRects() {
 
 // UpgradeScroller
 const SDL_Color UpgradeScroller::BGKRND = GRAY;
+const Rect UpgradeScroller::RECT(0, 0, 100, 100);
 
 UpgradeScroller::UpgradeScroller()
     : mPos(std::make_shared<UIComponent>(Rect(), Elevation::UPGRADES)),
       mDrag(std::make_shared<DragComponent>(-1)) {
     SDL_Point screenDim = RenderSystem::getWindowSize();
-    mPos->rect = Rect(0, 0, screenDim.x,
-                      fmin(screenDim.y / 5, WizardBase::IMG_RECT.h()));
+    mPos->rect = Rect(0, 0, screenDim.x, fmin(screenDim.y / 5, RECT.h()));
     mPos->rect.setPosX(screenDim.x / 2, Rect::Align::CENTER);
 
     mTex = TextureBuilder(mPos->rect.W(), mPos->rect.H());
@@ -330,8 +328,7 @@ void UpgradeScroller::init() {
 }
 
 void UpgradeScroller::onResize(ResizeData data) {
-    mPos->rect =
-        Rect(0, 0, data.newW, fmin(data.newH / 5, WizardBase::IMG_RECT.h()));
+    mPos->rect = Rect(0, 0, data.newW, fmin(data.newH / 5, RECT.h()));
     mPos->rect.setPosX(data.newW / 2, Rect::Align::CENTER);
 
     mTex = TextureBuilder(mPos->rect.W(), mPos->rect.H());

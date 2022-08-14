@@ -101,6 +101,7 @@ class UpgradeScroller : public Component {
     UpgradeScroller();
 
     const static SDL_Color BGKRND;
+    const static Rect RECT;
 
    private:
     void init();

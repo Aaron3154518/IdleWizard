@@ -46,10 +46,9 @@ struct WizardTypeMapImpl<_id, Pair<id, T>, Tail...>
 };
 
 template <WizardId id>
-using WizardTypeMap =
-    WizardTypeMapImpl<id, Pair<WizardId::WIZARD, WizardParams::_>,
-                      Pair<WizardId::CRYSTAL, CrystalParams::_>,
-                      Pair<WizardId::CATALYST, CatalystParams::_>>;
+using WizardTypeMap = WizardTypeMapImpl<id, Pair<WIZARD, WizardParams::_>,
+                                        Pair<CRYSTAL, CrystalParams::_>,
+                                        Pair<CATALYST, CatalystParams::_>>;
 
 template <WizardId id>
 using WizardType = typename WizardTypeMap<id>::type;

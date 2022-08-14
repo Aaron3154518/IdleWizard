@@ -28,7 +28,7 @@ class FireballObservable : public FireballObservableBase {
    private:
     void onSubscribe(SubscriptionPtr sub);
 
-    SDL_FPoint mTargets[WizardId::size];
+    SDL_FPoint mTargets[size];
 };
 
 typedef Observable<void(WizardId, Number), WizardId> TargetObservableBase;

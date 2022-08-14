@@ -1,7 +1,5 @@
 #include "WizardBase.h"
 
-#include "WizardData.h"
-
 // WizardBase
 const Rect WizardBase::IMG_RECT(0, 0, 100, 100);
 const FontData WizardBase::FONT{-1, IMG_RECT.H() / 4, "|"};

@@ -56,7 +56,7 @@ class WizardBase : public Component {
 
     std::mt19937 gen = std::mt19937(rand());
     std::uniform_int_distribution<> dist =
-        std::uniform_int_distribution<>(1, WizardId::size - 1);
+        std::uniform_int_distribution<>(1, size - 1);
     std::uniform_real_distribution<> rDist;
 };
 

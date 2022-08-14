@@ -1,5 +1,5 @@
-#ifndef WIZARD_UPDATE_H
-#define WIZARD_UPDATE_H
+#ifndef WIZARD_DATA_H
+#define WIZARD_DATA_H
 
 #include <ServiceSystem/Component.h>
 #include <ServiceSystem/CoreServices/UpdateService.h>
@@ -30,6 +30,36 @@ struct ParameterList : public ParameterListBase {
     std::unordered_map<K, Number> mParameters;
 };
 
+// Forward declarations
+class ParameterMap;
+
+// Helper classes for subscribing keys
+template <WizardId id, WizardType<id>... keys>
+struct Keys {};
+
+template <class...>
+struct KeySubscriber;
+
+template <>
+struct KeySubscriber<> {
+    static void subscribe(ParameterMap* map, ParameterSubscriptionPtr sub) {}
+
+    static ParameterSubscriptionPtr subscribe(ParameterMap* map,
+                                              std::function<void()> func) {
+        return nullptr;
+    }
+};
+
+template <WizardId id, WizardType<id>... keys, class... Tail>
+struct KeySubscriber<Keys<id, keys...>, Tail...>
+    : public KeySubscriber<Tail...> {
+    static void subscribe(ParameterMap* map, ParameterSubscriptionPtr sub);
+
+    static ParameterSubscriptionPtr subscribe(ParameterMap* map,
+                                              std::function<void()> func);
+};
+
+// Stores numbers by wizard id and param enum
 class ParameterMap : public ObservableBase {
    public:
     template <WizardId id>
@@ -54,13 +84,17 @@ class ParameterMap : public ObservableBase {
         return sub;
     }
 
-    template <WizardId id, WizardId... ids>
-    ParameterSubscriptionPtr subscribe(
-        std::function<void()> func, std::initializer_list<WizardType<id>> keys,
-        std::initializer_list<WizardType<ids>>... tail) {
-        ParameterSubscriptionPtr sub = subscribe<id>(keys, func);
-        subscribe<ids...>(sub, tail...);
-        return sub;
+    template <WizardId id>
+    void subscribe(std::initializer_list<WizardType<id>> keys,
+                   ParameterSubscriptionPtr sub) {
+        for (auto key : keys) {
+            _observable<id>(key).subscribe(sub);
+        }
+    }
+
+    template <class... Ts>
+    ParameterSubscriptionPtr subscribe(std::function<void()> func) {
+        return KeySubscriber<Ts...>::subscribe(this, func);
     }
 
     template <WizardId id>
@@ -75,25 +109,6 @@ class ParameterMap : public ObservableBase {
     }
 
    private:
-    template <WizardId id>
-    void subscribe(std::initializer_list<WizardType<id>> keys,
-                   ParameterSubscriptionPtr sub) {
-        for (auto key : keys) {
-            _observable<id>(key).subscribe(sub);
-        }
-    }
-
-    template <WizardId...>
-    void subscribe(ParameterSubscriptionPtr sub) {}
-
-    template <WizardId id, WizardId... ids>
-    void subscribe(ParameterSubscriptionPtr sub,
-                   std::initializer_list<WizardType<id>> keys,
-                   std::initializer_list<WizardType<ids>>... tail) {
-        subscribe<id>(keys, sub);
-        subscribe<ids...>(sub, tail...);
-    }
-
     template <WizardId id>
     ParameterList<WizardType<id>>& _list(WizardType<id> key) {
         if (mParams.find(id) == mParams.end()) {
@@ -116,5 +131,23 @@ class ParameterMap : public ObservableBase {
 };
 
 class ParameterService : public Service<ParameterMap> {};
+
+std::shared_ptr<ParameterMap> Parameters();
+
+// Implement KeySubscriber after defining ParameterMap
+template <WizardId id, WizardType<id>... keys, class... Tail>
+void KeySubscriber<Keys<id, keys...>, Tail...>::subscribe(
+    ParameterMap* map, ParameterSubscriptionPtr sub) {
+    map->subscribe<id>({keys...}, sub);
+    KeySubscriber<Tail...>::subscribe(map, sub);
+}
+
+template <WizardId id, WizardType<id>... keys, class... Tail>
+ParameterSubscriptionPtr KeySubscriber<Keys<id, keys...>, Tail...>::subscribe(
+    ParameterMap* map, std::function<void()> func) {
+    ParameterSubscriptionPtr sub = map->subscribe<id>({keys...}, func);
+    KeySubscriber<Tail...>::subscribe(map, sub);
+    return sub;
+}
 
 #endif

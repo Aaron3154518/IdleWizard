@@ -44,7 +44,7 @@ class Wizard : public WizardBase {
     TimerObservable::SubscriptionPtr mTimerSub;
     UpgradeList::SubscriptionPtr mTargetUp, mPowerUp, mSpeedUp;
 
-    WizardId mTarget = WizardId::CRYSTAL;
+    WizardId mTarget = CRYSTAL;
 
     std::vector<std::unique_ptr<Fireball>> mFireballs;
 };

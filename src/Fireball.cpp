@@ -6,8 +6,8 @@ void FireballObservable::onSubscribe(SubscriptionPtr sub) {
 }
 
 void FireballObservable::next(WizardId id, SDL_FPoint pos) {
-    if (id == WizardId::size) {
-        throw std::runtime_error("Cannot use WizardId::size as a target");
+    if (id == size) {
+        throw std::runtime_error("Cannot use size as a target");
     }
     mTargets[id] = pos;
     for (auto sub : *this) {

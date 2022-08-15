@@ -4,6 +4,10 @@
 
 #include <memory>
 
+#include "Catalyst.h"
+#include "Crystal.h"
+#include "PowerWizard.h"
+#include "TimeWizard.h"
 #include "Upgrade.h"
 #include "Wizard.h"
 

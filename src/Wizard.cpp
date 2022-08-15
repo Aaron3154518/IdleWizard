@@ -9,8 +9,8 @@ const std::string Wizard::FIREBALL_IMG = "res/projectiles/fireball.png";
 
 Wizard::Wizard() : WizardBase(WIZARD) {
     auto params = Parameters();
-    params->set<WIZARD>(WizardParams::Power, 1);
-    params->set<WIZARD>(WizardParams::Speed, 1);
+    params->set<WIZARD>(WizardParams::BasePower, 1);
+    params->set<WIZARD>(WizardParams::BaseSpeed, 1);
     params->set<WIZARD>(WizardParams::PowerUp, 0);
     params->set<WIZARD>(WizardParams::MultiUp, 0);
     params->set<WIZARD>(WizardParams::PowerWizEffect, 1);
@@ -89,19 +89,18 @@ void Wizard::init() {
 
     auto params = Parameters();
     mParamSubs.push_back(
-        params
-            ->subscribe<Keys<WIZARD, WizardParams::PowerUp, WizardParams::Speed,
-                             WizardParams::PowerWizEffect>,
-                        Keys<CRYSTAL, CrystalParams::MagicEffect>,
-                        Keys<CATALYST, CatalystParams::MagicEffect>>(
-                std::bind(&Wizard::calcPower, this)));
+        params->subscribe<
+            Keys<WIZARD, WizardParams::BasePower, WizardParams::PowerUp,
+                 WizardParams::Speed, WizardParams::PowerWizEffect>,
+            Keys<CRYSTAL, CrystalParams::MagicEffect>,
+            Keys<CATALYST, CatalystParams::MagicEffect>>(
+            std::bind(&Wizard::calcPower, this)));
     mParamSubs.push_back(
-        params->subscribe<WIZARD>(WizardParams::Speed, [this]() {
-            Timer& timer = mTimerSub->get<TimerObservable::DATA>();
-            timer.length = fmax(
-                1000 / Parameters()->get<WIZARD>(WizardParams::Speed).tofloat(),
-                16);
-        }));
+        params->subscribe<Keys<WIZARD, WizardParams::BaseSpeed>,
+                          Keys<TIME_WIZARD, TimeWizardParams::SpeedEffect>>(
+            std::bind(&Wizard::calcSpeed, this)));
+    mParamSubs.push_back(params->subscribe<WIZARD>(
+        WizardParams::Speed, std::bind(&Wizard::calcTimer, this)));
 }
 
 void Wizard::onRender(SDL_Renderer* r) {
@@ -165,12 +164,29 @@ std::unique_ptr<Fireball>& Wizard::shootFireball() {
 
 void Wizard::calcPower() {
     auto params = Parameters();
-    Number power = (1 + params->get<WIZARD>(WizardParams::PowerUp)) *
+    Number power = (params->get<WIZARD>(WizardParams::BasePower) +
+                    params->get<WIZARD>(WizardParams::PowerUp)) *
                    params->get<CRYSTAL>(CrystalParams::MagicEffect) *
                    params->get<CATALYST>(CatalystParams::MagicEffect) *
                    params->get<WIZARD>(WizardParams::PowerWizEffect) *
                    max(1, params->get<WIZARD>(WizardParams::Speed) * 16 / 1000);
     params->set<WIZARD>(WizardParams::Power, power);
+}
+
+void Wizard::calcSpeed() {
+    auto params = Parameters();
+    Number speed = params->get<WIZARD>(WizardParams::BaseSpeed) *
+                   params->get<TIME_WIZARD>(TimeWizardParams::SpeedEffect);
+    params->set<WIZARD>(WizardParams::Speed, speed);
+}
+
+void Wizard::calcTimer() {
+    Timer& timer = mTimerSub->get<TimerObservable::DATA>();
+    float div = Parameters()->get<WIZARD>(WizardParams::Speed).tofloat();
+    if (div <= 0) {
+        div = 1;
+    }
+    timer.length = fmax(1000 / div, 16);
 }
 
 // Crystal
@@ -356,9 +372,9 @@ const std::string PowerWizard::FIREBALL_IMG = "res/projectiles/fireball2.png";
 
 PowerWizard::PowerWizard() : WizardBase(POWER_WIZARD) {
     auto params = Parameters();
-    params->set<POWER_WIZARD>(PowerWizardParams::Power, 5);
+    params->set<POWER_WIZARD>(PowerWizardParams::BasePower, 5);
+    params->set<POWER_WIZARD>(PowerWizardParams::BaseSpeed, .25);
     params->set<POWER_WIZARD>(PowerWizardParams::FireRingEffect, 1);
-    params->set<POWER_WIZARD>(PowerWizardParams::Speed, .25);
     params->set<POWER_WIZARD>(PowerWizardParams::Duration, 1000);
 }
 
@@ -382,18 +398,20 @@ void PowerWizard::init() {
     mPowerDisplay = mUpgrades->subscribe(up);
 
     auto params = Parameters();
-    mParamSubs.push_back(params->subscribe<POWER_WIZARD>(
-        PowerWizardParams::Power,
-        std::bind(&PowerWizard::calcFireRingEffect, this)));
     mParamSubs.push_back(
-        params->subscribe<POWER_WIZARD>(PowerWizardParams::Speed, [this]() {
-            Timer& timer = mTimerSub->get<TimerObservable::DATA>();
-            timer.length =
-                fmax(1000 / Parameters()
-                                ->get<POWER_WIZARD>(PowerWizardParams::Speed)
-                                .tofloat(),
-                     16);
-        }));
+        params->subscribe<Keys<POWER_WIZARD, PowerWizardParams::BasePower,
+                               PowerWizardParams::Speed>>(
+            std::bind(&PowerWizard::calcPower, this)));
+
+    mParamSubs.push_back(
+        params->subscribe<Keys<POWER_WIZARD, PowerWizardParams::BaseSpeed>,
+                          Keys<TIME_WIZARD, TimeWizardParams::SpeedEffect>>(
+            std::bind(&PowerWizard::calcSpeed, this)));
+    mParamSubs.push_back(
+        params->subscribe<Keys<POWER_WIZARD, PowerWizardParams::Power>>(
+            std::bind(&PowerWizard::calcFireRingEffect, this)));
+    mParamSubs.push_back(params->subscribe<POWER_WIZARD>(
+        PowerWizardParams::Speed, std::bind(&PowerWizard::calcTimer, this)));
 }
 
 void PowerWizard::onRender(SDL_Renderer* r) {
@@ -423,10 +441,119 @@ std::unique_ptr<Fireball>& PowerWizard::shootFireball() {
     return mFireballs.back();
 }
 
+void PowerWizard::calcPower() {
+    auto params = Parameters();
+    Number power =
+        params->get<POWER_WIZARD>(PowerWizardParams::BasePower) *
+        max(1, params->get<POWER_WIZARD>(PowerWizardParams::Speed) * 16 / 1000);
+    params->set<POWER_WIZARD>(PowerWizardParams::Power, power);
+}
+
+void PowerWizard::calcSpeed() {
+    auto params = Parameters();
+    Number speed = params->get<POWER_WIZARD>(PowerWizardParams::BaseSpeed) *
+                   params->get<TIME_WIZARD>(TimeWizardParams::SpeedEffect);
+    params->set<POWER_WIZARD>(PowerWizardParams::Speed, speed);
+}
+
+void PowerWizard::calcTimer() {
+    Timer& timer = mTimerSub->get<TimerObservable::DATA>();
+    float div =
+        Parameters()->get<POWER_WIZARD>(PowerWizardParams::Speed).tofloat();
+    if (div <= 0) {
+        div = 1;
+    }
+    timer.length = fmax(1000 / div, 16);
+}
+
 void PowerWizard::calcFireRingEffect() {
     auto params = Parameters();
     Number effect =
         (params->get<POWER_WIZARD>(PowerWizardParams::Power).logTenCopy() + 1)
             .sqrt();
     params->set<POWER_WIZARD>(PowerWizardParams::FireRingEffect, effect);
+}
+
+// TimeWizard
+const std::string TimeWizard::TIME_WIZ_ACTIVE =
+    "res/wizards/time_wizard_active.png";
+
+TimeWizard::TimeWizard() : WizardBase(TIME_WIZARD) {
+    auto params = Parameters();
+    params->set<TIME_WIZARD>(TimeWizardParams::SpeedPower, 1.5);
+    params->set<TIME_WIZARD>(TimeWizardParams::SpeedEffect, 1);
+}
+
+void TimeWizard::init() {
+    WizardBase::init();
+
+    mUpdateSub =
+        ServiceSystem::Get<UpdateService, UpdateObservable>()->subscribe(
+            std::bind(&TimeWizard::onUpdate, this, std::placeholders::_1));
+
+    // Power Display
+    UpgradePtr up = std::make_shared<Upgrade>();
+    up->setMaxLevel(0)
+        .setEffectSource<TIME_WIZARD, TimeWizardParams::SpeedCost>(
+            [](const Number& cost) {
+                auto params = Parameters();
+                std::stringstream ss;
+                ss << params->get<TIME_WIZARD>(TimeWizardParams::SpeedEffect)
+                   << "x\n-$"
+                   << params->get<TIME_WIZARD>(TimeWizardParams::SpeedCost)
+                   << "/s";
+                return ss.str();
+            })
+        .setImg(WIZ_IMGS.at(mId))
+        .setDescription("Speed multiplier");
+    mEffectDisplay = mUpgrades->subscribe(up);
+
+    // Active toggle
+    up = std::make_shared<Upgrade>();
+    up->setMaxLevel(-1).setImg(WIZ_IMGS.at(mId));
+    mActiveUp = mUpgrades->subscribe(
+        [this](UpgradePtr u) {
+            mActive = u->getLevel() % 2 != 0;
+            u->setLevel(u->getLevel() % 2)
+                .setEffect(mActive ? "Active" : "Inactive")
+                .setImg(mActive ? TIME_WIZ_ACTIVE : WIZ_IMGS.at(mId));
+            mImg.texture = u->mImg;
+        },
+        up);
+
+    auto params = Parameters();
+    mParamSubs.push_back(params->subscribe<TIME_WIZARD>(
+        TimeWizardParams::SpeedEffect, std::bind(&TimeWizard::calcCost, this)));
+}
+
+void TimeWizard::onUpdate(Time dt) {
+    auto params = Parameters();
+    if (mActive) {
+        Number cost =
+            params->get<TIME_WIZARD>(TimeWizardParams::SpeedCost) * dt.s();
+        Number money = params->get<CRYSTAL>(CrystalParams::Magic);
+        Number effect = params->get<TIME_WIZARD>(TimeWizardParams::SpeedEffect);
+        if (cost <= money) {
+            params->set<CRYSTAL>(CrystalParams::Magic, money - cost);
+            if (!mCanAfford) {
+                params->set<TIME_WIZARD>(
+                    TimeWizardParams::SpeedEffect,
+                    params->get<TIME_WIZARD>(TimeWizardParams::SpeedPower));
+            }
+            mCanAfford = true;
+        } else if (mCanAfford) {
+            params->set<TIME_WIZARD>(TimeWizardParams::SpeedEffect, 1);
+            mCanAfford = false;
+        }
+    } else if (mCanAfford) {
+        params->set<TIME_WIZARD>(TimeWizardParams::SpeedEffect, 1);
+        mCanAfford = false;
+    }
+}
+
+void TimeWizard::calcCost() {
+    auto params = Parameters();
+    params->set<TIME_WIZARD>(
+        TimeWizardParams::SpeedCost,
+        10 ^ params->get<TIME_WIZARD>(TimeWizardParams::SpeedPower));
 }

@@ -22,6 +22,8 @@ int main(int argc, char* argv[]) {
     std::unique_ptr<Catalyst> crystal = ComponentFactory<Catalyst>::New();
     std::unique_ptr<PowerWizard> powerWizard =
         ComponentFactory<PowerWizard>::New();
+    std::unique_ptr<TimeWizard> timeWizard =
+        ComponentFactory<TimeWizard>::New();
 
     GameSystem::Run();
 

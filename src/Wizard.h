@@ -40,6 +40,8 @@ class Wizard : public WizardBase {
     void onHit(WizardId src, const Number& val);
 
     void calcPower();
+    void calcSpeed();
+    void calcTimer();
 
     std::unique_ptr<Fireball>& shootFireball();
 
@@ -109,12 +111,36 @@ class PowerWizard : public WizardBase {
     void onRender(SDL_Renderer* r);
     bool onTimer();
 
+    void calcPower();
+    void calcSpeed();
+    void calcTimer();
     void calcFireRingEffect();
 
     std::unique_ptr<Fireball>& shootFireball();
 
     TimerObservable::SubscriptionPtr mTimerSub;
     UpgradeList::SubscriptionPtr mPowerDisplay;
+
+    std::vector<std::unique_ptr<Fireball>> mFireballs;
+};
+
+class TimeWizard : public WizardBase {
+   public:
+    TimeWizard();
+
+    const static std::string TIME_WIZ_ACTIVE;
+
+   private:
+    void init();
+
+    void onUpdate(Time dt);
+
+    void calcCost();
+
+    bool mActive = false, mCanAfford = false;
+
+    UpdateObservable::SubscriptionPtr mUpdateSub;
+    UpgradeList::SubscriptionPtr mEffectDisplay, mActiveUp;
 
     std::vector<std::unique_ptr<Fireball>> mFireballs;
 };

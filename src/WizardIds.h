@@ -9,6 +9,7 @@ enum WizardId : uint8_t {
     CATALYST,
     WIZARD,
     POWER_WIZARD,
+    TIME_WIZARD,
 
     size
 };
@@ -21,12 +22,14 @@ const WizardMap<std::string> WIZ_IMGS = {
     {CRYSTAL, WIZ_DIR + "crystal.png"},
     {CATALYST, WIZ_DIR + "catalyst.png"},
     {WIZARD, WIZ_DIR + "wizard.png"},
-    {POWER_WIZARD, WIZ_DIR + "power_wizard.png"}};
+    {POWER_WIZARD, WIZ_DIR + "power_wizard.png"},
+    {TIME_WIZARD, WIZ_DIR + "time_wizard.png"}};
 
 const WizardMap<std::string> WIZ_NAMES = {{CRYSTAL, "Crystal"},
                                           {CATALYST, "Catalyst"},
                                           {WIZARD, "Wizard"},
-                                          {POWER_WIZARD, "Power Wizard"}};
+                                          {POWER_WIZARD, "Power Wizard"},
+                                          {TIME_WIZARD, "Time Wizard"}};
 
 enum Elevation { EFFECTS = 0, UPGRADES = 1, WIZARDS = 2, OVERLAYS = 10 };
 

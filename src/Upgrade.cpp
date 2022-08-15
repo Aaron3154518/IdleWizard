@@ -76,8 +76,10 @@ Upgrade& Upgrade::setDescription(std::string desc) {
 
 void Upgrade::drawDescription(TextureBuilder tex, SDL_Point offset) const {
     RenderData descData;
-    descData.texture = mDesc;
-    descData.fitToTexture(Rect::TOP_LEFT);
+    if (mDesc) {
+        descData.texture = mDesc;
+        descData.fitToTexture(Rect::TOP_LEFT);
+    }
 
     if (mIncludeInfo && mInfo) {
         RenderData infoData;
@@ -92,8 +94,10 @@ void Upgrade::drawDescription(TextureBuilder tex, SDL_Point offset) const {
         tex.draw(infoData);
     }
 
-    descData.dest.move(offset.x, offset.y);
-    tex.draw(descData);
+    if (mDesc) {
+        descData.dest.move(offset.x, offset.y);
+        tex.draw(descData);
+    }
 }
 
 std::string Upgrade::getInfo() const {

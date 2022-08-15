@@ -66,7 +66,6 @@ Upgrade& Upgrade::clearMoneySource() {
 }
 Upgrade& Upgrade::setImg(std::string img) {
     mImg = AssetManager::getTexture(img);
-    updateInfo();
     return *this;
 }
 Upgrade& Upgrade::setDescription(std::string desc) {

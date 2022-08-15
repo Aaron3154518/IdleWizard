@@ -475,31 +475,31 @@ void PowerWizard::calcFireRingEffect() {
 }
 
 // TimeWizard
-const std::string TimeWizard::TIME_WIZ_ACTIVE =
-    "res/wizards/time_wizard_active.png";
-const std::string TimeWizard::TIME_WIZ_FREEZE =
-    "res/wizards/time_wizard_freeze.png";
+const std::string TimeWizard::ACTIVE_IMG = "res/wizards/time_wizard_active.png";
+const std::string TimeWizard::FREEZE_IMG = "res/wizards/time_wizard_freeze.png";
+const std::string TimeWizard::FREEZE_UP_IMG =
+    "res/upgrades/time_freeze_upgrade.png";
 
 TimeWizard::TimeWizard() : WizardBase(TIME_WIZARD) {
     auto params = Parameters();
     params->set<TIME_WIZARD>(TimeWizardParams::SpeedPower, 1.5);
     params->set<TIME_WIZARD>(TimeWizardParams::SpeedEffect, 1);
-    params->set<TIME_WIZARD>(TimeWizardParams::FreezeDelay, 30000);
-    params->set<TIME_WIZARD>(TimeWizardParams::FreezeDuration, 10000);
+    params->set<TIME_WIZARD>(TimeWizardParams::FreezeDelay, 3000);
+    params->set<TIME_WIZARD>(TimeWizardParams::FreezeDuration, 1000);
 }
 
 void TimeWizard::init() {
     WizardBase::init();
 
+    // Freeze display
+    mFreezePb.bkgrnd = TRANSPARENT;
+    mFreezePb.blendMode = SDL_BLENDMODE_BLEND;
+
     mUpdateSub =
         ServiceSystem::Get<UpdateService, UpdateObservable>()->subscribe(
             std::bind(&TimeWizard::onUpdate, this, std::placeholders::_1));
-    mFreezeDelaySub =
-        ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
-            std::bind(&TimeWizard::startFreeze, this),
-            Timer(Parameters()
-                      ->get<TIME_WIZARD>(TimeWizardParams::FreezeDelay)
-                      .toFloat()));
+
+    endFreeze();
 
     // Power Display
     UpgradePtr up = std::make_shared<Upgrade>();
@@ -526,7 +526,7 @@ void TimeWizard::init() {
             mActive = u->getLevel() % 2 != 0;
             u->setLevel(u->getLevel() % 2)
                 .setEffect(mActive ? "Active" : "Inactive")
-                .setImg(mActive ? TIME_WIZ_ACTIVE : WIZ_IMGS.at(mId));
+                .setImg(mActive ? ACTIVE_IMG : WIZ_IMGS.at(mId));
             updateImg();
         },
         up);
@@ -561,6 +561,14 @@ void TimeWizard::onUpdate(Time dt) {
     }
 }
 
+void TimeWizard::onRender(SDL_Renderer* r) {
+    WizardBase::onRender(r);
+
+    mFreezePb.rect = Rect(mPos->rect.x(), mPos->rect.y2(), mPos->rect.w(),
+                          mPos->rect.h() / 15);
+    TextureBuilder().draw(mFreezePb);
+}
+
 bool TimeWizard::startFreeze() {
     auto updateObservable = ServiceSystem::Get<TimeSystem::UpdateService,
                                                TimeSystem::UpdateObservable>();
@@ -571,9 +579,13 @@ bool TimeWizard::startFreeze() {
     mFreezeTimerSub =
         ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
             std::bind(&TimeWizard::endFreeze, this),
+            [this](Time dt, Timer& timer) {
+                mFreezePb.set(1 - timer.getPercent());
+            },
             Timer(Parameters()
                       ->get<TIME_WIZARD>(TimeWizardParams::FreezeDuration)
                       .toFloat()));
+    mFreezePb.color = CYAN;
     updateImg();
     return false;
 }
@@ -585,9 +597,13 @@ bool TimeWizard::endFreeze() {
     mFreezeDelaySub =
         ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
             std::bind(&TimeWizard::startFreeze, this),
+            [this](Time dt, Timer& timer) {
+                mFreezePb.set(timer.getPercent());
+            },
             Timer(Parameters()
                       ->get<TIME_WIZARD>(TimeWizardParams::FreezeDelay)
                       .toFloat()));
+    mFreezePb.color = BLUE;
     updateImg();
     return false;
 }
@@ -600,7 +616,7 @@ void TimeWizard::calcCost() {
 }
 
 void TimeWizard::updateImg() {
-    setImage(mFreezeLock ? TIME_WIZ_FREEZE
-             : mActive   ? TIME_WIZ_ACTIVE
+    setImage(mFreezeLock ? FREEZE_IMG
+             : mActive   ? ACTIVE_IMG
                          : WIZ_IMGS.at(mId));
 }

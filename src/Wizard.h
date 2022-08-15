@@ -3,6 +3,7 @@
 
 #include <RenderSystem/AssetManager.h>
 #include <RenderSystem/RenderTypes.h>
+#include <RenderSystem/Shapes.h>
 #include <RenderSystem/TextureBuilder.h>
 #include <ServiceSystem/Component.h>
 #include <ServiceSystem/CoreServices/RenderService.h>
@@ -131,12 +132,13 @@ class TimeWizard : public WizardBase {
    public:
     TimeWizard();
 
-    const static std::string TIME_WIZ_ACTIVE, TIME_WIZ_FREEZE;
+    const static std::string ACTIVE_IMG, FREEZE_IMG, FREEZE_UP_IMG;
 
    private:
     void init();
 
     void onUpdate(Time dt);
+    void onRender(SDL_Renderer*);
     bool startFreeze();
     bool endFreeze();
 
@@ -151,6 +153,8 @@ class TimeWizard : public WizardBase {
     UpgradeList::SubscriptionPtr mEffectDisplay, mActiveUp;
 
     Lock mFreezeLock;
+
+    ProgressBar mFreezePb;
 
     std::vector<std::unique_ptr<Fireball>> mFireballs;
 };

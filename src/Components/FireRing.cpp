@@ -24,7 +24,7 @@ void FireRing::onRender(SDL_Renderer* r) { TextureBuilder().draw(mCircle); }
 
 void FireRing::onUpdate(Time dt) {
     mCircle.set(mCircle.c, mCircle.r1 + GROWTH * dt.s(), WIDTH);
-    ServiceSystem::Get<FireRingService, FireRingObservable>()->next(
+    ServiceSystem::Get<FireRingService, FireRing::HitObservable>()->next(
         {(float)mCircle.c.x, (float)mCircle.c.y}, mCircle.r2, mEffect);
     SDL_Point dim = RenderSystem::getWindowSize();
     float dx = fmax(mCircle.c.x, dim.x - mCircle.c.x),
@@ -39,8 +39,8 @@ void FireRing::onUpdate(Time dt) {
 
 bool FireRing::dead() const { return mDead; }
 
-// FireRingObservable
-void FireRingObservable::next(SDL_FPoint c, int r, const Number& effect) {
+// FireRing::HitObservable
+void FireRing::HitObservable::next(SDL_FPoint c, int r, const Number& effect) {
     for (auto sub : *this) {
         UIComponentPtr pos = sub->get<DATA>();
         float dx = c.x - pos->rect.cX(), dy = c.y - pos->rect.cY();

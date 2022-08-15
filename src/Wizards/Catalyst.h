@@ -23,12 +23,12 @@ class Catalyst : public WizardBase {
     void init();
 
     void onRender(SDL_Renderer* r);
-    void onHit(WizardId src, Number val);
+    void onFireballHit(const Fireball& fireball);
 
     void calcMagicEffect();
     void drawMagic();
 
-    TargetObservable::SubscriptionPtr mTargetSub;
+    Fireball::HitObservable::SubscriptionPtr mFireballSub;
     UpgradeList::SubscriptionPtr mMagicEffectDisplay;
 
     TextRenderData mMagicText;

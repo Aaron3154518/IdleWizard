@@ -9,6 +9,8 @@
 #include <ServiceSystem/ServiceSystem.h>
 #include <ServiceSystem/UpdateServices/TimerService.h>
 
+#include <stack>
+
 namespace TimeSystem {
 class UpdateObservable : public ForwardObservable<void(Time)>,
                          public Component,
@@ -33,6 +35,27 @@ class TimerObservable : public TimerObservableBase {
 class TimerService : public Service<TimerObservable> {};
 
 std::shared_ptr<TimerObservable> GetTimerObservable();
+
+enum FreezeType : size_t { TIME_WIZARD = 0 };
+
+class FreezeObservable : public Observable<void(FreezeType), void(FreezeType)> {
+   public:
+    enum : size_t { ON_FREEZE = 0, ON_UNFREEZE };
+
+    void freeze(FreezeType type);
+    void unfreeze(FreezeType type);
+    bool frozen(FreezeType type) const;
+
+   private:
+    std::unordered_map<FreezeType, Lock> mLocks;
+};
+
+class FreezeService : public Service<FreezeObservable> {};
+
+std::shared_ptr<FreezeObservable> GetFreezeObservable();
+void Freeze(FreezeType type);
+void Unfreeze(FreezeType type);
+bool Frozen(FreezeType type);
 }  // namespace TimeSystem
 
 #endif

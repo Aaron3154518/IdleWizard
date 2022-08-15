@@ -24,32 +24,29 @@ SDL_FPoint FireballObservable::getPos(WizardId id) const {
     return mTargets[id];
 }
 
-// TargetObservable
-void TargetObservable::next(WizardId target, const Number& val, WizardId src) {
-    for (auto sub : *this) {
-        if (sub->get<DATA>() == target) {
-            sub->get<FUNC>()(src, val);
-        }
-    }
-}
-
 // Fireball
 const int Fireball::COLLIDE_ERR = 10;
 const int Fireball::MAX_SPEED = 150;
 const int Fireball::ACCELERATION = 300;
 const int Fireball::ACCEL_ZONE = 100;
 
-Fireball::Fireball(SDL_FPoint c, WizardId src, WizardId target, Number val,
-                   const std::string& img)
+const int Fireball::DEF_VALUE_KEY = 0;
+
+const Rect Fireball::IMG_RECT(0, 0, 40, 40);
+
+Fireball::Fireball(SDL_FPoint c, WizardId src, WizardId target,
+                   const std::string& img, const Number& val)
+    : Fireball(c, src, target, img, {{DEF_VALUE_KEY, val}}) {}
+
+Fireball::Fireball(SDL_FPoint c, WizardId src, WizardId target,
+                   const std::string& img, const NumberMap<int>& vals)
     : mPos(std::make_shared<UIComponent>(Rect(), 0)),
       mTargetId(target),
       mSrcId(src),
-      mVal(val) {
+      mVals(vals) {
     mImg.texture = AssetManager::getTexture(img);
-    mImg.dest = Rect(0, 0, 50, 50);
-    mImg.fitToTexture();
     mImg.dest.setPos(c.x, c.y, Rect::Align::CENTER);
-    mPos->rect = mImg.dest;
+    setSize(1);
 }
 
 void Fireball::init() {
@@ -65,9 +62,10 @@ void Fireball::init() {
         ServiceSystem::Get<FireballService, FireballObservable>()->subscribe(
             [this](SDL_FPoint p) { mTargetPos = p; }, mTargetId);
     mFireRingSub =
-        ServiceSystem::Get<FireRingService, FireRingObservable>()->subscribe(
-            std::bind(&Fireball::onFireRing, this, std::placeholders::_1),
-            mPos);
+        ServiceSystem::Get<FireRingService, FireRing::HitObservable>()
+            ->subscribe(
+                std::bind(&Fireball::onFireRing, this, std::placeholders::_1),
+                mPos);
 
     launch(mTargetPos);
 }
@@ -81,6 +79,25 @@ void Fireball::launch(SDL_FPoint target) {
     mV.x = dx * frac;
     mV.y = dy * frac;
 }
+
+void Fireball::setSize(float size) {
+    mSize = fmax(0, size);
+    mImg.dest.setDim(IMG_RECT.w() * size, IMG_RECT.h() * size,
+                     Rect::Align::CENTER);
+    mImg.fitToTexture();
+    mPos->rect = mImg.dest;
+}
+
+void Fireball::setPos(float x, float y) {
+    mPos->rect.setPos(x, y, Rect::Align::CENTER);
+    mImg.dest = mPos->rect;
+}
+
+Number& Fireball::getValue(int key) { return mVals[key]; }
+const Number& Fireball::getValue(int key) const { return mVals.at(key); }
+
+WizardId Fireball::getSourceId() const { return mSrcId; }
+WizardId Fireball::getTargetId() const { return mTargetId; }
 
 void Fireball::onResize(ResizeData data) {
     mPos->rect.moveFactor((float)data.newW / data.oldW,
@@ -96,8 +113,8 @@ void Fireball::onUpdate(Time dt) {
     // Check in case we were moved onto the target
     if (mag < COLLIDE_ERR) {
         mDead = true;
-        ServiceSystem::Get<FireballService, TargetObservable>()->next(
-            mTargetId, mVal, mSrcId);
+        ServiceSystem::Get<FireballService, Fireball::HitObservable>()->next(
+            mTargetId, *this);
         mResizeSub.reset();
         mRenderSub.reset();
         mUpdateSub.reset();
@@ -124,8 +141,9 @@ void Fireball::onUpdate(Time dt) {
 void Fireball::onRender(SDL_Renderer* renderer) { TextureBuilder().draw(mImg); }
 
 void Fireball::onFireRing(const Number& effect) {
-    if (mSrcId == WIZARD && !mHitFireRing) {
+    if (!mHitFireRing) {
         mHitFireRing = true;
-        mVal ^= effect;
+        ServiceSystem::Get<FireballService, Fireball::FireRingHitObservable>()
+            ->next(mSrcId, *this, effect);
     }
 }

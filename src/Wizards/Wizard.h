@@ -18,6 +18,7 @@
 #include <Wizards/WizardIds.h>
 #include <Wizards/WizardTypes.h>
 
+#include <cmath>
 #include <memory>
 #include <vector>
 
@@ -33,24 +34,33 @@ class Wizard : public WizardBase {
 
     void onRender(SDL_Renderer* r);
     bool onTimer();
-    void onHit(WizardId src, const Number& val);
+    void onFireballHit(const Fireball& fireball);
+    void onFireballFireRingHit(Fireball& fireball,
+                               const Number& fireRingEffect);
+    void onFreeze(TimeSystem::FreezeType type);
+    void onUnfreeze(TimeSystem::FreezeType type);
 
     void calcPower();
     void calcSpeed();
     void calcTimer();
 
-    std::unique_ptr<Fireball>& shootFireball();
+    void shootFireball(SDL_FPoint target = {0, 0});
+
+    void setPos(float x, float y);
 
     RenderData mPowBkgrnd;
 
     TimerObservable::SubscriptionPtr mFireballTimerSub;
     TimeSystem::TimerObservable::SubscriptionPtr mPowWizTimerSub;
-    TargetObservable::SubscriptionPtr mTargetSub;
+    Fireball::HitObservable::SubscriptionPtr mFireballSub;
+    Fireball::FireRingHitObservable::SubscriptionPtr mFireballFireRingSub;
+    TimeSystem::FreezeObservable::SubscriptionPtr mFreezeSub;
     UpgradeList::SubscriptionPtr mPowerDisplay, mTargetUp, mPowerUp, mMultiUp;
 
     WizardId mTarget = CRYSTAL;
 
-    std::vector<std::unique_ptr<Fireball>> mFireballs;
+    std::vector<FireballPtr> mFireballs;
+    int mFireballFreezeCnt;
 };
 
 #endif

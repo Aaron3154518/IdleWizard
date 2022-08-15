@@ -37,7 +37,7 @@ class WizardBase : public Component {
     virtual void onRender(SDL_Renderer* r);
     virtual void onClick(Event::MouseButton b, bool clicked);
 
-    void setPos(float x, float y);
+    virtual void setPos(float x, float y);
 
     void setImage(const std::string& img);
 

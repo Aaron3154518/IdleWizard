@@ -27,7 +27,7 @@ typedef std::unique_ptr<ParameterListBase> ParameterListPtr;
 template <class K>
 struct ParameterList : public ParameterListBase {
     std::unordered_map<K, ParameterObservable> mObservables;
-    std::unordered_map<K, Number> mParameters;
+    NumberMap<K> mParameters;
 };
 
 // Forward declarations

@@ -28,18 +28,24 @@ class PowerWizard : public WizardBase {
 
     void onRender(SDL_Renderer* r);
     bool onTimer();
+    void onFreeze(TimeSystem::FreezeType type);
+    void onUnfreeze(TimeSystem::FreezeType type);
 
     void calcPower();
     void calcSpeed();
     void calcTimer();
     void calcFireRingEffect();
 
-    std::unique_ptr<Fireball>& shootFireball();
+    void shootFireball(SDL_FPoint launch = {0, 0});
+
+    void setPos(float x, float y);
 
     TimerObservable::SubscriptionPtr mFireballTimerSub;
+    TimeSystem::FreezeObservable::SubscriptionPtr mFreezeSub;
     UpgradeList::SubscriptionPtr mPowerDisplay;
 
-    std::vector<std::unique_ptr<Fireball>> mFireballs;
+    std::vector<FireballPtr> mFireballs;
+    int mFireballFreezeCnt;
 };
 
 #endif

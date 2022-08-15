@@ -53,7 +53,8 @@ enum _ : uint8_t {
     SpeedCost,
 
     FreezeDelay,
-    FreezeDuration
+    FreezeDuration,
+    FreezeEffect,
 };
 }
 
@@ -90,5 +91,8 @@ using WizardType = typename WizardTypeMap<id>::type;
 // Struct to pack together WizardTypes
 template <WizardId id, WizardType<id>... keys>
 struct Keys {};
+
+template <class T>
+using NumberMap = std::unordered_map<T, Number>;
 
 #endif

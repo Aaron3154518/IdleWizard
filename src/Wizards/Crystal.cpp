@@ -18,11 +18,11 @@ void Crystal::init() {
         std::bind(&Crystal::onClick, this, std::placeholders::_1,
                   std::placeholders::_2),
         mPos);
-    mTargetSub =
-        ServiceSystem::Get<FireballService, TargetObservable>()->subscribe(
-            std::bind(&Crystal::onHit, this, std::placeholders::_1,
-                      std::placeholders::_2),
-            mId);
+    mFireballSub =
+        ServiceSystem::Get<FireballService, Fireball::HitObservable>()
+            ->subscribe(
+                std::bind(&Crystal::onFireballHit, this, std::placeholders::_1),
+                mId);
 
     // Power Display
     UpgradePtr up = std::make_shared<Upgrade>();
@@ -67,18 +67,19 @@ void Crystal::onClick(Event::MouseButton b, bool clicked) {
     }
 }
 
-void Crystal::onHit(WizardId src, const Number& val) {
+void Crystal::onFireballHit(const Fireball& fireball) {
     auto params = ParameterSystem::Get();
 
-    switch (src) {
+    switch (fireball.getSourceId()) {
         case WIZARD: {
-            Number magic = params->get<CRYSTAL>(CrystalParams::Magic) + val;
+            Number magic = params->get<CRYSTAL>(CrystalParams::Magic) +
+                           fireball.getValue();
             params->set<CRYSTAL>(CrystalParams::Magic, magic);
             mMagicText.tData.text = magic.toString();
             mMagicText.renderText();
         } break;
         case POWER_WIZARD: {
-            createFireRing();
+            createFireRing(fireball.getValue(PowerWizardParams::Power));
         } break;
     }
 }
@@ -96,10 +97,8 @@ void Crystal::drawMagic() {
     mMagicText.renderText();
 }
 
-std::unique_ptr<FireRing>& Crystal::createFireRing() {
+std::unique_ptr<FireRing>& Crystal::createFireRing(const Number& val) {
     mFireRings.push_back(std::move(ComponentFactory<FireRing>::New(
-        SDL_Point{mPos->rect.CX(), mPos->rect.CY()},
-        ParameterSystem::Get()->get<POWER_WIZARD>(
-            PowerWizardParams::FireRingEffect))));
+        SDL_Point{mPos->rect.CX(), mPos->rect.CY()}, val)));
     return mFireRings.back();
 }

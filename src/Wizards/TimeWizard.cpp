@@ -10,8 +10,9 @@ TimeWizard::TimeWizard() : WizardBase(TIME_WIZARD) {
     auto params = ParameterSystem::Get();
     params->set<TIME_WIZARD>(TimeWizardParams::SpeedPower, 1.5);
     params->set<TIME_WIZARD>(TimeWizardParams::SpeedEffect, 1);
-    params->set<TIME_WIZARD>(TimeWizardParams::FreezeDelay, 30000);
+    params->set<TIME_WIZARD>(TimeWizardParams::FreezeDelay, 5000);
     params->set<TIME_WIZARD>(TimeWizardParams::FreezeDuration, 10000);
+    params->set<TIME_WIZARD>(TimeWizardParams::FreezeEffect, 1.1);
 }
 
 void TimeWizard::init() {
@@ -96,12 +97,7 @@ void TimeWizard::onRender(SDL_Renderer* r) {
 }
 
 bool TimeWizard::startFreeze() {
-    auto updateObservable = ServiceSystem::Get<TimeSystem::UpdateService,
-                                               TimeSystem::UpdateObservable>();
-    if (mFreezeLock) {
-        updateObservable->releaseLock(mFreezeLock);
-    }
-    mFreezeLock = updateObservable->requestLock();
+    TimeSystem::Freeze(TimeSystem::FreezeType::TIME_WIZARD);
     mFreezeTimerSub =
         ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
             std::bind(&TimeWizard::endFreeze, this),
@@ -117,9 +113,7 @@ bool TimeWizard::startFreeze() {
 }
 
 bool TimeWizard::endFreeze() {
-    ServiceSystem::Get<TimeSystem::UpdateService,
-                       TimeSystem::UpdateObservable>()
-        ->releaseLock(mFreezeLock);
+    TimeSystem::Unfreeze(TimeSystem::FreezeType::TIME_WIZARD);
     mFreezeDelaySub =
         ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
             std::bind(&TimeWizard::startFreeze, this),
@@ -142,7 +136,8 @@ void TimeWizard::calcCost() {
 }
 
 void TimeWizard::updateImg() {
-    setImage(mFreezeLock ? FREEZE_IMG
-             : mActive   ? ACTIVE_IMG
-                         : WIZ_IMGS.at(mId));
+    setImage(TimeSystem::Frozen(TimeSystem::FreezeType::TIME_WIZARD)
+                 ? FREEZE_IMG
+             : mActive ? ACTIVE_IMG
+                       : WIZ_IMGS.at(mId));
 }

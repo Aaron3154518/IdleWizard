@@ -41,8 +41,6 @@ class TimeWizard : public WizardBase {
     TimerObservable::SubscriptionPtr mFreezeDelaySub, mFreezeTimerSub;
     UpgradeList::SubscriptionPtr mEffectDisplay, mActiveUp;
 
-    Lock mFreezeLock;
-
     ProgressBar mFreezePb;
 };
 

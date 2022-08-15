@@ -15,11 +15,11 @@ void Catalyst::init() {
     mRenderSub =
         ServiceSystem::Get<RenderService, RenderObservable>()->subscribe(
             std::bind(&Catalyst::onRender, this, std::placeholders::_1), mPos);
-    mTargetSub =
-        ServiceSystem::Get<FireballService, TargetObservable>()->subscribe(
-            std::bind(&Catalyst::onHit, this, std::placeholders::_1,
-                      std::placeholders::_2),
-            mId);
+    mFireballSub =
+        ServiceSystem::Get<FireballService, Fireball::HitObservable>()
+            ->subscribe(std::bind(&Catalyst::onFireballHit, this,
+                                  std::placeholders::_1),
+                        mId);
 
     // Power Display
     UpgradePtr up = std::make_shared<Upgrade>();
@@ -39,12 +39,13 @@ void Catalyst::init() {
             std::bind(&Catalyst::drawMagic, this)));
 }
 
-void Catalyst::onHit(WizardId src, Number val) {
-    switch (src) {
+void Catalyst::onFireballHit(const Fireball& fireball) {
+    switch (fireball.getSourceId()) {
         case WIZARD:
             auto params = ParameterSystem::Get();
             Number magic =
-                max(min(params->get<CATALYST>(CatalystParams::Magic) + val,
+                max(min(params->get<CATALYST>(CatalystParams::Magic) +
+                            fireball.getValue(),
                         params->get<CATALYST>(CatalystParams::Capacity)),
                     0);
             params->set<CATALYST>(CatalystParams::Magic, magic);

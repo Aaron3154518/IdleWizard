@@ -11,12 +11,22 @@
 #include <ServiceSystem/Observable.h>
 #include <ServiceSystem/Service.h>
 #include <ServiceSystem/ServiceSystem.h>
+#include <Systems/TargetSystem.h>
 #include <Systems/TimeSystem.h>
 #include <Utils/Number.h>
 #include <Utils/Time.h>
 #include <Wizards/WizardIds.h>
 
 class FireRing : public Component {
+   public:
+    typedef Observable<void(const Number&), UIComponentPtr> HitObservableBase;
+    class HitObservable : public HitObservableBase {
+       public:
+        enum : size_t { FUNC = 0, DATA };
+
+        void next(SDL_FPoint c, int r, const Number& effect);
+    };
+
    public:
     FireRing(SDL_Point c, const Number& effect);
 
@@ -40,14 +50,6 @@ class FireRing : public Component {
     TimeSystem::UpdateObservable::SubscriptionPtr mUpdateSub;
 };
 
-typedef Observable<void(const Number&), UIComponentPtr> FireRingObservableBase;
-class FireRingObservable : public FireRingObservableBase {
-   public:
-    enum : size_t { FUNC = 0, DATA };
-
-    void next(SDL_FPoint c, int r, const Number& effect);
-};
-
-class FireRingService : public Service<FireRingObservable> {};
+class FireRingService : public Service<FireRing::HitObservable> {};
 
 #endif

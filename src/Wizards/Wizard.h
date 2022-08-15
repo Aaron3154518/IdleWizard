@@ -33,10 +33,12 @@ class Wizard : public WizardBase {
     void init();
 
     void onRender(SDL_Renderer* r);
-    bool onTimer();
+    bool onTimer(Timer& timer);
     void onFireballHit(const Fireball& fireball);
     void onFireballFireRingHit(Fireball& fireball,
                                const Number& fireRingEffect);
+    bool onPowWizTimer(Timer& timer);
+    void onPowWizTimerUpdate(Time dt, Timer timer);
     void onFreeze(TimeSystem::FreezeType type);
     void onUnfreeze(TimeSystem::FreezeType type);
 
@@ -56,6 +58,9 @@ class Wizard : public WizardBase {
     Fireball::FireRingHitObservable::SubscriptionPtr mFireballFireRingSub;
     TimeSystem::FreezeObservable::SubscriptionPtr mFreezeSub;
     UpgradeList::SubscriptionPtr mPowerDisplay, mTargetUp, mPowerUp, mMultiUp;
+
+    // Pairs of effect, duration
+    std::vector<std::pair<Number, Number>> mPowWizBoosts;
 
     WizardId mTarget = CRYSTAL;
 

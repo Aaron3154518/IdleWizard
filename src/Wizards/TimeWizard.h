@@ -28,8 +28,9 @@ class TimeWizard : public WizardBase {
 
     void onUpdate(Time dt);
     void onRender(SDL_Renderer*);
-    bool startFreeze();
-    bool endFreeze();
+    bool startFreeze(Timer& timer);
+    bool endFreeze(Timer& timer);
+    void startFreezeCycle();
 
     void calcCost();
 

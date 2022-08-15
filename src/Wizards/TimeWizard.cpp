@@ -10,8 +10,8 @@ TimeWizard::TimeWizard() : WizardBase(TIME_WIZARD) {
     auto params = ParameterSystem::Get();
     params->set<TIME_WIZARD>(TimeWizardParams::SpeedPower, 1.5);
     params->set<TIME_WIZARD>(TimeWizardParams::SpeedEffect, 1);
-    params->set<TIME_WIZARD>(TimeWizardParams::FreezeDelay, 5000);
-    params->set<TIME_WIZARD>(TimeWizardParams::FreezeDuration, 10000);
+    params->set<TIME_WIZARD>(TimeWizardParams::FreezeDelay, 30000);
+    params->set<TIME_WIZARD>(TimeWizardParams::FreezeDuration, 5000);
     params->set<TIME_WIZARD>(TimeWizardParams::FreezeEffect, 1.1);
 }
 
@@ -25,8 +25,7 @@ void TimeWizard::init() {
     mUpdateSub =
         ServiceSystem::Get<UpdateService, UpdateObservable>()->subscribe(
             std::bind(&TimeWizard::onUpdate, this, std::placeholders::_1));
-
-    endFreeze();
+    startFreezeCycle();
 
     // Power Display
     UpgradePtr up = std::make_shared<Upgrade>();
@@ -96,11 +95,11 @@ void TimeWizard::onRender(SDL_Renderer* r) {
     TextureBuilder().draw(mFreezePb);
 }
 
-bool TimeWizard::startFreeze() {
+bool TimeWizard::startFreeze(Timer& timer) {
     TimeSystem::Freeze(TimeSystem::FreezeType::TIME_WIZARD);
     mFreezeTimerSub =
         ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
-            std::bind(&TimeWizard::endFreeze, this),
+            std::bind(&TimeWizard::endFreeze, this, std::placeholders::_1),
             [this](Time dt, Timer& timer) {
                 mFreezePb.set(1 - timer.getPercent());
             },
@@ -112,20 +111,24 @@ bool TimeWizard::startFreeze() {
     return false;
 }
 
-bool TimeWizard::endFreeze() {
+bool TimeWizard::endFreeze(Timer& timer) {
     TimeSystem::Unfreeze(TimeSystem::FreezeType::TIME_WIZARD);
+    startFreezeCycle();
+    mFreezePb.color = BLUE;
+    updateImg();
+    return false;
+}
+
+void TimeWizard::startFreezeCycle() {
     mFreezeDelaySub =
         ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
-            std::bind(&TimeWizard::startFreeze, this),
+            std::bind(&TimeWizard::startFreeze, this, std::placeholders::_1),
             [this](Time dt, Timer& timer) {
                 mFreezePb.set(timer.getPercent());
             },
             Timer(ParameterSystem::Get()
                       ->get<TIME_WIZARD>(TimeWizardParams::FreezeDelay)
                       .toFloat()));
-    mFreezePb.color = BLUE;
-    updateImg();
-    return false;
 }
 
 void TimeWizard::calcCost() {

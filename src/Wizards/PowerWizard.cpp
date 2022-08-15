@@ -20,7 +20,8 @@ void PowerWizard::init() {
             mPos);
     mFireballTimerSub =
         ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
-            std::bind(&PowerWizard::onTimer, this), Timer(1000));
+            std::bind(&PowerWizard::onTimer, this, std::placeholders::_1),
+            Timer(1000));
     mFreezeSub = TimeSystem::GetFreezeObservable()->subscribe(
         std::bind(&PowerWizard::onFreeze, this, std::placeholders::_1),
         std::bind(&PowerWizard::onUnfreeze, this, std::placeholders::_1));
@@ -64,7 +65,7 @@ void PowerWizard::onRender(SDL_Renderer* r) {
     }
 }
 
-bool PowerWizard::onTimer() {
+bool PowerWizard::onTimer(Timer& timer) {
     shootFireball();
     return true;
 }
@@ -91,31 +92,40 @@ void PowerWizard::onUnfreeze(TimeSystem::FreezeType type) {
 }
 
 void PowerWizard::shootFireball(SDL_FPoint launch) {
+    auto params = ParameterSystem::Get();
+    Number power = params->get<POWER_WIZARD>(PowerWizardParams::Power);
+    Number fireRing =
+        params->get<POWER_WIZARD>(PowerWizardParams::FireRingEffect);
+    Number duration = params->get<POWER_WIZARD>(PowerWizardParams::Duration);
+
     bool frozen = TimeSystem::Frozen(TimeSystem::FreezeType::TIME_WIZARD);
     if (!frozen || mFireballFreezeCnt == 0) {
         WizardId target = rDist(gen) < .5 ? WIZARD : CRYSTAL;
         mFireballs.push_back(std::move(ComponentFactory<Fireball>::New(
             SDL_FPoint{mPos->rect.cX(), mPos->rect.cY()}, mId, target,
             FIREBALL_IMG,
-            NumberMap<int>{{PowerWizardParams::Power,
-                            ParameterSystem::Get()->get<POWER_WIZARD>(
-                                PowerWizardParams::Power)},
-                           {PowerWizardParams::Duration,
-                            ParameterSystem::Get()->get<POWER_WIZARD>(
-                                PowerWizardParams::Duration)}})));
+            NumberMap<int>{
+                {PowerWizardParams::Power, target == WIZARD ? power : fireRing},
+                {PowerWizardParams::Duration, duration}})));
         if (!frozen) {
             mFireballs.back()->launch(launch);
         }
     }
     if (frozen) {
-        mFireballFreezeCnt++;
-        if (mFireballFreezeCnt > 1) {
-            mFireballs.back()->getValue(PowerWizardParams::Duration) +=
-                ParameterSystem::Get()->get<POWER_WIZARD>(
-                    PowerWizardParams::Duration);
+        FireballPtr& fireball = mFireballs.back();
+        if (++mFireballFreezeCnt > 1) {
+            switch (fireball->getTargetId()) {
+                case WIZARD:
+                    fireball->getValue(PowerWizardParams::Duration) +=
+                        duration / sqrt(mFireballFreezeCnt);
+                    break;
+                case CRYSTAL:
+                    fireball->getValue(PowerWizardParams::Power) +=
+                        fireRing / sqrt(mFireballFreezeCnt) / 10;
+                    break;
+            }
         }
-        mFireballs.back()->setSize(
-            fmin(pow(mFireballFreezeCnt, 1.0 / 3.0), 10));
+        fireball->setSize(fmin(pow(mFireballFreezeCnt, 1.0 / 3.0), 10));
     }
 }
 

@@ -131,7 +131,7 @@ class TimeWizard : public WizardBase {
    public:
     TimeWizard();
 
-    const static std::string TIME_WIZ_ACTIVE;
+    const static std::string TIME_WIZ_ACTIVE, TIME_WIZ_FREEZE;
 
    private:
     void init();
@@ -141,6 +141,8 @@ class TimeWizard : public WizardBase {
     bool endFreeze();
 
     void calcCost();
+
+    void updateImg();
 
     bool mActive = false, mCanAfford = false;
 

@@ -477,6 +477,8 @@ void PowerWizard::calcFireRingEffect() {
 // TimeWizard
 const std::string TimeWizard::TIME_WIZ_ACTIVE =
     "res/wizards/time_wizard_active.png";
+const std::string TimeWizard::TIME_WIZ_FREEZE =
+    "res/wizards/time_wizard_freeze.png";
 
 TimeWizard::TimeWizard() : WizardBase(TIME_WIZARD) {
     auto params = Parameters();
@@ -525,7 +527,7 @@ void TimeWizard::init() {
             u->setLevel(u->getLevel() % 2)
                 .setEffect(mActive ? "Active" : "Inactive")
                 .setImg(mActive ? TIME_WIZ_ACTIVE : WIZ_IMGS.at(mId));
-            mImg.texture = u->mImg;
+            updateImg();
         },
         up);
 
@@ -572,6 +574,7 @@ bool TimeWizard::startFreeze() {
             Timer(Parameters()
                       ->get<TIME_WIZARD>(TimeWizardParams::FreezeDuration)
                       .toFloat()));
+    updateImg();
     return false;
 }
 
@@ -585,6 +588,7 @@ bool TimeWizard::endFreeze() {
             Timer(Parameters()
                       ->get<TIME_WIZARD>(TimeWizardParams::FreezeDelay)
                       .toFloat()));
+    updateImg();
     return false;
 }
 
@@ -593,4 +597,10 @@ void TimeWizard::calcCost() {
     params->set<TIME_WIZARD>(
         TimeWizardParams::SpeedCost,
         10 ^ params->get<TIME_WIZARD>(TimeWizardParams::SpeedPower));
+}
+
+void TimeWizard::updateImg() {
+    setImage(mFreezeLock ? TIME_WIZ_FREEZE
+             : mActive   ? TIME_WIZ_ACTIVE
+                         : WIZ_IMGS.at(mId));
 }

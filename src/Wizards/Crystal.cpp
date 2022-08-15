@@ -11,13 +11,6 @@ void Crystal::init() {
 
     mMagicText.tData.font = AssetManager::getFont(FONT);
 
-    mRenderSub =
-        ServiceSystem::Get<RenderService, RenderObservable>()->subscribe(
-            std::bind(&Crystal::onRender, this, std::placeholders::_1), mPos);
-    mMouseSub = ServiceSystem::Get<MouseService, MouseObservable>()->subscribe(
-        std::bind(&Crystal::onClick, this, std::placeholders::_1,
-                  std::placeholders::_2),
-        mPos);
     mFireballSub =
         ServiceSystem::Get<FireballService, Fireball::HitObservable>()
             ->subscribe(

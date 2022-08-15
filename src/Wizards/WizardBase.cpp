@@ -17,20 +17,18 @@ void WizardBase::init() {
 
     mResizeSub =
         ServiceSystem::Get<ResizeService, ResizeObservable>()->subscribe(
-            std::bind(&WizardBase::onResize, this, std::placeholders::_1));
+            [this](ResizeData data) { onResize(data); });
     mRenderSub =
         ServiceSystem::Get<RenderService, RenderObservable>()->subscribe(
-            std::bind(&WizardBase::onRender, this, std::placeholders::_1),
-            mPos);
+            [this](SDL_Renderer* r) { onRender(r); }, mPos);
     mMouseSub = ServiceSystem::Get<MouseService, MouseObservable>()->subscribe(
-        std::bind(&WizardBase::onClick, this, std::placeholders::_1,
-                  std::placeholders::_2),
+        [this](Event::MouseButton b, bool clicked) { onClick(b, clicked); },
         mPos);
     mDragSub = ServiceSystem::Get<DragService, DragObservable>()->subscribe(
         []() {}, [this](int x, int y, float dx, float dy) { setPos(x, y); },
         []() {}, mPos, mDrag);
     mHideSub = ServiceSystem::Get<WizardService, HideObservable>()->subscribe(
-        std::bind(&WizardBase::onHide, this, std::placeholders::_1), mId);
+        [this](bool hide) { onHide(hide); }, mId);
 }
 
 void WizardBase::onResize(ResizeData data) {
@@ -56,7 +54,10 @@ void WizardBase::onClick(Event::MouseButton b, bool clicked) {
     }
 }
 
-void WizardBase::onHide(bool hide) { mPos->visible = !hide; }
+void WizardBase::onHide(bool hide) {
+    mHidden = hide;
+    mPos->visible = !mHidden;
+}
 
 void WizardBase::setPos(float x, float y) {
     SDL_Point screenDim = RenderSystem::getWindowSize();

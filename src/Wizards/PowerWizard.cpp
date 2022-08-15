@@ -14,10 +14,6 @@ PowerWizard::PowerWizard() : WizardBase(POWER_WIZARD) {
 void PowerWizard::init() {
     WizardBase::init();
 
-    mRenderSub =
-        ServiceSystem::Get<RenderService, RenderObservable>()->subscribe(
-            std::bind(&PowerWizard::onRender, this, std::placeholders::_1),
-            mPos);
     mFireballTimerSub =
         ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
             std::bind(&PowerWizard::onTimer, this, std::placeholders::_1),
@@ -85,13 +81,12 @@ void PowerWizard::onUnfreeze(TimeSystem::FreezeType type) {
                 fireball->getValue(PowerWizardParams::Duration) ^=
                     ParameterSystem::Get()->get<TIME_WIZARD>(
                         TimeWizardParams::FreezeEffect);
-                std::cerr << "Do pretty graphics stuff" << std::endl;
             }
             break;
     }
 }
 
-void PowerWizard::shootFireball(SDL_FPoint launch) {
+void PowerWizard::shootFireball() {
     auto params = ParameterSystem::Get();
     Number power = params->get<POWER_WIZARD>(PowerWizardParams::Power);
     Number fireRing =
@@ -107,9 +102,6 @@ void PowerWizard::shootFireball(SDL_FPoint launch) {
             NumberMap<int>{
                 {PowerWizardParams::Power, target == WIZARD ? power : fireRing},
                 {PowerWizardParams::Duration, duration}})));
-        if (!frozen) {
-            mFireballs.back()->launch(launch);
-        }
     }
     if (frozen) {
         FireballPtr& fireball = mFireballs.back();
@@ -126,6 +118,14 @@ void PowerWizard::shootFireball(SDL_FPoint launch) {
             }
         }
         fireball->setSize(fmin(pow(mFireballFreezeCnt, 1.0 / 3.0), 10));
+    }
+}
+
+void PowerWizard::shootFireball(SDL_FPoint target) {
+    size_t size = mFireballs.size();
+    shootFireball();
+    if (size != mFireballs.size()) {
+        mFireballs.back()->launch(target);
     }
 }
 

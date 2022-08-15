@@ -47,6 +47,8 @@ class WizardBase : public Component {
 
     void setImage(const std::string& img);
 
+    bool mHidden;
+
     RenderData mImg;
 
     UIComponentPtr mPos;

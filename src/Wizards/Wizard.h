@@ -46,7 +46,8 @@ class Wizard : public WizardBase {
     void calcSpeed();
     void calcTimer();
 
-    void shootFireball(SDL_FPoint target = {0, 0});
+    void shootFireball();
+    void shootFireball(SDL_FPoint target);
 
     void setPos(float x, float y);
 

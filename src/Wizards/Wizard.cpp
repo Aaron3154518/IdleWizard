@@ -21,9 +21,6 @@ void Wizard::init() {
 
     mPowBkgrnd.texture = AssetManager::getTexture(POWER_BKGRND);
 
-    mRenderSub =
-        ServiceSystem::Get<RenderService, RenderObservable>()->subscribe(
-            std::bind(&Wizard::onRender, this, std::placeholders::_1), mPos);
     mFireballTimerSub =
         ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
             std::bind(&Wizard::onTimer, this, std::placeholders::_1),
@@ -238,22 +235,18 @@ void Wizard::onUnfreeze(TimeSystem::FreezeType type) {
                 fireball->getValue() ^=
                     ParameterSystem::Get()->get<TIME_WIZARD>(
                         TimeWizardParams::FreezeEffect);
-                std::cerr << "Do pretty graphics stuff" << std::endl;
             }
             break;
     }
 }
 
-void Wizard::shootFireball(SDL_FPoint launch) {
+void Wizard::shootFireball() {
     bool frozen = TimeSystem::Frozen(TimeSystem::FreezeType::TIME_WIZARD);
     if (!frozen || mFireballFreezeCnt == 0) {
         mFireballs.push_back(std::move(ComponentFactory<Fireball>::New(
             SDL_FPoint{mPos->rect.cX(), mPos->rect.cY()}, mId, mTarget,
             FIREBALL_IMG,
             ParameterSystem::Get()->get<WIZARD>(WizardParams::Power))));
-        if (!frozen) {
-            mFireballs.back()->launch(launch);
-        }
     }
     if (frozen) {
         if (++mFireballFreezeCnt > 1) {
@@ -263,6 +256,14 @@ void Wizard::shootFireball(SDL_FPoint launch) {
         }
         mFireballs.back()->setSize(
             fmin(pow(mFireballFreezeCnt, 1.0 / 3.0), 10));
+    }
+}
+
+void Wizard::shootFireball(SDL_FPoint target) {
+    size_t size = mFireballs.size();
+    shootFireball();
+    if (size != mFireballs.size()) {
+        mFireballs.back()->launch(target);
     }
 }
 

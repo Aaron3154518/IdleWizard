@@ -12,9 +12,6 @@ void Catalyst::init() {
 
     mMagicText.tData.font = AssetManager::getFont(FONT);
 
-    mRenderSub =
-        ServiceSystem::Get<RenderService, RenderObservable>()->subscribe(
-            std::bind(&Catalyst::onRender, this, std::placeholders::_1), mPos);
     mFireballSub =
         ServiceSystem::Get<FireballService, Fireball::HitObservable>()
             ->subscribe(std::bind(&Catalyst::onFireballHit, this,

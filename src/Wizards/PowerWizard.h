@@ -36,7 +36,8 @@ class PowerWizard : public WizardBase {
     void calcTimer();
     void calcFireRingEffect();
 
-    void shootFireball(SDL_FPoint launch = {0, 0});
+    void shootFireball();
+    void shootFireball(SDL_FPoint target);
 
     void setPos(float x, float y);
 

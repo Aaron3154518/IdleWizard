@@ -4,9 +4,9 @@
 const SDL_Color Upgrade::DESC_BKGRND{175, 175, 175, 255};
 const FontData Upgrade::DESC_FONT{-1, 20, "|"};
 
-const ParamBase Upgrade::ParamSources::NONE;
-const Param<CRYSTAL> Upgrade::ParamSources::CRYSTAL_MAGIC =
-    Param<CRYSTAL>(CrystalParams::Magic);
+const ParameterSystem::ParamBase Upgrade::ParamSources::NONE;
+const ParameterSystem::Param<CRYSTAL> Upgrade::ParamSources::CRYSTAL_MAGIC =
+    ParameterSystem::Param<CRYSTAL>(CrystalParams::Magic);
 
 bool Upgrade::Defaults::CanBuy(UpgradePtr u) {
     return !u->mCostSrc || !u->mMoneySrc ||
@@ -26,15 +26,15 @@ int Upgrade::getMaxLevel() const { return mMaxLevel; }
 int Upgrade::getLevel() const { return mLevel; }
 const std::string& Upgrade::getEffect() const { return mEffect; }
 bool Upgrade::hasEffectSrc() const { return (bool)mEffectSrc; }
-const ParamBase& Upgrade::getEffectSrc() const {
+const ParameterSystem::ParamBase& Upgrade::getEffectSrc() const {
     return hasEffectSrc() ? *mEffectSrc : ParamSources::NONE;
 }
 bool Upgrade::hasCostSrc() const { return (bool)mCostSrc; }
-const ParamBase& Upgrade::getCostSrc() const {
+const ParameterSystem::ParamBase& Upgrade::getCostSrc() const {
     return hasCostSrc() ? *mCostSrc : ParamSources::NONE;
 }
 bool Upgrade::hasMoneySrc() const { return (bool)mMoneySrc; }
-const ParamBase& Upgrade::getMoneySrc() const {
+const ParameterSystem::ParamBase& Upgrade::getMoneySrc() const {
     return hasMoneySrc() ? *mMoneySrc : ParamSources::NONE;
 }
 

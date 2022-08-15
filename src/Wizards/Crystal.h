@@ -1,23 +1,22 @@
 #ifndef CRYSTAL_H
 #define CRYSTAL_H
 
+#include <Components/FireRing.h>
+#include <Components/Fireball.h>
+#include <Components/Upgrade.h>
 #include <RenderSystem/AssetManager.h>
 #include <RenderSystem/RenderTypes.h>
 #include <RenderSystem/Shapes.h>
 #include <RenderSystem/TextureBuilder.h>
 #include <ServiceSystem/CoreServices/RenderService.h>
 #include <ServiceSystem/EventServices/MouseService.h>
+#include <Systems/ParameterSystem.h>
+#include <Wizards/WizardBase.h>
+#include <Wizards/WizardIds.h>
+#include <Wizards/WizardTypes.h>
 
 #include <memory>
 #include <vector>
-
-#include "FireRing.h"
-#include "Fireball.h"
-#include "Upgrade.h"
-#include "WizardBase.h"
-#include "WizardData.h"
-#include "WizardIds.h"
-#include "WizardTypes.h"
 
 class Crystal : public WizardBase {
    public:

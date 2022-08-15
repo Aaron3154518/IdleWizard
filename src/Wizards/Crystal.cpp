@@ -2,7 +2,7 @@
 
 // Crystal
 Crystal::Crystal() : WizardBase(CRYSTAL) {
-    auto params = Parameters();
+    auto params = ParameterSystem::Get();
     params->set<CRYSTAL>(CrystalParams::Magic, 0);
 }
 
@@ -33,7 +33,7 @@ void Crystal::init() {
         .setDescription("Multiplier based on crystal damage");
     mMagicEffectDisplay = mUpgrades->subscribe(up);
 
-    auto params = Parameters();
+    auto params = ParameterSystem::Get();
     mParamSubs.push_back(params->subscribe<CRYSTAL>(
         CrystalParams::Magic, std::bind(&Crystal::calcMagicEffect, this)));
     mParamSubs.push_back(params->subscribe<CRYSTAL>(
@@ -61,14 +61,14 @@ void Crystal::onRender(SDL_Renderer* r) {
 void Crystal::onClick(Event::MouseButton b, bool clicked) {
     WizardBase::onClick(b, clicked);
     if (clicked) {
-        auto params = Parameters();
+        auto params = ParameterSystem::Get();
         params->set<CRYSTAL>(CrystalParams::Magic,
                              params->get<CRYSTAL>(CrystalParams::Magic) * 10);
     }
 }
 
 void Crystal::onHit(WizardId src, const Number& val) {
-    auto params = Parameters();
+    auto params = ParameterSystem::Get();
 
     switch (src) {
         case WIZARD: {
@@ -84,7 +84,7 @@ void Crystal::onHit(WizardId src, const Number& val) {
 }
 
 void Crystal::calcMagicEffect() {
-    auto params = Parameters();
+    auto params = ParameterSystem::Get();
     Number effect =
         (params->get<CRYSTAL>(CrystalParams::Magic) + 1).logTen() + 1;
     params->set<CRYSTAL>(CrystalParams::MagicEffect, effect);
@@ -92,13 +92,14 @@ void Crystal::calcMagicEffect() {
 
 void Crystal::drawMagic() {
     mMagicText.tData.text =
-        Parameters()->get<CRYSTAL>(CrystalParams::Magic).toString();
+        ParameterSystem::Get()->get<CRYSTAL>(CrystalParams::Magic).toString();
     mMagicText.renderText();
 }
 
 std::unique_ptr<FireRing>& Crystal::createFireRing() {
     mFireRings.push_back(std::move(ComponentFactory<FireRing>::New(
         SDL_Point{mPos->rect.CX(), mPos->rect.CY()},
-        Parameters()->get<POWER_WIZARD>(PowerWizardParams::FireRingEffect))));
+        ParameterSystem::Get()->get<POWER_WIZARD>(
+            PowerWizardParams::FireRingEffect))));
     return mFireRings.back();
 }

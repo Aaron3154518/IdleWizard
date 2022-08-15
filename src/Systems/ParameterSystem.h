@@ -1,5 +1,5 @@
-#ifndef WIZARD_DATA_H
-#define WIZARD_DATA_H
+#ifndef PARAMETER_SYSTEM_H
+#define PARAMETER_SYSTEM_H
 
 #include <ServiceSystem/Component.h>
 #include <ServiceSystem/CoreServices/UpdateService.h>
@@ -7,15 +7,15 @@
 #include <ServiceSystem/Service.h>
 #include <ServiceSystem/ServiceSystem.h>
 #include <Utils/Number.h>
+#include <Wizards/WizardIds.h>
+#include <Wizards/WizardTypes.h>
 
 #include <initializer_list>
 #include <typeindex>
 #include <typeinfo>
 #include <unordered_map>
 
-#include "WizardIds.h"
-#include "WizardTypes.h"
-
+namespace ParameterSystem {
 typedef ForwardObservable<void()> ParameterObservableBase;
 class ParameterObservable : public ParameterObservableBase {};
 typedef ParameterObservable::SubscriptionPtr ParameterSubscriptionPtr;
@@ -31,20 +31,18 @@ struct ParameterList : public ParameterListBase {
 };
 
 // Forward declarations
-class ParameterMap;
+class ParameterObservableMap;
 
 // Helper classes for subscribing keys
-template <WizardId id, WizardType<id>... keys>
-struct Keys {};
-
 template <class...>
 struct KeySubscriber;
 
 template <>
 struct KeySubscriber<> {
-    static void subscribe(ParameterMap* map, ParameterSubscriptionPtr sub) {}
+    static void subscribe(ParameterObservableMap* params,
+                          ParameterSubscriptionPtr sub) {}
 
-    static ParameterSubscriptionPtr subscribe(ParameterMap* map,
+    static ParameterSubscriptionPtr subscribe(ParameterObservableMap* params,
                                               std::function<void()> func) {
         return nullptr;
     }
@@ -53,14 +51,15 @@ struct KeySubscriber<> {
 template <WizardId id, WizardType<id>... keys, class... Tail>
 struct KeySubscriber<Keys<id, keys...>, Tail...>
     : public KeySubscriber<Tail...> {
-    static void subscribe(ParameterMap* map, ParameterSubscriptionPtr sub);
+    static void subscribe(ParameterObservableMap* params,
+                          ParameterSubscriptionPtr sub);
 
-    static ParameterSubscriptionPtr subscribe(ParameterMap* map,
+    static ParameterSubscriptionPtr subscribe(ParameterObservableMap* params,
                                               std::function<void()> func);
 };
 
 // Stores numbers by wizard id and param enum
-class ParameterMap : public ObservableBase {
+class ParameterObservableMap : public ObservableBase {
    public:
     template <WizardId id>
     ParameterSubscriptionPtr subscribe(WizardType<id> key,
@@ -130,23 +129,23 @@ class ParameterMap : public ObservableBase {
     std::unordered_map<WizardId, ParameterListPtr> mParams;
 };
 
-class ParameterService : public Service<ParameterMap> {};
+class ParameterService : public Service<ParameterObservableMap> {};
 
-std::shared_ptr<ParameterMap> Parameters();
+std::shared_ptr<ParameterObservableMap> Get();
 
-// Implement KeySubscriber after defining ParameterMap
+// Implement KeySubscriber after defining ParameterObservableMap
 template <WizardId id, WizardType<id>... keys, class... Tail>
 void KeySubscriber<Keys<id, keys...>, Tail...>::subscribe(
-    ParameterMap* map, ParameterSubscriptionPtr sub) {
-    map->subscribe<id>({keys...}, sub);
-    KeySubscriber<Tail...>::subscribe(map, sub);
+    ParameterObservableMap* params, ParameterSubscriptionPtr sub) {
+    params->subscribe<id>({keys...}, sub);
+    KeySubscriber<Tail...>::subscribe(params, sub);
 }
 
 template <WizardId id, WizardType<id>... keys, class... Tail>
 ParameterSubscriptionPtr KeySubscriber<Keys<id, keys...>, Tail...>::subscribe(
-    ParameterMap* map, std::function<void()> func) {
-    ParameterSubscriptionPtr sub = map->subscribe<id>({keys...}, func);
-    KeySubscriber<Tail...>::subscribe(map, sub);
+    ParameterObservableMap* params, std::function<void()> func) {
+    ParameterSubscriptionPtr sub = params->subscribe<id>({keys...}, func);
+    KeySubscriber<Tail...>::subscribe(params, sub);
     return sub;
 }
 
@@ -167,13 +166,15 @@ struct Param : public ParamBase {
     Param(WizardType<id> _key) : key(_key) {}
     Param(const Param<id>* other) : Param(other.key) {}
 
-    Number get() const { return Parameters()->get<id>(key); }
+    Number get() const { return ParameterSystem::Get()->get<id>(key); }
 
-    void set(const Number& val) const { Parameters()->set<id>(key, val); }
+    void set(const Number& val) const {
+        ParameterSystem::Get()->set<id>(key, val);
+    }
 
     ParameterObservable::SubscriptionPtr subscribe(
         std::function<void()> func) const {
-        return Parameters()->subscribe<id>(key, func);
+        return ParameterSystem::Get()->subscribe<id>(key, func);
     }
 
     WizardType<id> key;
@@ -190,5 +191,6 @@ template <WizardId id, WizardType<id> key>
 ParamPtr<id> NewParam() {
     return std::make_shared<Param<id>>(key);
 }
+}  // namespace ParameterSystem
 
 #endif

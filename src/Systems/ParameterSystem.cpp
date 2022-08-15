@@ -1,7 +1,8 @@
-#include "WizardData.h"
+#include "ParameterSystem.h"
 
-std::shared_ptr<ParameterMap> Parameters() {
-    return ServiceSystem::Get<ParameterService, ParameterMap>();
+namespace ParameterSystem {
+std::shared_ptr<ParameterObservableMap> Get() {
+    return ServiceSystem::Get<ParameterService, ParameterObservableMap>();
 }
 
 // ParamBase
@@ -13,3 +14,4 @@ ParameterObservable::SubscriptionPtr ParamBase::subscribe(
     std::function<void()> func) const {
     return nullptr;
 }
+}  // namespace ParameterSystem

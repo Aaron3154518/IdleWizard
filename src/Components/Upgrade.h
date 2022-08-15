@@ -13,24 +13,23 @@
 #include <ServiceSystem/Observable.h>
 #include <ServiceSystem/Service.h>
 #include <ServiceSystem/ServiceSystem.h>
+#include <Systems/ParameterSystem.h>
 #include <Utils/Colors.h>
 #include <Utils/Event.h>
 #include <Utils/Number.h>
 #include <Utils/Rect.h>
+#include <Wizards/WizardIds.h>
 
 #include <cmath>
 #include <forward_list>
 #include <functional>
 #include <vector>
 
-#include "WizardData.h"
-#include "WizardIds.h"
-
 class Upgrade {
    public:
     struct ParamSources {
-        const static ParamBase NONE;
-        const static Param<CRYSTAL> CRYSTAL_MAGIC;
+        const static ParameterSystem::ParamBase NONE;
+        const static ParameterSystem::Param<CRYSTAL> CRYSTAL_MAGIC;
     };
 
     struct Defaults {
@@ -53,20 +52,20 @@ class Upgrade {
     int getLevel() const;
     const std::string& getEffect() const;
     bool hasEffectSrc() const;
-    const ParamBase& getEffectSrc() const;
+    const ParameterSystem::ParamBase& getEffectSrc() const;
     bool hasCostSrc() const;
-    const ParamBase& getCostSrc() const;
+    const ParameterSystem::ParamBase& getCostSrc() const;
     bool hasMoneySrc() const;
-    const ParamBase& getMoneySrc() const;
+    const ParameterSystem::ParamBase& getMoneySrc() const;
 
     Upgrade& setMaxLevel(int maxLevel);
     Upgrade& setLevel(int level);
     Upgrade& setEffect(const std::string& effect);
     template <WizardId id>
     Upgrade& setEffectSource(
-        const Param<id>& param,
+        const ParameterSystem::Param<id>& param,
         std::function<std::string(const Number&)> onEffect) {
-        mEffectSrc = std::make_unique<Param<id>>(param);
+        mEffectSrc = std::make_unique<ParameterSystem::Param<id>>(param);
         mEffectSub = mEffectSrc->subscribe([this, onEffect]() {
             mEffect = onEffect(mEffectSrc->get());
             updateInfo();
@@ -76,30 +75,30 @@ class Upgrade {
     template <WizardId id, WizardType<id> key>
     Upgrade& setEffectSource(
         std::function<std::string(const Number&)> onEffect) {
-        setEffectSource(Param<id>(key), onEffect);
+        setEffectSource(ParameterSystem::Param<id>(key), onEffect);
         return *this;
     }
     Upgrade& clearEffectSource();
     template <WizardId id>
-    Upgrade& setCostSource(const Param<id>& param) {
-        mCostSrc = std::make_unique<Param<id>>(param);
+    Upgrade& setCostSource(const ParameterSystem::Param<id>& param) {
+        mCostSrc = std::make_unique<ParameterSystem::Param<id>>(param);
         mCostSub = mCostSrc->subscribe(std::bind(&Upgrade::updateInfo, this));
         return *this;
     }
     template <WizardId id, WizardType<id> key>
     Upgrade& setCostSource() {
-        setCostSource(Param<id>(key));
+        setCostSource(ParameterSystem::Param<id>(key));
         return *this;
     }
     Upgrade& clearCostSource();
     template <WizardId id>
-    Upgrade& setMoneySource(const Param<id>& param) {
-        mMoneySrc = std::make_unique<Param<id>>(param);
+    Upgrade& setMoneySource(const ParameterSystem::Param<id>& param) {
+        mMoneySrc = std::make_unique<ParameterSystem::Param<id>>(param);
         return *this;
     }
     template <WizardId id, WizardType<id> key>
     Upgrade& setMoneySource() {
-        setMoneySource(Param<id>(key));
+        setMoneySource(ParameterSystem::Param<id>(key));
         return *this;
     }
     Upgrade& clearMoneySource();
@@ -125,8 +124,8 @@ class Upgrade {
     int mLevel = 0;
     std::string mEffect = "";
 
-    std::unique_ptr<ParamBase> mCostSrc, mMoneySrc, mEffectSrc;
-    ParameterObservable::SubscriptionPtr mCostSub, mEffectSub;
+    std::unique_ptr<ParameterSystem::ParamBase> mCostSrc, mMoneySrc, mEffectSrc;
+    ParameterSystem::ParameterObservable::SubscriptionPtr mCostSub, mEffectSub;
 };
 
 typedef std::shared_ptr<Upgrade> UpgradePtr;

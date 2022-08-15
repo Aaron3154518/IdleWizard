@@ -11,11 +11,10 @@
 #include <ServiceSystem/Observable.h>
 #include <ServiceSystem/Service.h>
 #include <ServiceSystem/ServiceSystem.h>
+#include <Systems/TimeSystem.h>
 #include <Utils/Number.h>
 #include <Utils/Time.h>
-
-#include "TimeSystem.h"
-#include "WizardIds.h"
+#include <Wizards/WizardIds.h>
 
 class FireRing : public Component {
    public:

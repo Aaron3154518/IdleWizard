@@ -2,7 +2,7 @@
 
 // Catalyst
 Catalyst::Catalyst() : WizardBase(CATALYST) {
-    auto params = Parameters();
+    auto params = ParameterSystem::Get();
     params->set<CATALYST>(CatalystParams::Magic, 0);
     params->set<CATALYST>(CatalystParams::Capacity, 100);
 }
@@ -30,7 +30,7 @@ void Catalyst::init() {
         .setDescription("Multiplier from stored magic");
     mMagicEffectDisplay = mUpgrades->subscribe(up);
 
-    auto params = Parameters();
+    auto params = ParameterSystem::Get();
     mParamSubs.push_back(params->subscribe<CATALYST>(
         CatalystParams::Magic, std::bind(&Catalyst::calcMagicEffect, this)));
     mParamSubs.push_back(
@@ -42,7 +42,7 @@ void Catalyst::init() {
 void Catalyst::onHit(WizardId src, Number val) {
     switch (src) {
         case WIZARD:
-            auto params = Parameters();
+            auto params = ParameterSystem::Get();
             Number magic =
                 max(min(params->get<CATALYST>(CatalystParams::Magic) + val,
                         params->get<CATALYST>(CatalystParams::Capacity)),
@@ -62,15 +62,19 @@ void Catalyst::onRender(SDL_Renderer* r) {
 }
 
 void Catalyst::calcMagicEffect() {
-    auto params = Parameters();
+    auto params = ParameterSystem::Get();
     Number effect =
         (params->get<CATALYST>(CatalystParams::Magic) + 1).logTen() + 1;
     params->set<CATALYST>(CatalystParams::MagicEffect, effect);
 }
 
 void Catalyst::drawMagic() {
-    mMagicText.tData.text =
-        Parameters()->get<CATALYST>(CatalystParams::Magic).toString() + "/" +
-        Parameters()->get<CATALYST>(CatalystParams::Capacity).toString();
+    mMagicText.tData.text = ParameterSystem::Get()
+                                ->get<CATALYST>(CatalystParams::Magic)
+                                .toString() +
+                            "/" +
+                            ParameterSystem::Get()
+                                ->get<CATALYST>(CatalystParams::Capacity)
+                                .toString();
     mMagicText.renderText();
 }

@@ -1,6 +1,7 @@
 #ifndef FIREBALL_H
 #define FIREBALL_H
 
+#include <Components/FireRing.h>
 #include <RenderSystem/AssetManager.h>
 #include <RenderSystem/Shapes.h>
 #include <RenderSystem/TextureBuilder.h>
@@ -11,12 +12,10 @@
 #include <ServiceSystem/Observable.h>
 #include <ServiceSystem/Service.h>
 #include <ServiceSystem/ServiceSystem.h>
+#include <Systems/TimeSystem.h>
 #include <Utils/Number.h>
 #include <Utils/Time.h>
-
-#include "FireRing.h"
-#include "TimeSystem.h"
-#include "WizardIds.h"
+#include <Wizards/WizardIds.h>
 
 typedef Observable<void(SDL_FPoint), WizardId> FireballObservableBase;
 

@@ -1,15 +1,14 @@
 #define SDL_MAIN_HANDLED
 
+#include <Components/Upgrade.h>
 #include <GameSystem.h>
+#include <Wizards/Catalyst.h>
+#include <Wizards/Crystal.h>
+#include <Wizards/PowerWizard.h>
+#include <Wizards/TimeWizard.h>
+#include <Wizards/Wizard.h>
 
 #include <memory>
-
-#include "Catalyst.h"
-#include "Crystal.h"
-#include "PowerWizard.h"
-#include "TimeWizard.h"
-#include "Upgrade.h"
-#include "Wizard.h"
 
 int main(int argc, char* argv[]) {
     RenderSystem::Options options;

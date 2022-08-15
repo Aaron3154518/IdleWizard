@@ -1,29 +1,9 @@
 #ifndef WIZARD_TYPES_H
 #define WIZARD_TYPES_H
 
+#include <Wizards/WizardIds.h>
+
 #include <type_traits>
-
-#include "WizardIds.h"
-
-// Templates for matching wizards to param enums
-template <WizardId id, class T>
-struct Pair {};
-
-template <WizardId, class...>
-struct WizardTypeMapImpl;
-
-template <WizardId id>
-struct WizardTypeMapImpl<id> {
-    using type = void;
-};
-
-template <WizardId _id, WizardId id, class T, class... Tail>
-struct WizardTypeMapImpl<_id, Pair<id, T>, Tail...>
-    : public WizardTypeMapImpl<_id, Tail...> {
-    using type =
-        std::conditional_t<id == _id, T,
-                           typename WizardTypeMapImpl<_id, Tail...>::type>;
-};
 
 // Parameter enums
 namespace WizardParams {
@@ -77,6 +57,26 @@ enum _ : uint8_t {
 };
 }
 
+// Templates for matching wizards to param enums
+template <WizardId id, class T>
+struct Pair {};
+
+template <WizardId, class...>
+struct WizardTypeMapImpl;
+
+template <WizardId id>
+struct WizardTypeMapImpl<id> {
+    using type = void;
+};
+
+template <WizardId _id, WizardId id, class T, class... Tail>
+struct WizardTypeMapImpl<_id, Pair<id, T>, Tail...>
+    : public WizardTypeMapImpl<_id, Tail...> {
+    using type =
+        std::conditional_t<id == _id, T,
+                           typename WizardTypeMapImpl<_id, Tail...>::type>;
+};
+
 // Wizard-parameter mappings
 template <WizardId id>
 using WizardTypeMap = WizardTypeMapImpl<
@@ -86,5 +86,9 @@ using WizardTypeMap = WizardTypeMapImpl<
 
 template <WizardId id>
 using WizardType = typename WizardTypeMap<id>::type;
+
+// Struct to pack together WizardTypes
+template <WizardId id, WizardType<id>... keys>
+struct Keys {};
 
 #endif

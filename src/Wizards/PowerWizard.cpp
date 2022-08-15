@@ -4,7 +4,7 @@
 const std::string PowerWizard::FIREBALL_IMG = "res/projectiles/fireball2.png";
 
 PowerWizard::PowerWizard() : WizardBase(POWER_WIZARD) {
-    auto params = Parameters();
+    auto params = ParameterSystem::Get();
     params->set<POWER_WIZARD>(PowerWizardParams::BasePower, 5);
     params->set<POWER_WIZARD>(PowerWizardParams::BaseSpeed, .25);
     params->set<POWER_WIZARD>(PowerWizardParams::FireRingEffect, 1);
@@ -31,7 +31,7 @@ void PowerWizard::init() {
         .setDescription("Power");
     mPowerDisplay = mUpgrades->subscribe(up);
 
-    auto params = Parameters();
+    auto params = ParameterSystem::Get();
     mParamSubs.push_back(
         params->subscribe<Keys<POWER_WIZARD, PowerWizardParams::BasePower,
                                PowerWizardParams::Speed>>(
@@ -70,13 +70,13 @@ std::unique_ptr<Fireball>& PowerWizard::shootFireball() {
     WizardId target = rDist(gen) < .5 ? WIZARD : CRYSTAL;
     mFireballs.push_back(std::move(ComponentFactory<Fireball>::New(
         SDL_FPoint{mPos->rect.cX(), mPos->rect.cY()}, mId, target,
-        Parameters()->get<POWER_WIZARD>(PowerWizardParams::Power),
+        ParameterSystem::Get()->get<POWER_WIZARD>(PowerWizardParams::Power),
         FIREBALL_IMG)));
     return mFireballs.back();
 }
 
 void PowerWizard::calcPower() {
-    auto params = Parameters();
+    auto params = ParameterSystem::Get();
     Number power =
         params->get<POWER_WIZARD>(PowerWizardParams::BasePower) *
         max(1, params->get<POWER_WIZARD>(PowerWizardParams::Speed) * 16 / 1000);
@@ -84,7 +84,7 @@ void PowerWizard::calcPower() {
 }
 
 void PowerWizard::calcSpeed() {
-    auto params = Parameters();
+    auto params = ParameterSystem::Get();
     Number speed = params->get<POWER_WIZARD>(PowerWizardParams::BaseSpeed) *
                    params->get<TIME_WIZARD>(TimeWizardParams::SpeedEffect);
     params->set<POWER_WIZARD>(PowerWizardParams::Speed, speed);
@@ -92,8 +92,9 @@ void PowerWizard::calcSpeed() {
 
 void PowerWizard::calcTimer() {
     Timer& timer = mFireballTimerSub->get<TimerObservable::DATA>();
-    float div =
-        Parameters()->get<POWER_WIZARD>(PowerWizardParams::Speed).toFloat();
+    float div = ParameterSystem::Get()
+                    ->get<POWER_WIZARD>(PowerWizardParams::Speed)
+                    .toFloat();
     if (div <= 0) {
         div = 1;
     }
@@ -101,7 +102,7 @@ void PowerWizard::calcTimer() {
 }
 
 void PowerWizard::calcFireRingEffect() {
-    auto params = Parameters();
+    auto params = ParameterSystem::Get();
     Number effect =
         (params->get<POWER_WIZARD>(PowerWizardParams::Power).logTenCopy() + 1)
             .sqrt();

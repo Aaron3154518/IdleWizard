@@ -1,6 +1,7 @@
 #ifndef TIME_WIZARD_H
 #define TIME_WIZARD_H
 
+#include <Components/Upgrade.h>
 #include <RenderSystem/AssetManager.h>
 #include <RenderSystem/RenderTypes.h>
 #include <RenderSystem/Shapes.h>
@@ -9,14 +10,12 @@
 #include <ServiceSystem/CoreServices/UpdateService.h>
 #include <ServiceSystem/Lockable.h>
 #include <ServiceSystem/UpdateServices/TimerService.h>
+#include <Systems/ParameterSystem.h>
+#include <Wizards/WizardBase.h>
+#include <Wizards/WizardIds.h>
+#include <Wizards/WizardTypes.h>
 
 #include <memory>
-
-#include "Upgrade.h"
-#include "WizardBase.h"
-#include "WizardData.h"
-#include "WizardIds.h"
-#include "WizardTypes.h"
 
 class TimeWizard : public WizardBase {
    public:

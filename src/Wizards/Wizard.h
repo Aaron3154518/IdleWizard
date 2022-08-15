@@ -1,6 +1,8 @@
 #ifndef WIZARD_H
 #define WIZARD_H
 
+#include <Components/Fireball.h>
+#include <Components/Upgrade.h>
 #include <RenderSystem/AssetManager.h>
 #include <RenderSystem/RenderTypes.h>
 #include <RenderSystem/Shapes.h>
@@ -10,17 +12,14 @@
 #include <ServiceSystem/EventServices/ResizeService.h>
 #include <ServiceSystem/ServiceSystem.h>
 #include <ServiceSystem/UpdateServices/TimerService.h>
+#include <Systems/ParameterSystem.h>
+#include <Systems/TimeSystem.h>
+#include <Wizards/WizardBase.h>
+#include <Wizards/WizardIds.h>
+#include <Wizards/WizardTypes.h>
 
 #include <memory>
 #include <vector>
-
-#include "Fireball.h"
-#include "TimeSystem.h"
-#include "Upgrade.h"
-#include "WizardBase.h"
-#include "WizardData.h"
-#include "WizardIds.h"
-#include "WizardTypes.h"
 
 class Wizard : public WizardBase {
    public:

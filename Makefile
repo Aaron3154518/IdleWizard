@@ -13,7 +13,7 @@ ENGINE_SRC := GameEngine/src
 ENGINE_LIB := GameEngine/lib
 ENGINE_INC := GameEngine/include
 
-INCLUDE_PATHS := -I$(INC)/$(ENGINE_SRC) \
+INCLUDE_PATHS := -I$(SRC) -I$(INC)/$(ENGINE_SRC) \
 	-I$(INC)/$(ENGINE_INC)/SDL2-2.0.12/$(SDL_INC) \
 	-I$(INC)/$(ENGINE_INC)/SDL2_image-2.0.5/$(SDL_INC) \
 	-I$(INC)/$(ENGINE_INC)/SDL2_ttf-2.0.15/$(SDL_INC)

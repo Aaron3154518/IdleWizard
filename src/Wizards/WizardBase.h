@@ -1,6 +1,8 @@
 #ifndef WIZARD_BASE_H
 #define WIZARD_BASE_H
 
+#include <Components/Fireball.h>
+#include <Components/Upgrade.h>
 #include <RenderSystem/AssetManager.h>
 #include <RenderSystem/RenderTypes.h>
 #include <RenderSystem/TextureBuilder.h>
@@ -10,14 +12,11 @@
 #include <ServiceSystem/EventServices/MouseService.h>
 #include <ServiceSystem/EventServices/ResizeService.h>
 #include <ServiceSystem/ServiceSystem.h>
+#include <Systems/ParameterSystem.h>
+#include <Wizards/WizardIds.h>
 
 #include <memory>
 #include <random>
-
-#include "Fireball.h"
-#include "Upgrade.h"
-#include "WizardData.h"
-#include "WizardIds.h"
 
 class WizardBase : public Component {
    public:
@@ -50,7 +49,7 @@ class WizardBase : public Component {
     RenderObservable::SubscriptionPtr mRenderSub;
     MouseObservable::SubscriptionPtr mMouseSub;
     DragObservable::SubscriptionPtr mDragSub;
-    std::list<ParameterSubscriptionPtr> mParamSubs;
+    std::list<ParameterSystem::ParameterObservable::SubscriptionPtr> mParamSubs;
 
     UpgradeListPtr mUpgrades = std::make_shared<UpgradeList>();
 

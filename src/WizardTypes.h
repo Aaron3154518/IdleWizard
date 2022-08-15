@@ -71,6 +71,9 @@ enum _ : uint8_t {
     SpeedPower = 0,
     SpeedEffect,
     SpeedCost,
+
+    FreezeDelay,
+    FreezeDuration
 };
 }
 

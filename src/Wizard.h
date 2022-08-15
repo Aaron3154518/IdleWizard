@@ -9,6 +9,7 @@
 #include <ServiceSystem/EventServices/DragService.h>
 #include <ServiceSystem/EventServices/MouseService.h>
 #include <ServiceSystem/EventServices/ResizeService.h>
+#include <ServiceSystem/Lockable.h>
 #include <ServiceSystem/ServiceSystem.h>
 #include <ServiceSystem/UpdateServices/TimerService.h>
 
@@ -19,6 +20,7 @@
 
 #include "FireRing.h"
 #include "Fireball.h"
+#include "TimeSystem.h"
 #include "Upgrade.h"
 #include "WizardBase.h"
 #include "WizardData.h"
@@ -47,7 +49,8 @@ class Wizard : public WizardBase {
 
     RenderData mPowBkgrnd;
 
-    TimerObservable::SubscriptionPtr mTimerSub, mPowWizTimerSub;
+    TimerObservable::SubscriptionPtr mFireballTimerSub;
+    TimeSystem::TimerObservable::SubscriptionPtr mPowWizTimerSub;
     TargetObservable::SubscriptionPtr mTargetSub;
     UpgradeList::SubscriptionPtr mPowerDisplay, mTargetUp, mPowerUp, mMultiUp;
 
@@ -118,7 +121,7 @@ class PowerWizard : public WizardBase {
 
     std::unique_ptr<Fireball>& shootFireball();
 
-    TimerObservable::SubscriptionPtr mTimerSub;
+    TimerObservable::SubscriptionPtr mFireballTimerSub;
     UpgradeList::SubscriptionPtr mPowerDisplay;
 
     std::vector<std::unique_ptr<Fireball>> mFireballs;
@@ -134,13 +137,18 @@ class TimeWizard : public WizardBase {
     void init();
 
     void onUpdate(Time dt);
+    bool startFreeze();
+    bool endFreeze();
 
     void calcCost();
 
     bool mActive = false, mCanAfford = false;
 
     UpdateObservable::SubscriptionPtr mUpdateSub;
+    TimerObservable::SubscriptionPtr mFreezeDelaySub, mFreezeTimerSub;
     UpgradeList::SubscriptionPtr mEffectDisplay, mActiveUp;
+
+    Lock mFreezeLock;
 
     std::vector<std::unique_ptr<Fireball>> mFireballs;
 };

@@ -7,7 +7,6 @@
 #include <SDL.h>
 #include <ServiceSystem/Component.h>
 #include <ServiceSystem/CoreServices/RenderService.h>
-#include <ServiceSystem/CoreServices/UpdateService.h>
 #include <ServiceSystem/EventServices/ResizeService.h>
 #include <ServiceSystem/Observable.h>
 #include <ServiceSystem/Service.h>
@@ -16,6 +15,7 @@
 #include <Utils/Time.h>
 
 #include "FireRing.h"
+#include "TimeSystem.h"
 #include "WizardIds.h"
 
 typedef Observable<void(SDL_FPoint), WizardId> FireballObservableBase;
@@ -73,7 +73,7 @@ class Fireball : public Component {
     RenderData mImg;
 
     ResizeObservable::SubscriptionPtr mResizeSub;
-    UpdateObservable::SubscriptionPtr mUpdateSub;
+    TimeSystem::UpdateObservable::SubscriptionPtr mUpdateSub;
     RenderObservable::SubscriptionPtr mRenderSub;
     FireballObservable::SubscriptionPtr mFireballSub;
     FireRingObservable::SubscriptionPtr mFireRingSub;

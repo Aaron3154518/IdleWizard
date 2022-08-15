@@ -24,8 +24,9 @@ void Wizard::init() {
     mRenderSub =
         ServiceSystem::Get<RenderService, RenderObservable>()->subscribe(
             std::bind(&Wizard::onRender, this, std::placeholders::_1), mPos);
-    mTimerSub = ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
-        std::bind(&Wizard::onTimer, this), Timer(1000));
+    mFireballTimerSub =
+        ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
+            std::bind(&Wizard::onTimer, this), Timer(1000));
     mTargetSub =
         ServiceSystem::Get<FireballService, TargetObservable>()->subscribe(
             std::bind(&Wizard::onHit, this, std::placeholders::_1,
@@ -125,7 +126,7 @@ void Wizard::onRender(SDL_Renderer* r) {
 
 bool Wizard::onTimer() {
     shootFireball();
-    float Multi = Parameters()->get<WIZARD>(WizardParams::MultiUp).tofloat();
+    float Multi = Parameters()->get<WIZARD>(WizardParams::MultiUp).toFloat();
     if (rDist(gen) < Multi) {
         shootFireball()->launch(
             {((float)rDist(gen) - .5f) * mPos->rect.w() + mPos->rect.cX(),
@@ -142,15 +143,13 @@ void Wizard::onHit(WizardId src, const Number& power) {
             params->set<WIZARD>(
                 WizardParams::PowerWizEffect,
                 params->get<POWER_WIZARD>(PowerWizardParams::Power));
-            mPowWizTimerSub =
-                ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
-                    [this]() {
-                        Parameters()->set<WIZARD>(WizardParams::PowerWizEffect,
-                                                  1);
-                        return false;
-                    },
-                    Timer(params->get<POWER_WIZARD>(PowerWizardParams::Duration)
-                              .tofloat()));
+            mPowWizTimerSub = TimeSystem::GetTimerObservable()->subscribe(
+                [this]() {
+                    Parameters()->set<WIZARD>(WizardParams::PowerWizEffect, 1);
+                    return false;
+                },
+                Timer(params->get<POWER_WIZARD>(PowerWizardParams::Duration)
+                          .toFloat()));
         } break;
     }
 }
@@ -181,8 +180,8 @@ void Wizard::calcSpeed() {
 }
 
 void Wizard::calcTimer() {
-    Timer& timer = mTimerSub->get<TimerObservable::DATA>();
-    float div = Parameters()->get<WIZARD>(WizardParams::Speed).tofloat();
+    Timer& timer = mFireballTimerSub->get<TimerObservable::DATA>();
+    float div = Parameters()->get<WIZARD>(WizardParams::Speed).toFloat();
     if (div <= 0) {
         div = 1;
     }
@@ -385,8 +384,9 @@ void PowerWizard::init() {
         ServiceSystem::Get<RenderService, RenderObservable>()->subscribe(
             std::bind(&PowerWizard::onRender, this, std::placeholders::_1),
             mPos);
-    mTimerSub = ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
-        std::bind(&PowerWizard::onTimer, this), Timer(1000));
+    mFireballTimerSub =
+        ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
+            std::bind(&PowerWizard::onTimer, this), Timer(1000));
 
     // Power Display
     UpgradePtr up = std::make_shared<Upgrade>();
@@ -457,9 +457,9 @@ void PowerWizard::calcSpeed() {
 }
 
 void PowerWizard::calcTimer() {
-    Timer& timer = mTimerSub->get<TimerObservable::DATA>();
+    Timer& timer = mFireballTimerSub->get<TimerObservable::DATA>();
     float div =
-        Parameters()->get<POWER_WIZARD>(PowerWizardParams::Speed).tofloat();
+        Parameters()->get<POWER_WIZARD>(PowerWizardParams::Speed).toFloat();
     if (div <= 0) {
         div = 1;
     }
@@ -482,6 +482,8 @@ TimeWizard::TimeWizard() : WizardBase(TIME_WIZARD) {
     auto params = Parameters();
     params->set<TIME_WIZARD>(TimeWizardParams::SpeedPower, 1.5);
     params->set<TIME_WIZARD>(TimeWizardParams::SpeedEffect, 1);
+    params->set<TIME_WIZARD>(TimeWizardParams::FreezeDelay, 30000);
+    params->set<TIME_WIZARD>(TimeWizardParams::FreezeDuration, 10000);
 }
 
 void TimeWizard::init() {
@@ -490,6 +492,12 @@ void TimeWizard::init() {
     mUpdateSub =
         ServiceSystem::Get<UpdateService, UpdateObservable>()->subscribe(
             std::bind(&TimeWizard::onUpdate, this, std::placeholders::_1));
+    mFreezeDelaySub =
+        ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
+            std::bind(&TimeWizard::startFreeze, this),
+            Timer(Parameters()
+                      ->get<TIME_WIZARD>(TimeWizardParams::FreezeDelay)
+                      .toFloat()));
 
     // Power Display
     UpgradePtr up = std::make_shared<Upgrade>();
@@ -549,6 +557,35 @@ void TimeWizard::onUpdate(Time dt) {
         params->set<TIME_WIZARD>(TimeWizardParams::SpeedEffect, 1);
         mCanAfford = false;
     }
+}
+
+bool TimeWizard::startFreeze() {
+    auto updateObservable = ServiceSystem::Get<TimeSystem::UpdateService,
+                                               TimeSystem::UpdateObservable>();
+    if (mFreezeLock) {
+        updateObservable->releaseLock(mFreezeLock);
+    }
+    mFreezeLock = updateObservable->requestLock();
+    mFreezeTimerSub =
+        ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
+            std::bind(&TimeWizard::endFreeze, this),
+            Timer(Parameters()
+                      ->get<TIME_WIZARD>(TimeWizardParams::FreezeDuration)
+                      .toFloat()));
+    return false;
+}
+
+bool TimeWizard::endFreeze() {
+    ServiceSystem::Get<TimeSystem::UpdateService,
+                       TimeSystem::UpdateObservable>()
+        ->releaseLock(mFreezeLock);
+    mFreezeDelaySub =
+        ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
+            std::bind(&TimeWizard::startFreeze, this),
+            Timer(Parameters()
+                      ->get<TIME_WIZARD>(TimeWizardParams::FreezeDelay)
+                      .toFloat()));
+    return false;
 }
 
 void TimeWizard::calcCost() {

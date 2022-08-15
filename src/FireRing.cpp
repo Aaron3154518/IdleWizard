@@ -16,9 +16,8 @@ void FireRing::init() {
     mRenderSub =
         ServiceSystem::Get<RenderService, RenderObservable>()->subscribe(
             std::bind(&FireRing::onRender, this, std::placeholders::_1), pos);
-    mUpdateSub =
-        ServiceSystem::Get<UpdateService, UpdateObservable>()->subscribe(
-            std::bind(&FireRing::onUpdate, this, std::placeholders::_1));
+    mUpdateSub = TimeSystem::GetUpdateObservable()->subscribe(
+        std::bind(&FireRing::onUpdate, this, std::placeholders::_1));
 }
 
 void FireRing::onRender(SDL_Renderer* r) { TextureBuilder().draw(mCircle); }

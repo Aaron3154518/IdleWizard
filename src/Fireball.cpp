@@ -56,9 +56,8 @@ void Fireball::init() {
     mResizeSub =
         ServiceSystem::Get<ResizeService, ResizeObservable>()->subscribe(
             std::bind(&Fireball::onResize, this, std::placeholders::_1));
-    mUpdateSub =
-        ServiceSystem::Get<UpdateService, UpdateObservable>()->subscribe(
-            std::bind(&Fireball::onUpdate, this, std::placeholders::_1));
+    mUpdateSub = TimeSystem::GetUpdateObservable()->subscribe(
+        std::bind(&Fireball::onUpdate, this, std::placeholders::_1));
     mRenderSub =
         ServiceSystem::Get<RenderService, RenderObservable>()->subscribe(
             std::bind(&Fireball::onRender, this, std::placeholders::_1), mPos);

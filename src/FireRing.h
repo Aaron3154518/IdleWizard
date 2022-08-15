@@ -8,13 +8,13 @@
 #include <SDL.h>
 #include <ServiceSystem/Component.h>
 #include <ServiceSystem/CoreServices/RenderService.h>
-#include <ServiceSystem/CoreServices/UpdateService.h>
 #include <ServiceSystem/Observable.h>
 #include <ServiceSystem/Service.h>
 #include <ServiceSystem/ServiceSystem.h>
 #include <Utils/Number.h>
 #include <Utils/Time.h>
 
+#include "TimeSystem.h"
 #include "WizardIds.h"
 
 class FireRing : public Component {
@@ -38,7 +38,7 @@ class FireRing : public Component {
     Number mEffect;
 
     RenderObservable::SubscriptionPtr mRenderSub;
-    UpdateObservable::SubscriptionPtr mUpdateSub;
+    TimeSystem::UpdateObservable::SubscriptionPtr mUpdateSub;
 };
 
 typedef Observable<void(const Number&), UIComponentPtr> FireRingObservableBase;

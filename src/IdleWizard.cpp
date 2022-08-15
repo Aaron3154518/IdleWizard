@@ -7,6 +7,7 @@
 #include <Wizards/PowerWizard.h>
 #include <Wizards/TimeWizard.h>
 #include <Wizards/Wizard.h>
+#include <Wizards/WizardBase.h>
 
 #include <memory>
 
@@ -27,6 +28,12 @@ int main(int argc, char* argv[]) {
         ComponentFactory<PowerWizard>::New();
     std::unique_ptr<TimeWizard> timeWizard =
         ComponentFactory<TimeWizard>::New();
+
+    auto hideObservable =
+        ServiceSystem::Get<WizardService, WizardBase::HideObservable>();
+    for (WizardId id : {CATALYST, POWER_WIZARD, TIME_WIZARD}) {
+        hideObservable->next(id, true);
+    }
 
     GameSystem::Run();
 

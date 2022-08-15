@@ -29,6 +29,8 @@ void WizardBase::init() {
     mDragSub = ServiceSystem::Get<DragService, DragObservable>()->subscribe(
         []() {}, [this](int x, int y, float dx, float dy) { setPos(x, y); },
         []() {}, mPos, mDrag);
+    mHideSub = ServiceSystem::Get<WizardService, HideObservable>()->subscribe(
+        std::bind(&WizardBase::onHide, this, std::placeholders::_1), mId);
 }
 
 void WizardBase::onResize(ResizeData data) {
@@ -53,6 +55,8 @@ void WizardBase::onClick(Event::MouseButton b, bool clicked) {
             mUpgrades);
     }
 }
+
+void WizardBase::onHide(bool hide) { mPos->visible = !hide; }
 
 void WizardBase::setPos(float x, float y) {
     SDL_Point screenDim = RenderSystem::getWindowSize();

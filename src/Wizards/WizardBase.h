@@ -11,14 +11,19 @@
 #include <ServiceSystem/EventServices/DragService.h>
 #include <ServiceSystem/EventServices/MouseService.h>
 #include <ServiceSystem/EventServices/ResizeService.h>
+#include <ServiceSystem/Service.h>
 #include <ServiceSystem/ServiceSystem.h>
 #include <Systems/ParameterSystem.h>
+#include <Systems/TargetSystem.h>
 #include <Wizards/WizardIds.h>
 
 #include <memory>
 #include <random>
 
 class WizardBase : public Component {
+   public:
+    typedef TargetSystem::TargetObservable<bool> HideObservable;
+
    public:
     virtual ~WizardBase();
 
@@ -36,6 +41,7 @@ class WizardBase : public Component {
     virtual void onResize(ResizeData data);
     virtual void onRender(SDL_Renderer* r);
     virtual void onClick(Event::MouseButton b, bool clicked);
+    virtual void onHide(bool hide);
 
     virtual void setPos(float x, float y);
 
@@ -49,6 +55,7 @@ class WizardBase : public Component {
     RenderObservable::SubscriptionPtr mRenderSub;
     MouseObservable::SubscriptionPtr mMouseSub;
     DragObservable::SubscriptionPtr mDragSub;
+    HideObservable::SubscriptionPtr mHideSub;
     std::list<ParameterSystem::ParameterObservable::SubscriptionPtr> mParamSubs;
 
     UpgradeListPtr mUpgrades = std::make_shared<UpgradeList>();
@@ -56,5 +63,7 @@ class WizardBase : public Component {
     std::mt19937 gen = std::mt19937(rand());
     std::uniform_real_distribution<> rDist;
 };
+
+class WizardService : public Service<WizardBase::HideObservable> {};
 
 #endif

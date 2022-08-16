@@ -27,6 +27,7 @@ class Crystal : public WizardBase {
 
     void onRender(SDL_Renderer* r);
     void onClick(Event::MouseButton b, bool clicked);
+    void onHide(WizardId id, bool hide);
     void onFireballHit(const Fireball& fireball);
 
     void calcMagicEffect();
@@ -34,7 +35,7 @@ class Crystal : public WizardBase {
 
     std::unique_ptr<FireRing>& createFireRing(const Number& val);
 
-    Fireball::HitObservable::SubscriptionPtr mFireballSub;
+    Fireball::HitObservable::IdSubscriptionPtr mFireballSub;
     UpgradeList::SubscriptionPtr mMagicEffectDisplay;
 
     std::vector<std::unique_ptr<FireRing>> mFireRings;

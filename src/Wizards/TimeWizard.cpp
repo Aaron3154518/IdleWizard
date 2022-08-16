@@ -26,6 +26,9 @@ void TimeWizard::init() {
         ServiceSystem::Get<UpdateService, UpdateObservable>()->subscribe(
             std::bind(&TimeWizard::onUpdate, this, std::placeholders::_1));
     startFreezeCycle();
+    attachSubToVisibility(mUpdateSub);
+    attachSubToVisibility(mFreezeDelaySub);
+    attachSubToVisibility(mFreezeTimerSub);
 
     // Power Display
     UpgradePtr up = std::make_shared<Upgrade>();
@@ -95,6 +98,19 @@ void TimeWizard::onRender(SDL_Renderer* r) {
     TextureBuilder().draw(mFreezePb);
 }
 
+void TimeWizard::onHide(WizardId id, bool hide) {
+    WizardBase::onHide(id, hide);
+    if (id == TIME_WIZARD) {
+        if (hide) {
+            TimeSystem::Unfreeze(TimeSystem::FreezeType::TIME_WIZARD);
+            mFreezeDelaySub.reset();
+            mFreezeTimerSub.reset();
+        } else {
+            startFreezeCycle();
+        }
+    }
+}
+
 bool TimeWizard::startFreeze(Timer& timer) {
     TimeSystem::Freeze(TimeSystem::FreezeType::TIME_WIZARD);
     mFreezeTimerSub =
@@ -114,8 +130,6 @@ bool TimeWizard::startFreeze(Timer& timer) {
 bool TimeWizard::endFreeze(Timer& timer) {
     TimeSystem::Unfreeze(TimeSystem::FreezeType::TIME_WIZARD);
     startFreezeCycle();
-    mFreezePb.color = BLUE;
-    updateImg();
     return false;
 }
 
@@ -129,6 +143,8 @@ void TimeWizard::startFreezeCycle() {
             Timer(ParameterSystem::Get()
                       ->get<TIME_WIZARD>(TimeWizardParams::FreezeDelay)
                       .toFloat()));
+    mFreezePb.color = BLUE;
+    updateImg();
 }
 
 void TimeWizard::calcCost() {

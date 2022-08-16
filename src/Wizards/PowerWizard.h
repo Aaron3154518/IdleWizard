@@ -27,6 +27,7 @@ class PowerWizard : public WizardBase {
     void init();
 
     void onRender(SDL_Renderer* r);
+    void onHide(WizardId id, bool hide);
     bool onTimer(Timer& timer);
     void onFreeze(TimeSystem::FreezeType type);
     void onUnfreeze(TimeSystem::FreezeType type);

@@ -22,7 +22,7 @@
 
 class WizardBase : public Component {
    public:
-    typedef TargetSystem::TargetObservable<bool> HideObservable;
+    typedef ForwardObservable<void(WizardId, bool)> HideObservable;
 
    public:
     virtual ~WizardBase();
@@ -41,13 +41,16 @@ class WizardBase : public Component {
     virtual void onResize(ResizeData data);
     virtual void onRender(SDL_Renderer* r);
     virtual void onClick(Event::MouseButton b, bool clicked);
-    virtual void onHide(bool hide);
+    virtual void onHide(WizardId id, bool hide);
 
     virtual void setPos(float x, float y);
 
     void setImage(const std::string& img);
 
-    bool mHidden;
+    void attachSubToVisibility(SubscriptionBaseWPtr wSub);
+    void detachSubFromVisibility(SubscriptionBasePtr ub);
+
+    bool mHidden = false;
 
     RenderData mImg;
 
@@ -64,6 +67,9 @@ class WizardBase : public Component {
 
     std::mt19937 gen = std::mt19937(rand());
     std::uniform_real_distribution<> rDist;
+
+   private:
+    std::list<SubscriptionBaseWPtr> mVisibilitySubs;
 };
 
 class WizardService : public Service<WizardBase::HideObservable> {};

@@ -28,7 +28,7 @@ class Catalyst : public WizardBase {
     void calcMagicEffect();
     void drawMagic();
 
-    Fireball::HitObservable::SubscriptionPtr mFireballSub;
+    Fireball::HitObservable::IdSubscriptionPtr mFireballSub;
     UpgradeList::SubscriptionPtr mMagicEffectDisplay;
 
     TextRenderData mMagicText;

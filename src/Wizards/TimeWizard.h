@@ -28,6 +28,7 @@ class TimeWizard : public WizardBase {
 
     void onUpdate(Time dt);
     void onRender(SDL_Renderer*);
+    void onHide(WizardId id, bool hide);
     bool startFreeze(Timer& timer);
     bool endFreeze(Timer& timer);
     void startFreezeCycle();

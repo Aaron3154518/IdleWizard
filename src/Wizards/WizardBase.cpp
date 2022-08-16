@@ -28,7 +28,12 @@ void WizardBase::init() {
         []() {}, [this](int x, int y, float dx, float dy) { setPos(x, y); },
         []() {}, mPos, mDrag);
     mHideSub = ServiceSystem::Get<WizardService, HideObservable>()->subscribe(
-        [this](bool hide) { onHide(hide); }, mId);
+        [this](WizardId id, bool hide) { onHide(id, hide); });
+
+    attachSubToVisibility(mResizeSub);
+    attachSubToVisibility(mRenderSub);
+    attachSubToVisibility(mMouseSub);
+    attachSubToVisibility(mDragSub);
 }
 
 void WizardBase::onResize(ResizeData data) {
@@ -54,9 +59,17 @@ void WizardBase::onClick(Event::MouseButton b, bool clicked) {
     }
 }
 
-void WizardBase::onHide(bool hide) {
-    mHidden = hide;
-    mPos->visible = !mHidden;
+void WizardBase::onHide(WizardId id, bool hide) {
+    if (id == mId) {
+        mHidden = hide;
+        mPos->visible = !mHidden;
+        for (auto wSub : mVisibilitySubs) {
+            auto sub = wSub.lock();
+            if (sub) {
+                sub->setActive(!hide);
+            }
+        }
+    }
 }
 
 void WizardBase::setPos(float x, float y) {
@@ -74,4 +87,21 @@ void WizardBase::setImage(const std::string& img) {
     mImg.dest.setPos(mPos->rect.cX(), mPos->rect.cY(), Rect::Align::CENTER);
     mImg.fitToTexture();
     mPos->rect = mImg.dest;
+}
+
+void WizardBase::attachSubToVisibility(SubscriptionBaseWPtr wSub) {
+    mVisibilitySubs.push_back(wSub);
+    auto sub = wSub.lock();
+    if (sub) {
+        sub->setActive(!mHidden);
+    }
+}
+void WizardBase::detachSubFromVisibility(SubscriptionBasePtr sub) {
+    auto it = std::find_if(mVisibilitySubs.begin(), mVisibilitySubs.end(),
+                           [&sub](const SubscriptionBaseWPtr wSub) {
+                               return wSub.lock().get() == sub.get();
+                           });
+    if (it != mVisibilitySubs.end()) {
+        mVisibilitySubs.erase(it);
+    }
 }

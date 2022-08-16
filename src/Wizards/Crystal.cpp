@@ -16,6 +16,7 @@ void Crystal::init() {
             ->subscribe(
                 std::bind(&Crystal::onFireballHit, this, std::placeholders::_1),
                 mId);
+    attachSubToVisibility(mFireballSub);
 
     // Power Display
     UpgradePtr up = std::make_shared<Upgrade>();
@@ -57,6 +58,17 @@ void Crystal::onClick(Event::MouseButton b, bool clicked) {
         auto params = ParameterSystem::Get();
         params->set<CRYSTAL>(CrystalParams::Magic,
                              params->get<CRYSTAL>(CrystalParams::Magic) * 10);
+    }
+}
+
+void Crystal::onHide(WizardId id, bool hide) {
+    WizardBase::onHide(id, hide);
+    if (hide) {
+        switch (id) {
+            case CRYSTAL:
+                mFireRings.clear();
+                break;
+        }
     }
 }
 

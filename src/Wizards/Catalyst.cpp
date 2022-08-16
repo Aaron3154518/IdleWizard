@@ -17,6 +17,7 @@ void Catalyst::init() {
             ->subscribe(std::bind(&Catalyst::onFireballHit, this,
                                   std::placeholders::_1),
                         mId);
+    attachSubToVisibility(mFireballSub);
 
     // Power Display
     UpgradePtr up = std::make_shared<Upgrade>();

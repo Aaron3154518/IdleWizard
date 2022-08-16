@@ -33,6 +33,7 @@ class Wizard : public WizardBase {
     void init();
 
     void onRender(SDL_Renderer* r);
+    void onHide(WizardId id, bool hide);
     bool onTimer(Timer& timer);
     void onFireballHit(const Fireball& fireball);
     void onFireballFireRingHit(Fireball& fireball,
@@ -55,8 +56,8 @@ class Wizard : public WizardBase {
 
     TimerObservable::SubscriptionPtr mFireballTimerSub;
     TimeSystem::TimerObservable::SubscriptionPtr mPowWizTimerSub;
-    Fireball::HitObservable::SubscriptionPtr mFireballSub;
-    Fireball::FireRingHitObservable::SubscriptionPtr mFireballFireRingSub;
+    Fireball::HitObservable::IdSubscriptionPtr mFireballSub;
+    Fireball::FireRingHitObservable::IdSubscriptionPtr mFireballFireRingSub;
     TimeSystem::FreezeObservable::SubscriptionPtr mFreezeSub;
     UpgradeList::SubscriptionPtr mPowerDisplay, mTargetUp, mPowerUp, mMultiUp;
 

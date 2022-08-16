@@ -21,6 +21,8 @@ void PowerWizard::init() {
     mFreezeSub = TimeSystem::GetFreezeObservable()->subscribe(
         std::bind(&PowerWizard::onFreeze, this, std::placeholders::_1),
         std::bind(&PowerWizard::onUnfreeze, this, std::placeholders::_1));
+    attachSubToVisibility(mFireballTimerSub);
+    attachSubToVisibility(mFreezeSub);
 
     // Power Display
     UpgradePtr up = std::make_shared<Upgrade>();
@@ -57,6 +59,23 @@ void PowerWizard::onRender(SDL_Renderer* r) {
             if (it == mFireballs.end()) {
                 break;
             }
+        }
+    }
+}
+
+void PowerWizard::onHide(WizardId id, bool hide) {
+    WizardBase::onHide(id, hide);
+    if (hide) {
+        switch (id) {
+            case POWER_WIZARD:
+                mFireballs.clear();
+                break;
+            default:
+                std::remove_if(mFireballs.begin(), mFireballs.end(),
+                               [id](const FireballPtr& ball) {
+                                   return ball->getTargetId() == id;
+                               });
+                break;
         }
     }
 }

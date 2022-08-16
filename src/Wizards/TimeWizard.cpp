@@ -33,14 +33,19 @@ void TimeWizard::init() {
     // Power Display
     UpgradePtr up = std::make_shared<Upgrade>();
     up->setMaxLevel(0)
-        .setEffectSource<TIME_WIZARD, TimeWizardParams::SpeedCost>(
-            [](const Number& cost) {
+        .setEffectSource<TIME_WIZARD, TimeWizardParams::FreezeDuration>(
+            [](const Number& val) {
                 auto params = ParameterSystem::Get();
                 std::stringstream ss;
-                ss << params->get<TIME_WIZARD>(TimeWizardParams::SpeedEffect)
-                   << "x\n-$"
-                   << params->get<TIME_WIZARD>(TimeWizardParams::SpeedCost)
-                   << "/s";
+                ss << "Cooldown: "
+                   << params->get<TIME_WIZARD>(TimeWizardParams::FreezeDelay) /
+                          1000
+                   << "s\nDuration: "
+                   << params->get<TIME_WIZARD>(
+                          TimeWizardParams::FreezeDuration) /
+                          1000
+                   << "s\nUnfreeze Effect: Power ^ "
+                   << params->get<TIME_WIZARD>(TimeWizardParams::FreezeEffect);
                 return ss.str();
             })
         .setImg(WIZ_IMGS.at(mId))
@@ -49,13 +54,28 @@ void TimeWizard::init() {
 
     // Active toggle
     up = std::make_shared<Upgrade>();
-    up->setMaxLevel(-1).setImg(WIZ_IMGS.at(mId));
+    up->setMaxLevel(-1)
+        .setImg(WIZ_IMGS.at(mId))
+        .setDescription(
+            "Consume magic for a fire rate multiplier to all Wizards")
+        .setEffectSource<TIME_WIZARD, TimeWizardParams::SpeedCost>(
+            [this](const Number& val) {
+                auto params = ParameterSystem::Get();
+                std::stringstream ss;
+                ss << params->get<TIME_WIZARD>(TimeWizardParams::SpeedEffect)
+                   << "x\n-$"
+                   << (mActive ? params->get<TIME_WIZARD>(
+                                     TimeWizardParams::SpeedCost)
+                               : 0)
+                   << "/s";
+                return ss.str();
+            });
     mActiveUp = mUpgrades->subscribe(
         [this](UpgradePtr u) {
             mActive = u->getLevel() % 2 != 0;
             u->setLevel(u->getLevel() % 2)
-                .setEffect(mActive ? "Active" : "Inactive")
-                .setImg(mActive ? ACTIVE_IMG : WIZ_IMGS.at(mId));
+                .setImg(mActive ? ACTIVE_IMG : WIZ_IMGS.at(mId))
+                .updateEffect();
             updateImg();
         },
         up);
@@ -151,7 +171,7 @@ void TimeWizard::calcCost() {
     auto params = ParameterSystem::Get();
     params->set<TIME_WIZARD>(
         TimeWizardParams::SpeedCost,
-        10 ^ params->get<TIME_WIZARD>(TimeWizardParams::SpeedPower));
+        10 ^ (params->get<TIME_WIZARD>(TimeWizardParams::SpeedPower) * .5));
 }
 
 void TimeWizard::updateImg() {

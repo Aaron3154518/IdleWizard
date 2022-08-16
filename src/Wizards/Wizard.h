@@ -27,7 +27,7 @@ class Wizard : public WizardBase {
     Wizard();
 
     const static std::string POWER_UP_IMG, SPEED_UP_IMG, MULTI_UP_IMG,
-        POWER_BKGRND, FIREBALL_IMG;
+        POWER_BKGRND, FIREBALL_IMG, FIREBALL_BUFFED_IMG;
 
    private:
     void init();

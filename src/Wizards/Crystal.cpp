@@ -23,12 +23,19 @@ void Crystal::init() {
 
     // Power Display
     UpgradePtr up = std::make_shared<Upgrade>();
-    up->setMaxLevel(0)
+    up->setMaxLevel(-1)
         .setEffectSource<CRYSTAL, CrystalParams::MagicEffect>(
             Upgrade::Defaults::MultiplicativeEffect)
         .setImg(WIZ_IMGS.at(mId))
         .setDescription("Multiplier based on crystal damage");
-    mMagicEffectDisplay = mUpgrades->subscribe(up);
+    mMagicEffectDisplay = mUpgrades->subscribe(
+        [this](UpgradePtr u) {
+            auto params = ParameterSystem::Get();
+            params->set<CRYSTAL>(
+                CrystalParams::Magic,
+                params->get<CRYSTAL>(CrystalParams::Magic) * 2);
+        },
+        up);
 
     up = std::make_shared<Upgrade>();
     up->setMaxLevel(1)
@@ -101,11 +108,6 @@ void Crystal::onRender(SDL_Renderer* r) {
 
 void Crystal::onClick(Event::MouseButton b, bool clicked) {
     WizardBase::onClick(b, clicked);
-    if (clicked) {
-        auto params = ParameterSystem::Get();
-        params->set<CRYSTAL>(CrystalParams::Magic,
-                             params->get<CRYSTAL>(CrystalParams::Magic) * 10);
-    }
 }
 
 void Crystal::onHide(WizardId id, bool hide) {

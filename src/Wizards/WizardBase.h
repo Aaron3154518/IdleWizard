@@ -22,7 +22,18 @@
 
 class WizardBase : public Component {
    public:
-    typedef ForwardObservable<void(WizardId, bool)> HideObservable;
+    typedef ForwardObservable<void(WizardId, bool)> HideObservableBase;
+    class HideObservable : public HideObservableBase {
+       public:
+        void next(WizardId id, bool hide);
+
+        bool isHidden(WizardId id) const;
+
+       private:
+        std::unordered_map<WizardId, bool> mHidden;
+    };
+
+    static bool Hidden(WizardId id);
 
    public:
     virtual ~WizardBase();

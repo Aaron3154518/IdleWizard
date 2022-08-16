@@ -99,16 +99,21 @@ void Upgrade::drawDescription(TextureBuilder tex, SDL_FPoint offset) const {
         rdRect.setPosX(offset.x, Rect::CENTER);
         tex.draw(rd.set(rdRect));
         tex.draw(infoData);
-    } else {
+
+        if (mDesc) {
+            tex.draw(descData);
+        }
+
+        rd.color = BLACK;
+        tex.draw(rd.set(rd.r2, 1));
+    } else if (mDesc) {
         tex.draw(rd.set(descData.dest));
-    }
 
-    if (mDesc) {
         tex.draw(descData);
-    }
 
-    rd.color = BLACK;
-    tex.draw(rd.set(rd.r2, 1));
+        rd.color = BLACK;
+        tex.draw(rd.set(rd.r2, 1));
+    }
 }
 
 std::string Upgrade::getInfo() const {
@@ -132,6 +137,11 @@ std::string Upgrade::getInfo() const {
     return ss.str();
 }
 
+void Upgrade::updateEffect() {
+    if (mEffectSub) {
+        mEffectSub->get<0>()();
+    }
+}
 void Upgrade::updateInfo() { mInfo = createDescription(getInfo()); }
 
 SharedTexture Upgrade::createDescription(std::string text) {
@@ -158,6 +168,7 @@ UpgradeList::SubscriptionPtr UpgradeList::subscribe(UpgradePtr up) {
 
 void UpgradeList::onSubscribe(SubscriptionPtr sub) {
     sub->get<ON_LEVEL>()(sub->get<DATA>());
+    sub->get<DATA>()->updateInfo();
 }
 
 UpgradeList::UpgradeStatus UpgradeList::getSubStatus(SubscriptionPtr sub) {

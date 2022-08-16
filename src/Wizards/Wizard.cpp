@@ -6,6 +6,8 @@ const std::string Wizard::SPEED_UP_IMG = "res/upgrades/speed_upgrade.png";
 const std::string Wizard::MULTI_UP_IMG = "res/upgrades/multi_upgrade.png";
 const std::string Wizard::POWER_BKGRND = "res/wizards/power_effect_bkgrnd.png";
 const std::string Wizard::FIREBALL_IMG = "res/projectiles/fireball.png";
+const std::string Wizard::FIREBALL_BUFFED_IMG =
+    "res/projectiles/fireball_buffed.png";
 
 Wizard::Wizard() : WizardBase(WIZARD) {
     auto params = ParameterSystem::Get();
@@ -59,9 +61,14 @@ void Wizard::init() {
         .setDescription("Change the Wizard's target");
     mTargetUp = mUpgrades->subscribe(
         [this](UpgradePtr u) {
-            mTarget = u->getLevel() % 2 == 0 ? CRYSTAL : CATALYST;
-            u->setLevel(u->getLevel() % 2)
-                .setEffect("Target: " + WIZ_NAMES.at(mTarget))
+            if (u->getLevel() % 2 == 0 || WizardBase::Hidden(CATALYST)) {
+                mTarget = CRYSTAL;
+                u->setLevel(0);
+            } else {
+                mTarget = CATALYST;
+                u->setLevel(1);
+            }
+            u->setEffect("Target: " + WIZ_NAMES.at(mTarget))
                 .setImg(WIZ_IMGS.at(mTarget));
         },
         up);
@@ -147,6 +154,9 @@ void Wizard::onHide(WizardId id, bool hide) {
                                    return ball->getTargetId() == id;
                                });
                 break;
+        }
+        if (id == mTarget) {
+            mTarget = CRYSTAL;
         }
     }
 }
@@ -266,14 +276,13 @@ void Wizard::shootFireball() {
     if (!frozen || mFireballFreezeCnt == 0) {
         mFireballs.push_back(std::move(ComponentFactory<Fireball>::New(
             SDL_FPoint{mPos->rect.cX(), mPos->rect.cY()}, mId, mTarget,
-            FIREBALL_IMG,
+            mPowWizBoosts.empty() ? FIREBALL_IMG : FIREBALL_BUFFED_IMG,
             ParameterSystem::Get()->get<WIZARD>(WizardParams::Power))));
     }
     if (frozen) {
         if (++mFireballFreezeCnt > 1) {
             mFireballs.back()->getValue() +=
-                ParameterSystem::Get()->get<WIZARD>(WizardParams::Power) /
-                sqrt(mFireballFreezeCnt);
+                ParameterSystem::Get()->get<WIZARD>(WizardParams::Power);
         }
         mFireballs.back()->setSize(
             fmin(pow(mFireballFreezeCnt, 1.0 / 3.0), 10));

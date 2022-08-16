@@ -1,5 +1,20 @@
 #include "WizardBase.h"
 
+// HideObservable
+void WizardBase::HideObservable::next(WizardId id, bool hide) {
+    HideObservableBase::next(id, hide);
+    mHidden[id] = hide;
+}
+
+bool WizardBase::HideObservable::isHidden(WizardId id) const {
+    auto it = mHidden.find(id);
+    return it != mHidden.end() && it->second;
+}
+
+bool WizardBase::Hidden(WizardId id) {
+    return ServiceSystem::Get<WizardService, HideObservable>()->isHidden(id);
+}
+
 // WizardBase
 const Rect WizardBase::IMG_RECT(0, 0, 100, 100);
 const FontData WizardBase::FONT{-1, IMG_RECT.H() / 4, "|"};

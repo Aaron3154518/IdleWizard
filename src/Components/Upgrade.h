@@ -109,6 +109,7 @@ class Upgrade {
 
     std::string getInfo() const;
 
+    void updateEffect();
     void updateInfo();
 
     static SharedTexture createDescription(std::string text);

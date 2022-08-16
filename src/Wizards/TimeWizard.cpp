@@ -169,9 +169,9 @@ void TimeWizard::startFreezeCycle() {
 
 void TimeWizard::calcCost() {
     auto params = ParameterSystem::Get();
-    params->set<TIME_WIZARD>(
-        TimeWizardParams::SpeedCost,
-        10 ^ (params->get<TIME_WIZARD>(TimeWizardParams::SpeedPower) * .5));
+    Number power = params->get<TIME_WIZARD>(TimeWizardParams::SpeedPower);
+    params->set<TIME_WIZARD>(TimeWizardParams::SpeedCost,
+                             10 ^ (power ^ (power / 3)));
 }
 
 void TimeWizard::updateImg() {

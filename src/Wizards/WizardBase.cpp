@@ -1,20 +1,5 @@
 #include "WizardBase.h"
 
-// HideObservable
-void WizardBase::HideObservable::next(WizardId id, bool hide) {
-    HideObservableBase::next(id, hide);
-    mHidden[id] = hide;
-}
-
-bool WizardBase::HideObservable::isHidden(WizardId id) const {
-    auto it = mHidden.find(id);
-    return it != mHidden.end() && it->second;
-}
-
-bool WizardBase::Hidden(WizardId id) {
-    return ServiceSystem::Get<WizardService, HideObservable>()->isHidden(id);
-}
-
 // WizardBase
 const Rect WizardBase::IMG_RECT(0, 0, 100, 100);
 const FontData WizardBase::FONT{-1, IMG_RECT.H() / 4, "|"};
@@ -42,8 +27,10 @@ void WizardBase::init() {
     mDragSub = ServiceSystem::Get<DragService, DragObservable>()->subscribe(
         []() {}, [this](int x, int y, float dx, float dy) { setPos(x, y); },
         []() {}, mPos, mDrag);
-    mHideSub = ServiceSystem::Get<WizardService, HideObservable>()->subscribe(
+    mHideSub = WizardSystem::GetHideObservable()->subscribe(
         [this](WizardId id, bool hide) { onHide(id, hide); });
+    mWizEventsSub = WizardSystem::GetWizEventsObservable()->subscribe(
+        [this](WizardSystem::Event e) { onWizEvent(e); });
 
     attachSubToVisibility(mResizeSub);
     attachSubToVisibility(mRenderSub);
@@ -86,6 +73,8 @@ void WizardBase::onHide(WizardId id, bool hide) {
         }
     }
 }
+
+void WizardBase::onWizEvent(WizardSystem::Event e) {}
 
 void WizardBase::setPos(float x, float y) {
     SDL_Point screenDim = RenderSystem::getWindowSize();

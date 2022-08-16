@@ -2,6 +2,7 @@
 
 #include <Components/Upgrade.h>
 #include <GameSystem.h>
+#include <Systems/WizardSystem.h>
 #include <Wizards/Catalyst.h>
 #include <Wizards/Crystal.h>
 #include <Wizards/PowerWizard.h>
@@ -29,8 +30,7 @@ int main(int argc, char* argv[]) {
     std::unique_ptr<TimeWizard> timeWizard =
         ComponentFactory<TimeWizard>::New();
 
-    auto hideObservable =
-        ServiceSystem::Get<WizardService, WizardBase::HideObservable>();
+    auto hideObservable = WizardSystem::GetHideObservable();
     for (WizardId id : {CATALYST, POWER_WIZARD, TIME_WIZARD}) {
         hideObservable->next(id, true);
     }

@@ -61,7 +61,7 @@ void Wizard::init() {
         .setDescription("Change the Wizard's target");
     mTargetUp = mUpgrades->subscribe(
         [this](UpgradePtr u) {
-            if (u->getLevel() % 2 == 0 || WizardBase::Hidden(CATALYST)) {
+            if (u->getLevel() % 2 == 0 || WizardSystem::Hidden(CATALYST)) {
                 mTarget = CRYSTAL;
                 u->setLevel(0);
             } else {
@@ -104,6 +104,7 @@ void Wizard::init() {
             u->getCostSrc().set((Number(1.5) ^ u->getLevel()) * 100);
         },
         up);
+    mMultiUp->setActive(false);
 
     auto params = ParameterSystem::Get();
     mParamSubs.push_back(
@@ -159,6 +160,19 @@ void Wizard::onHide(WizardId id, bool hide) {
             mTarget = CRYSTAL;
         }
     }
+}
+
+void Wizard::onWizEvent(WizardSystem::Event e) {
+    UpgradePtr up;
+    switch (e) {
+        case WizardSystem::Event::BoughtPowerWizard:
+            up = UpgradeList::Get(mPowerUp);
+            up->setMaxLevel(std::max(10, up->getLevel())).updateInfo();
+            break;
+        case WizardSystem::Event::BoughtTimeWizard:
+            mMultiUp->setActive(true);
+            break;
+    };
 }
 
 bool Wizard::onTimer(Timer& timer) {

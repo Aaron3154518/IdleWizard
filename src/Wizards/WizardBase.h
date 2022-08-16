@@ -15,26 +15,13 @@
 #include <ServiceSystem/ServiceSystem.h>
 #include <Systems/ParameterSystem.h>
 #include <Systems/TargetSystem.h>
+#include <Systems/WizardSystem.h>
 #include <Wizards/WizardIds.h>
 
 #include <memory>
 #include <random>
 
 class WizardBase : public Component {
-   public:
-    typedef ForwardObservable<void(WizardId, bool)> HideObservableBase;
-    class HideObservable : public HideObservableBase {
-       public:
-        void next(WizardId id, bool hide);
-
-        bool isHidden(WizardId id) const;
-
-       private:
-        std::unordered_map<WizardId, bool> mHidden;
-    };
-
-    static bool Hidden(WizardId id);
-
    public:
     virtual ~WizardBase();
 
@@ -53,6 +40,7 @@ class WizardBase : public Component {
     virtual void onRender(SDL_Renderer* r);
     virtual void onClick(Event::MouseButton b, bool clicked);
     virtual void onHide(WizardId id, bool hide);
+    virtual void onWizEvent(WizardSystem::Event e);
 
     virtual void setPos(float x, float y);
 
@@ -71,7 +59,8 @@ class WizardBase : public Component {
     RenderObservable::SubscriptionPtr mRenderSub;
     MouseObservable::SubscriptionPtr mMouseSub;
     DragObservable::SubscriptionPtr mDragSub;
-    HideObservable::SubscriptionPtr mHideSub;
+    WizardSystem::HideObservable::SubscriptionPtr mHideSub;
+    WizardSystem::WizEventsObservable::SubscriptionPtr mWizEventsSub;
     std::list<ParameterSystem::ParameterObservable::SubscriptionPtr> mParamSubs;
 
     UpgradeListPtr mUpgrades = std::make_shared<UpgradeList>();
@@ -82,7 +71,5 @@ class WizardBase : public Component {
    private:
     std::list<SubscriptionBaseWPtr> mVisibilitySubs;
 };
-
-class WizardService : public Service<WizardBase::HideObservable> {};
 
 #endif

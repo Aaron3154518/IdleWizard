@@ -14,6 +14,7 @@
 #include <ServiceSystem/UpdateServices/TimerService.h>
 #include <Systems/ParameterSystem.h>
 #include <Systems/TimeSystem.h>
+#include <Systems/WizardSystem.h>
 #include <Wizards/WizardBase.h>
 #include <Wizards/WizardIds.h>
 #include <Wizards/WizardTypes.h>
@@ -34,6 +35,7 @@ class Wizard : public WizardBase {
 
     void onRender(SDL_Renderer* r);
     void onHide(WizardId id, bool hide);
+    void onWizEvent(WizardSystem::Event e);
     bool onTimer(Timer& timer);
     void onFireballHit(const Fireball& fireball);
     void onFireballFireRingHit(Fireball& fireball,

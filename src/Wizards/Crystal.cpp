@@ -48,13 +48,13 @@ void Crystal::init() {
     mPowWizBuy = mUpgrades->subscribe(
         [this](UpgradePtr u) {
             if (u->getLevel() == 1) {
-                ServiceSystem::Get<WizardService, WizardBase::HideObservable>()
-                    ->next(POWER_WIZARD, false);
                 mPowWizBuy.reset();
-                if (mTimeWizBuy) {
-                    ParameterSystem::Get()->set<CRYSTAL>(
-                        CrystalParams::T1WizardCost, T1Cost2);
-                }
+                WizardSystem::GetHideObservable()->next(POWER_WIZARD, false);
+                WizardSystem::FireWizEvent(
+                    WizardSystem::Event::BoughtPowerWizard);
+                WizardSystem::FireWizEvent(
+                    mTimeWizBuy ? WizardSystem::Event::BoughtFirstT1
+                                : WizardSystem::Event::BoughtSecondT1);
             }
         },
         up);
@@ -70,13 +70,13 @@ void Crystal::init() {
     mTimeWizBuy = mUpgrades->subscribe(
         [this](UpgradePtr u) {
             if (u->getLevel() == 1) {
-                ServiceSystem::Get<WizardService, WizardBase::HideObservable>()
-                    ->next(TIME_WIZARD, false);
                 mTimeWizBuy.reset();
-                if (mPowWizBuy) {
-                    ParameterSystem::Get()->set<CRYSTAL>(
-                        CrystalParams::T1WizardCost, T1Cost2);
-                }
+                WizardSystem::GetHideObservable()->next(TIME_WIZARD, false);
+                WizardSystem::FireWizEvent(
+                    WizardSystem::Event::BoughtTimeWizard);
+                WizardSystem::FireWizEvent(
+                    mPowWizBuy ? WizardSystem::Event::BoughtFirstT1
+                               : WizardSystem::Event::BoughtSecondT1);
             }
         },
         up);
@@ -118,6 +118,15 @@ void Crystal::onHide(WizardId id, bool hide) {
                 mFireRings.clear();
                 break;
         }
+    }
+}
+
+void Crystal::onWizEvent(WizardSystem::Event e) {
+    switch (e) {
+        case WizardSystem::Event::BoughtFirstT1:
+            ParameterSystem::Get()->set<CRYSTAL>(CrystalParams::T1WizardCost,
+                                                 T1Cost2);
+            break;
     }
 }
 

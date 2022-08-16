@@ -61,6 +61,15 @@ class Upgrade {
     Upgrade& setMaxLevel(int maxLevel);
     Upgrade& setLevel(int level);
     Upgrade& setEffect(const std::string& effect);
+    template <class... KeyTs>
+    Upgrade& setEffectSource(std::function<std::string()> onEffect) {
+        mEffectSub =
+            ParameterSystem::ParamList<KeyTs...>::subscribe([this, onEffect]() {
+                mEffect = onEffect();
+                updateInfo();
+            });
+        return *this;
+    }
     template <WizardId id>
     Upgrade& setEffectSource(
         const ParameterSystem::Param<id>& param,

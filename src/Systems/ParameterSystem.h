@@ -191,6 +191,34 @@ template <WizardId id, WizardType<id> key>
 ParamPtr<id> NewParam() {
     return std::make_shared<Param<id>>(key);
 }
+
+struct ParamListBase {
+    static ParameterObservable::SubscriptionPtr subscribe(
+        std::function<void()> func);
+};
+
+template <class...>
+struct ParamList;
+
+template <>
+struct ParamList<> : public ParamListBase {};
+
+template <WizardId id, WizardType<id>... keys, class... Tail>
+struct ParamList<Keys<id, keys...>, Tail...> : ParamList<Tail...> {
+    static ParameterObservable::SubscriptionPtr subscribe(
+        std::function<void()> func) {
+        return ParameterSystem::Get()->subscribe<Keys<id, keys...>, Tail...>(
+            func);
+    }
+};
+
+typedef std::unique_ptr<ParamListBase> ParamListBasePtr;
+
+template <class... KeyTs>
+ParamListBasePtr NewParamList() {
+    return std::make_unique<ParamList<KeyTs...>>();
+}
+
 }  // namespace ParameterSystem
 
 #endif

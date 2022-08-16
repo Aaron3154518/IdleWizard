@@ -33,21 +33,20 @@ void TimeWizard::init() {
     // Power Display
     UpgradePtr up = std::make_shared<Upgrade>();
     up->setMaxLevel(0)
-        .setEffectSource<TIME_WIZARD, TimeWizardParams::FreezeDuration>(
-            [](const Number& val) {
-                auto params = ParameterSystem::Get();
-                std::stringstream ss;
-                ss << "Cooldown: "
-                   << params->get<TIME_WIZARD>(TimeWizardParams::FreezeDelay) /
-                          1000
-                   << "s\nDuration: "
-                   << params->get<TIME_WIZARD>(
-                          TimeWizardParams::FreezeDuration) /
-                          1000
-                   << "s\nUnfreeze Effect: Power ^ "
-                   << params->get<TIME_WIZARD>(TimeWizardParams::FreezeEffect);
-                return ss.str();
-            })
+        .setEffectSource<Keys<TIME_WIZARD, TimeWizardParams::FreezeDelay,
+                              TimeWizardParams::FreezeDuration,
+                              TimeWizardParams::FreezeEffect>>([]() {
+            auto params = ParameterSystem::Get();
+            std::stringstream ss;
+            ss << "Cooldown: "
+               << params->get<TIME_WIZARD>(TimeWizardParams::FreezeDelay) / 1000
+               << "s\nDuration: "
+               << params->get<TIME_WIZARD>(TimeWizardParams::FreezeDuration) /
+                      1000
+               << "s\nUnfreeze Effect: Power ^ "
+               << params->get<TIME_WIZARD>(TimeWizardParams::FreezeEffect);
+            return ss.str();
+        })
         .setImg(WIZ_IMGS.at(mId))
         .setDescription("Speed multiplier");
     mEffectDisplay = mUpgrades->subscribe(up);
@@ -58,18 +57,18 @@ void TimeWizard::init() {
         .setImg(WIZ_IMGS.at(mId))
         .setDescription(
             "Consume magic for a fire rate multiplier to all Wizards")
-        .setEffectSource<TIME_WIZARD, TimeWizardParams::SpeedCost>(
-            [this](const Number& val) {
-                auto params = ParameterSystem::Get();
-                std::stringstream ss;
-                ss << params->get<TIME_WIZARD>(TimeWizardParams::SpeedEffect)
-                   << "x\n-$"
-                   << (mActive ? params->get<TIME_WIZARD>(
-                                     TimeWizardParams::SpeedCost)
-                               : 0)
-                   << "/s";
-                return ss.str();
-            });
+        .setEffectSource<Keys<TIME_WIZARD, TimeWizardParams::SpeedCost,
+                              TimeWizardParams::SpeedEffect>>([this]() {
+            auto params = ParameterSystem::Get();
+            std::stringstream ss;
+            ss << params->get<TIME_WIZARD>(TimeWizardParams::SpeedEffect)
+               << "x\n-$"
+               << (mActive
+                       ? params->get<TIME_WIZARD>(TimeWizardParams::SpeedCost)
+                       : 0)
+               << "/s";
+            return ss.str();
+        });
     mActiveUp = mUpgrades->subscribe(
         [this](UpgradePtr u) {
             mActive = u->getLevel() % 2 != 0;
@@ -125,6 +124,8 @@ void TimeWizard::onHide(WizardId id, bool hide) {
             TimeSystem::Unfreeze(TimeSystem::FreezeType::TIME_WIZARD);
             mFreezeDelaySub.reset();
             mFreezeTimerSub.reset();
+            mActive = false;
+            UpgradeList::Get(mActiveUp)->updateEffect();
         } else {
             startFreezeCycle();
         }

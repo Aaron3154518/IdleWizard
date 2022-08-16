@@ -14,4 +14,9 @@ ParameterObservable::SubscriptionPtr ParamBase::subscribe(
     std::function<void()> func) const {
     return nullptr;
 }
+
+ParameterObservable::SubscriptionPtr ParamListBase::subscribe(
+    std::function<void()> func) {
+    return nullptr;
+}
 }  // namespace ParameterSystem

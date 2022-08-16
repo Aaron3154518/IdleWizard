@@ -73,30 +73,42 @@ Upgrade& Upgrade::setDescription(std::string desc) {
     return *this;
 }
 
-void Upgrade::drawDescription(TextureBuilder tex, SDL_Point offset) const {
+void Upgrade::drawDescription(TextureBuilder tex, SDL_FPoint offset) const {
+    RectData rd;
+    rd.color = DESC_BKGRND;
+
     RenderData descData;
     if (mDesc) {
         descData.texture = mDesc;
-        descData.fitToTexture(Rect::TOP_LEFT);
+        descData.fitToTexture();
+        descData.dest.setPos(offset.x, offset.y, Rect::CENTER, Rect::TOP_LEFT);
+    } else {
+        descData.dest = Rect(offset.x, offset.y, 0, 0);
     }
 
     if (mIncludeInfo && mInfo) {
         RenderData infoData;
         infoData.texture = mInfo;
-        infoData.fitToTexture(Rect::TOP_LEFT);
-        int w = std::max(descData.dest.W(), infoData.dest.W());
-        descData.dest.setPosX(w / 2, Rect::CENTER);
-        infoData.dest.setPos(w / 2, descData.dest.H(), Rect::CENTER,
-                             Rect::TOP_LEFT);
+        infoData.fitToTexture();
+        float w = infoData.dest.w();
+        w = std::max(w, descData.dest.w());
+        infoData.dest.setPos(descData.dest.cX(), descData.dest.y2(),
+                             Rect::CENTER, Rect::TOP_LEFT);
 
-        infoData.dest.move(offset.x, offset.y);
+        Rect rdRect(0, offset.y, w, infoData.dest.y2() - offset.y);
+        rdRect.setPosX(offset.x, Rect::CENTER);
+        tex.draw(rd.set(rdRect));
         tex.draw(infoData);
+    } else {
+        tex.draw(rd.set(descData.dest));
     }
 
     if (mDesc) {
-        descData.dest.move(offset.x, offset.y);
         tex.draw(descData);
     }
+
+    rd.color = BLACK;
+    tex.draw(rd.set(rd.r2, 1));
 }
 
 std::string Upgrade::getInfo() const {
@@ -128,9 +140,8 @@ SharedTexture Upgrade::createDescription(std::string text) {
     }
 
     TextData tData;
-    tData.bkgrnd = DESC_BKGRND;
     tData.font = AssetManager::getFont(DESC_FONT);
-    tData.w = RenderSystem::getWindowSize().x / 5;
+    tData.w = RenderSystem::getWindowSize().x / 3;
     tData.text = text;
     return tData.renderTextWrapped();
 }
@@ -198,11 +209,13 @@ RenderObservable::SubscriptionPtr UpgradeList::onHover(SDL_Point mouse,
             auto weakSub = pair.second;
             return ServiceSystem::Get<RenderService, RenderObservable>()
                 ->subscribe(
-                    [weakSub, mouse](SDL_Renderer* r) {
-                        auto sub = weakSub.lock();
+                    [mouse, pair](SDL_Renderer* r) {
+                        auto sub = pair.second.lock();
                         if (sub) {
                             sub->get<UpgradeList::DATA>()->drawDescription(
-                                TextureBuilder(), mouse);
+                                TextureBuilder(),
+                                pair.first.getPos(Rect::CENTER,
+                                                  Rect::BOT_RIGHT));
                         }
                     },
                     std::make_shared<UIComponent>(Rect(), Elevation::OVERLAYS));
@@ -213,11 +226,13 @@ RenderObservable::SubscriptionPtr UpgradeList::onHover(SDL_Point mouse,
             auto weakSub = pair.second;
             return ServiceSystem::Get<RenderService, RenderObservable>()
                 ->subscribe(
-                    [weakSub, mouse](SDL_Renderer* r) {
-                        auto sub = weakSub.lock();
+                    [mouse, pair](SDL_Renderer* r) {
+                        auto sub = pair.second.lock();
                         if (sub) {
                             sub->get<UpgradeList::DATA>()->drawDescription(
-                                TextureBuilder(), mouse);
+                                TextureBuilder(),
+                                pair.first.getPos(Rect::CENTER,
+                                                  Rect::BOT_RIGHT));
                         }
                     },
                     std::make_shared<UIComponent>(Rect(), Elevation::OVERLAYS));
@@ -226,8 +241,12 @@ RenderObservable::SubscriptionPtr UpgradeList::onHover(SDL_Point mouse,
     return nullptr;
 }
 
-void UpgradeList::draw(TextureBuilder tex, float scroll) {
+void UpgradeList::draw(TextureBuilder tex, float scroll, SDL_Point offset) {
     bool recompute = false;
+    if (getNumActive() != mCount) {
+        mCount = getNumActive();
+        recompute = true;
+    }
     if (mScroll != scroll) {
         mScroll = scroll;
         recompute = true;
@@ -242,7 +261,8 @@ void UpgradeList::draw(TextureBuilder tex, float scroll) {
         computeRects();
     }
 
-    auto drawUpgrade = [this, &tex](Rect r, SubscriptionPtr sub) {
+    auto drawUpgrade = [this, &tex, offset](Rect r, SubscriptionPtr sub) {
+        r.move(offset.x, offset.y);
         RectData rd;
         if (!sub) {
             rd.color = WHITE;

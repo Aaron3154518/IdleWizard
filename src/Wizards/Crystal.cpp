@@ -1,9 +1,12 @@
 #include "Crystal.h"
 
 // Crystal
+const Number Crystal::T1Cost1 = 500, Crystal::T1Cost2 = 5000;
+
 Crystal::Crystal() : WizardBase(CRYSTAL) {
     auto params = ParameterSystem::Get();
     params->set<CRYSTAL>(CrystalParams::Magic, 0);
+    params->set<CRYSTAL>(CrystalParams::T1WizardCost, T1Cost1);
 }
 
 void Crystal::init() {
@@ -26,6 +29,50 @@ void Crystal::init() {
         .setImg(WIZ_IMGS.at(mId))
         .setDescription("Multiplier based on crystal damage");
     mMagicEffectDisplay = mUpgrades->subscribe(up);
+
+    up = std::make_shared<Upgrade>();
+    up->setMaxLevel(1)
+        .setCostSource<CRYSTAL>(CrystalParams::T1WizardCost)
+        .setMoneySource<CRYSTAL>(CrystalParams::Magic)
+        .setImg(WIZ_IMGS.at(POWER_WIZARD))
+        .setDescription(
+            "Power Wizard empowers the Wizard and overloads the Crystal for "
+            "increased Fireball power");
+    mPowWizBuy = mUpgrades->subscribe(
+        [this](UpgradePtr u) {
+            if (u->getLevel() == 1) {
+                ServiceSystem::Get<WizardService, WizardBase::HideObservable>()
+                    ->next(POWER_WIZARD, false);
+                mPowWizBuy.reset();
+                if (mTimeWizBuy) {
+                    ParameterSystem::Get()->set<CRYSTAL>(
+                        CrystalParams::T1WizardCost, T1Cost2);
+                }
+            }
+        },
+        up);
+
+    up = std::make_shared<Upgrade>();
+    up->setMaxLevel(1)
+        .setCostSource<CRYSTAL>(CrystalParams::T1WizardCost)
+        .setMoneySource<CRYSTAL>(CrystalParams::Magic)
+        .setImg(WIZ_IMGS.at(TIME_WIZARD))
+        .setDescription(
+            "Time Wizard boosts Wizard fire rate and freezes time for a "
+            "massive power boost");
+    mTimeWizBuy = mUpgrades->subscribe(
+        [this](UpgradePtr u) {
+            if (u->getLevel() == 1) {
+                ServiceSystem::Get<WizardService, WizardBase::HideObservable>()
+                    ->next(TIME_WIZARD, false);
+                mTimeWizBuy.reset();
+                if (mPowWizBuy) {
+                    ParameterSystem::Get()->set<CRYSTAL>(
+                        CrystalParams::T1WizardCost, T1Cost2);
+                }
+            }
+        },
+        up);
 
     auto params = ParameterSystem::Get();
     mParamSubs.push_back(params->subscribe<CRYSTAL>(

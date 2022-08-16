@@ -105,7 +105,7 @@ class Upgrade {
     Upgrade& setImg(std::string img);
     Upgrade& setDescription(std::string desc);
 
-    void drawDescription(TextureBuilder tex, SDL_Point offset = {0, 0}) const;
+    void drawDescription(TextureBuilder tex, SDL_FPoint offset = {0, 0}) const;
 
     std::string getInfo() const;
 
@@ -155,7 +155,7 @@ class UpgradeList : public UpgradeListBase {
     RenderObservable::SubscriptionPtr onHover(SDL_Point mouse,
                                               SDL_Point relMouse);
 
-    void draw(TextureBuilder tex, float scroll);
+    void draw(TextureBuilder tex, float scroll, SDL_Point offset = {0, 0});
 
     // Static functions
     static UpgradePtr Get(SubscriptionPtr sub);
@@ -166,6 +166,7 @@ class UpgradeList : public UpgradeListBase {
 
     void computeRects();
 
+    int mCount;
     double mScroll;
     Rect mRect;
     std::vector<std::pair<Rect, SubscriptionWPtr>> mBackRects, mFrontRects;

@@ -26,6 +26,8 @@ namespace CrystalParams {
 enum _ : uint8_t {
     Magic = 0,
     MagicEffect,
+
+    T1WizardCost
 };
 }
 namespace CatalystParams {

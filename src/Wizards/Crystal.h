@@ -22,6 +22,8 @@ class Crystal : public WizardBase {
    public:
     Crystal();
 
+    const static Number T1Cost1, T1Cost2;
+
    private:
     void init();
 
@@ -36,7 +38,7 @@ class Crystal : public WizardBase {
     std::unique_ptr<FireRing>& createFireRing(const Number& val);
 
     Fireball::HitObservable::IdSubscriptionPtr mFireballSub;
-    UpgradeList::SubscriptionPtr mMagicEffectDisplay;
+    UpgradeList::SubscriptionPtr mMagicEffectDisplay, mPowWizBuy, mTimeWizBuy;
 
     std::vector<std::unique_ptr<FireRing>> mFireRings;
 

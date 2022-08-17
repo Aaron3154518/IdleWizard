@@ -33,6 +33,7 @@ class TimeWizard : public WizardBase {
     bool endFreeze(Timer& timer);
     void startFreezeCycle();
 
+    void calcSpeedEffect();
     void calcCost();
 
     void updateImg();
@@ -41,7 +42,7 @@ class TimeWizard : public WizardBase {
 
     TimerObservable::SubscriptionPtr mCostTimerSub, mFreezeDelaySub,
         mFreezeTimerSub;
-    UpgradeList::SubscriptionPtr mEffectDisplay, mActiveUp;
+    UpgradeList::SubscriptionPtr mEffectDisplay, mActiveUp, mSpeedUp;
 
     ProgressBar mFreezePb;
 };

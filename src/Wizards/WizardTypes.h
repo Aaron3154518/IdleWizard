@@ -9,16 +9,17 @@
 namespace WizardParams {
 enum _ : uint8_t {
     BasePower = 0,
-    BaseSpeed,
-
     Power,
-    Speed,
-    PowerUp,
-    MultiUp,
     PowerWizEffect,
 
-    PowerUpCost,
+    BaseSpeed,
+    Speed,
     SpeedUpCost,
+
+    PowerUp,
+    PowerUpCost,
+
+    MultiUp,
     MultiUpCost,
 };
 }
@@ -50,9 +51,11 @@ enum _ : uint8_t {
 }
 namespace TimeWizardParams {
 enum _ : uint8_t {
-    SpeedPower = 0,
+    SpeedBaseEffect = 0,
     SpeedEffect,
     SpeedCost,
+    SpeedUp,
+    SpeedUpCost,
 
     FreezeDelay,
     FreezeDuration,

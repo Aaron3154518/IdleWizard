@@ -26,7 +26,7 @@ class TimeWizard : public WizardBase {
    private:
     void init();
 
-    void onUpdate(Time dt);
+    bool onCostTimer(Timer& timer);
     void onRender(SDL_Renderer*);
     void onHide(WizardId id, bool hide);
     bool startFreeze(Timer& timer);
@@ -39,8 +39,8 @@ class TimeWizard : public WizardBase {
 
     bool mActive = false, mCanAfford = false;
 
-    UpdateObservable::SubscriptionPtr mUpdateSub;
-    TimerObservable::SubscriptionPtr mFreezeDelaySub, mFreezeTimerSub;
+    TimerObservable::SubscriptionPtr mCostTimerSub, mFreezeDelaySub,
+        mFreezeTimerSub;
     UpgradeList::SubscriptionPtr mEffectDisplay, mActiveUp;
 
     ProgressBar mFreezePb;

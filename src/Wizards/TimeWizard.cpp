@@ -22,11 +22,12 @@ void TimeWizard::init() {
     mFreezePb.bkgrnd = TRANSPARENT;
     mFreezePb.blendMode = SDL_BLENDMODE_BLEND;
 
-    mUpdateSub =
-        ServiceSystem::Get<UpdateService, UpdateObservable>()->subscribe(
-            std::bind(&TimeWizard::onUpdate, this, std::placeholders::_1));
+    mCostTimerSub =
+        ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
+            std::bind(&TimeWizard::onCostTimer, this, std::placeholders::_1),
+            Timer(50));
     startFreezeCycle();
-    attachSubToVisibility(mUpdateSub);
+    attachSubToVisibility(mCostTimerSub);
     attachSubToVisibility(mFreezeDelaySub);
     attachSubToVisibility(mFreezeTimerSub);
 
@@ -84,11 +85,11 @@ void TimeWizard::init() {
         TimeWizardParams::SpeedEffect, std::bind(&TimeWizard::calcCost, this)));
 }
 
-void TimeWizard::onUpdate(Time dt) {
+bool TimeWizard::onCostTimer(Timer& timer) {
     auto params = ParameterSystem::Get();
     if (mActive) {
-        Number cost =
-            params->get<TIME_WIZARD>(TimeWizardParams::SpeedCost) * dt.s();
+        Number cost = params->get<TIME_WIZARD>(TimeWizardParams::SpeedCost) *
+                      timer.length / 1000;
         Number money = params->get<CRYSTAL>(CrystalParams::Magic);
         Number effect = params->get<TIME_WIZARD>(TimeWizardParams::SpeedEffect);
         if (cost <= money) {
@@ -107,6 +108,7 @@ void TimeWizard::onUpdate(Time dt) {
         params->set<TIME_WIZARD>(TimeWizardParams::SpeedEffect, 1);
         mCanAfford = false;
     }
+    return true;
 }
 
 void TimeWizard::onRender(SDL_Renderer* r) {

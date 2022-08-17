@@ -80,7 +80,7 @@ void Upgrade::drawDescription(TextureBuilder tex, SDL_FPoint offset) const {
     RenderData descData;
     if (mDesc) {
         descData.texture = mDesc;
-        descData.fitToTexture();
+        descData.shrinkToTexture();
         descData.dest.setPos(offset.x, offset.y, Rect::CENTER, Rect::TOP_LEFT);
     } else {
         descData.dest = Rect(offset.x, offset.y, 0, 0);
@@ -89,7 +89,7 @@ void Upgrade::drawDescription(TextureBuilder tex, SDL_FPoint offset) const {
     if (mIncludeInfo && mInfo) {
         RenderData infoData;
         infoData.texture = mInfo;
-        infoData.fitToTexture();
+        infoData.shrinkToTexture();
         float w = infoData.dest.w();
         w = std::max(w, descData.dest.w());
         infoData.dest.setPos(descData.dest.cX(), descData.dest.y2(),
@@ -299,7 +299,7 @@ void UpgradeList::draw(TextureBuilder tex, float scroll, SDL_Point offset) {
             RenderData rData;
             rData.texture = sub->get<DATA>()->mImg;
             rData.dest = r;
-            rData.fitToTexture();
+            rData.shrinkToTexture();
             tex.draw(rData);
         }
     };

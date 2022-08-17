@@ -7,6 +7,7 @@
 #include <Wizards/WizardIds.h>
 
 namespace WizardSystem {
+// For handling wizard hide/show events
 typedef ForwardObservable<void(WizardId, bool)> HideObservableBase;
 class HideObservable : public HideObservableBase {
    public:
@@ -22,6 +23,7 @@ bool Hidden(WizardId id);
 
 std::shared_ptr<HideObservable> GetHideObservable();
 
+// For handling general wizard events
 enum Event {
     BoughtFirstT1 = 0,
     BoughtSecondT1,

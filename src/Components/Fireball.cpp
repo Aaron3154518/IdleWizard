@@ -84,7 +84,7 @@ void Fireball::setSize(float size) {
     mSize = fmax(0, size);
     mImg.dest.setDim(IMG_RECT.w() * size, IMG_RECT.h() * size,
                      Rect::Align::CENTER);
-    mImg.fitToTexture();
+    mImg.shrinkToTexture();
     mPos->rect = mImg.dest;
 }
 

@@ -89,7 +89,7 @@ void WizardBase::setImage(const std::string& img) {
     mImg.texture = AssetManager::getTexture(img);
     mImg.dest = IMG_RECT;
     mImg.dest.setPos(mPos->rect.cX(), mPos->rect.cY(), Rect::Align::CENTER);
-    mImg.fitToTexture();
+    mImg.shrinkToTexture();
     mPos->rect = mImg.dest;
 }
 

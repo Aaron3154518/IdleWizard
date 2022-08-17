@@ -126,7 +126,7 @@ void Wizard::onRender(SDL_Renderer* r) {
     if (mPowWizTimerSub &&
         mPowWizTimerSub->get<TimerObservable::DATA>().isActive()) {
         mPowBkgrnd.dest = mPos->rect;
-        mPowBkgrnd.fitToTexture();
+        mPowBkgrnd.shrinkToTexture();
         TextureBuilder().draw(mPowBkgrnd);
     }
 

@@ -1,12 +1,16 @@
 #include "Crystal.h"
 
 // Crystal
-const Number Crystal::T1Cost1 = 500, Crystal::T1Cost2 = 5000;
+const Number Crystal::T1_COST1 = 500, Crystal::T1_COST2 = 5000;
+const SDL_Color Crystal::MSG_COLOR{225, 0, 200, 255};
 
 Crystal::Crystal() : WizardBase(CRYSTAL) {
     auto params = ParameterSystem::Get();
     params->set<CRYSTAL>(CrystalParams::Magic, 0);
-    params->set<CRYSTAL>(CrystalParams::T1WizardCost, T1Cost1);
+    params->set<CRYSTAL>(CrystalParams::T1WizardCost, T1_COST1);
+
+    mMsgTData.font = AssetManager::getFont(FONT);
+    mMsgTData.color = MSG_COLOR;
 }
 
 void Crystal::init() {
@@ -14,11 +18,15 @@ void Crystal::init() {
 
     mMagicText.tData.font = AssetManager::getFont(FONT);
 
+    mUpdateSub =
+        ServiceSystem::Get<UpdateService, UpdateObservable>()->subscribe(
+            std::bind(&Crystal::onUpdate, this, std::placeholders::_1));
     mFireballSub =
         ServiceSystem::Get<FireballService, Fireball::HitObservable>()
             ->subscribe(
                 std::bind(&Crystal::onFireballHit, this, std::placeholders::_1),
                 mId);
+    attachSubToVisibility(mUpdateSub);
     attachSubToVisibility(mFireballSub);
 
     // Power Display
@@ -88,13 +96,39 @@ void Crystal::init() {
         CrystalParams::Magic, std::bind(&Crystal::drawMagic, this)));
 }
 
+void Crystal::onUpdate(Time dt) {
+    for (auto it = mMessages.begin(), end = mMessages.end(); it != end; ++it) {
+        it->mTimer -= dt.ms();
+        if (it->mTimer <= 0) {
+            if (it->mMoving) {
+                it->mTimer = rDist(gen) * 1000 + 750;
+                it->mMoving = false;
+            } else {
+                it = mMessages.erase(it);
+                if (it == end) {
+                    break;
+                }
+            }
+        } else if (it->mMoving) {
+            it->mRData.dest.move(it->mTrajectory.x * dt.s(),
+                                 it->mTrajectory.y * dt.s());
+        }
+    }
+}
+
 void Crystal::onRender(SDL_Renderer* r) {
     WizardBase::onRender(r);
 
+    TextureBuilder tex;
+
     mMagicText.dest = Rect(mPos->rect.x(), mPos->rect.y(), mPos->rect.w(), 0);
     mMagicText.dest.setHeight(FONT.h, Rect::Align::BOT_RIGHT);
-    mMagicText.fitToTexture();
-    TextureBuilder().draw(mMagicText);
+    mMagicText.shrinkToTexture();
+    tex.draw(mMagicText);
+
+    for (auto msg : mMessages) {
+        tex.draw(msg.mRData);
+    }
 
     for (auto it = mFireRings.begin(); it != mFireRings.end(); ++it) {
         if ((*it)->dead()) {
@@ -125,7 +159,7 @@ void Crystal::onWizEvent(WizardSystem::Event e) {
     switch (e) {
         case WizardSystem::Event::BoughtFirstT1:
             ParameterSystem::Get()->set<CRYSTAL>(CrystalParams::T1WizardCost,
-                                                 T1Cost2);
+                                                 T1_COST2);
             break;
     }
 }
@@ -140,6 +174,7 @@ void Crystal::onFireballHit(const Fireball& fireball) {
             params->set<CRYSTAL>(CrystalParams::Magic, magic);
             mMagicText.tData.text = magic.toString();
             mMagicText.renderText();
+            addMessage("+" + fireball.getValue().toString());
         } break;
         case POWER_WIZARD: {
             createFireRing(fireball.getValue(PowerWizardParams::Power));
@@ -164,4 +199,30 @@ std::unique_ptr<FireRing>& Crystal::createFireRing(const Number& val) {
     mFireRings.push_back(std::move(ComponentFactory<FireRing>::New(
         SDL_Point{mPos->rect.CX(), mPos->rect.CY()}, val)));
     return mFireRings.back();
+}
+
+void Crystal::addMessage(const std::string& msg) {
+    mMsgTData.text = msg;
+
+    RenderData rData;
+    rData.texture = mMsgTData.renderText();
+    rData.fitToTexture();
+
+    float dx = (rDist(gen) - .5) * mPos->rect.halfW(),
+          dy = (rDist(gen) - .5) * mPos->rect.halfH();
+    rData.dest.setPos(mPos->rect.cX() + dx, mPos->rect.cY() + dy,
+                      Rect::Align::CENTER);
+    SDL_FPoint trajectory{copysignf((float)rDist(gen), dx),
+                          copysignf((float)rDist(gen), dy)};
+    if (trajectory.x == 0 && trajectory.y == 0) {
+        trajectory.y = 1;
+    }
+    float mag = sqrt(trajectory.x * trajectory.x + trajectory.y * trajectory.y);
+    float maxSpeed =
+        sqrt(mPos->rect.w() * mPos->rect.w() + mPos->rect.h() * mPos->rect.h());
+    trajectory.x *= maxSpeed / mag;
+    trajectory.y *= maxSpeed / mag;
+
+    mMessages.push_back(
+        Message{rData, (int)(rDist(gen) * 250) + 250, true, trajectory});
 }

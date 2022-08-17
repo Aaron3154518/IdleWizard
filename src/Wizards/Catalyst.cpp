@@ -56,7 +56,7 @@ void Catalyst::onRender(SDL_Renderer* r) {
 
     mMagicText.dest = Rect(mPos->rect.x(), mPos->rect.y2(), mPos->rect.w(), 0);
     mMagicText.dest.setHeight(FONT.h, Rect::Align::TOP_LEFT);
-    mMagicText.fitToTexture();
+    mMagicText.shrinkToTexture();
     TextureBuilder().draw(mMagicText);
 }
 

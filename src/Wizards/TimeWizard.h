@@ -21,7 +21,8 @@ class TimeWizard : public WizardBase {
    public:
     TimeWizard();
 
-    const static std::string ACTIVE_IMG, FREEZE_IMG, FREEZE_UP_IMG;
+    const static std::string ACTIVE_IMG, FREEZE_IMG, FREEZE_UP_IMG,
+        SPEED_UP_IMG;
 
    private:
     void init();
@@ -33,6 +34,7 @@ class TimeWizard : public WizardBase {
     bool endFreeze(Timer& timer);
     void startFreezeCycle();
 
+    void calcFreezeEffect();
     void calcSpeedEffect();
     void calcCost();
 
@@ -42,7 +44,7 @@ class TimeWizard : public WizardBase {
 
     TimerObservable::SubscriptionPtr mCostTimerSub, mFreezeDelaySub,
         mFreezeTimerSub;
-    UpgradeList::SubscriptionPtr mEffectDisplay, mActiveUp, mSpeedUp;
+    UpgradeList::SubscriptionPtr mEffectDisplay, mActiveUp, mFreezeUp, mSpeedUp;
 
     ProgressBar mFreezePb;
 };

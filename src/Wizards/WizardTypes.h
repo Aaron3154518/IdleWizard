@@ -59,7 +59,10 @@ enum _ : uint8_t {
 
     FreezeDelay,
     FreezeDuration,
+    FreezeBaseEffect,
     FreezeEffect,
+    FreezeUp,
+    FreezeUpCost,
 };
 }
 

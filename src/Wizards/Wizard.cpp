@@ -2,7 +2,6 @@
 
 // Wizard
 const std::string Wizard::POWER_UP_IMG = "res/upgrades/fireball_upgrade.png";
-const std::string Wizard::SPEED_UP_IMG = "res/upgrades/speed_upgrade.png";
 const std::string Wizard::MULTI_UP_IMG = "res/upgrades/multi_upgrade.png";
 const std::string Wizard::POWER_BKGRND = "res/wizards/power_effect_bkgrnd.png";
 const std::string Wizard::FIREBALL_IMG = "res/projectiles/fireball.png";

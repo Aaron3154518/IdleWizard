@@ -13,7 +13,7 @@
 #include <ServiceSystem/EventServices/ResizeService.h>
 #include <ServiceSystem/Service.h>
 #include <ServiceSystem/ServiceSystem.h>
-#include <Systems/ParameterSystem.h>
+#include <Systems/ParameterSystem/ParameterObservable.h>
 #include <Systems/TargetSystem.h>
 #include <Systems/WizardSystem.h>
 #include <Wizards/WizardIds.h>
@@ -61,7 +61,7 @@ class WizardBase : public Component {
     DragObservable::SubscriptionPtr mDragSub;
     WizardSystem::HideObservable::SubscriptionPtr mHideSub;
     WizardSystem::WizEventsObservable::SubscriptionPtr mWizEventsSub;
-    std::list<ParameterSystem::ParameterObservable::SubscriptionPtr> mParamSubs;
+    std::list<ParameterSystem::ParameterSubscriptionPtr> mParamSubs;
 
     UpgradeListPtr mUpgrades = std::make_shared<UpgradeList>();
 

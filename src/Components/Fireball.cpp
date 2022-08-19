@@ -39,7 +39,7 @@ Fireball::Fireball(SDL_FPoint c, WizardId src, WizardId target,
     : Fireball(c, src, target, img, {{DEF_VALUE_KEY, val}}) {}
 
 Fireball::Fireball(SDL_FPoint c, WizardId src, WizardId target,
-                   const std::string& img, const NumberMap<int>& vals)
+                   const std::string& img, const NumberMap& vals)
     : mPos(std::make_shared<UIComponent>(Rect(), 0)),
       mTargetId(target),
       mSrcId(src),

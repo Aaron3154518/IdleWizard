@@ -5,9 +5,9 @@ const Number Crystal::T1_COST1 = 500, Crystal::T1_COST2 = 5000;
 const SDL_Color Crystal::MSG_COLOR{225, 0, 200, 255};
 
 Crystal::Crystal() : WizardBase(CRYSTAL) {
-    auto params = ParameterSystem::Get();
-    params->set<CRYSTAL>(CrystalParams::Magic, 0);
-    params->set<CRYSTAL>(CrystalParams::T1WizardCost, T1_COST1);
+    ParameterSystem::ParamList<CRYSTAL> params;
+    params.Set(CrystalParams::Magic, 0);
+    params.Set(CrystalParams::T1WizardCost, T1_COST1);
 
     mMsgTData.font = AssetManager::getFont(FONT);
     mMsgTData.color = MSG_COLOR;
@@ -32,23 +32,24 @@ void Crystal::init() {
     // Power Display
     UpgradePtr up = std::make_shared<Upgrade>();
     up->setMaxLevel(-1)
-        .setEffectSource<CRYSTAL, CrystalParams::MagicEffect>(
-            Upgrade::Defaults::MultiplicativeEffect)
+        .setEffectSource(
+            ParameterSystem::Param<CRYSTAL>(CrystalParams::MagicEffect),
+            Upgrade::Defaults::MultiplicativeEffect<CRYSTAL,
+                                                    CrystalParams::MagicEffect>)
         .setImg(WIZ_IMGS.at(mId))
         .setDescription("Multiplier based on crystal damage");
     mMagicEffectDisplay = mUpgrades->subscribe(
         [this](UpgradePtr u) {
-            auto params = ParameterSystem::Get();
-            params->set<CRYSTAL>(
-                CrystalParams::Magic,
-                params->get<CRYSTAL>(CrystalParams::Magic) * 2);
+            ParameterSystem::Param<CRYSTAL> param(CrystalParams::Magic);
+            param.set(param.get() * 2);
         },
         up);
 
     up = std::make_shared<Upgrade>();
     up->setMaxLevel(1)
-        .setCostSource<CRYSTAL>(CrystalParams::T1WizardCost)
-        .setMoneySource<CRYSTAL>(CrystalParams::Magic)
+        .setCostSource(
+            ParameterSystem::Param<CRYSTAL>(CrystalParams::T1WizardCost))
+        .setMoneySource(Upgrade::Defaults::CRYSTAL_MAGIC)
         .setImg(WIZ_IMGS.at(POWER_WIZARD))
         .setDescription(
             "Power Wizard empowers the Wizard and overloads the Crystal for "
@@ -69,8 +70,9 @@ void Crystal::init() {
 
     up = std::make_shared<Upgrade>();
     up->setMaxLevel(1)
-        .setCostSource<CRYSTAL>(CrystalParams::T1WizardCost)
-        .setMoneySource<CRYSTAL>(CrystalParams::Magic)
+        .setCostSource(
+            ParameterSystem::Param<CRYSTAL>(CrystalParams::T1WizardCost))
+        .setMoneySource(Upgrade::Defaults::CRYSTAL_MAGIC)
         .setImg(WIZ_IMGS.at(TIME_WIZARD))
         .setDescription(
             "Time Wizard boosts Wizard fire rate and freezes time for a "
@@ -89,11 +91,11 @@ void Crystal::init() {
         },
         up);
 
-    auto params = ParameterSystem::Get();
-    mParamSubs.push_back(params->subscribe<CRYSTAL>(
-        CrystalParams::Magic, std::bind(&Crystal::calcMagicEffect, this)));
-    mParamSubs.push_back(params->subscribe<CRYSTAL>(
-        CrystalParams::Magic, std::bind(&Crystal::drawMagic, this)));
+    mParamSubs.push_back(
+        ParameterSystem::Param<CRYSTAL>(CrystalParams::Magic)
+            .subscribe(std::bind(&Crystal::calcMagicEffect, this)));
+    mParamSubs.push_back(ParameterSystem::Param<CRYSTAL>(CrystalParams::Magic)
+                             .subscribe(std::bind(&Crystal::drawMagic, this)));
 }
 
 void Crystal::onUpdate(Time dt) {
@@ -158,20 +160,18 @@ void Crystal::onHide(WizardId id, bool hide) {
 void Crystal::onWizEvent(WizardSystem::Event e) {
     switch (e) {
         case WizardSystem::Event::BoughtFirstT1:
-            ParameterSystem::Get()->set<CRYSTAL>(CrystalParams::T1WizardCost,
-                                                 T1_COST2);
+            ParameterSystem::Param<CRYSTAL>(CrystalParams::T1WizardCost)
+                .set(T1_COST2);
             break;
     }
 }
 
 void Crystal::onFireballHit(const Fireball& fireball) {
-    auto params = ParameterSystem::Get();
-
     switch (fireball.getSourceId()) {
         case WIZARD: {
-            Number magic = params->get<CRYSTAL>(CrystalParams::Magic) +
-                           fireball.getValue();
-            params->set<CRYSTAL>(CrystalParams::Magic, magic);
+            ParameterSystem::Param<CRYSTAL> param(CrystalParams::Magic);
+            Number magic = param.get() + fireball.getValue();
+            param.set(magic);
             mMagicText.tData.text = magic.toString();
             mMagicText.renderText();
             addMessage("+" + fireball.getValue().toString());
@@ -183,15 +183,14 @@ void Crystal::onFireballHit(const Fireball& fireball) {
 }
 
 void Crystal::calcMagicEffect() {
-    auto params = ParameterSystem::Get();
-    Number effect =
-        (params->get<CRYSTAL>(CrystalParams::Magic) + 1).logTen() + 1;
-    params->set<CRYSTAL>(CrystalParams::MagicEffect, effect);
+    ParameterSystem::ParamList<CRYSTAL> params;
+    Number effect = (params.Get(CrystalParams::Magic) + 1).logTen() + 1;
+    params.Set(CrystalParams::MagicEffect, effect);
 }
 
 void Crystal::drawMagic() {
     mMagicText.tData.text =
-        ParameterSystem::Get()->get<CRYSTAL>(CrystalParams::Magic).toString();
+        ParameterSystem::Param<CRYSTAL>(CrystalParams::Magic).get().toString();
     mMagicText.renderText();
 }
 

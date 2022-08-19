@@ -2,9 +2,9 @@
 
 // Catalyst
 Catalyst::Catalyst() : WizardBase(CATALYST) {
-    auto params = ParameterSystem::Get();
-    params->set<CATALYST>(CatalystParams::Magic, 0);
-    params->set<CATALYST>(CatalystParams::Capacity, 100);
+    ParameterSystem::ParamList<CATALYST> params;
+    params.Set(CatalystParams::Magic, 0);
+    params.Set(CatalystParams::Capacity, 100);
 }
 
 void Catalyst::init() {
@@ -22,31 +22,31 @@ void Catalyst::init() {
     // Power Display
     UpgradePtr up = std::make_shared<Upgrade>();
     up->setMaxLevel(0)
-        .setEffectSource<CATALYST, CatalystParams::MagicEffect>(
-            Upgrade::Defaults::MultiplicativeEffect)
+        .setEffectSource(
+            ParameterSystem::Param<CATALYST>(CatalystParams::MagicEffect),
+            Upgrade::Defaults::MultiplicativeEffect<
+                CATALYST, CatalystParams::MagicEffect>)
         .setImg(WIZ_IMGS.at(mId))
         .setDescription("Multiplier from stored magic");
     mMagicEffectDisplay = mUpgrades->subscribe(up);
 
-    auto params = ParameterSystem::Get();
-    mParamSubs.push_back(params->subscribe<CATALYST>(
-        CatalystParams::Magic, std::bind(&Catalyst::calcMagicEffect, this)));
     mParamSubs.push_back(
-        params->subscribe<
-            Keys<CATALYST, CatalystParams::Magic, CatalystParams::Capacity>>(
-            std::bind(&Catalyst::drawMagic, this)));
+        ParameterSystem::Param<CATALYST>(CatalystParams::Magic)
+            .subscribe(std::bind(&Catalyst::calcMagicEffect, this)));
+    mParamSubs.push_back(ParameterSystem::ParamList<CATALYST>(
+                             {CatalystParams::Magic, CatalystParams::Capacity})
+                             .subscribe(std::bind(&Catalyst::drawMagic, this)));
 }
 
 void Catalyst::onFireballHit(const Fireball& fireball) {
     switch (fireball.getSourceId()) {
         case WIZARD:
-            auto params = ParameterSystem::Get();
+            ParameterSystem::ParamList<CATALYST> params;
             Number magic =
-                max(min(params->get<CATALYST>(CatalystParams::Magic) +
-                            fireball.getValue(),
-                        params->get<CATALYST>(CatalystParams::Capacity)),
+                max(min(params.Get(CatalystParams::Magic) + fireball.getValue(),
+                        params.Get(CatalystParams::Capacity)),
                     0);
-            params->set<CATALYST>(CatalystParams::Magic, magic);
+            params.Set(CatalystParams::Magic, magic);
             break;
     }
 }
@@ -61,19 +61,14 @@ void Catalyst::onRender(SDL_Renderer* r) {
 }
 
 void Catalyst::calcMagicEffect() {
-    auto params = ParameterSystem::Get();
-    Number effect =
-        (params->get<CATALYST>(CatalystParams::Magic) + 1).logTen() + 1;
-    params->set<CATALYST>(CatalystParams::MagicEffect, effect);
+    ParameterSystem::ParamList<CATALYST> params;
+    Number effect = (params.Get(CatalystParams::Magic) + 1).logTen() + 1;
+    params.Set(CatalystParams::MagicEffect, effect);
 }
 
 void Catalyst::drawMagic() {
-    mMagicText.tData.text = ParameterSystem::Get()
-                                ->get<CATALYST>(CatalystParams::Magic)
-                                .toString() +
-                            "/" +
-                            ParameterSystem::Get()
-                                ->get<CATALYST>(CatalystParams::Capacity)
-                                .toString();
+    ParameterSystem::ParamList<CATALYST> params;
+    mMagicText.tData.text = params.Get(CatalystParams::Magic).toString() + "/" +
+                            params.Get(CatalystParams::Capacity).toString();
     mMagicText.renderText();
 }

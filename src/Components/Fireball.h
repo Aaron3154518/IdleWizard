@@ -12,12 +12,12 @@
 #include <ServiceSystem/Observable.h>
 #include <ServiceSystem/Service.h>
 #include <ServiceSystem/ServiceSystem.h>
+#include <Systems/ParameterSystem/WizardParams.h>
 #include <Systems/TargetSystem.h>
 #include <Systems/TimeSystem.h>
 #include <Utils/Number.h>
 #include <Utils/Time.h>
 #include <Wizards/WizardIds.h>
-#include <Wizards/WizardTypes.h>
 
 #include <memory>
 
@@ -52,7 +52,7 @@ class Fireball : public Component {
     Fireball(SDL_FPoint c, WizardId src, WizardId target,
              const std::string& img, const Number& val);
     Fireball(SDL_FPoint c, WizardId src, WizardId target,
-             const std::string& img, const NumberMap<int>& vals);
+             const std::string& img, const NumberMap& vals);
 
     bool dead() const;
 
@@ -80,7 +80,7 @@ class Fireball : public Component {
     SDL_FPoint mTargetPos{0, 0}, mV{0, 0}, mA{0, 0};
     UIComponentPtr mPos;
 
-    NumberMap<int> mVals;
+    NumberMap mVals;
 
     RenderData mImg;
 

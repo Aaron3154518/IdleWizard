@@ -4,38 +4,33 @@
 const SDL_Color Upgrade::DESC_BKGRND{175, 175, 175, 255};
 const FontData Upgrade::DESC_FONT{-1, 20, "|"};
 
-const ParameterSystem::ParamBase Upgrade::ParamSources::NONE;
-const ParameterSystem::Param<CRYSTAL> Upgrade::ParamSources::CRYSTAL_MAGIC =
-    ParameterSystem::Param<CRYSTAL>(CrystalParams::Magic);
+const ParameterSystem::Param<CRYSTAL> Upgrade::Defaults::CRYSTAL_MAGIC(
+    CrystalParams::Magic);
+const ParameterSystem::Param<CATALYST> Upgrade::Defaults::CATALYST_MAGIC(
+    CatalystParams::Magic);
 
 bool Upgrade::Defaults::CanBuy(UpgradePtr u) {
     return !u->mCostSrc || !u->mMoneySrc ||
            u->mCostSrc->get() <= u->mMoneySrc->get();
 }
-std::string Upgrade::Defaults::AdditiveEffect(const Number& effect) {
-    return "+" + effect.toString();
-}
-std::string Upgrade::Defaults::MultiplicativeEffect(const Number& effect) {
-    return effect.toString() + "x";
-}
-std::string Upgrade::Defaults::PercentEffect(const Number& effect) {
-    return (effect * 100).toString() + "%";
-}
 
 int Upgrade::getMaxLevel() const { return mMaxLevel; }
 int Upgrade::getLevel() const { return mLevel; }
 const std::string& Upgrade::getEffect() const { return mEffect; }
-bool Upgrade::hasEffectSrc() const { return (bool)mEffectSrc; }
-const ParameterSystem::ParamBase& Upgrade::getEffectSrc() const {
-    return hasEffectSrc() ? *mEffectSrc : ParamSources::NONE;
+bool Upgrade::hasEffectSource() const { return (bool)mEffectSrc; }
+const std::unique_ptr<ParameterSystem::ParamMapBase>& Upgrade::getEffectSource()
+    const {
+    return mEffectSrc;
 }
-bool Upgrade::hasCostSrc() const { return (bool)mCostSrc; }
-const ParameterSystem::ParamBase& Upgrade::getCostSrc() const {
-    return hasCostSrc() ? *mCostSrc : ParamSources::NONE;
+bool Upgrade::hasCostSource() const { return (bool)mCostSrc; }
+const std::unique_ptr<ParameterSystem::ParamBase>& Upgrade::getCostSource()
+    const {
+    return mCostSrc;
 }
-bool Upgrade::hasMoneySrc() const { return (bool)mMoneySrc; }
-const ParameterSystem::ParamBase& Upgrade::getMoneySrc() const {
-    return hasMoneySrc() ? *mMoneySrc : ParamSources::NONE;
+bool Upgrade::hasMoneySource() const { return (bool)mMoneySrc; }
+const std::unique_ptr<ParameterSystem::ParamBase>& Upgrade::getMoneySource()
+    const {
+    return mMoneySrc;
 }
 
 Upgrade& Upgrade::setMaxLevel(int maxLevel) {
@@ -50,14 +45,33 @@ Upgrade& Upgrade::setEffect(const std::string& effect) {
     mEffect = effect;
     return *this;
 }
+
+Upgrade& Upgrade::setEffectSource(const ParameterSystem::ParamMapBase& params,
+                                  EffectFunc onEffect) {
+    mEffectSrc = std::make_unique<ParameterSystem::ParamMapBase>(params);
+    mEffectSub = mEffectSrc->subscribe([this, onEffect]() {
+        mEffect = onEffect();
+        updateInfo();
+    });
+    return *this;
+}
 Upgrade& Upgrade::clearEffectSource() {
     mEffectSrc.reset();
     mEffectSub.reset();
     return *this;
 }
+Upgrade& Upgrade::setCostSource(const ParameterSystem::ParamBase& param) {
+    mCostSrc = std::make_unique<ParameterSystem::ParamBase>(param);
+    mCostSub = mCostSrc->subscribe(std::bind(&Upgrade::updateInfo, this));
+    return *this;
+}
 Upgrade& Upgrade::clearCostSource() {
     mCostSrc.reset();
     mCostSub.reset();
+    return *this;
+}
+Upgrade& Upgrade::setMoneySource(const ParameterSystem::ParamBase& param) {
+    mMoneySrc = std::make_unique<ParameterSystem::ParamBase>(param);
     return *this;
 }
 Upgrade& Upgrade::clearMoneySource() {
@@ -186,9 +200,9 @@ void UpgradeList::onSubClick(SubscriptionPtr sub) {
     UpgradePtr up = sub->get<DATA>();
     if ((up->getMaxLevel() < 0 || up->getLevel() < up->getMaxLevel()) &&
         getSubStatus(sub) == UpgradeStatus::BUYABLE) {
-        if (up->hasMoneySrc() && up->hasCostSrc()) {
-            up->getMoneySrc().set(up->getMoneySrc().get() -
-                                  up->getCostSrc().get());
+        if (up->hasMoneySource() && up->hasCostSource()) {
+            up->getMoneySource()->set(up->getMoneySource()->get() -
+                                      up->getCostSource()->get());
         }
         up->setLevel(up->getLevel() + 1);
         sub->get<ON_LEVEL>()(up);

@@ -29,26 +29,14 @@
 
 class Upgrade {
    public:
-    typedef std::function<std::string()> EffectFunc;
-
     struct Defaults {
         const static ParameterSystem::Param<CRYSTAL> CRYSTAL_MAGIC;
         const static ParameterSystem::Param<CATALYST> CATALYST_MAGIC;
 
         static bool CanBuy(std::shared_ptr<Upgrade> u);
-        template <WizardId id, WizardType<id> key>
-        static std::string AdditiveEffect() {
-            return "+" + ParameterSystem::Param<id>(key).get().toString();
-        }
-        template <WizardId id, WizardType<id> key>
-        static std::string MultiplicativeEffect() {
-            return ParameterSystem::Param<id>(key).get().toString() + "x";
-        }
-        template <WizardId id, WizardType<id> key>
-        static std::string PercentEffect() {
-            return (ParameterSystem::Param<id>(key).get() * 100).toString() +
-                   "%";
-        }
+        static std::string AdditiveEffect(const Number& effect);
+        static std::string MultiplicativeEffect(const Number& effect);
+        static std::string PercentEffect(const Number& effect);
     };
 
     Upgrade() = default;
@@ -63,9 +51,6 @@ class Upgrade {
     int getMaxLevel() const;
     int getLevel() const;
     const std::string& getEffect() const;
-    bool hasEffectSource() const;
-    const std::unique_ptr<ParameterSystem::ParamMapBase>& getEffectSource()
-        const;
     bool hasCostSource() const;
     const std::unique_ptr<ParameterSystem::ParamBase>& getCostSource() const;
     bool hasMoneySource() const;
@@ -74,8 +59,11 @@ class Upgrade {
     Upgrade& setMaxLevel(int maxLevel);
     Upgrade& setLevel(int level);
     Upgrade& setEffect(const std::string& effect);
+    Upgrade& setEffectSource(
+        const ParameterSystem::ParamBase& param,
+        std::function<std::string(const Number&)> onEffect);
     Upgrade& setEffectSource(const ParameterSystem::ParamMapBase& params,
-                             EffectFunc onEffect);
+                             std::function<std::string()> onEffect);
     Upgrade& clearEffectSource();
     Upgrade& setCostSource(const ParameterSystem::ParamBase& param);
     Upgrade& clearCostSource();
@@ -105,7 +93,6 @@ class Upgrade {
     std::string mEffect = "";
 
     std::unique_ptr<ParameterSystem::ParamBase> mCostSrc, mMoneySrc;
-    std::unique_ptr<ParameterSystem::ParamMapBase> mEffectSrc;
     ParameterSystem::ParameterObservable::SubscriptionPtr mCostSub, mEffectSub;
 };
 

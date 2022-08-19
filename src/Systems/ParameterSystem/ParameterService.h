@@ -33,10 +33,9 @@ class ParameterObservableMapImpl {
 
 class ParameterObservableMap : public ParameterObservableMapImpl,
                                public ObservableBase {
-    friend class ParamBase;
-    friend class ParamListBase;
     template <WizardId id>
-    friend class ParamList;
+    friend class Params;
+    friend class ParamBase;
     friend class ParamMapBase;
 };
 

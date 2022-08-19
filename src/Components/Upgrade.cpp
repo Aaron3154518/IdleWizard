@@ -4,6 +4,7 @@
 const SDL_Color Upgrade::DESC_BKGRND{175, 175, 175, 255};
 const FontData Upgrade::DESC_FONT{-1, 20, "|"};
 
+// Defaults
 const ParameterSystem::Param<CRYSTAL> Upgrade::Defaults::CRYSTAL_MAGIC(
     CrystalParams::Magic);
 const ParameterSystem::Param<CATALYST> Upgrade::Defaults::CATALYST_MAGIC(
@@ -14,14 +15,20 @@ bool Upgrade::Defaults::CanBuy(UpgradePtr u) {
            u->mCostSrc->get() <= u->mMoneySrc->get();
 }
 
+std::string Upgrade::Defaults::AdditiveEffect(const Number& effect) {
+    return "+" + effect.toString();
+}
+std::string Upgrade::Defaults::MultiplicativeEffect(const Number& effect) {
+    return effect.toString() + "x";
+}
+std::string Upgrade::Defaults::PercentEffect(const Number& effect) {
+    return (effect * 100).toString() + "%";
+}
+
+// Getters/setters
 int Upgrade::getMaxLevel() const { return mMaxLevel; }
 int Upgrade::getLevel() const { return mLevel; }
 const std::string& Upgrade::getEffect() const { return mEffect; }
-bool Upgrade::hasEffectSource() const { return (bool)mEffectSrc; }
-const std::unique_ptr<ParameterSystem::ParamMapBase>& Upgrade::getEffectSource()
-    const {
-    return mEffectSrc;
-}
 bool Upgrade::hasCostSource() const { return (bool)mCostSrc; }
 const std::unique_ptr<ParameterSystem::ParamBase>& Upgrade::getCostSource()
     const {
@@ -46,17 +53,24 @@ Upgrade& Upgrade::setEffect(const std::string& effect) {
     return *this;
 }
 
+Upgrade& Upgrade::setEffectSource(
+    const ParameterSystem::ParamBase& param,
+    std::function<std::string(const Number&)> onEffect) {
+    mEffectSub = param.subscribe([this, param, onEffect]() {
+        mEffect = onEffect(param.get());
+        updateInfo();
+    });
+    return *this;
+}
 Upgrade& Upgrade::setEffectSource(const ParameterSystem::ParamMapBase& params,
-                                  EffectFunc onEffect) {
-    mEffectSrc = std::make_unique<ParameterSystem::ParamMapBase>(params);
-    mEffectSub = mEffectSrc->subscribe([this, onEffect]() {
+                                  std::function<std::string()> onEffect) {
+    mEffectSub = params.subscribe([this, onEffect]() {
         mEffect = onEffect();
         updateInfo();
     });
     return *this;
 }
 Upgrade& Upgrade::clearEffectSource() {
-    mEffectSrc.reset();
     mEffectSub.reset();
     return *this;
 }

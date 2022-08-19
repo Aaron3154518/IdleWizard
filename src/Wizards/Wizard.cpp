@@ -9,12 +9,12 @@ const std::string Wizard::FIREBALL_BUFFED_IMG =
     "res/projectiles/fireball_buffed.png";
 
 Wizard::Wizard() : WizardBase(WIZARD) {
-    ParameterSystem::ParamList<WIZARD> params;
-    params.Set(WizardParams::BasePower, 1);
-    params.Set(WizardParams::BaseSpeed, 1);
-    params.Set(WizardParams::PowerUp, 0);
-    params.Set(WizardParams::MultiUp, 0);
-    params.Set(WizardParams::PowerWizEffect, 1);
+    ParameterSystem::Params<WIZARD> params;
+    params.set(WizardParams::BasePower, 1);
+    params.set(WizardParams::BaseSpeed, 1);
+    params.set(WizardParams::PowerUp, 0);
+    params.set(WizardParams::MultiUp, 0);
+    params.set(WizardParams::PowerWizEffect, 1);
 }
 
 void Wizard::init() {
@@ -47,10 +47,8 @@ void Wizard::init() {
     // Power Display
     UpgradePtr up = std::make_shared<Upgrade>();
     up->setMaxLevel(0)
-        .setEffectSource(
-            ParameterSystem::Param<WIZARD>(WizardParams::Power),
-            Upgrade::Defaults::MultiplicativeEffect<WIZARD,
-                                                    WizardParams::Power>)
+        .setEffectSource(ParameterSystem::Param<WIZARD>(WizardParams::Power),
+                         Upgrade::Defaults::MultiplicativeEffect)
         .setImg(WIZ_IMGS.at(mId))
         .setDescription("Power");
     mPowerDisplay = mUpgrades->subscribe(up);
@@ -80,15 +78,14 @@ void Wizard::init() {
         .setCostSource(
             ParameterSystem::Param<WIZARD>(WizardParams::PowerUpCost))
         .setMoneySource(Upgrade::Defaults::CRYSTAL_MAGIC)
-        .setEffectSource(
-            ParameterSystem::Param<WIZARD>(WizardParams::PowerUp),
-            Upgrade::Defaults::AdditiveEffect<WIZARD, WizardParams::PowerUp>)
+        .setEffectSource(ParameterSystem::Param<WIZARD>(WizardParams::PowerUp),
+                         Upgrade::Defaults::AdditiveEffect)
         .setImg(POWER_UP_IMG)
         .setDescription("Increase Wizard base power by 1");
     mPowerUp = mUpgrades->subscribe(
         [](UpgradePtr u) {
-            u->getEffectSource()->set<WIZARD>(WizardParams::PowerUp,
-                                              u->getLevel());
+            ParameterSystem::Param<WIZARD>(WizardParams::PowerUp)
+                .set(u->getLevel());
             u->getCostSource()->set(25 * (Number(1.75) ^ u->getLevel()));
         },
         up);
@@ -99,15 +96,14 @@ void Wizard::init() {
         .setCostSource(
             ParameterSystem::Param<WIZARD>(WizardParams::MultiUpCost))
         .setMoneySource(Upgrade::Defaults::CRYSTAL_MAGIC)
-        .setEffectSource(
-            ParameterSystem::Param<WIZARD>(WizardParams::MultiUp),
-            Upgrade::Defaults::PercentEffect<WIZARD, WizardParams::MultiUp>)
+        .setEffectSource(ParameterSystem::Param<WIZARD>(WizardParams::MultiUp),
+                         Upgrade::Defaults::PercentEffect)
         .setImg(MULTI_UP_IMG)
         .setDescription("Increase double fireball chance by +5%");
     mMultiUp = mUpgrades->subscribe(
         [](UpgradePtr u) {
-            u->getEffectSource()->set<WIZARD>(WizardParams::MultiUp,
-                                              Number(.05) * u->getLevel());
+            ParameterSystem::Param<WIZARD>(WizardParams::MultiUp)
+                .set(Number(.05) * u->getLevel());
             u->getCostSource()->set((Number(1.5) ^ u->getLevel()) * 100);
         },
         up);
@@ -313,26 +309,26 @@ void Wizard::shootFireball(SDL_FPoint target) {
 }
 
 void Wizard::calcPower() {
-    ParameterSystem::ParamList<WIZARD> wizParams;
+    ParameterSystem::Params<WIZARD> wizParams;
     Number crystalEff =
         ParameterSystem::Param<CRYSTAL>(CrystalParams::MagicEffect).get();
     Number catalystEff =
         ParameterSystem::Param<CATALYST>(CatalystParams::MagicEffect).get();
-    Number power = (wizParams.Get(WizardParams::BasePower) +
-                    wizParams.Get(WizardParams::PowerUp)) *
+    Number power = (wizParams.get(WizardParams::BasePower) +
+                    wizParams.get(WizardParams::PowerUp)) *
                    crystalEff * catalystEff *
-                   wizParams.Get(WizardParams::PowerWizEffect) *
-                   max(1, wizParams.Get(WizardParams::Speed) * 16 / 1000);
-    wizParams.Set(WizardParams::Power, power);
+                   wizParams.get(WizardParams::PowerWizEffect) *
+                   max(1, wizParams.get(WizardParams::Speed) * 16 / 1000);
+    wizParams.set(WizardParams::Power, power);
 }
 
 void Wizard::calcSpeed() {
-    ParameterSystem::ParamList<WIZARD> wizParams;
+    ParameterSystem::Params<WIZARD> wizParams;
     Number timeEffect =
         ParameterSystem::Param<TIME_WIZARD>(TimeWizardParams::SpeedEffect)
             .get();
-    Number speed = wizParams.Get(WizardParams::BaseSpeed) * timeEffect;
-    wizParams.Set(WizardParams::Speed, speed);
+    Number speed = wizParams.get(WizardParams::BaseSpeed) * timeEffect;
+    wizParams.set(WizardParams::Speed, speed);
 }
 
 void Wizard::calcTimer() {

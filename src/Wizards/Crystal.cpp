@@ -5,9 +5,9 @@ const Number Crystal::T1_COST1 = 500, Crystal::T1_COST2 = 5000;
 const SDL_Color Crystal::MSG_COLOR{225, 0, 200, 255};
 
 Crystal::Crystal() : WizardBase(CRYSTAL) {
-    ParameterSystem::ParamList<CRYSTAL> params;
-    params.Set(CrystalParams::Magic, 0);
-    params.Set(CrystalParams::T1WizardCost, T1_COST1);
+    ParameterSystem::Params<CRYSTAL> params;
+    params.set(CrystalParams::Magic, 0);
+    params.set(CrystalParams::T1WizardCost, T1_COST1);
 
     mMsgTData.font = AssetManager::getFont(FONT);
     mMsgTData.color = MSG_COLOR;
@@ -34,8 +34,7 @@ void Crystal::init() {
     up->setMaxLevel(-1)
         .setEffectSource(
             ParameterSystem::Param<CRYSTAL>(CrystalParams::MagicEffect),
-            Upgrade::Defaults::MultiplicativeEffect<CRYSTAL,
-                                                    CrystalParams::MagicEffect>)
+            Upgrade::Defaults::MultiplicativeEffect)
         .setImg(WIZ_IMGS.at(mId))
         .setDescription("Multiplier based on crystal damage");
     mMagicEffectDisplay = mUpgrades->subscribe(
@@ -183,9 +182,9 @@ void Crystal::onFireballHit(const Fireball& fireball) {
 }
 
 void Crystal::calcMagicEffect() {
-    ParameterSystem::ParamList<CRYSTAL> params;
-    Number effect = (params.Get(CrystalParams::Magic) + 1).logTen() + 1;
-    params.Set(CrystalParams::MagicEffect, effect);
+    ParameterSystem::Params<CRYSTAL> params;
+    Number effect = (params.get(CrystalParams::Magic) + 1).logTen() + 1;
+    params.set(CrystalParams::MagicEffect, effect);
 }
 
 void Crystal::drawMagic() {

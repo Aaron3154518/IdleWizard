@@ -19,6 +19,7 @@
 #include <Utils/Time.h>
 #include <Wizards/WizardIds.h>
 
+#include <array>
 #include <memory>
 
 typedef Observable<void(SDL_FPoint), WizardId> FireballObservableBase;
@@ -45,6 +46,13 @@ class Fireball : public Component {
     typedef TargetSystem::TargetObservable<Fireball&, const Number&>
         FireRingHitObservable;
 
+    enum State : uint8_t {
+        HitFireRing = 0,
+        PowerWizBoosted,
+
+        size
+    };
+
    public:
     const static Rect IMG_RECT;
     const static int DEF_VALUE_KEY;
@@ -58,11 +66,16 @@ class Fireball : public Component {
 
     void launch(SDL_FPoint target);
 
+    float getSize() const;
     void setSize(float size);
+
     void setPos(float x, float y);
 
-    Number& getValue(int key = DEF_VALUE_KEY);
+    bool getState(State state) const;
+    bool& getState(State state);
+
     const Number& getValue(int key = DEF_VALUE_KEY) const;
+    Number& getValue(int key = DEF_VALUE_KEY);
 
     WizardId getSourceId() const;
     WizardId getTargetId() const;
@@ -75,11 +88,12 @@ class Fireball : public Component {
     void onRender(SDL_Renderer* renderer);
     void onFireRing(const Number& effect);
 
-    bool mDead = false, mHitFireRing = false;
+    bool mDead = false;
     WizardId mSrcId, mTargetId;
     SDL_FPoint mTargetPos{0, 0}, mV{0, 0}, mA{0, 0};
     UIComponentPtr mPos;
 
+    std::array<bool, State::size> mState;
     NumberMap mVals;
 
     RenderData mImg;

@@ -244,6 +244,7 @@ void Wizard::onFireballHit(const Fireball& fireball) {
 void Wizard::onFireballFireRingHit(Fireball& fireball,
                                    const Number& fireRingEffect) {
     fireball.getValue() ^= fireRingEffect;
+    fireball.setSize(fireball.getSize() * 1.1);
 }
 
 bool Wizard::onPowWizTimer(Timer& timer) {
@@ -273,10 +274,11 @@ void Wizard::onUnfreeze(TimeSystem::FreezeType type) {
     switch (type) {
         case TimeSystem::FreezeType::TIME_WIZARD:
             if (mFireballFreezeCnt > 0) {
+                Number freezeEffect = ParameterSystem::Param<TIME_WIZARD>(
+                                          TimeWizardParams::FreezeEffect)
+                                          .get();
                 FireballPtr& fireball = mFireballs.back();
-                fireball->getValue() ^= ParameterSystem::Param<TIME_WIZARD>(
-                                            TimeWizardParams::FreezeEffect)
-                                            .get();
+                fireball->getValue() ^= freezeEffect;
             }
             break;
     }
@@ -290,13 +292,17 @@ void Wizard::shootFireball() {
             SDL_FPoint{mPos->rect.cX(), mPos->rect.cY()}, mId, mTarget,
             mPowWizBoosts.empty() ? FIREBALL_IMG : FIREBALL_BUFFED_IMG,
             power)));
+        if (!mPowWizBoosts.empty()) {
+            mFireballs.back()->getState(Fireball::State::PowerWizBoosted) =
+                true;
+        }
     }
     if (frozen) {
+        auto& fireball = mFireballs.back();
         if (++mFireballFreezeCnt > 1) {
-            mFireballs.back()->getValue() += power;
+            fireball->getValue() += power;
         }
-        mFireballs.back()->setSize(
-            fmin(pow(mFireballFreezeCnt, 1.0 / 3.0), 10));
+        fireball->setSize(fmin(pow(mFireballFreezeCnt, 1.0 / 3.0), 10));
     }
 }
 

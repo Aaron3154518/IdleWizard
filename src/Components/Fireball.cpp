@@ -43,7 +43,8 @@ Fireball::Fireball(SDL_FPoint c, WizardId src, WizardId target,
     : mPos(std::make_shared<UIComponent>(Rect(), 0)),
       mTargetId(target),
       mSrcId(src),
-      mVals(vals) {
+      mVals(vals),
+      mState({false}) {
     mImg.texture = AssetManager::getTexture(img);
     mImg.dest.setPos(c.x, c.y, Rect::Align::CENTER);
     setSize(1);
@@ -80,6 +81,7 @@ void Fireball::launch(SDL_FPoint target) {
     mV.y = dy * frac;
 }
 
+float Fireball::getSize() const { return mSize; }
 void Fireball::setSize(float size) {
     mSize = fmax(0, size);
     mImg.dest.setDim(IMG_RECT.w() * size, IMG_RECT.h() * size,
@@ -93,8 +95,23 @@ void Fireball::setPos(float x, float y) {
     mImg.dest = mPos->rect;
 }
 
-Number& Fireball::getValue(int key) { return mVals[key]; }
+bool Fireball::getState(State state) const {
+    if (state == State::size) {
+        throw std::runtime_error(
+            "Fireball::getState(): Cannot use State::size");
+    }
+    return mState[state];
+}
+bool& Fireball::getState(State state) {
+    if (state == State::size) {
+        throw std::runtime_error(
+            "Fireball::getState(): Cannot use State::size");
+    }
+    return mState[state];
+}
+
 const Number& Fireball::getValue(int key) const { return mVals.at(key); }
+Number& Fireball::getValue(int key) { return mVals[key]; }
 
 WizardId Fireball::getSourceId() const { return mSrcId; }
 WizardId Fireball::getTargetId() const { return mTargetId; }
@@ -141,8 +158,8 @@ void Fireball::onUpdate(Time dt) {
 void Fireball::onRender(SDL_Renderer* renderer) { TextureBuilder().draw(mImg); }
 
 void Fireball::onFireRing(const Number& effect) {
-    if (!mHitFireRing) {
-        mHitFireRing = true;
+    if (!getState(State::HitFireRing) && !getState(State::PowerWizBoosted)) {
+        getState(State::HitFireRing) = true;
         ServiceSystem::Get<FireballService, Fireball::FireRingHitObservable>()
             ->next(mSrcId, *this, effect);
     }

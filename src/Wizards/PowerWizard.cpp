@@ -97,11 +97,11 @@ void PowerWizard::onUnfreeze(TimeSystem::FreezeType type) {
     switch (type) {
         case TimeSystem::FreezeType::TIME_WIZARD:
             if (mFireballFreezeCnt > 0) {
+                Number freezeEffect = ParameterSystem::Param<TIME_WIZARD>(
+                                          TimeWizardParams::FreezeEffect)
+                                          .get();
                 FireballPtr& fireball = mFireballs.back();
-                fireball->getValue(PowerWizardParams::Duration) ^=
-                    ParameterSystem::Param<TIME_WIZARD>(
-                        TimeWizardParams::FreezeEffect)
-                        .get();
+                fireball->getValue(PowerWizardParams::Duration) ^= freezeEffect;
             }
             break;
     }

@@ -18,14 +18,16 @@ void FireRing::init() {
             std::bind(&FireRing::onRender, this, std::placeholders::_1), pos);
     mUpdateSub = TimeSystem::GetUpdateObservable()->subscribe(
         std::bind(&FireRing::onUpdate, this, std::placeholders::_1));
+    mRingSub =
+        ServiceSystem::Get<FireRingService, HitObservable>()
+            ->subscribeToFireballs(FireballObservable(mCircle.c, mCircle.r2));
 }
 
 void FireRing::onRender(SDL_Renderer* r) { TextureBuilder().draw(mCircle); }
 
 void FireRing::onUpdate(Time dt) {
     mCircle.set(mCircle.c, mCircle.r1 + GROWTH * dt.s(), WIDTH);
-    ServiceSystem::Get<FireRingService, FireRing::HitObservable>()->next(
-        {(float)mCircle.c.x, (float)mCircle.c.y}, mCircle.r2, mEffect);
+    mRingSub->get<0>().next(mCircle.c, mCircle.r2, mEffect);
     SDL_Point dim = RenderSystem::getWindowSize();
     float dx = fmax(mCircle.c.x, dim.x - mCircle.c.x),
           dy = fmax(mCircle.c.y, dim.y - mCircle.c.y);
@@ -39,14 +41,33 @@ void FireRing::onUpdate(Time dt) {
 
 bool FireRing::dead() const { return mDead; }
 
-// FireRing::HitObservable
-void FireRing::HitObservable::next(SDL_FPoint c, int r, const Number& effect) {
-    for (auto sub : *this) {
+// FireRing::FireballObservable
+FireRing::FireballObservable::FireballObservable(SDL_Point c, int r)
+    : mC(c), mR(r) {}
+
+void FireRing::FireballObservable::next(SDL_Point c, int r,
+                                        const Number& effect) {
+    for (auto it = begin(), endIt = end(); it != endIt; ++it) {
+        auto sub = *it;
         UIComponentPtr pos = sub->get<DATA>();
         float dx = c.x - pos->rect.cX(), dy = c.y - pos->rect.cY();
         float mag = sqrt(dx * dx + dy * dy);
         if (mag < r) {
             sub->get<FUNC>()(effect);
+            it = erase(it);
+            if (it == endIt) {
+                break;
+            }
         }
+    }
+    mC = c, mR = r;
+}
+
+void FireRing::FireballObservable::subscribe(SubscriptionPtr sub) {
+    UIComponentPtr pos = sub->get<DATA>();
+    float dx = mC.x - pos->rect.cX(), dy = mC.y - pos->rect.cY();
+    float mag = sqrt(dx * dx + dy * dy);
+    if (mag >= mR) {
+        FireballObservableBase::subscribe(sub);
     }
 }

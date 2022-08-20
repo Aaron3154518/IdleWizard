@@ -1,6 +1,7 @@
 #ifndef FIRE_RING_H
 #define FIRE_RING_H
 
+#include <Components/FireballHit.h>
 #include <RenderSystem/AssetManager.h>
 #include <RenderSystem/RenderSystem.h>
 #include <RenderSystem/Shapes.h>
@@ -17,15 +18,31 @@
 #include <Utils/Time.h>
 #include <Wizards/WizardIds.h>
 
+#include <typeindex>
+#include <unordered_map>
+
 class FireRing : public Component {
    public:
-    typedef Observable<void(const Number&), UIComponentPtr> HitObservableBase;
-    class HitObservable : public HitObservableBase {
-       public:
-        enum : size_t { FUNC = 0, DATA };
+    typedef Observable<void(const Number&), UIComponentPtr>
+        FireballObservableBase;
+    class FireballObservable : public FireballObservableBase {
+        friend class RingObservable;
 
-        void next(SDL_FPoint c, int r, const Number& effect);
+       public:
+        enum : uint8_t { FUNC = 0, DATA };
+
+        FireballObservable(SDL_Point c, int r);
+
+        void next(SDL_Point c, int r, const Number& effect);
+
+        void subscribe(SubscriptionPtr sub);
+
+       private:
+        SDL_Point mC;
+        int mR;
     };
+
+    typedef FireballHitObservable<FireballObservable> HitObservable;
 
    public:
     FireRing(SDL_Point c, const Number& effect);
@@ -48,8 +65,10 @@ class FireRing : public Component {
 
     RenderObservable::SubscriptionPtr mRenderSub;
     TimeSystem::UpdateObservable::SubscriptionPtr mUpdateSub;
+    HitObservable::FireballsSubscriptionPtr mRingSub;
 };
 
-class FireRingService : public Service<FireRing::HitObservable> {};
+class FireRingService
+    : public Service<FireRing::HitObservable, FireRing::HitObservable> {};
 
 #endif

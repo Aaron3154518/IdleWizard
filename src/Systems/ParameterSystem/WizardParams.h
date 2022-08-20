@@ -14,13 +14,12 @@ enum _ : param_t {
     BasePower = 0,
     Power,
     PowerWizEffect,
+    PowerUp,
+    PowerUpCost,
 
     BaseSpeed,
     Speed,
     SpeedUpCost,
-
-    PowerUp,
-    PowerUpCost,
 
     MultiUp,
     MultiUpCost,
@@ -44,12 +43,15 @@ enum _ : param_t {
 namespace PowerWizardParams {
 enum _ : param_t {
     BasePower = 0,
-    BaseSpeed,
-
     Power,
-    Speed,
-    Duration,
+    PowerUp,
+    PowerUpCost,
     FireRingEffect,
+
+    BaseSpeed,
+    Speed,
+
+    Duration,
 };
 }
 namespace TimeWizardParams {

@@ -244,7 +244,7 @@ void Wizard::onFireballHit(const Fireball& fireball) {
 void Wizard::onFireballFireRingHit(Fireball& fireball,
                                    const Number& fireRingEffect) {
     fireball.getValue() ^= fireRingEffect;
-    fireball.setSize(fireball.getSize() * 1.1);
+    fireball.setSize(fireball.getSize() * 1.15);
 }
 
 bool Wizard::onPowWizTimer(Timer& timer) {

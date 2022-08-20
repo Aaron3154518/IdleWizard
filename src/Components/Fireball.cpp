@@ -62,14 +62,11 @@ void Fireball::init() {
     mFireballSub =
         ServiceSystem::Get<FireballService, FireballObservable>()->subscribe(
             [this](SDL_FPoint p) { mTargetPos = p; }, mTargetId);
-
-    if (mSrcId == WIZARD) {
-        mFireRingSub =
-            ServiceSystem::Get<FireRingService, FireRing::HitObservable>()
-                ->subscribe(std::bind(&Fireball::onFireRing, this,
-                                      std::placeholders::_1),
-                            mPos);
-    }
+    mFireRingSub =
+        ServiceSystem::Get<FireRingService, FireRing::HitObservable>()
+            ->subscribe(
+                std::bind(&Fireball::onFireRing, this, std::placeholders::_1),
+                mPos);
 
     launch(mTargetPos);
 }

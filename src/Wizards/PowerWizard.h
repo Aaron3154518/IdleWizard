@@ -21,7 +21,7 @@ class PowerWizard : public WizardBase {
    public:
     PowerWizard();
 
-    const static std::string FIREBALL_IMG;
+    const static std::string FIREBALL_IMG, POWER_UP_IMG;
 
    private:
     void init();
@@ -44,7 +44,7 @@ class PowerWizard : public WizardBase {
 
     TimerObservable::SubscriptionPtr mFireballTimerSub;
     TimeSystem::FreezeObservable::SubscriptionPtr mFreezeSub;
-    UpgradeList::SubscriptionPtr mPowerDisplay;
+    UpgradeList::SubscriptionPtr mPowerDisplay, mPowerUp;
 
     std::vector<FireballPtr> mFireballs;
     int mFireballFreezeCnt;

@@ -2,10 +2,13 @@
 
 // PowerWizard
 const std::string PowerWizard::FIREBALL_IMG = "res/projectiles/fireball2.png";
+const std::string PowerWizard::POWER_UP_IMG =
+    "res/upgrades/power_fireball_upgrade.png";
 
 PowerWizard::PowerWizard() : WizardBase(POWER_WIZARD) {
     ParameterSystem::Params<POWER_WIZARD> params;
     params.set(PowerWizardParams::BasePower, 5);
+    params.set(PowerWizardParams::PowerUp, 0);
     params.set(PowerWizardParams::BaseSpeed, .25);
     params.set(PowerWizardParams::FireRingEffect, 1);
     params.set(PowerWizardParams::Duration, 1000);
@@ -34,11 +37,30 @@ void PowerWizard::init() {
         .setDescription("Power");
     mPowerDisplay = mUpgrades->subscribe(up);
 
-    mParamSubs.push_back(
-        ParameterSystem::ParamMap<POWER_WIZARD>(
-            {PowerWizardParams::BasePower, PowerWizardParams::Speed})
-            .subscribe(std::bind(&PowerWizard::calcPower, this)));
+    // Power upgrade
+    up = std::make_shared<Upgrade>();
+    up->setMaxLevel(15)
+        .setEffectSource(
+            ParameterSystem::Param<POWER_WIZARD>(PowerWizardParams::PowerUp),
+            Upgrade::Defaults::AdditiveEffect)
+        .setCostSource(ParameterSystem::Param<POWER_WIZARD>(
+            PowerWizardParams::PowerUpCost))
+        .setMoneySource(Upgrade::Defaults::CRYSTAL_MAGIC)
+        .setImg(POWER_UP_IMG)
+        .setDescription("Increase power effect by +.1");
+    mPowerUp = mUpgrades->subscribe(
+        [this](UpgradePtr u) {
+            ParameterSystem::Param<POWER_WIZARD>(PowerWizardParams::PowerUp)
+                .set(u->getLevel() * .1);
+            u->getCostSource()->set(75 * (Number(1.5) ^ u->getLevel()));
+        },
+        up);
 
+    mParamSubs.push_back(
+        ParameterSystem::ParamMap<POWER_WIZARD>({PowerWizardParams::BasePower,
+                                                 PowerWizardParams::PowerUp,
+                                                 PowerWizardParams::Speed})
+            .subscribe(std::bind(&PowerWizard::calcPower, this)));
     mParamSubs.push_back(
         ParameterSystem::ParamMap<POWER_WIZARD, TIME_WIZARD>(
             {PowerWizardParams::BaseSpeed}, {TimeWizardParams::SpeedEffect})
@@ -151,7 +173,8 @@ void PowerWizard::shootFireball(SDL_FPoint target) {
 
 void PowerWizard::calcPower() {
     ParameterSystem::Params<POWER_WIZARD> params;
-    Number power = params.get(PowerWizardParams::BasePower) *
+    Number power = (params.get(PowerWizardParams::BasePower) +
+                    params.get(PowerWizardParams::PowerUp)) *
                    max(1, params.get(PowerWizardParams::Speed) * 16 / 1000);
     params.set(PowerWizardParams::Power, power);
 }

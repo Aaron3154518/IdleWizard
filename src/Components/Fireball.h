@@ -89,7 +89,7 @@ class Fireball : public Component {
     void onFireRing(const Number& effect);
 
     bool mDead = false;
-    WizardId mSrcId, mTargetId;
+    const WizardId mSrcId, mTargetId;
     SDL_FPoint mTargetPos{0, 0}, mV{0, 0}, mA{0, 0};
     UIComponentPtr mPos;
 

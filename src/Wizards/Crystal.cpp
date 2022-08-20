@@ -4,20 +4,22 @@
 const Number Crystal::T1_COST1 = 500, Crystal::T1_COST2 = 5e4;
 const SDL_Color Crystal::MSG_COLOR{200, 0, 175, 255};
 
-Crystal::Crystal() : WizardBase(CRYSTAL) {
+Crystal::Crystal() : WizardBase(CRYSTAL) {}
+
+void Crystal::init() {
+    mMsgTData.font = AssetManager::getFont(FONT);
+    mMsgTData.color = MSG_COLOR;
+    mMagicText.tData.font = AssetManager::getFont(FONT);
+
+    WizardBase::init();
+}
+void Crystal::setDefaultValues() {
     ParameterSystem::Params<CRYSTAL> params;
     params.set(CrystalParams::Magic, 0);
     params.set(CrystalParams::T1WizardCost, T1_COST1);
-
-    mMsgTData.font = AssetManager::getFont(FONT);
-    mMsgTData.color = MSG_COLOR;
 }
-
-void Crystal::init() {
-    WizardBase::init();
-
-    mMagicText.tData.font = AssetManager::getFont(FONT);
-
+void Crystal::setSubscriptions() {
+    WizardBase::setSubscriptions();
     mUpdateSub =
         ServiceSystem::Get<UpdateService, UpdateObservable>()->subscribe(
             std::bind(&Crystal::onUpdate, this, std::placeholders::_1));
@@ -28,7 +30,8 @@ void Crystal::init() {
                 mId);
     attachSubToVisibility(mUpdateSub);
     attachSubToVisibility(mFireballSub);
-
+}
+void Crystal::setUpgrades() {
     // Power Display
     UpgradePtr up = std::make_shared<Upgrade>();
     up->setMaxLevel(-1)
@@ -89,7 +92,8 @@ void Crystal::init() {
             }
         },
         up);
-
+}
+void Crystal::setFormulas() {
     mParamSubs.push_back(
         ParameterSystem::Param<CRYSTAL>(CrystalParams::Magic)
             .subscribe(std::bind(&Crystal::calcMagicEffect, this)));

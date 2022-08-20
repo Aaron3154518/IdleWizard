@@ -26,6 +26,10 @@ class TimeWizard : public WizardBase {
 
    private:
     void init();
+    void setDefaultValues();
+    void setSubscriptions();
+    void setUpgrades();
+    void setFormulas();
 
     bool onCostTimer(Timer& timer);
     void onRender(SDL_Renderer*);

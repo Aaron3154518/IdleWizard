@@ -35,6 +35,10 @@ class WizardBase : public Component {
     WizardBase(WizardId id);
 
     virtual void init();
+    virtual void setDefaultValues();
+    virtual void setSubscriptions();
+    virtual void setUpgrades();
+    virtual void setFormulas();
 
     virtual void onResize(ResizeData data);
     virtual void onRender(SDL_Renderer* r);

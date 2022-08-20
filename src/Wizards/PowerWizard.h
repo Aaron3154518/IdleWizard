@@ -24,7 +24,10 @@ class PowerWizard : public WizardBase {
     const static std::string FIREBALL_IMG, POWER_UP_IMG;
 
    private:
-    void init();
+    void setDefaultValues();
+    void setSubscriptions();
+    void setUpgrades();
+    void setFormulas();
 
     void onRender(SDL_Renderer* r);
     void onHide(WizardId id, bool hide);

@@ -34,6 +34,10 @@ class Crystal : public WizardBase {
 
    private:
     void init();
+    void setDefaultValues();
+    void setSubscriptions();
+    void setUpgrades();
+    void setFormulas();
 
     void onRender(SDL_Renderer* r);
     void onUpdate(Time dt);

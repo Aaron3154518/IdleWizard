@@ -7,21 +7,24 @@ const std::string TimeWizard::FREEZE_UP_IMG =
     "res/upgrades/time_freeze_upgrade.png";
 const std::string TimeWizard::SPEED_UP_IMG = "res/upgrades/speed_upgrade.png";
 
-TimeWizard::TimeWizard() : WizardBase(TIME_WIZARD) {
+TimeWizard::TimeWizard() : WizardBase(TIME_WIZARD) {}
+
+void TimeWizard::init() {
+    // Freeze display
+    mFreezePb.bkgrnd = TRANSPARENT;
+    mFreezePb.blendMode = SDL_BLENDMODE_BLEND;
+
+    WizardBase::init();
+}
+void TimeWizard::setDefaultValues() {
     ParameterSystem::Params<TIME_WIZARD> params;
     params.set(TimeWizardParams::SpeedBaseEffect, 1.5);
     params.set(TimeWizardParams::FreezeDelay, 30000);
     params.set(TimeWizardParams::FreezeDuration, 5000);
     params.set(TimeWizardParams::FreezeBaseEffect, 1.1);
 }
-
-void TimeWizard::init() {
-    WizardBase::init();
-
-    // Freeze display
-    mFreezePb.bkgrnd = TRANSPARENT;
-    mFreezePb.blendMode = SDL_BLENDMODE_BLEND;
-
+void TimeWizard::setSubscriptions() {
+    WizardBase::setSubscriptions();
     mCostTimerSub =
         ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
             std::bind(&TimeWizard::onCostTimer, this, std::placeholders::_1),
@@ -30,7 +33,8 @@ void TimeWizard::init() {
     attachSubToVisibility(mCostTimerSub);
     attachSubToVisibility(mFreezeDelaySub);
     attachSubToVisibility(mFreezeTimerSub);
-
+}
+void TimeWizard::setUpgrades() {
     // Power Display
     UpgradePtr up = std::make_shared<Upgrade>();
     up->setMaxLevel(0)
@@ -120,7 +124,8 @@ void TimeWizard::init() {
                                     (1 + (float)u->getLevel() / 12));
         },
         up);
-
+}
+void TimeWizard::setFormulas() {
     mParamSubs.push_back(
         ParameterSystem::ParamMap<TIME_WIZARD>(
             {TimeWizardParams::FreezeBaseEffect, TimeWizardParams::FreezeUp})

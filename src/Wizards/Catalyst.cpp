@@ -1,24 +1,28 @@
 #include "Catalyst.h"
 
 // Catalyst
-Catalyst::Catalyst() : WizardBase(CATALYST) {
+Catalyst::Catalyst() : WizardBase(CATALYST) {}
+
+void Catalyst::init() {
+    mMagicText.tData.font = AssetManager::getFont(FONT);
+
+    WizardBase::init();
+}
+void Catalyst::setDefaultValues() {
     ParameterSystem::Params<CATALYST> params;
     params.set(CatalystParams::Magic, 0);
     params.set(CatalystParams::Capacity, 100);
 }
-
-void Catalyst::init() {
-    WizardBase::init();
-
-    mMagicText.tData.font = AssetManager::getFont(FONT);
-
+void Catalyst::setSubscriptions() {
+    WizardBase::setSubscriptions();
     mFireballSub =
         ServiceSystem::Get<FireballService, Fireball::HitObservable>()
             ->subscribe(std::bind(&Catalyst::onFireballHit, this,
                                   std::placeholders::_1),
                         mId);
     attachSubToVisibility(mFireballSub);
-
+}
+void Catalyst::setUpgrades() {
     // Power Display
     UpgradePtr up = std::make_shared<Upgrade>();
     up->setMaxLevel(0)
@@ -28,7 +32,8 @@ void Catalyst::init() {
         .setImg(WIZ_IMGS.at(mId))
         .setDescription("Multiplier from stored magic");
     mMagicEffectDisplay = mUpgrades->subscribe(up);
-
+}
+void Catalyst::setFormulas() {
     mParamSubs.push_back(
         ParameterSystem::Param<CATALYST>(CatalystParams::Magic)
             .subscribe(std::bind(&Catalyst::calcMagicEffect, this)));

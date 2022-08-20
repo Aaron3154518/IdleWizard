@@ -5,17 +5,17 @@ const std::string PowerWizard::FIREBALL_IMG = "res/projectiles/fireball2.png";
 const std::string PowerWizard::POWER_UP_IMG =
     "res/upgrades/power_fireball_upgrade.png";
 
-PowerWizard::PowerWizard() : WizardBase(POWER_WIZARD) {
+PowerWizard::PowerWizard() : WizardBase(POWER_WIZARD) {}
+
+void PowerWizard::setDefaultValues() {
     ParameterSystem::Params<POWER_WIZARD> params;
     params.set(PowerWizardParams::BasePower, 5);
     params.set(PowerWizardParams::BaseSpeed, .25);
     params.set(PowerWizardParams::FireRingEffect, 1);
     params.set(PowerWizardParams::Duration, 1000);
 }
-
-void PowerWizard::init() {
-    WizardBase::init();
-
+void PowerWizard::setSubscriptions() {
+    WizardBase::setSubscriptions();
     mFireballTimerSub =
         ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
             std::bind(&PowerWizard::onTimer, this, std::placeholders::_1),
@@ -25,7 +25,8 @@ void PowerWizard::init() {
         std::bind(&PowerWizard::onUnfreeze, this, std::placeholders::_1));
     attachSubToVisibility(mFireballTimerSub);
     attachSubToVisibility(mFreezeSub);
-
+}
+void PowerWizard::setUpgrades() {
     // Power Display
     UpgradePtr up = std::make_shared<Upgrade>();
     up->setMaxLevel(0)
@@ -54,7 +55,8 @@ void PowerWizard::init() {
             u->getCostSource()->set(125 * (Number(1.5) ^ u->getLevel()));
         },
         up);
-
+}
+void PowerWizard::setFormulas() {
     mParamSubs.push_back(
         ParameterSystem::ParamMap<POWER_WIZARD>({PowerWizardParams::BasePower,
                                                  PowerWizardParams::PowerUp,

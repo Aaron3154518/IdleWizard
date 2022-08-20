@@ -9,7 +9,14 @@ const std::string Wizard::FIREBALL_IMG = "res/projectiles/fireball.png";
 const std::string Wizard::FIREBALL_BUFFED_IMG =
     "res/projectiles/fireball_buffed.png";
 
-Wizard::Wizard() : WizardBase(WIZARD) {
+Wizard::Wizard() : WizardBase(WIZARD) {}
+
+void Wizard::init() {
+    mPowBkgrnd.texture = AssetManager::getTexture(POWER_BKGRND);
+
+    WizardBase::init();
+}
+void Wizard::setDefaultValues() {
     ParameterSystem::Params<WIZARD> params;
     params.set(WizardParams::BasePower, 1);
     params.set(WizardParams::BaseSpeed, 1);
@@ -17,11 +24,8 @@ Wizard::Wizard() : WizardBase(WIZARD) {
     params.set(WizardParams::BaseCrit, 1);
     params.set(WizardParams::BaseCritSpread, 0);
 }
-
-void Wizard::init() {
-    WizardBase::init();
-
-    mPowBkgrnd.texture = AssetManager::getTexture(POWER_BKGRND);
+void Wizard::setSubscriptions() {
+    WizardBase::setSubscriptions();
 
     mFireballTimerSub =
         ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
@@ -44,7 +48,8 @@ void Wizard::init() {
     attachSubToVisibility(mFireballSub);
     attachSubToVisibility(mFireballFireRingSub);
     attachSubToVisibility(mFreezeSub);
-
+}
+void Wizard::setUpgrades() {
     // Power Display
     UpgradePtr up = std::make_shared<Upgrade>();
     up->setMaxLevel(0)
@@ -138,7 +143,8 @@ void Wizard::init() {
         },
         up);
     mMultiUp->setActive(false);
-
+}
+void Wizard::setFormulas() {
     mParamSubs.push_back(
         ParameterSystem::ParamMap<WIZARD, CRYSTAL, CATALYST>(
             {WizardParams::BasePower, WizardParams::PowerUp,

@@ -15,6 +15,14 @@ void WizardBase::init() {
     SDL_Point screenDim = RenderSystem::getWindowSize();
     setPos(rDist(gen) * screenDim.x, rDist(gen) * screenDim.y);
 
+    setDefaultValues();
+    setSubscriptions();
+    setUpgrades();
+    setFormulas();
+}
+
+void WizardBase::setDefaultValues() {}
+void WizardBase::setSubscriptions() {
     mResizeSub =
         ServiceSystem::Get<ResizeService, ResizeObservable>()->subscribe(
             [this](ResizeData data) { onResize(data); });
@@ -31,12 +39,13 @@ void WizardBase::init() {
         [this](WizardId id, bool hide) { onHide(id, hide); });
     mWizEventsSub = WizardSystem::GetWizEventsObservable()->subscribe(
         [this](WizardSystem::Event e) { onWizEvent(e); });
-
     attachSubToVisibility(mResizeSub);
     attachSubToVisibility(mRenderSub);
     attachSubToVisibility(mMouseSub);
     attachSubToVisibility(mDragSub);
 }
+void WizardBase::setUpgrades() {}
+void WizardBase::setFormulas() {}
 
 void WizardBase::onResize(ResizeData data) {
     setPos((float)mPos->rect.cX() * data.newW / data.oldW,

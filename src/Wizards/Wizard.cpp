@@ -3,6 +3,7 @@
 // Wizard
 const std::string Wizard::POWER_UP_IMG = "res/upgrades/fireball_upgrade.png";
 const std::string Wizard::MULTI_UP_IMG = "res/upgrades/multi_upgrade.png";
+const std::string Wizard::CRIT_UP_IMG = "res/upgrades/crit_upgrade.png";
 const std::string Wizard::POWER_BKGRND = "res/wizards/power_effect_bkgrnd.png";
 const std::string Wizard::FIREBALL_IMG = "res/projectiles/fireball.png";
 const std::string Wizard::FIREBALL_BUFFED_IMG =
@@ -12,9 +13,9 @@ Wizard::Wizard() : WizardBase(WIZARD) {
     ParameterSystem::Params<WIZARD> params;
     params.set(WizardParams::BasePower, 1);
     params.set(WizardParams::BaseSpeed, 1);
-    params.set(WizardParams::PowerUp, 0);
-    params.set(WizardParams::MultiUp, 0);
     params.set(WizardParams::PowerWizEffect, 1);
+    params.set(WizardParams::BaseCrit, 1);
+    params.set(WizardParams::BaseCritSpread, 0);
 }
 
 void Wizard::init() {
@@ -90,7 +91,36 @@ void Wizard::init() {
         },
         up);
 
-    // Speed Upgrade
+    // Crit Upgrade
+    up = std::make_shared<Upgrade>();
+    up->setMaxLevel(10)
+        .setCostSource(ParameterSystem::Param<WIZARD>(WizardParams::CritUpCost))
+        .setMoneySource(Upgrade::Defaults::CRYSTAL_MAGIC)
+        .setEffectSource(
+            ParameterSystem::ParamMap<WIZARD>(
+                {WizardParams::CritUp, WizardParams::CritSpreadUp}),
+            []() {
+                ParameterSystem::Params<WIZARD> params;
+                std::stringstream ss;
+                ss << "Crit: +" << params.get(WizardParams::CritUp)
+                   << " | Spread: *" << params.get(WizardParams::CritSpreadUp);
+                return ss.str();
+            })
+        .setImg(CRIT_UP_IMG)
+        .setDescription(
+            "Multiplies critical hit amount *1.1 and increases chance for "
+            "higher crits");
+    mCritUp = mUpgrades->subscribe(
+        [this](UpgradePtr u) {
+            ParameterSystem::Params<WIZARD> params;
+            params.set(WizardParams::CritUp, (Number(1.1) ^ u->getLevel()) - 1);
+            params.set(WizardParams::CritSpreadUp, Number(.95) ^ u->getLevel());
+            u->getCostSource()->set(100 * (Number(1.5) ^ u->getLevel()));
+        },
+        up);
+    mCritUp->setActive(false);
+
+    // Multi Upgrade
     up = std::make_shared<Upgrade>();
     up->setMaxLevel(20)
         .setCostSource(
@@ -104,7 +134,7 @@ void Wizard::init() {
         [](UpgradePtr u) {
             ParameterSystem::Param<WIZARD>(WizardParams::MultiUp)
                 .set(Number(.05) * u->getLevel());
-            u->getCostSource()->set((Number(1.5) ^ u->getLevel()) * 100);
+            u->getCostSource()->set(150 * (Number(1.4) ^ u->getLevel()));
         },
         up);
     mMultiUp->setActive(false);
@@ -121,6 +151,13 @@ void Wizard::init() {
             .subscribe(std::bind(&Wizard::calcSpeed, this)));
     mParamSubs.push_back(ParameterSystem::Param<WIZARD>(WizardParams::Speed)
                              .subscribe(std::bind(&Wizard::calcTimer, this)));
+    mParamSubs.push_back(ParameterSystem::ParamMap<WIZARD>(
+                             {WizardParams::BaseCrit, WizardParams::CritUp})
+                             .subscribe(std::bind(&Wizard::calcCrit, this)));
+    mParamSubs.push_back(
+        ParameterSystem::ParamMap<WIZARD>(
+            {WizardParams::BaseCritSpread, WizardParams::CritSpreadUp})
+            .subscribe(std::bind(&Wizard::calcCritSpread, this)));
 }
 
 void Wizard::onRender(SDL_Renderer* r) {
@@ -166,9 +203,11 @@ void Wizard::onHide(WizardId id, bool hide) {
 void Wizard::onWizEvent(WizardSystem::Event e) {
     UpgradePtr up;
     switch (e) {
+        case WizardSystem::Event::BoughtFirstT1:
+            UpgradeList::Get(mPowerUp)->setMaxLevel(10).updateInfo();
+            break;
         case WizardSystem::Event::BoughtPowerWizard:
-            up = UpgradeList::Get(mPowerUp);
-            up->setMaxLevel(std::max(10, up->getLevel())).updateInfo();
+            mCritUp->setActive(true);
             break;
         case WizardSystem::Event::BoughtTimeWizard:
             mMultiUp->setActive(true);
@@ -181,9 +220,9 @@ bool Wizard::onTimer(Timer& timer) {
     float Multi =
         ParameterSystem::Param<WIZARD>(WizardParams::MultiUp).get().toFloat();
     if (rDist(gen) < Multi) {
-        shootFireball(SDL_FPoint{
-            ((float)rDist(gen) - .5f) * mPos->rect.w() + mPos->rect.cX(),
-            ((float)rDist(gen) - .5f) * mPos->rect.h() + mPos->rect.cY()});
+        shootFireball(
+            SDL_FPoint{(rDist(gen) - .5f) * mPos->rect.w() + mPos->rect.cX(),
+                       (rDist(gen) - .5f) * mPos->rect.h() + mPos->rect.cY()});
     }
     return true;
 }
@@ -243,7 +282,7 @@ void Wizard::onFireballHit(const Fireball& fireball) {
 
 void Wizard::onFireballFireRingHit(Fireball& fireball,
                                    const Number& fireRingEffect) {
-    fireball.getValue() ^= fireRingEffect;
+    fireball.getValue() *= fireRingEffect;
     fireball.setSize(fireball.getSize() * 1.15);
 }
 
@@ -285,22 +324,23 @@ void Wizard::onUnfreeze(TimeSystem::FreezeType type) {
 }
 
 void Wizard::shootFireball() {
-    Number power = ParameterSystem::Param<WIZARD>(WizardParams::Power).get();
     bool frozen = TimeSystem::Frozen(TimeSystem::FreezeType::TIME_WIZARD);
     if (!frozen || mFireballFreezeCnt == 0) {
+        FireballData fp = newFireball();
         mFireballs.push_back(std::move(ComponentFactory<Fireball>::New(
             SDL_FPoint{mPos->rect.cX(), mPos->rect.cY()}, mId, mTarget,
             mPowWizBoosts.empty() ? FIREBALL_IMG : FIREBALL_BUFFED_IMG,
-            power)));
+            fp.power)));
+        auto& fireball = mFireballs.back();
+        fireball->setSize(fireball->getSize() * fp.sizeFactor);
         if (!mPowWizBoosts.empty()) {
-            mFireballs.back()->getState(Fireball::State::PowerWizBoosted) =
-                true;
+            fireball->getState(Fireball::State::PowerWizBoosted) = true;
         }
     }
     if (frozen) {
         auto& fireball = mFireballs.back();
         if (++mFireballFreezeCnt > 1) {
-            fireball->getValue() += power;
+            fireball->getValue() += newFireball().power;
         }
         fireball->setSize(fmin(pow(mFireballFreezeCnt, 1.0 / 3.0), 10));
     }
@@ -345,6 +385,36 @@ void Wizard::calcTimer() {
         div = 1;
     }
     timer.length = fmax(1000 / div, 16);
+}
+
+void Wizard::calcCrit() {
+    ParameterSystem::Params<WIZARD> params;
+    Number crit =
+        params.get(WizardParams::BaseCrit) + params.get(WizardParams::CritUp);
+    params.set(WizardParams::Crit, crit);
+}
+
+void Wizard::calcCritSpread() {
+    ParameterSystem::Params<WIZARD> params;
+    Number critSpread = params.get(WizardParams::BaseCritSpread) +
+                        params.get(WizardParams::CritSpreadUp);
+    params.set(WizardParams::CritSpread, critSpread);
+}
+
+Wizard::FireballData Wizard::newFireball() {
+    ParameterSystem::Params<WIZARD> params;
+    Number power = params.get(WizardParams::Power);
+
+    if (UpgradeList::Get(mCritUp)->getLevel() == 0) {
+        return {power, 1.0};
+    }
+
+    float frac = rDist(gen);
+    if (frac == 0) {
+        frac = std::numeric_limits<float>::min();
+    }
+    frac = (frac ^ params.get(WizardParams::CritSpread)).toFloat() + .5;
+    return {power * params.get(WizardParams::Crit) * frac, powf(frac, .25)};
 }
 
 void Wizard::setPos(float x, float y) {

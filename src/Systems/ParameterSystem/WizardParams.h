@@ -17,6 +17,14 @@ enum _ : param_t {
     PowerUp,
     PowerUpCost,
 
+    BaseCrit,
+    Crit,
+    CritUp,
+    BaseCritSpread,
+    CritSpread,
+    CritSpreadUp,
+    CritUpCost,
+
     BaseSpeed,
     Speed,
     SpeedUpCost,

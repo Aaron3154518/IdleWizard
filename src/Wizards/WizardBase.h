@@ -66,7 +66,7 @@ class WizardBase : public Component {
     UpgradeListPtr mUpgrades = std::make_shared<UpgradeList>();
 
     std::mt19937 gen = std::mt19937(rand());
-    std::uniform_real_distribution<> rDist;
+    std::uniform_real_distribution<float> rDist;
 
    private:
     std::list<SubscriptionBaseWPtr> mVisibilitySubs;

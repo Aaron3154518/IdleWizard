@@ -83,7 +83,7 @@ void Fireball::launch(SDL_FPoint target) {
 
 float Fireball::getSize() const { return mSize; }
 void Fireball::setSize(float size) {
-    mSize = fmax(0, size);
+    mSize = fmin(fmax(size, 0), 50);
     mImg.dest.setDim(IMG_RECT.w() * size, IMG_RECT.h() * size,
                      Rect::Align::CENTER);
     mImg.shrinkToTexture();

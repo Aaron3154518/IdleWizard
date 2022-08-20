@@ -20,6 +20,7 @@
 #include <Wizards/WizardIds.h>
 
 #include <cmath>
+#include <limits>
 #include <memory>
 #include <vector>
 
@@ -28,7 +29,7 @@ class Wizard : public WizardBase {
     Wizard();
 
     const static std::string POWER_UP_IMG, SPEED_UP_IMG, MULTI_UP_IMG,
-        POWER_BKGRND, FIREBALL_IMG, FIREBALL_BUFFED_IMG;
+        POWER_BKGRND, FIREBALL_IMG, FIREBALL_BUFFED_IMG, CRIT_UP_IMG;
 
    private:
     void init();
@@ -48,6 +49,14 @@ class Wizard : public WizardBase {
     void calcPower();
     void calcSpeed();
     void calcTimer();
+    void calcCrit();
+    void calcCritSpread();
+
+    struct FireballData {
+        Number power;
+        float sizeFactor;
+    };
+    FireballData newFireball();
 
     void shootFireball();
     void shootFireball(SDL_FPoint target);
@@ -61,7 +70,8 @@ class Wizard : public WizardBase {
     Fireball::HitObservable::IdSubscriptionPtr mFireballSub;
     Fireball::FireRingHitObservable::IdSubscriptionPtr mFireballFireRingSub;
     TimeSystem::FreezeObservable::SubscriptionPtr mFreezeSub;
-    UpgradeList::SubscriptionPtr mPowerDisplay, mTargetUp, mPowerUp, mMultiUp;
+    UpgradeList::SubscriptionPtr mPowerDisplay, mTargetUp, mPowerUp, mMultiUp,
+        mCritUp;
 
     // Pairs of effect, duration
     std::vector<std::pair<Number, Number>> mPowWizBoosts;

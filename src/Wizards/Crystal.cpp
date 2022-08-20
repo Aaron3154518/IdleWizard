@@ -1,8 +1,8 @@
 #include "Crystal.h"
 
 // Crystal
-const Number Crystal::T1_COST1 = 500, Crystal::T1_COST2 = 5000;
-const SDL_Color Crystal::MSG_COLOR{225, 0, 200, 255};
+const Number Crystal::T1_COST1 = 500, Crystal::T1_COST2 = 5e4;
+const SDL_Color Crystal::MSG_COLOR{200, 0, 175, 255};
 
 Crystal::Crystal() : WizardBase(CRYSTAL) {
     ParameterSystem::Params<CRYSTAL> params;
@@ -210,8 +210,7 @@ void Crystal::addMessage(const std::string& msg) {
           dy = (rDist(gen) - .5) * mPos->rect.halfH();
     rData.dest.setPos(mPos->rect.cX() + dx, mPos->rect.cY() + dy,
                       Rect::Align::CENTER);
-    SDL_FPoint trajectory{copysignf((float)rDist(gen), dx),
-                          copysignf((float)rDist(gen), dy)};
+    SDL_FPoint trajectory{copysignf(rDist(gen), dx), copysignf(rDist(gen), dy)};
     if (trajectory.x == 0 && trajectory.y == 0) {
         trajectory.y = 1;
     }

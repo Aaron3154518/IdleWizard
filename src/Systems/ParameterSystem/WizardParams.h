@@ -36,9 +36,13 @@ enum _ : param_t {
 namespace CrystalParams {
 enum _ : param_t {
     Magic = 0,
-    MagicEffect,
+    Shards,
 
-    T1WizardCost
+    MagicEffect,
+    ShardGain,
+
+    T1WizardCost,
+    CatalystCost,
 };
 }
 namespace CatalystParams {

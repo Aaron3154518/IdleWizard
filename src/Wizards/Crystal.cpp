@@ -7,16 +7,16 @@ const SDL_Color Crystal::MSG_COLOR{200, 0, 175, 255};
 Crystal::Crystal() : WizardBase(CRYSTAL) {}
 
 void Crystal::init() {
-    mMsgTData.font = AssetManager::getFont(FONT);
+    mMagicText.tData.font = mMsgTData.font = AssetManager::getFont(FONT);
     mMsgTData.color = MSG_COLOR;
-    mMagicText.tData.font = AssetManager::getFont(FONT);
 
     WizardBase::init();
 }
 void Crystal::setDefaultValues() {
     ParameterSystem::Params<CRYSTAL> params;
     params.set(CrystalParams::Magic, 0);
-    params.set(CrystalParams::T1WizardCost, T1_COST1);
+    params.set(CrystalParams::Shards, 0);
+    params.set(CrystalParams::CatalystCost, 1);
 }
 void Crystal::setSubscriptions() {
     mUpdateSub =
@@ -44,7 +44,7 @@ void Crystal::setUpgrades() {
             ParameterSystem::Param<CRYSTAL> param(CrystalParams::Magic);
             param.set(param.get() * 2);
             if (param.get() > Number(1, 6)) {
-                WizardSystem::Events::set(WizardSystem::ResetT1, true);
+                triggerT1Reset();
             }
         },
         up);
@@ -61,11 +61,8 @@ void Crystal::setUpgrades() {
             "increased Fireball power");
     mPowWizBuy = mUpgrades->subscribe(
         [this](UpgradePtr u) {
-            if (u->getLevel() == 1) {
-                WizardSystem::GetHideObservable()->next(POWER_WIZARD, false);
-                WizardSystem::Events events;
-                events.set(WizardSystem::BoughtPowerWizard, true);
-            }
+            WizardSystem::States::set(WizardSystem::State::BoughtPowerWizard,
+                                      u->getLevel() == 1);
         },
         up);
 
@@ -81,11 +78,25 @@ void Crystal::setUpgrades() {
             "massive power boost");
     mTimeWizBuy = mUpgrades->subscribe(
         [this](UpgradePtr u) {
-            if (u->getLevel() == 1) {
-                WizardSystem::GetHideObservable()->next(TIME_WIZARD, false);
-                WizardSystem::Events events;
-                events.set(WizardSystem::BoughtTimeWizard, true);
-            }
+            WizardSystem::States::set(WizardSystem::State::BoughtTimeWizard,
+                                      u->getLevel() == 1);
+        },
+        up);
+
+    // Buy catalyst
+    up = std::make_shared<Upgrade>();
+    up->setMaxLevel(1)
+        .setCostSource(
+            ParameterSystem::Param<CRYSTAL>(CrystalParams::CatalystCost))
+        .setMoneySource(Upgrade::Defaults::CRYSTAL_SHARDS)
+        .setImg(WIZ_IMGS.at(CATALYST))
+        .setDescription(
+            "Catalyst stores magic and uses it to boost fireballs that pass "
+            "nearby");
+    mCatalystBuy = mUpgrades->subscribe(
+        [this](UpgradePtr u) {
+            WizardSystem::States::set(WizardSystem::State::BoughtCatalyst,
+                                      u->getLevel() == 1);
         },
         up);
 }
@@ -93,25 +104,33 @@ void Crystal::setParamTriggers() {
     mParamSubs.push_back(
         ParameterSystem::Param<CRYSTAL>(CrystalParams::Magic)
             .subscribe(std::bind(&Crystal::calcMagicEffect, this)));
-    mParamSubs.push_back(ParameterSystem::Param<CRYSTAL>(CrystalParams::Magic)
+    mParamSubs.push_back(
+        ParameterSystem::Param<CRYSTAL>(CrystalParams::Magic)
+            .subscribe(std::bind(&Crystal::calcShardGain, this)));
+    mParamSubs.push_back(ParameterSystem::ParamMap<CRYSTAL>(
+                             {CrystalParams::Magic, CrystalParams::Shards})
                              .subscribe(std::bind(&Crystal::drawMagic, this)));
 }
 void Crystal::setEventTriggers() {
-    WizardSystem::Events events;
+    WizardSystem::States states;
     mStateSubs.push_back(
-        events.subscribe(WizardSystem::BoughtFirstT1, [this](bool val) {
+        states.subscribe(WizardSystem::State::BoughtFirstT1, [this](bool val) {
             ParameterSystem::Param<CRYSTAL>(CrystalParams::T1WizardCost)
                 .set(val ? T1_COST2 : T1_COST1);
         }));
-    mStateSubs.push_back(events.subscribe(
-        {WizardSystem::BoughtPowerWizard, WizardSystem::BoughtTimeWizard},
+    mStateSubs.push_back(states.subscribe(
+        {WizardSystem::State::BoughtPowerWizard,
+         WizardSystem::State::BoughtTimeWizard},
         []() {
-            WizardSystem::Events events;
-            bool power = events.get(WizardSystem::BoughtPowerWizard),
-                 time = events.get(WizardSystem::BoughtTimeWizard);
-            events.set(WizardSystem::BoughtFirstT1, power || time);
-            events.set(WizardSystem::BoughtSecondT1, power && time);
+            WizardSystem::States states;
+            bool power = states.get(WizardSystem::State::BoughtPowerWizard),
+                 time = states.get(WizardSystem::State::BoughtTimeWizard);
+            states.set(WizardSystem::State::BoughtFirstT1, power || time);
+            states.set(WizardSystem::State::BoughtSecondT1, power && time);
         }));
+    mStateSubs.push_back(
+        states.subscribe(WizardSystem::State::ResetT1,
+                         [this](bool val) { mCatalystBuy->setActive(val); }));
 }
 
 void Crystal::onUpdate(Time dt) {
@@ -139,9 +158,9 @@ void Crystal::onRender(SDL_Renderer* r) {
 
     TextureBuilder tex;
 
-    mMagicText.dest = Rect(mPos->rect.x(), mPos->rect.y(), mPos->rect.w(), 0);
-    mMagicText.dest.setHeight(FONT.h, Rect::Align::BOT_RIGHT);
-    mMagicText.shrinkToTexture();
+    mMagicText.dest =
+        Rect(mPos->rect.x(), mPos->rect.y2(), mPos->rect.w(), FONT.h * 2);
+    mMagicText.shrinkToTexture(Rect::CENTER, Rect::TOP_LEFT);
     tex.draw(mMagicText);
 
     for (auto msg : mMessages) {
@@ -174,13 +193,29 @@ void Crystal::onHide(WizardId id, bool hide) {
 }
 
 void Crystal::onResetT1() {
+    ParameterSystem::Params<CRYSTAL> params;
+    Number shards = params.get(CrystalParams::Shards) +
+                    params.get(CrystalParams::ShardGain);
+    int catLvl = 0;
+    if (mCatalystBuy) {
+        catLvl = UpgradeList::Get(mCatalystBuy)->getLevel();
+    }
+
     WizardBase::onResetT1();
 
-    WizardSystem::Events events;
-    events.set(WizardSystem::BoughtPowerWizard, false);
-    events.set(WizardSystem::BoughtTimeWizard, false);
+    WizardSystem::States states;
+    states.set(WizardSystem::State::BoughtPowerWizard, false);
+    states.set(WizardSystem::State::BoughtTimeWizard, false);
 
     mFireRings.clear();
+
+    params.set(CrystalParams::Shards, shards);
+    if (mCatalystBuy) {
+        auto up = UpgradeList::Get(mCatalystBuy);
+        up->setLevel(catLvl);
+        mCatalystBuy->get<UpgradeList::ON_LEVEL>()(up);
+        up->updateInfo();
+    }
 }
 
 void Crystal::onFireballHit(const Fireball& fireball) {
@@ -189,8 +224,6 @@ void Crystal::onFireballHit(const Fireball& fireball) {
             ParameterSystem::Param<CRYSTAL> param(CrystalParams::Magic);
             Number magic = param.get() + fireball.getValue();
             param.set(magic);
-            mMagicText.tData.text = magic.toString();
-            mMagicText.renderText();
             addMessage("+" + fireball.getValue().toString());
         } break;
         case POWER_WIZARD: {
@@ -205,9 +238,22 @@ void Crystal::calcMagicEffect() {
     params.set(CrystalParams::MagicEffect, effect);
 }
 
+void Crystal::calcShardGain() {
+    ParameterSystem::Params<CRYSTAL> params;
+    Number shards = (params.get(CrystalParams::Magic) + 1).logTen();
+    if (shards < 1) {
+        shards = 0;
+    }
+    params.set(CrystalParams::ShardGain, shards);
+}
+
 void Crystal::drawMagic() {
-    mMagicText.tData.text =
-        ParameterSystem::Param<CRYSTAL>(CrystalParams::Magic).get().toString();
+    ParameterSystem::Params<CRYSTAL> params;
+    std::stringstream ss;
+    ss << params.get(CrystalParams::Magic) << "\n"
+       << params.get(CrystalParams::Shards);
+    mMagicText.tData.text = ss.str();
+    mMagicText.tData.w = mPos->rect.W();
     mMagicText.renderText();
 }
 
@@ -240,4 +286,12 @@ void Crystal::addMessage(const std::string& msg) {
 
     mMessages.push_back(
         Message{rData, (int)(rDist(gen) * 250) + 250, true, trajectory});
+}
+
+void Crystal::triggerT1Reset() {
+    WizardSystem::Events::send(WizardSystem::Event::T1Reset);
+    WizardSystem::States state;
+    if (!state.get(WizardSystem::State::ResetT1)) {
+        state.set(WizardSystem::State::ResetT1, true);
+    }
 }

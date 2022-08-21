@@ -73,9 +73,9 @@ void PowerWizard::setParamTriggers() {
             .subscribe(std::bind(&PowerWizard::calcTimer, this)));
 }
 void PowerWizard::setEventTriggers() {
-    WizardSystem::Events events;
-    mStateSubs.push_back(
-        events.subscribe(WizardSystem::BoughtPowerWizard, [this](bool bought) {
+    WizardSystem::States states;
+    mStateSubs.push_back(states.subscribe(
+        WizardSystem::State::BoughtPowerWizard, [this](bool bought) {
             WizardSystem::GetHideObservable()->next(mId, !bought);
         }));
 }

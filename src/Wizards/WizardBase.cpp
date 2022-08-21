@@ -32,7 +32,7 @@ void WizardBase::init() {
     mHideSub = WizardSystem::GetHideObservable()->subscribe(
         [this](WizardId id, bool hide) { onHide(id, hide); });
     WizardSystem::Events events;
-    mT1ResetSub = events.subscribe(WizardSystem::ResetT1,
+    mT1ResetSub = events.subscribe(WizardSystem::Event::T1Reset,
                                    [this](bool val) { onResetT1(); });
     attachSubToVisibility(mResizeSub);
     attachSubToVisibility(mRenderSub);

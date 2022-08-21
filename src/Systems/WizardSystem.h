@@ -25,23 +25,33 @@ bool Hidden(WizardId id);
 std::shared_ptr<HideObservable> GetHideObservable();
 
 // For handling general wizard events
-enum Event {
-    // States
+namespace State {
+enum _ : uint8_t {
     BoughtFirstT1 = 0,
     BoughtSecondT1,
     BoughtPowerWizard,
     BoughtTimeWizard,
     BoughtCatalyst,
-
-    // Triggers
     ResetT1
 };
+}
 
-typedef ParameterSystem::StateObservableMap<Event> EventObservableMap;
+namespace Event {
+enum _ : uint8_t {
+    T1Reset = 0,
+};
+}
 
-class WizardService : public Service<HideObservable, EventObservableMap> {};
+typedef ParameterSystem::StateObservableMap<State::_> StateObservableMap;
+typedef ParameterSystem::StateObservableMap<Event::_> EventObservableMap;
 
-typedef ParameterSystem::StateAccess<WizardService, Event> Events;
+class WizardService
+    : public Service<HideObservable, StateObservableMap, EventObservableMap> {};
+
+typedef ParameterSystem::StateAccess<WizardService, State::_> States;
+struct Events : public ParameterSystem::StateAccess<WizardService, Event::_> {
+    static void send(Event::_ e);
+};
 }  // namespace WizardSystem
 
 #endif

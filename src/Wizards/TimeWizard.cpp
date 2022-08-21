@@ -135,9 +135,9 @@ void TimeWizard::setParamTriggers() {
             .subscribe(std::bind(&TimeWizard::calcCost, this)));
 }
 void TimeWizard::setEventTriggers() {
-    WizardSystem::Events events;
-    mStateSubs.push_back(
-        events.subscribe(WizardSystem::BoughtTimeWizard, [this](bool bought) {
+    WizardSystem::States states;
+    mStateSubs.push_back(states.subscribe(
+        WizardSystem::State::BoughtTimeWizard, [this](bool bought) {
             WizardSystem::GetHideObservable()->next(mId, !bought);
         }));
 }

@@ -162,16 +162,16 @@ void Wizard::setParamTriggers() {
             .subscribe(std::bind(&Wizard::calcCritSpread, this)));
 }
 void Wizard::setEventTriggers() {
-    WizardSystem::Events events;
+    WizardSystem::States states;
     mStateSubs.push_back(
-        events.subscribe(WizardSystem::BoughtFirstT1, [this](bool val) {
+        states.subscribe(WizardSystem::State::BoughtFirstT1, [this](bool val) {
             UpgradeList::Get(mPowerUp)->setMaxLevel(val ? 10 : 5).updateInfo();
         }));
     mStateSubs.push_back(
-        events.subscribe(WizardSystem::BoughtPowerWizard,
+        states.subscribe(WizardSystem::State::BoughtPowerWizard,
                          [this](bool val) { mCritUp->setActive(val); }));
     mStateSubs.push_back(
-        events.subscribe(WizardSystem::BoughtTimeWizard,
+        states.subscribe(WizardSystem::State::BoughtTimeWizard,
                          [this](bool val) { mMultiUp->setActive(val); }));
 }
 

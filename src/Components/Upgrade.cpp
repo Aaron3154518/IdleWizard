@@ -7,6 +7,8 @@ const FontData Upgrade::DESC_FONT{-1, 20, "|"};
 // Defaults
 const ParameterSystem::Param<CRYSTAL> Upgrade::Defaults::CRYSTAL_MAGIC(
     CrystalParams::Magic);
+const ParameterSystem::Param<CRYSTAL> Upgrade::Defaults::CRYSTAL_SHARDS(
+    CrystalParams::Shards);
 const ParameterSystem::Param<CATALYST> Upgrade::Defaults::CATALYST_MAGIC(
     CatalystParams::Magic);
 
@@ -342,7 +344,8 @@ void UpgradeList::draw(TextureBuilder tex, float scroll, SDL_Point offset) {
 }
 
 void UpgradeList::reset() {
-    for (auto sub : *this) {
+    for (auto it = abegin(), endIt = aend(); it != endIt; ++it) {
+        auto sub = *it;
         auto up = sub->get<DATA>();
         up->setLevel(0);
         sub->get<ON_LEVEL>()(up);

@@ -30,7 +30,8 @@
 class Upgrade {
    public:
     struct Defaults {
-        const static ParameterSystem::Param<CRYSTAL> CRYSTAL_MAGIC;
+        const static ParameterSystem::Param<CRYSTAL> CRYSTAL_MAGIC,
+            CRYSTAL_SHARDS;
         const static ParameterSystem::Param<CATALYST> CATALYST_MAGIC;
 
         static bool CanBuy(std::shared_ptr<Upgrade> u);

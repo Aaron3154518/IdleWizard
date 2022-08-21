@@ -20,4 +20,7 @@ std::shared_ptr<HideObservable> GetHideObservable() {
     return ServiceSystem::Get<WizardService, HideObservable>();
 }
 
+// Events
+void Events::send(Event::_ e) { set(e, true); }
+
 }  // namespace WizardSystem

@@ -48,15 +48,19 @@ class Crystal : public WizardBase {
     void onFireballHit(const Fireball& fireball);
 
     void calcMagicEffect();
+    void calcShardGain();
     void drawMagic();
 
     std::unique_ptr<FireRing>& createFireRing(const Number& val);
 
     void addMessage(const std::string& msg);
 
+    void triggerT1Reset();
+
     UpdateObservable::SubscriptionPtr mUpdateSub;
     Fireball::HitObservable::IdSubscriptionPtr mFireballSub;
-    UpgradeList::SubscriptionPtr mMagicEffectDisplay, mPowWizBuy, mTimeWizBuy;
+    UpgradeList::SubscriptionPtr mMagicEffectDisplay, mPowWizBuy, mTimeWizBuy,
+        mCatalystBuy;
 
     TextData mMsgTData;
     std::vector<Message> mMessages;

@@ -41,9 +41,9 @@ void Catalyst::setParamTriggers() {
                              .subscribe(std::bind(&Catalyst::drawMagic, this)));
 }
 void Catalyst::setEventTriggers() {
-    WizardSystem::Events events;
-    mStateSubs.push_back(
-        events.subscribe(WizardSystem::BoughtCatalyst, [this](bool bought) {
+    WizardSystem::States states;
+    mStateSubs.push_back(states.subscribe(
+        WizardSystem::State::BoughtCatalyst, [this](bool bought) {
             WizardSystem::GetHideObservable()->next(mId, !bought);
         }));
 }

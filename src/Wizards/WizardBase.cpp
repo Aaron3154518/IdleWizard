@@ -31,6 +31,9 @@ void WizardBase::init() {
         []() {}, mPos, mDrag);
     mHideSub = WizardSystem::GetHideObservable()->subscribe(
         [this](WizardId id, bool hide) { onHide(id, hide); });
+    WizardSystem::Events events;
+    mT1ResetSub = events.subscribe(WizardSystem::ResetT1,
+                                   [this](bool val) { onResetT1(); });
     attachSubToVisibility(mResizeSub);
     attachSubToVisibility(mRenderSub);
     attachSubToVisibility(mMouseSub);
@@ -84,6 +87,11 @@ void WizardBase::onHide(WizardId id, bool hide) {
             }
         }
     }
+}
+
+void WizardBase::onResetT1() {
+    setDefaultValues();
+    mUpgrades->reset();
 }
 
 void WizardBase::setPos(float x, float y) {

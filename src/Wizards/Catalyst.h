@@ -25,6 +25,7 @@ class Catalyst : public WizardBase {
     void setSubscriptions();
     void setUpgrades();
     void setParamTriggers();
+    void setEventTriggers();
 
     void onRender(SDL_Renderer* r);
     void onFireballHit(const Fireball& fireball);

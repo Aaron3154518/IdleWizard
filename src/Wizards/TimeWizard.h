@@ -30,10 +30,12 @@ class TimeWizard : public WizardBase {
     void setSubscriptions();
     void setUpgrades();
     void setParamTriggers();
+    void setEventTriggers();
 
     bool onCostTimer(Timer& timer);
     void onRender(SDL_Renderer*);
     void onHide(WizardId id, bool hide);
+    void onResetT1();
     bool startFreeze(Timer& timer);
     bool endFreeze(Timer& timer);
     void startFreezeCycle();

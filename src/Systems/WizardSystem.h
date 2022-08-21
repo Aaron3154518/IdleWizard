@@ -26,12 +26,15 @@ std::shared_ptr<HideObservable> GetHideObservable();
 
 // For handling general wizard events
 enum Event {
+    // States
     BoughtFirstT1 = 0,
     BoughtSecondT1,
-    BoughtWizard,
     BoughtPowerWizard,
     BoughtTimeWizard,
-    BoughtCatalyst
+    BoughtCatalyst,
+
+    // Triggers
+    ResetT1
 };
 
 typedef ParameterSystem::StateObservableMap<Event> EventObservableMap;

@@ -121,7 +121,6 @@ void Wizard::setUpgrades() {
             u->getCostSource()->set(100 * (Number(1.5) ^ u->getLevel()));
         },
         up);
-    mCritUp->setActive(false);
 
     // Multi Upgrade
     up = std::make_shared<Upgrade>();
@@ -140,7 +139,6 @@ void Wizard::setUpgrades() {
             u->getCostSource()->set(150 * (Number(1.4) ^ u->getLevel()));
         },
         up);
-    mMultiUp->setActive(false);
 }
 void Wizard::setParamTriggers() {
     mParamSubs.push_back(
@@ -215,6 +213,19 @@ void Wizard::onHide(WizardId id, bool hide) {
             mTarget = CRYSTAL;
         }
     }
+}
+
+void Wizard::onResetT1() {
+    WizardBase::onResetT1();
+
+    mFireballs.clear();
+    mFireballFreezeCnt = 0;
+    mPowWizBoosts.clear();
+
+    if (mFireballTimerSub) {
+        mFireballTimerSub->get<TimerObservable::DATA>().reset();
+    }
+    mPowWizTimerSub.reset();
 }
 
 bool Wizard::onTimer(Timer& timer) {
@@ -314,7 +325,7 @@ void Wizard::onFreeze(TimeSystem::FreezeType type) {
 void Wizard::onUnfreeze(TimeSystem::FreezeType type) {
     switch (type) {
         case TimeSystem::FreezeType::TIME_WIZARD:
-            if (mFireballFreezeCnt > 0) {
+            if (mFireballFreezeCnt > 0 && !mFireballs.empty()) {
                 Number freezeEffect = ParameterSystem::Param<TIME_WIZARD>(
                                           TimeWizardParams::FreezeEffect)
                                           .get();

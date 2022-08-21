@@ -99,7 +99,7 @@ class Upgrade {
 typedef std::shared_ptr<Upgrade> UpgradePtr;
 
 // For managing multiple upgrades
-typedef Observable<void(UpgradePtr), bool(UpgradePtr), std::shared_ptr<Upgrade>>
+typedef Observable<void(UpgradePtr), bool(UpgradePtr), UpgradePtr>
     UpgradeListBase;
 class UpgradeList : public UpgradeListBase {
    public:
@@ -124,6 +124,8 @@ class UpgradeList : public UpgradeListBase {
                                               SDL_Point relMouse);
 
     void draw(TextureBuilder tex, float scroll, SDL_Point offset = {0, 0});
+
+    void reset();
 
     // Static functions
     static UpgradePtr Get(SubscriptionPtr sub);

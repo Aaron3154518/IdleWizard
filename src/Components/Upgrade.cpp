@@ -341,6 +341,15 @@ void UpgradeList::draw(TextureBuilder tex, float scroll, SDL_Point offset) {
     }
 }
 
+void UpgradeList::reset() {
+    for (auto sub : *this) {
+        auto up = sub->get<DATA>();
+        up->setLevel(0);
+        sub->get<ON_LEVEL>()(up);
+        up->updateInfo();
+    }
+}
+
 void UpgradeList::computeRects() {
     prune();
 

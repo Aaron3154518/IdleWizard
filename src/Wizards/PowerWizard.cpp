@@ -72,6 +72,13 @@ void PowerWizard::setParamTriggers() {
         ParameterSystem::Param<POWER_WIZARD>(PowerWizardParams::Speed)
             .subscribe(std::bind(&PowerWizard::calcTimer, this)));
 }
+void PowerWizard::setEventTriggers() {
+    WizardSystem::Events events;
+    mStateSubs.push_back(
+        events.subscribe(WizardSystem::BoughtPowerWizard, [this](bool bought) {
+            WizardSystem::GetHideObservable()->next(mId, !bought);
+        }));
+}
 
 void PowerWizard::onRender(SDL_Renderer* r) {
     WizardBase::onRender(r);
@@ -103,6 +110,17 @@ void PowerWizard::onHide(WizardId id, bool hide) {
     }
 }
 
+void PowerWizard::onResetT1() {
+    WizardBase::onResetT1();
+
+    mFireballs.clear();
+    mFireballFreezeCnt = 0;
+
+    if (mFireballTimerSub) {
+        mFireballTimerSub->get<TimerObservable::DATA>().reset();
+    }
+}
+
 bool PowerWizard::onTimer(Timer& timer) {
     shootFireball();
     return true;
@@ -118,7 +136,7 @@ void PowerWizard::onFreeze(TimeSystem::FreezeType type) {
 void PowerWizard::onUnfreeze(TimeSystem::FreezeType type) {
     switch (type) {
         case TimeSystem::FreezeType::TIME_WIZARD:
-            if (mFireballFreezeCnt > 0) {
+            if (mFireballFreezeCnt > 0 && !mFireballs.empty()) {
                 Number freezeEffect = ParameterSystem::Param<TIME_WIZARD>(
                                           TimeWizardParams::FreezeEffect)
                                           .get();

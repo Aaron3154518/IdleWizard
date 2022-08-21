@@ -30,11 +30,6 @@ int main(int argc, char* argv[]) {
     std::unique_ptr<TimeWizard> timeWizard =
         ComponentFactory<TimeWizard>::New();
 
-    auto hideObservable = WizardSystem::GetHideObservable();
-    for (WizardId id : {CATALYST, POWER_WIZARD, TIME_WIZARD}) {
-        hideObservable->next(id, true);
-    }
-
     GameSystem::Run();
 
     GameSystem::Clean();

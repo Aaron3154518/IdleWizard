@@ -28,9 +28,11 @@ class PowerWizard : public WizardBase {
     void setSubscriptions();
     void setUpgrades();
     void setParamTriggers();
+    void setEventTriggers();
 
     void onRender(SDL_Renderer* r);
     void onHide(WizardId id, bool hide);
+    void onResetT1();
     bool onTimer(Timer& timer);
     void onFreeze(TimeSystem::FreezeType type);
     void onUnfreeze(TimeSystem::FreezeType type);

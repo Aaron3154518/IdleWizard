@@ -40,6 +40,13 @@ void Catalyst::setParamTriggers() {
                              {CatalystParams::Magic, CatalystParams::Capacity})
                              .subscribe(std::bind(&Catalyst::drawMagic, this)));
 }
+void Catalyst::setEventTriggers() {
+    WizardSystem::Events events;
+    mStateSubs.push_back(
+        events.subscribe(WizardSystem::BoughtCatalyst, [this](bool bought) {
+            WizardSystem::GetHideObservable()->next(mId, !bought);
+        }));
+}
 
 void Catalyst::onFireballHit(const Fireball& fireball) {
     switch (fireball.getSourceId()) {

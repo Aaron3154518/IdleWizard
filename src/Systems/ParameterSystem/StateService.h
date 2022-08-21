@@ -3,6 +3,7 @@
 
 #include <Systems/ParameterSystem/StateObservable.h>
 
+#include <functional>
 #include <memory>
 #include <unordered_map>
 
@@ -50,13 +51,10 @@ struct StateAccess {
         Get<ServiceT, T>()->get(key)->set(val);
     }
 
-    static StateSubscriptionPtr subscribe(T key, std::function<void()> func) {
-        return Get<ServiceT, T>()->get(key)->subscribe(func);
-    }
-
     static StateSubscriptionPtr subscribe(T key,
                                           std::function<void(bool)> func) {
-        return subscribe(key, [func, key]() { func(get(key)); });
+        return Get<ServiceT, T>()->get(key)->subscribe(
+            [func, key]() { func(get(key)); });
     }
 
     static StateSubscriptionPtr subscribe(const std::initializer_list<T>& keys,

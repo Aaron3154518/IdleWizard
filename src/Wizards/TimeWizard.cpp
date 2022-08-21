@@ -28,10 +28,7 @@ void TimeWizard::setSubscriptions() {
         ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
             std::bind(&TimeWizard::onCostTimer, this, std::placeholders::_1),
             Timer(50));
-    startFreezeCycle();
     attachSubToVisibility(mCostTimerSub);
-    attachSubToVisibility(mFreezeDelaySub);
-    attachSubToVisibility(mFreezeTimerSub);
 }
 void TimeWizard::setUpgrades() {
     // Power Display
@@ -137,6 +134,13 @@ void TimeWizard::setParamTriggers() {
         ParameterSystem::Param<TIME_WIZARD>(TimeWizardParams::SpeedEffect)
             .subscribe(std::bind(&TimeWizard::calcCost, this)));
 }
+void TimeWizard::setEventTriggers() {
+    WizardSystem::Events events;
+    mStateSubs.push_back(
+        events.subscribe(WizardSystem::BoughtTimeWizard, [this](bool bought) {
+            WizardSystem::GetHideObservable()->next(mId, !bought);
+        }));
+}
 
 bool TimeWizard::onCostTimer(Timer& timer) {
     bool prevAfford = mCanAfford;
@@ -168,7 +172,7 @@ void TimeWizard::onRender(SDL_Renderer* r) {
 
 void TimeWizard::onHide(WizardId id, bool hide) {
     WizardBase::onHide(id, hide);
-    if (id == TIME_WIZARD) {
+    if (id == mId) {
         if (hide) {
             TimeSystem::Unfreeze(TimeSystem::FreezeType::TIME_WIZARD);
             mFreezeDelaySub.reset();
@@ -178,6 +182,14 @@ void TimeWizard::onHide(WizardId id, bool hide) {
         } else {
             startFreezeCycle();
         }
+    }
+}
+
+void TimeWizard::onResetT1() {
+    WizardBase::onResetT1();
+
+    if (mCostTimerSub) {
+        mCostTimerSub->get<TimerObservable::DATA>().reset();
     }
 }
 

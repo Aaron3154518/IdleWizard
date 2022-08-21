@@ -33,7 +33,7 @@ void Catalyst::setUpgrades() {
         .setDescription("Multiplier from stored magic");
     mMagicEffectDisplay = mUpgrades->subscribe(up);
 }
-void Catalyst::setFormulas() {
+void Catalyst::setParamTriggers() {
     mParamSubs.push_back(
         ParameterSystem::Param<CATALYST>(CatalystParams::Magic)
             .subscribe(std::bind(&Catalyst::calcMagicEffect, this)));

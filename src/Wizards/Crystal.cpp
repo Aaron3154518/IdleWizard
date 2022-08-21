@@ -61,11 +61,12 @@ void Crystal::setUpgrades() {
             if (u->getLevel() == 1) {
                 mPowWizBuy.reset();
                 WizardSystem::GetHideObservable()->next(POWER_WIZARD, false);
-                WizardSystem::FireWizEvent(
-                    WizardSystem::Event::BoughtPowerWizard);
-                WizardSystem::FireWizEvent(
-                    mTimeWizBuy ? WizardSystem::Event::BoughtFirstT1
-                                : WizardSystem::Event::BoughtSecondT1);
+                WizardSystem::Events events;
+                events.set(WizardSystem::BoughtPowerWizard, true);
+                events.set(events.get(WizardSystem::BoughtFirstT1)
+                               ? WizardSystem::Event::BoughtSecondT1
+                               : WizardSystem::Event::BoughtFirstT1,
+                           true);
             }
         },
         up);
@@ -84,21 +85,30 @@ void Crystal::setUpgrades() {
             if (u->getLevel() == 1) {
                 mTimeWizBuy.reset();
                 WizardSystem::GetHideObservable()->next(TIME_WIZARD, false);
-                WizardSystem::FireWizEvent(
-                    WizardSystem::Event::BoughtTimeWizard);
-                WizardSystem::FireWizEvent(
-                    mPowWizBuy ? WizardSystem::Event::BoughtFirstT1
-                               : WizardSystem::Event::BoughtSecondT1);
+                WizardSystem::Events events;
+                events.set(WizardSystem::BoughtTimeWizard, true);
+                events.set(events.get(WizardSystem::BoughtFirstT1)
+                               ? WizardSystem::Event::BoughtSecondT1
+                               : WizardSystem::Event::BoughtFirstT1,
+                           true);
             }
         },
         up);
 }
-void Crystal::setFormulas() {
+void Crystal::setParamTriggers() {
     mParamSubs.push_back(
         ParameterSystem::Param<CRYSTAL>(CrystalParams::Magic)
             .subscribe(std::bind(&Crystal::calcMagicEffect, this)));
     mParamSubs.push_back(ParameterSystem::Param<CRYSTAL>(CrystalParams::Magic)
                              .subscribe(std::bind(&Crystal::drawMagic, this)));
+}
+void Crystal::setEventTriggers() {
+    WizardSystem::Events events;
+    mStateSubs.push_back(
+        events.subscribe(WizardSystem::BoughtFirstT1, [this](bool val) {
+            ParameterSystem::Param<CRYSTAL>(CrystalParams::T1WizardCost)
+                .set(val ? T1_COST2 : T1_COST1);
+        }));
 }
 
 void Crystal::onUpdate(Time dt) {
@@ -157,15 +167,6 @@ void Crystal::onHide(WizardId id, bool hide) {
                 mFireRings.clear();
                 break;
         }
-    }
-}
-
-void Crystal::onWizEvent(WizardSystem::Event e) {
-    switch (e) {
-        case WizardSystem::Event::BoughtFirstT1:
-            ParameterSystem::Param<CRYSTAL>(CrystalParams::T1WizardCost)
-                .set(T1_COST2);
-            break;
     }
 }
 

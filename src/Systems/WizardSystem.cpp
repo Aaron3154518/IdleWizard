@@ -20,10 +20,4 @@ std::shared_ptr<HideObservable> GetHideObservable() {
     return ServiceSystem::Get<WizardService, HideObservable>();
 }
 
-std::shared_ptr<WizEventsObservable> GetWizEventsObservable() {
-    return ServiceSystem::Get<WizardService, WizEventsObservable>();
-}
-
-void FireWizEvent(Event e) { return GetWizEventsObservable()->next(e); }
-
 }  // namespace WizardSystem

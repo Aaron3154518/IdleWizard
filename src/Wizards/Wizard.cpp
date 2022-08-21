@@ -144,7 +144,7 @@ void Wizard::setUpgrades() {
         up);
     mMultiUp->setActive(false);
 }
-void Wizard::setFormulas() {
+void Wizard::setParamTriggers() {
     mParamSubs.push_back(
         ParameterSystem::ParamMap<WIZARD, CRYSTAL, CATALYST>(
             {WizardParams::BasePower, WizardParams::PowerUp,
@@ -164,6 +164,19 @@ void Wizard::setFormulas() {
         ParameterSystem::ParamMap<WIZARD>(
             {WizardParams::BaseCritSpread, WizardParams::CritSpreadUp})
             .subscribe(std::bind(&Wizard::calcCritSpread, this)));
+}
+void Wizard::setEventTriggers() {
+    WizardSystem::Events events;
+    mStateSubs.push_back(
+        events.subscribe(WizardSystem::BoughtFirstT1, [this](bool val) {
+            UpgradeList::Get(mPowerUp)->setMaxLevel(val ? 10 : 5).updateInfo();
+        }));
+    mStateSubs.push_back(
+        events.subscribe(WizardSystem::BoughtPowerWizard,
+                         [this](bool val) { mCritUp->setActive(val); }));
+    mStateSubs.push_back(
+        events.subscribe(WizardSystem::BoughtTimeWizard,
+                         [this](bool val) { mMultiUp->setActive(val); }));
 }
 
 void Wizard::onRender(SDL_Renderer* r) {
@@ -204,21 +217,6 @@ void Wizard::onHide(WizardId id, bool hide) {
             mTarget = CRYSTAL;
         }
     }
-}
-
-void Wizard::onWizEvent(WizardSystem::Event e) {
-    UpgradePtr up;
-    switch (e) {
-        case WizardSystem::Event::BoughtFirstT1:
-            UpgradeList::Get(mPowerUp)->setMaxLevel(10).updateInfo();
-            break;
-        case WizardSystem::Event::BoughtPowerWizard:
-            mCritUp->setActive(true);
-            break;
-        case WizardSystem::Event::BoughtTimeWizard:
-            mMultiUp->setActive(true);
-            break;
-    };
 }
 
 bool Wizard::onTimer(Timer& timer) {

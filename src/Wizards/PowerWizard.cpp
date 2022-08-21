@@ -56,7 +56,7 @@ void PowerWizard::setUpgrades() {
         },
         up);
 }
-void PowerWizard::setFormulas() {
+void PowerWizard::setParamTriggers() {
     mParamSubs.push_back(
         ParameterSystem::ParamMap<POWER_WIZARD>({PowerWizardParams::BasePower,
                                                  PowerWizardParams::PowerUp,

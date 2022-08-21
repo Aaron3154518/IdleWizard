@@ -125,7 +125,7 @@ void TimeWizard::setUpgrades() {
         },
         up);
 }
-void TimeWizard::setFormulas() {
+void TimeWizard::setParamTriggers() {
     mParamSubs.push_back(
         ParameterSystem::ParamMap<TIME_WIZARD>(
             {TimeWizardParams::FreezeBaseEffect, TimeWizardParams::FreezeUp})

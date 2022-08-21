@@ -36,11 +36,11 @@ class Wizard : public WizardBase {
     void setDefaultValues();
     void setSubscriptions();
     void setUpgrades();
-    void setFormulas();
+    void setParamTriggers();
+    void setEventTriggers();
 
     void onRender(SDL_Renderer* r);
     void onHide(WizardId id, bool hide);
-    void onWizEvent(WizardSystem::Event e);
     bool onTimer(Timer& timer);
     void onFireballHit(const Fireball& fireball);
     void onFireballFireRingHit(Fireball& fireball,

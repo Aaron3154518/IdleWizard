@@ -4,6 +4,7 @@
 #include <ServiceSystem/Observable.h>
 #include <ServiceSystem/Service.h>
 #include <ServiceSystem/ServiceSystem.h>
+#include <Systems/ParameterSystem/StateService.h>
 #include <Wizards/WizardIds.h>
 
 namespace WizardSystem {
@@ -27,18 +28,17 @@ std::shared_ptr<HideObservable> GetHideObservable();
 enum Event {
     BoughtFirstT1 = 0,
     BoughtSecondT1,
+    BoughtWizard,
     BoughtPowerWizard,
     BoughtTimeWizard,
     BoughtCatalyst
 };
 
-typedef ForwardObservable<void(Event)> WizEventsObservable;
+typedef ParameterSystem::StateObservableMap<Event> EventObservableMap;
 
-std::shared_ptr<WizEventsObservable> GetWizEventsObservable();
+class WizardService : public Service<HideObservable, EventObservableMap> {};
 
-void FireWizEvent(Event e);
-
-class WizardService : public Service<HideObservable, WizEventsObservable> {};
+typedef ParameterSystem::StateAccess<WizardService, Event> Events;
 }  // namespace WizardSystem
 
 #endif

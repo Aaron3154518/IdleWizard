@@ -24,7 +24,6 @@ void TimeWizard::setDefaultValues() {
     params.set(TimeWizardParams::FreezeBaseEffect, 1.1);
 }
 void TimeWizard::setSubscriptions() {
-    WizardBase::setSubscriptions();
     mCostTimerSub =
         ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
             std::bind(&TimeWizard::onCostTimer, this, std::placeholders::_1),

@@ -16,14 +16,7 @@ void WizardBase::init() {
     setPos(rDist(gen) * screenDim.x, rDist(gen) * screenDim.y);
 
     setDefaultValues();
-    setSubscriptions();
-    setUpgrades();
-    setParamTriggers();
-    setEventTriggers();
-}
 
-void WizardBase::setDefaultValues() {}
-void WizardBase::setSubscriptions() {
     mResizeSub =
         ServiceSystem::Get<ResizeService, ResizeObservable>()->subscribe(
             [this](ResizeData data) { onResize(data); });
@@ -42,7 +35,17 @@ void WizardBase::setSubscriptions() {
     attachSubToVisibility(mRenderSub);
     attachSubToVisibility(mMouseSub);
     attachSubToVisibility(mDragSub);
+    setSubscriptions();
+
+    setUpgrades();
+
+    setParamTriggers();
+
+    setEventTriggers();
 }
+
+void WizardBase::setDefaultValues() {}
+void WizardBase::setSubscriptions() {}
 void WizardBase::setUpgrades() {}
 void WizardBase::setParamTriggers() {}
 void WizardBase::setEventTriggers() {}

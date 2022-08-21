@@ -19,7 +19,6 @@ void Crystal::setDefaultValues() {
     params.set(CrystalParams::T1WizardCost, T1_COST1);
 }
 void Crystal::setSubscriptions() {
-    WizardBase::setSubscriptions();
     mUpdateSub =
         ServiceSystem::Get<UpdateService, UpdateObservable>()->subscribe(
             std::bind(&Crystal::onUpdate, this, std::placeholders::_1));

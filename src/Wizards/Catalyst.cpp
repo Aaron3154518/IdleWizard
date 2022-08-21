@@ -14,7 +14,6 @@ void Catalyst::setDefaultValues() {
     params.set(CatalystParams::Capacity, 100);
 }
 void Catalyst::setSubscriptions() {
-    WizardBase::setSubscriptions();
     mFireballSub =
         ServiceSystem::Get<FireballService, Fireball::HitObservable>()
             ->subscribe(std::bind(&Catalyst::onFireballHit, this,

@@ -15,7 +15,6 @@ void PowerWizard::setDefaultValues() {
     params.set(PowerWizardParams::Duration, 1000);
 }
 void PowerWizard::setSubscriptions() {
-    WizardBase::setSubscriptions();
     mFireballTimerSub =
         ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
             std::bind(&PowerWizard::onTimer, this, std::placeholders::_1),

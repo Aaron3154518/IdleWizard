@@ -25,8 +25,6 @@ void Wizard::setDefaultValues() {
     params.set(WizardParams::BaseCritSpread, 0);
 }
 void Wizard::setSubscriptions() {
-    WizardBase::setSubscriptions();
-
     mFireballTimerSub =
         ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
             std::bind(&Wizard::onTimer, this, std::placeholders::_1),

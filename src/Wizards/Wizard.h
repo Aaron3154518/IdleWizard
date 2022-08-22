@@ -31,13 +31,13 @@ class Wizard : public WizardBase {
     const static std::string POWER_UP_IMG, SPEED_UP_IMG, MULTI_UP_IMG,
         POWER_BKGRND, FIREBALL_IMG, FIREBALL_BUFFED_IMG, CRIT_UP_IMG;
 
+    const static std::vector<WizardId> TARGETS;
+
    private:
     void init();
-    void setDefaultValues();
     void setSubscriptions();
     void setUpgrades();
     void setParamTriggers();
-    void setEventTriggers();
 
     void onRender(SDL_Renderer* r);
     void onHide(WizardId id, bool hide);
@@ -51,11 +51,11 @@ class Wizard : public WizardBase {
     void onFreeze(TimeSystem::FreezeType type);
     void onUnfreeze(TimeSystem::FreezeType type);
 
-    void calcPower();
-    void calcSpeed();
+    Number calcPower();
+    Number calcSpeed();
     void calcTimer();
-    void calcCrit();
-    void calcCritSpread();
+    Number calcCrit();
+    Number calcCritSpread();
 
     struct FireballData {
         Number power;
@@ -85,6 +85,8 @@ class Wizard : public WizardBase {
 
     std::vector<FireballPtr> mFireballs;
     int mFireballFreezeCnt;
+
+    const static std::vector<bool> DEFAULT_PARAMS;
 };
 
 #endif

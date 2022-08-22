@@ -4,8 +4,8 @@
 #include <RenderSystem/RenderSystem.h>
 #include <Systems/ParameterSystem/ParameterAccess.h>
 
+#include <list>
 #include <memory>
-#include <unordered_map>
 
 class UpgradeBase {
    public:
@@ -121,7 +121,7 @@ class Upgrade : public UpgradeBase {
         typedef std::function<bool(const Number&)> StateFunc;
         typedef std::function<std::string()> EffectFunc;
 
-        Effects() = default;
+        Effects();
         Effects(EffectFunc func);
 
         Effects& addEffect(ParameterSystem::NodeValue param, ValueFunc func);
@@ -139,8 +139,10 @@ class Upgrade : public UpgradeBase {
 
        private:
         EffectFunc mGetEffect = nullptr;
-        std::unordered_map<ParameterSystem::NodeValue, ValueFunc> mValueParams;
-        std::unordered_map<ParameterSystem::NodeState, StateFunc> mStateParams;
+        std::list<std::pair<ParameterSystem::NodeValue, ValueFunc>>
+            mValueParams;
+        std::list<std::pair<ParameterSystem::NodeState, StateFunc>>
+            mStateParams;
     };
 
    public:

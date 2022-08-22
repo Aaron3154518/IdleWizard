@@ -21,6 +21,6 @@ std::shared_ptr<HideObservable> GetHideObservable() {
 }
 
 // Events
-void Events::send(Event::_ e) { set(e, true); }
+// void Events::send(Event::_ e) { set(e, true); }
 
 }  // namespace WizardSystem

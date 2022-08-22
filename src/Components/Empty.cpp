@@ -119,8 +119,6 @@ void Display::setEffects(
     const std::initializer_list<ParameterSystem::ValueParam>& valueParams,
     const std::initializer_list<ParameterSystem::StateParam>& stateParams,
     std::function<std::string()> func) {
-    mInfoStr = func();
-    mUpdateInfo = true;
     mEffectSub =
         ParameterSystem::subscribe(valueParams, stateParams, [this, func]() {
             mInfoStr = func();
@@ -169,27 +167,32 @@ ParameterSystem::ParameterSubscriptionPtr Upgrade::Cost::subscribe(
 }
 
 // Effects
+Upgrade::Effects::Effects() {}
 Upgrade::Effects::Effects(EffectFunc func) : mGetEffect(func) {}
 
 Upgrade::Effects& Upgrade::Effects::addEffect(ParameterSystem::NodeValue param,
                                               ValueFunc func) {
-    mValueParams[param] = func;
+    mValueParams.push_back(std::make_pair(param, func));
+    return *this;
 }
 Upgrade::Effects& Upgrade::Effects::addEffect(
     ParameterSystem::NodeValue param, ValueFunc valFunc,
     std::function<std::string(const Number&)> effFunc) {
     addEffect(param, valFunc);
     mGetEffect = [param, effFunc]() { return effFunc(param.get()); };
+    return *this;
 }
 Upgrade::Effects& Upgrade::Effects::addEffect(ParameterSystem::NodeState param,
                                               StateFunc func) {
-    mStateParams[param] = func;
+    mStateParams.push_back(std::make_pair(param, func));
+    return *this;
 }
 Upgrade::Effects& Upgrade::Effects::addEffect(
     ParameterSystem::NodeState param, StateFunc stateFunc,
     std::function<std::string(bool)> effFunc) {
     addEffect(param, stateFunc);
     mGetEffect = [param, effFunc]() { return effFunc(param.get()); };
+    return *this;
 }
 
 std::list<ParameterSystem::ParameterSubscriptionPtr>
@@ -233,12 +236,12 @@ ParameterSystem::ParameterSubscriptionPtr Upgrade::Effects::subscribeToEffects(
 // Upgrade
 Upgrade::Upgrade(ParameterSystem::BaseValue level, unsigned int maxLevel,
                  std::function<void(const Number&)> onLevel)
-    : mLevel(level),
-      mMaxLevel(maxLevel),
-      mLevelSub(level.subscribe([this, onLevel]() {
-          onLevel(mLevel.get());
-          updateInfo();
-      })) {}
+    : mLevel(level), mMaxLevel(maxLevel) {
+    mLevelSub = level.subscribe([this, onLevel]() {
+        onLevel(mLevel.get());
+        updateInfo();
+    });
+}
 Upgrade::Upgrade(ParameterSystem::BaseValue level,
                  ParameterSystem::ValueParam maxLevel,
                  std::function<void(const Number&)> onLevel)

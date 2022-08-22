@@ -4,7 +4,7 @@ namespace ParameterSystem {
 // ParameterDagImpl
 const BaseValueObservablePtr& ParameterDagImpl::GetBase(WizardId id,
                                                         param_t key) {
-    auto& map = BaseValueMap();
+    auto& map = mBaseValues();
     auto& ptr = map[id][key];
     if (!ptr) {
         ptr = std::make_shared<BaseValueObservable>();
@@ -14,7 +14,7 @@ const BaseValueObservablePtr& ParameterDagImpl::GetBase(WizardId id,
 
 const NodeValueObservablePtr& ParameterDagImpl::GetNode(WizardId id,
                                                         param_t key) {
-    auto& map = NodeValueMap();
+    auto& map = mNodeValues();
     auto& ptr = map[id][key];
     if (!ptr) {
         ptr = std::make_shared<NodeValueObservable>();
@@ -23,19 +23,19 @@ const NodeValueObservablePtr& ParameterDagImpl::GetNode(WizardId id,
 }
 
 const BaseStateObservablePtr& ParameterDagImpl::GetBase(param_t key) {
-    auto& map = BaseStateMap();
+    auto& map = mBaseStates();
     auto& ptr = map[key];
     if (!ptr) {
-        ptr = std::make_shared<BaseStateObservablePtr>();
+        ptr = std::make_shared<BaseStateObservable>();
     }
     return ptr;
 }
 
 const NodeStateObservablePtr& ParameterDagImpl::GetNode(param_t key) {
-    auto& map = NodeStateMap();
+    auto& map = mNodeStates();
     auto& ptr = map[key];
     if (!ptr) {
-        ptr = std::make_shared<NodeStateObservablePtr>();
+        ptr = std::make_shared<NodeStateObservable>();
     }
     return ptr;
 }

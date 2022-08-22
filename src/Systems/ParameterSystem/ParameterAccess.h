@@ -26,9 +26,10 @@ struct ValueParam {
 
     const Number& get() const;
 
-    ParameterSubscriptionPtr subscribe(std::function<void()> func) const;
-    ParameterSubscriptionPtr subscribe(
-        std::function<void(const Number&)> func) const;
+    ParameterSubscriptionPtr subscribe(std::function<void()> func,
+                                       bool fire = true) const;
+    ParameterSubscriptionPtr subscribe(std::function<void(const Number&)> func,
+                                       bool fire = true) const;
 
     const WizardId mId;
     const param_t mKey;
@@ -52,8 +53,10 @@ struct StateParam {
 
     bool get() const;
 
-    ParameterSubscriptionPtr subscribe(std::function<void()> func) const;
-    ParameterSubscriptionPtr subscribe(std::function<void(bool)> func) const;
+    ParameterSubscriptionPtr subscribe(std::function<void()> func,
+                                       bool fire = true) const;
+    ParameterSubscriptionPtr subscribe(std::function<void(bool)> func,
+                                       bool fire = true) const;
 
     const param_t mKey;
     const bool mIsBase;
@@ -105,11 +108,13 @@ struct NodeValue : public ValueParam {
     ParameterSubscriptionPtr subscribeTo(
         const std::initializer_list<ValueParam>& values,
         const std::initializer_list<StateParam>& states,
-        std::function<Number()> func) const;
+        std::function<Number()> func, bool fire = true) const;
     ParameterSubscriptionPtr subscribeTo(
-        ValueParam param, std::function<Number(const Number&)> func) const;
-    ParameterSubscriptionPtr subscribeTo(
-        StateParam param, std::function<Number(bool)> func) const;
+        ValueParam param, std::function<Number(const Number&)> func,
+        bool fire = true) const;
+    ParameterSubscriptionPtr subscribeTo(StateParam param,
+                                         std::function<Number(bool)> func,
+                                         bool fire = true) const;
 
    private:
     NodeValue(WizardId id, param_t key);
@@ -126,11 +131,13 @@ struct NodeState : public StateParam {
     ParameterSubscriptionPtr subscribeTo(
         const std::initializer_list<ValueParam>& values,
         const std::initializer_list<StateParam>& states,
-        std::function<bool()> func) const;
+        std::function<bool()> func, bool fire = true) const;
     ParameterSubscriptionPtr subscribeTo(
-        ValueParam param, std::function<bool(const Number&)> func) const;
+        ValueParam param, std::function<bool(const Number&)> func,
+        bool fire = true) const;
     ParameterSubscriptionPtr subscribeTo(StateParam param,
-                                         std::function<bool(bool)> func) const;
+                                         std::function<bool(bool)> func,
+                                         bool fire = true) const;
 
    private:
     NodeState(param_t key);
@@ -156,8 +163,8 @@ NodeState Param(State::N key);
 // Subscribes to multiple params
 ParameterSubscriptionPtr subscribe(
     const std::initializer_list<ValueParam>& values,
-    const std::initializer_list<StateParam>& states,
-    std::function<void()> func);
+    const std::initializer_list<StateParam>& states, std::function<void()> func,
+    bool fire = true);
 
 // Provides easy access to params from one wizard
 template <WizardId id>

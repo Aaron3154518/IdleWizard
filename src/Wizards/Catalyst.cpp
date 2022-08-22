@@ -32,12 +32,15 @@ void Catalyst::setUpgrades() {
 }
 void Catalyst::setParamTriggers() {
     ParameterSystem::Params<CATALYST> params;
+
     mParamSubs.push_back(params[CatalystParams::MagicEffect].subscribeTo(
         {params[CatalystParams::Magic]}, {},
         [this]() { return calcMagicEffect(); }));
+
     mParamSubs.push_back(ParameterSystem::subscribe(
         {params[CatalystParams::Magic], params[CatalystParams::Capacity]}, {},
         [this]() { drawMagic(); }));
+
     mParamSubs.push_back(ParameterSystem::Param(State::BoughtCatalyst)
                              .subscribe([this](bool bought) {
                                  WizardSystem::GetHideObservable()->next(

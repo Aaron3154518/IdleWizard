@@ -61,15 +61,19 @@ void PowerWizard::setParamTriggers() {
         {params[PowerWizardParams::BasePower],
          params[PowerWizardParams::PowerUp], params[PowerWizardParams::Speed]},
         {}, [this]() { return calcPower(); }));
+
     mParamSubs.push_back(params[PowerWizardParams::Speed].subscribeTo(
         {params[PowerWizardParams::BaseSpeed],
          timeParams[TimeWizardParams::SpeedEffect]},
         {}, [this]() { return calcSpeed(); }));
+
     mParamSubs.push_back(params[PowerWizardParams::FireRingEffect].subscribeTo(
         {params[PowerWizardParams::Power]}, {},
         [this]() { return calcFireRingEffect(); }));
+
     mParamSubs.push_back(
         params[PowerWizardParams::Speed].subscribe([this]() { calcTimer(); }));
+
     mParamSubs.push_back(
         states[State::BoughtPowerWizard].subscribe([this](bool bought) {
             WizardSystem::GetHideObservable()->next(mId, !bought);
@@ -107,8 +111,6 @@ void PowerWizard::onHide(WizardId id, bool hide) {
 }
 
 void PowerWizard::onResetT1() {
-    WizardBase::onResetT1();
-
     mFireballs.clear();
     mFireballFreezeCnt = 0;
 

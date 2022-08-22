@@ -49,9 +49,10 @@ class TimeWizard : public WizardBase {
 
     TimerObservable::SubscriptionPtr mCostTimerSub, mFreezeDelaySub,
         mFreezeTimerSub;
-    TogglePtr mActiveToggle;
     UpgradeList::SubscriptionPtr mEffectDisplay, mActiveUp, mFreezeUp, mSpeedUp;
     ParameterSystem::ParameterSubscriptionWPtr mSpeedEffectSub;
+
+    TogglePtr mActiveToggle;
 
     ProgressBar mFreezePb;
 

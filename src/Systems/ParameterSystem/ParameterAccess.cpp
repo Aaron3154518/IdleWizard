@@ -21,20 +21,25 @@ ValueObservablePtr ValueParam::getObservable() const {
 
 const Number& ValueParam::get() const { return getObservable()->get(); }
 
-ParameterSubscriptionPtr ValueParam::subscribe(
-    std::function<void()> func) const {
+ParameterSubscriptionPtr ValueParam::subscribe(std::function<void()> func,
+                                               bool fire) const {
+    if (fire) {
+        func();
+    }
     return getObservable()->subscribe(func);
 }
 ParameterSubscriptionPtr ValueParam::subscribe(
-    std::function<void(const Number&)> func) const {
+    std::function<void(const Number&)> func, bool fire) const {
     auto id = mId;
     auto key = mKey;
     if (mIsBase) {
-        return getObservable()->subscribe(
-            [id, key, func]() { func(ParameterDag::GetBase(id, key)->get()); });
+        return subscribe(
+            [id, key, func]() { func(ParameterDag::GetBase(id, key)->get()); },
+            fire);
     }
-    return getObservable()->subscribe(
-        [id, key, func]() { func(ParameterDag::GetNode(id, key)->get()); });
+    return subscribe(
+        [id, key, func]() { func(ParameterDag::GetNode(id, key)->get()); },
+        fire);
 }
 
 // StateParam
@@ -55,19 +60,22 @@ StateObservablePtr StateParam::getObservable() const {
 
 bool StateParam::get() const { return getObservable()->get(); }
 
-ParameterSubscriptionPtr StateParam::subscribe(
-    std::function<void()> func) const {
+ParameterSubscriptionPtr StateParam::subscribe(std::function<void()> func,
+                                               bool fire) const {
+    if (fire) {
+        func();
+    }
     return getObservable()->subscribe(func);
 }
-ParameterSubscriptionPtr StateParam::subscribe(
-    std::function<void(bool)> func) const {
+ParameterSubscriptionPtr StateParam::subscribe(std::function<void(bool)> func,
+                                               bool fire) const {
     auto key = mKey;
     if (mIsBase) {
-        return getObservable()->subscribe(
-            [key, func]() { func(ParameterDag::GetBase(key)->get()); });
+        return subscribe(
+            [key, func]() { func(ParameterDag::GetBase(key)->get()); }, fire);
     }
-    return getObservable()->subscribe(
-        [key, func]() { func(ParameterDag::GetNode(key)->get()); });
+    return subscribe([key, func]() { func(ParameterDag::GetNode(key)->get()); },
+                     fire);
 }
 
 // BaseValue
@@ -98,35 +106,36 @@ NodeValueObservablePtr NodeValue::getObservable() const {
 ParameterSubscriptionPtr NodeValue::subscribeTo(
     const std::initializer_list<ValueParam>& values,
     const std::initializer_list<StateParam>& states,
-    std::function<Number()> func) const {
+    std::function<Number()> func, bool fire) const {
     auto id = mId;
     auto key = mKey;
-    ParameterDag::GetNode(id, key)->set(func());
-    return ParameterSystem::subscribe(values, states, [id, key, func]() {
-        ParameterDag::GetNode(id, key)->set(func());
-    });
+    return ParameterSystem::subscribe(
+        values, states,
+        [id, key, func]() { ParameterDag::GetNode(id, key)->set(func()); },
+        fire);
 }
 
 ParameterSubscriptionPtr NodeValue::subscribeTo(
-    ValueParam param, std::function<Number(const Number&)> func) const {
+    ValueParam param, std::function<Number(const Number&)> func,
+    bool fire) const {
     auto id = mId;
     auto key = mKey;
-    ParameterDag::GetNode(id, key)->set(func(param.get()));
-    return ParameterDag::GetNode(mId, mKey)->subscribe(
-        [id, key, param, func]() {
-            ParameterDag::GetNode(id, key)->set(func(param.get()));
-        });
+    return param.subscribe(
+        [id, key, func](const Number& val) {
+            ParameterDag::GetNode(id, key)->set(func(val));
+        },
+        fire);
 }
 
 ParameterSubscriptionPtr NodeValue::subscribeTo(
-    StateParam param, std::function<Number(bool)> func) const {
+    StateParam param, std::function<Number(bool)> func, bool fire) const {
     auto id = mId;
     auto key = mKey;
-    ParameterDag::GetNode(id, key)->set(func(param.get()));
-    return ParameterDag::GetNode(mId, mKey)->subscribe(
-        [id, key, param, func]() {
-            ParameterDag::GetNode(id, key)->set(func(param.get()));
-        });
+    return param.subscribe(
+        [id, key, func](bool state) {
+            ParameterDag::GetNode(id, key)->set(func(state));
+        },
+        fire);
 }
 
 // NodeState
@@ -138,31 +147,34 @@ NodeStateObservablePtr NodeState::getObservable() const {
 
 ParameterSubscriptionPtr NodeState::subscribeTo(
     const std::initializer_list<ValueParam>& values,
-    const std::initializer_list<StateParam>& states,
-    std::function<bool()> func) const {
+    const std::initializer_list<StateParam>& states, std::function<bool()> func,
+    bool fire) const {
     auto key = mKey;
-    ParameterDag::GetNode(key)->set(func());
-    return ParameterSystem::subscribe(values, states, [key, func]() {
-        ParameterDag::GetNode(key)->set(func());
-    });
+    return ParameterSystem::subscribe(
+        values, states,
+        [key, func]() { ParameterDag::GetNode(key)->set(func()); }, fire);
 }
 
 ParameterSubscriptionPtr NodeState::subscribeTo(
-    ValueParam param, std::function<bool(const Number&)> func) const {
+    ValueParam param, std::function<bool(const Number&)> func,
+    bool fire) const {
     auto key = mKey;
-    ParameterDag::GetNode(key)->set(func(param.get()));
-    return ParameterDag::GetNode(mKey)->subscribe([key, param, func]() {
-        ParameterDag::GetNode(key)->set(func(param.get()));
-    });
+    return param.subscribe(
+        [key, func](const Number& val) {
+            ParameterDag::GetNode(key)->set(func(val));
+        },
+        fire);
 }
 
-ParameterSubscriptionPtr NodeState::subscribeTo(
-    StateParam param, std::function<bool(bool)> func) const {
+ParameterSubscriptionPtr NodeState::subscribeTo(StateParam param,
+                                                std::function<bool(bool)> func,
+                                                bool fire) const {
     auto key = mKey;
-    ParameterDag::GetNode(key)->set(func(param.get()));
-    return ParameterDag::GetNode(mKey)->subscribe([key, param, func]() {
-        ParameterDag::GetNode(key)->set(func(param.get()));
-    });
+    return param.subscribe(
+        [key, func](bool state) {
+            ParameterDag::GetNode(key)->set(func(state));
+        },
+        fire);
 }
 
 // Param creators
@@ -173,22 +185,25 @@ NodeState Param(State::N key) { return NodeState(key); }
 // Subscribing
 ParameterSubscriptionPtr subscribe(
     const std::initializer_list<ValueParam>& values,
-    const std::initializer_list<StateParam>& states,
-    std::function<void()> func) {
+    const std::initializer_list<StateParam>& states, std::function<void()> func,
+    bool fire) {
     ParameterSubscriptionPtr sub;
     for (auto val : values) {
         if (!sub) {
             sub = val.getObservable()->subscribe(func);
         } else {
-            val.getObservable()->subscribe(func);
+            val.getObservable()->subscribe(sub);
         }
     }
     for (auto state : values) {
         if (!sub) {
             sub = state.getObservable()->subscribe(func);
         } else {
-            state.getObservable()->subscribe(func);
+            state.getObservable()->subscribe(sub);
         }
+    }
+    if (fire) {
+        func();
     }
     return sub;
 }

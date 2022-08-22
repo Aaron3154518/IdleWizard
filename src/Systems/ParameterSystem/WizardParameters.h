@@ -15,13 +15,19 @@ enum B : param_t {
     BaseCrit,
     BaseCritSpread,
     BaseSpeed,
+
+    PowerWizEffect,
+
+    PowerUpLvl,
+    CritUpLvl,
+    MultiUpLvl,
 };
 
 enum N : param_t {
     Power = 0,
-    PowerWizEffect,
     PowerUp,
     PowerUpCost,
+    PowerUpMaxLvl,
 
     Crit,
     CritUp,
@@ -30,7 +36,6 @@ enum N : param_t {
     CritUpCost,
 
     Speed,
-    SpeedUpCost,
 
     MultiUp,
     MultiUpCost,

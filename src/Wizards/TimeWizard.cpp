@@ -121,14 +121,17 @@ void TimeWizard::setParamTriggers() {
         {params[TimeWizardParams::FreezeBaseEffect],
          params[TimeWizardParams::FreezeUp]},
         {}, [this]() { return calcFreezeEffect(); }));
+
     mParamSubs.push_back(params[TimeWizardParams::SpeedEffect].subscribeTo(
         {params[TimeWizardParams::SpeedBaseEffect],
          params[TimeWizardParams::SpeedUp]},
         {}, [this]() { return calcSpeedEffect(); }));
+
     mParamSubs.push_back(params[TimeWizardParams::SpeedCost].subscribeTo(
         {params[TimeWizardParams::SpeedEffect]}, {},
         [this]() { return calcCost(); }));
     mSpeedEffectSub = mParamSubs.back();
+
     mParamSubs.push_back(
         states[State::BoughtTimeWizard].subscribe([this](bool bought) {
             WizardSystem::GetHideObservable()->next(mId, !bought);
@@ -178,8 +181,6 @@ void TimeWizard::onHide(WizardId id, bool hide) {
 }
 
 void TimeWizard::onResetT1() {
-    WizardBase::onResetT1();
-
     if (mCostTimerSub) {
         mCostTimerSub->get<TimerObservable::DATA>().reset();
     }

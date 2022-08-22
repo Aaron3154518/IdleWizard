@@ -88,15 +88,19 @@ void Crystal::setParamTriggers() {
     mParamSubs.push_back(params[CrystalParams::MagicEffect].subscribeTo(
         {params[CrystalParams::Magic]}, {},
         [this]() { return calcMagicEffect(); }));
+
     mParamSubs.push_back(params[CrystalParams::ShardGain].subscribeTo(
         {params[CrystalParams::Magic]}, {},
         [this]() { return calcShardGain(); }));
+
     mParamSubs.push_back(ParameterSystem::subscribe(
         {params[CrystalParams::Magic], params[CrystalParams::Shards]}, {},
         [this]() { drawMagic(); }));
+
     mParamSubs.push_back(params[CrystalParams::T1WizardCost].subscribeTo(
         states[State::BoughtFirstT1],
         [this](bool val) { return val ? T1_COST2 : T1_COST1; }));
+
     mParamSubs.push_back(states[State::BoughtFirstT1].subscribeTo(
         {}, {states[State::BoughtPowerWizard], states[State::BoughtTimeWizard]},
         []() {
@@ -104,6 +108,7 @@ void Crystal::setParamTriggers() {
             return states[State::BoughtPowerWizard].get() ||
                    states[State::BoughtTimeWizard].get();
         }));
+
     mParamSubs.push_back(states[State::BoughtSecondT1].subscribeTo(
         {}, {states[State::BoughtPowerWizard], states[State::BoughtTimeWizard]},
         []() {
@@ -111,6 +116,7 @@ void Crystal::setParamTriggers() {
             return states[State::BoughtPowerWizard].get() &&
                    states[State::BoughtTimeWizard].get();
         }));
+
     mParamSubs.push_back(states[State::ResetT1].subscribe(
         [this](bool val) { mCatalystBuy->setActive(val); }));
 }
@@ -181,11 +187,7 @@ void Crystal::onHide(WizardId id, bool hide) {
     }
 }
 
-void Crystal::onResetT1() {
-    WizardBase::onResetT1();
-
-    mFireRings.clear();
-}
+void Crystal::onResetT1() { mFireRings.clear(); }
 
 void Crystal::onFireballHit(const Fireball& fireball) {
     switch (fireball.getSourceId()) {

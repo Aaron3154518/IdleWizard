@@ -15,6 +15,7 @@
 #include <ServiceSystem/ServiceSystem.h>
 #include <Systems/ParameterSystem/ParameterObservable.h>
 #include <Systems/TargetSystem.h>
+#include <Systems/WizardSystem.h>
 #include <Wizards/WizardIds.h>
 
 #include <memory>
@@ -62,7 +63,7 @@ class WizardBase : public Component {
     MouseObservable::SubscriptionPtr mMouseSub;
     DragObservable::SubscriptionPtr mDragSub;
     WizardSystem::HideObservable::SubscriptionPtr mHideSub;
-    ParameterSystem::StateSubscriptionPtr mT1ResetSub;
+    // ParameterSystem::StateSubscriptionPtr mT1ResetSub;
     std::list<ParameterSystem::ParameterSubscriptionPtr> mParamSubs;
 
     UpgradeListPtr mUpgrades = std::make_shared<UpgradeList>();

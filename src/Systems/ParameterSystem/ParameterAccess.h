@@ -184,6 +184,7 @@ struct States {
 template <WizardId id>
 bool SetDefault(WizardBaseType<id> key, const Number& val) {
     Param<id>(key).getObservable()->mDefault = val;
+    Param<id>(key).getObservable()->set(val);
     return true;
 }
 

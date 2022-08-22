@@ -132,7 +132,9 @@ void Display::setEffects(
 
 // Toggle
 Toggle::Toggle(LevelFunc onLevel, unsigned int numStates)
-    : mOnLevel(onLevel), mNumStates(numStates) {}
+    : mOnLevel(onLevel), mNumStates(numStates) {
+    setLevel(0);
+}
 
 UpgradeBase::Status Toggle::getStatus() { return CAN_BUY; }
 

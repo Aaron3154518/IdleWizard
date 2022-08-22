@@ -11,6 +11,7 @@
 #include <ServiceSystem/UpdateServices/TimerService.h>
 #include <Systems/ParameterSystem/ParameterAccess.h>
 #include <Systems/ParameterSystem/WizardParameters.h>
+#include <Systems/WizardSystem.h>
 #include <Wizards/WizardBase.h>
 #include <Wizards/WizardIds.h>
 
@@ -24,11 +25,9 @@ class PowerWizard : public WizardBase {
     const static std::string FIREBALL_IMG, POWER_UP_IMG;
 
    private:
-    void setDefaultValues();
     void setSubscriptions();
     void setUpgrades();
     void setParamTriggers();
-    void setEventTriggers();
 
     void onRender(SDL_Renderer* r);
     void onHide(WizardId id, bool hide);
@@ -37,10 +36,10 @@ class PowerWizard : public WizardBase {
     void onFreeze(TimeSystem::FreezeType type);
     void onUnfreeze(TimeSystem::FreezeType type);
 
-    void calcPower();
-    void calcSpeed();
+    Number calcPower();
+    Number calcSpeed();
     void calcTimer();
-    void calcFireRingEffect();
+    Number calcFireRingEffect();
 
     void shootFireball();
     void shootFireball(SDL_FPoint target);
@@ -53,6 +52,8 @@ class PowerWizard : public WizardBase {
 
     std::vector<FireballPtr> mFireballs;
     int mFireballFreezeCnt;
+
+    const static std::vector<bool> DEFAULT_PARAMS;
 };
 
 #endif

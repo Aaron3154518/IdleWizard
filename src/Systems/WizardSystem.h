@@ -4,7 +4,6 @@
 #include <ServiceSystem/Observable.h>
 #include <ServiceSystem/Service.h>
 #include <ServiceSystem/ServiceSystem.h>
-#include <Systems/ParameterSystem/StateService.h>
 #include <Wizards/WizardIds.h>
 
 namespace WizardSystem {
@@ -24,6 +23,9 @@ bool Hidden(WizardId id);
 
 std::shared_ptr<HideObservable> GetHideObservable();
 
+class WizardService : public Service<HideObservable> {};
+
+/*
 // For handling general wizard events
 namespace State {
 enum _ : uint8_t {
@@ -52,6 +54,7 @@ typedef ParameterSystem::StateAccess<WizardService, State::_> States;
 struct Events : public ParameterSystem::StateAccess<WizardService, Event::_> {
     static void send(Event::_ e);
 };
+*/
 }  // namespace WizardSystem
 
 #endif

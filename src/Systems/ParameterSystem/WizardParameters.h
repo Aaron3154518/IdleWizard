@@ -40,6 +40,10 @@ namespace CrystalParams {
 enum B : param_t {
     Magic = 0,
     Shards,
+
+    BuyPowerWizLvl,
+    BuyTimeWizLvl,
+    BuyCatalystLvl,
 };
 
 enum N : param_t {
@@ -64,6 +68,10 @@ namespace PowerWizardParams {
 enum B : param_t {
     BasePower = 0,
     BaseSpeed,
+
+    Duration,
+
+    PowerUpLvl,
 };
 
 enum N : param_t {
@@ -73,14 +81,18 @@ enum N : param_t {
     FireRingEffect,
 
     Speed,
-
-    Duration,
 };
 }  // namespace PowerWizardParams
 namespace TimeWizardParams {
 enum B : param_t {
     SpeedBaseEffect = 0,
     FreezeBaseEffect,
+
+    FreezeDelay,
+    FreezeDuration,
+
+    FreezeUpLvl,
+    SpeedUpLvl,
 };
 
 enum N : param_t {
@@ -89,8 +101,6 @@ enum N : param_t {
     SpeedUp,
     SpeedUpCost,
 
-    FreezeDelay,
-    FreezeDuration,
     FreezeEffect,
     FreezeUp,
     FreezeUpCost,

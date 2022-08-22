@@ -12,6 +12,7 @@
 #include <ServiceSystem/UpdateServices/TimerService.h>
 #include <Systems/ParameterSystem/ParameterAccess.h>
 #include <Systems/ParameterSystem/WizardParameters.h>
+#include <Systems/WizardSystem.h>
 #include <Wizards/WizardBase.h>
 #include <Wizards/WizardIds.h>
 
@@ -26,11 +27,9 @@ class TimeWizard : public WizardBase {
 
    private:
     void init();
-    void setDefaultValues();
     void setSubscriptions();
     void setUpgrades();
     void setParamTriggers();
-    void setEventTriggers();
 
     bool onCostTimer(Timer& timer);
     void onRender(SDL_Renderer*);
@@ -40,9 +39,9 @@ class TimeWizard : public WizardBase {
     bool endFreeze(Timer& timer);
     void startFreezeCycle();
 
-    void calcFreezeEffect();
-    void calcSpeedEffect();
-    void calcCost();
+    Number calcFreezeEffect();
+    Number calcSpeedEffect();
+    Number calcCost();
 
     void updateImg();
 
@@ -50,9 +49,13 @@ class TimeWizard : public WizardBase {
 
     TimerObservable::SubscriptionPtr mCostTimerSub, mFreezeDelaySub,
         mFreezeTimerSub;
+    TogglePtr mActiveToggle;
     UpgradeList::SubscriptionPtr mEffectDisplay, mActiveUp, mFreezeUp, mSpeedUp;
+    ParameterSystem::ParameterSubscriptionWPtr mSpeedEffectSub;
 
     ProgressBar mFreezePb;
+
+    const static std::vector<bool> DEFAULT_PARAMS;
 };
 
 #endif

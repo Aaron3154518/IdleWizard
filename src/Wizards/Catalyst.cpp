@@ -23,40 +23,36 @@ void Catalyst::setSubscriptions() {
 }
 void Catalyst::setUpgrades() {
     // Power Display
-    TileUpgradePtr up = std::make_shared<TileUpgrade>();
-    up->setMaxLevel(0)
-        .setEffect(
-            ParameterSystem::Param<CATALYST>(CatalystParams::MagicEffect),
-            Upgrade::Defaults::MultiplicativeEffect)
-        .setImg(WIZ_IMGS.at(mId))
-        .setDescription("Multiplier from stored magic");
+    DisplayPtr up = std::make_shared<Display>();
+    up->setImage(WIZ_IMGS.at(mId));
+    up->setDescription("Multiplier from stored magic");
+    up->setEffect(ParameterSystem::Param<CATALYST>(CatalystParams::MagicEffect),
+                  Upgrade::Defaults::MultiplicativeEffect);
     mMagicEffectDisplay = mUpgrades->subscribe(up);
 }
 void Catalyst::setParamTriggers() {
-    mParamSubs.push_back(
-        ParameterSystem::Param<CATALYST>(CatalystParams::Magic)
-            .subscribe(std::bind(&Catalyst::calcMagicEffect, this)));
-    mParamSubs.push_back(ParameterSystem::ParamMap<CATALYST>(
-                             {CatalystParams::Magic, CatalystParams::Capacity})
-                             .subscribe(std::bind(&Catalyst::drawMagic, this)));
-}
-void Catalyst::setEventTriggers() {
-    WizardSystem::States states;
-    mStateSubs.push_back(states.subscribe(
-        WizardSystem::State::BoughtCatalyst, [this](bool bought) {
-            WizardSystem::GetHideObservable()->next(mId, !bought);
-        }));
+    ParameterSystem::Params<CATALYST> params;
+    mParamSubs.push_back(params[CatalystParams::MagicEffect].subscribeTo(
+        {params[CatalystParams::Magic]}, {},
+        [this]() { return calcMagicEffect(); }));
+    mParamSubs.push_back(ParameterSystem::subscribe(
+        {params[CatalystParams::Magic], params[CatalystParams::Capacity]}, {},
+        [this]() { drawMagic(); }));
+    mParamSubs.push_back(ParameterSystem::Param(State::BoughtCatalyst)
+                             .subscribe([this](bool bought) {
+                                 WizardSystem::GetHideObservable()->next(
+                                     mId, !bought);
+                             }));
 }
 
 void Catalyst::onFireballHit(const Fireball& fireball) {
     switch (fireball.getSourceId()) {
         case WIZARD:
             ParameterSystem::Params<CATALYST> params;
-            Number magic =
-                max(min(params.get(CatalystParams::Magic) + fireball.getValue(),
-                        params.get(CatalystParams::Capacity)),
-                    0);
-            params.set(CatalystParams::Magic, magic);
+            auto magic = params[CatalystParams::Magic];
+            magic.set(max(min(magic.get() + fireball.getValue(),
+                              params[CatalystParams::Capacity].get()),
+                          0));
             break;
     }
 }
@@ -70,15 +66,15 @@ void Catalyst::onRender(SDL_Renderer* r) {
     TextureBuilder().draw(mMagicText);
 }
 
-void Catalyst::calcMagicEffect() {
+Number Catalyst::calcMagicEffect() {
     ParameterSystem::Params<CATALYST> params;
-    Number effect = (params.get(CatalystParams::Magic) + 1).logTen() + 1;
-    params.set(CatalystParams::MagicEffect, effect);
+    return (params[CatalystParams::Magic].get() + 1).logTen() + 1;
 }
 
 void Catalyst::drawMagic() {
     ParameterSystem::Params<CATALYST> params;
-    mMagicText.tData.text = params.get(CatalystParams::Magic).toString() + "/" +
-                            params.get(CatalystParams::Capacity).toString();
+    mMagicText.tData.text = params[CatalystParams::Magic].get().toString() +
+                            "/" +
+                            params[CatalystParams::Capacity].get().toString();
     mMagicText.renderText();
 }

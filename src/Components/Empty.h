@@ -1,3 +1,6 @@
+#ifndef EMPTY_H
+#define EMPTY_H
+
 #include <RenderSystem/RenderSystem.h>
 #include <Systems/ParameterSystem/ParameterAccess.h>
 
@@ -6,6 +9,14 @@
 
 class UpgradeBase {
    public:
+    struct Defaults {
+        const static ParameterSystem::BaseValue CRYSTAL_MAGIC, CRYSTAL_SHARDS;
+
+        static std::string AdditiveEffect(const Number& effect);
+        static std::string MultiplicativeEffect(const Number& effect);
+        static std::string PercentEffect(const Number& effect);
+    };
+
     enum Status : uint8_t {
         BOUGHT = 0,
         CAN_BUY,
@@ -42,7 +53,9 @@ typedef std::shared_ptr<UpgradeBase> UpgradeBasePtr;
 
 class Display : public UpgradeBase {
    public:
-    Status getStatus();
+    virtual ~Display() = default;
+
+    virtual Status getStatus();
 
     void setEffect(ParameterSystem::ValueParam param,
                    std::function<std::string(const Number&)> func);
@@ -57,7 +70,9 @@ class Display : public UpgradeBase {
     ParameterSystem::ParameterSubscriptionPtr mEffectSub;
 };
 
-class Toggle : public UpgradeBase {
+typedef std::shared_ptr<Display> DisplayPtr;
+
+class Toggle : public Display {
    public:
     typedef std::function<void(unsigned int, Toggle&)> LevelFunc;
 
@@ -75,41 +90,98 @@ class Toggle : public UpgradeBase {
     LevelFunc mOnLevel;
 };
 
+typedef std::shared_ptr<Toggle> TogglePtr;
+
 class Upgrade : public UpgradeBase {
-   private:
+   public:
     struct Cost {
-        Cost(ParameterSystem::BaseValue level, ParameterSystem::NodeValue cost,
-             ParameterSystem::BaseValue money,
+       public:
+        Cost(ParameterSystem::BaseValue money, ParameterSystem::NodeValue cost);
+        Cost(ParameterSystem::BaseValue level, ParameterSystem::BaseValue money,
+             ParameterSystem::NodeValue cost,
              std::function<Number(const Number&)> costFunc);
 
+        const Number& getCost() const;
+        const Number& getMoney() const;
+        bool canBuy() const;
+        void buy() const;
+
+        ParameterSystem::ParameterSubscriptionPtr subscribe(
+            std::function<void()> func) const;
+
+       private:
         ParameterSystem::NodeValue mCost;
         ParameterSystem::BaseValue mMoney;
         ParameterSystem::ParameterSubscriptionPtr mCostSub;
     };
 
-    struct Effect {
-        std::list<ParameterSystem::ValueParam> mValueParams;
-        std::list<ParameterSystem::StateParam> mStateParams;
+    struct Effects {
+       public:
+        typedef std::function<Number(const Number&)> ValueFunc;
+        typedef std::function<bool(const Number&)> StateFunc;
+        typedef std::function<std::string()> EffectFunc;
+
+        Effects() = default;
+        Effects(EffectFunc func);
+
+        Effects& addEffect(ParameterSystem::NodeValue param, ValueFunc func);
+        Effects& addEffect(ParameterSystem::NodeValue param, ValueFunc valFunc,
+                           std::function<std::string(const Number&)> effFunc);
+        Effects& addEffect(ParameterSystem::NodeState param, StateFunc func);
+        Effects& addEffect(ParameterSystem::NodeState param,
+                           StateFunc stateFunc,
+                           std::function<std::string(bool)> effFunc);
+
+        std::list<ParameterSystem::ParameterSubscriptionPtr> subscribeToLevel(
+            ParameterSystem::BaseValue level) const;
+        ParameterSystem::ParameterSubscriptionPtr subscribeToEffects(
+            std::function<void(const std::string&)> func) const;
+
+       private:
+        EffectFunc mGetEffect = nullptr;
+        std::unordered_map<ParameterSystem::NodeValue, ValueFunc> mValueParams;
+        std::unordered_map<ParameterSystem::NodeState, StateFunc> mStateParams;
     };
 
    public:
-    Upgrade(ParameterSystem::BaseValue level, int maxLevel);
-    Upgrade(ParameterSystem::BaseValue level,
-            ParameterSystem::ValueParam maxLevel);
+    Upgrade(
+        ParameterSystem::BaseValue level, unsigned int maxLevel,
+        std::function<void(const Number&)> onLevel = [](const Number&) {});
+    Upgrade(
+        ParameterSystem::BaseValue level, ParameterSystem::ValueParam maxLevel,
+        std::function<void(const Number&)> onLevel = [](const Number&) {});
 
-    void setCost(ParameterSystem::NodeValue cost,
-                 ParameterSystem::BaseValue money,
+    Status getStatus();
+    void buy();
+
+    void setCost(ParameterSystem::BaseValue money,
+                 ParameterSystem::NodeValue cost);
+    void setCost(ParameterSystem::BaseValue money,
+                 ParameterSystem::NodeValue cost,
                  std::function<Number(const Number&)> costFunc);
     void clearCost();
+
+    void setEffects(const Effects& effects);
+    void clearEffects();
+
+    void updateInfo();
 
    private:
     // Level
     ParameterSystem::BaseValue mLevel;
-    int mMaxLevel;
-    ParameterSystem::ParameterSubscriptionPtr mMaxLevelSub;
+    unsigned int mMaxLevel;
+    ParameterSystem::ParameterSubscriptionPtr mLevelSub, mMaxLevelSub;
 
     // Cost
     std::unique_ptr<Cost> mCost;
+    ParameterSystem::ParameterSubscriptionPtr mCostSub;
 
     // Effects
+    std::string mEffectStr = "";
+    std::list<ParameterSystem::ParameterSubscriptionPtr> mEffectLevelSubs;
+    ParameterSystem::ParameterSubscriptionPtr mEffectSub;
 };
+
+typedef std::shared_ptr<Upgrade> UpgradePtr;
+
+#endif

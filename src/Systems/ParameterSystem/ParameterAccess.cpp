@@ -22,6 +22,10 @@ ValueObservablePtr ValueParam::getObservable() const {
 const Number& ValueParam::get() const { return getObservable()->get(); }
 
 ParameterSubscriptionPtr ValueParam::subscribe(
+    std::function<void()> func) const {
+    return getObservable()->subscribe(func);
+}
+ParameterSubscriptionPtr ValueParam::subscribe(
     std::function<void(const Number&)> func) const {
     auto id = mId;
     auto key = mKey;
@@ -51,6 +55,10 @@ StateObservablePtr StateParam::getObservable() const {
 
 bool StateParam::get() const { return getObservable()->get(); }
 
+ParameterSubscriptionPtr StateParam::subscribe(
+    std::function<void()> func) const {
+    return getObservable()->subscribe(func);
+}
 ParameterSubscriptionPtr StateParam::subscribe(
     std::function<void(bool)> func) const {
     auto key = mKey;

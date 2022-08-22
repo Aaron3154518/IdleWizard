@@ -4,6 +4,11 @@
 const Number Crystal::T1_COST1 = 500, Crystal::T1_COST2 = 5e4;
 const SDL_Color Crystal::MSG_COLOR{200, 0, 175, 255};
 
+const std::vector<bool> Crystal::DEFAULT_PARAMS = {
+    ParameterSystem::SetDefault<CRYSTAL>(CrystalParams::Magic, 0),
+    ParameterSystem::SetDefault<CRYSTAL>(CrystalParams::Shards, 0),
+};
+
 Crystal::Crystal() : WizardBase(CRYSTAL) {}
 
 void Crystal::init() {
@@ -11,12 +16,6 @@ void Crystal::init() {
     mMsgTData.color = MSG_COLOR;
 
     WizardBase::init();
-}
-void Crystal::setDefaultValues() {
-    ParameterSystem::Params<CRYSTAL> params;
-    params.set(CrystalParams::Magic, 0);
-    params.set(CrystalParams::Shards, 0);
-    params.set(CrystalParams::CatalystCost, 1);
 }
 void Crystal::setSubscriptions() {
     mUpdateSub =
@@ -31,106 +30,89 @@ void Crystal::setSubscriptions() {
     attachSubToVisibility(mFireballSub);
 }
 void Crystal::setUpgrades() {
+    ParameterSystem::Params<CRYSTAL> params;
+    ParameterSystem::States states;
+
     // Power Display
-    UpgradePtr up = std::make_shared<Upgrade>();
-    up->setMaxLevel(-1)
-        .setEffectSource(
-            ParameterSystem::Param<CRYSTAL>(CrystalParams::MagicEffect),
-            Upgrade::Defaults::MultiplicativeEffect)
-        .setImg(WIZ_IMGS.at(mId))
-        .setDescription("Multiplier based on crystal damage");
-    mMagicEffectDisplay = mUpgrades->subscribe(
-        [this](UpgradePtr u) {
-            ParameterSystem::Param<CRYSTAL> param(CrystalParams::Magic);
-            param.set(param.get() * 2);
-            if (param.get() > Number(1, 6)) {
-                triggerT1Reset();
-            }
-        },
-        up);
+    DisplayPtr dUp = std::make_shared<Display>();
+    dUp->setImage(WIZ_IMGS.at(mId));
+    dUp->setDescription("Multiplier based on crystal damage");
+    dUp->setEffect(params[CrystalParams::MagicEffect],
+                   Upgrade::Defaults::MultiplicativeEffect);
+    mMagicEffectDisplay = mUpgrades->subscribe(dUp);
 
     // Buy power wizard
-    up = std::make_shared<Upgrade>();
-    up->setMaxLevel(1)
-        .setCostSource(
-            ParameterSystem::Param<CRYSTAL>(CrystalParams::T1WizardCost))
-        .setMoneySource(Upgrade::Defaults::CRYSTAL_MAGIC)
-        .setImg(WIZ_IMGS.at(POWER_WIZARD))
-        .setDescription(
-            "Power Wizard empowers the Wizard and overloads the Crystal for "
-            "increased Fireball power");
-    mPowWizBuy = mUpgrades->subscribe(
-        [this](UpgradePtr u) {
-            WizardSystem::States::set(WizardSystem::State::BoughtPowerWizard,
-                                      u->getLevel() == 1);
-        },
-        up);
+    UpgradePtr up =
+        std::make_shared<Upgrade>(params[CrystalParams::BuyPowerWizLvl], 1);
+    up->setImage(WIZ_IMGS.at(POWER_WIZARD));
+    up->setDescription(
+        "Power Wizard empowers the Wizard and overloads the Crystal for "
+        "increased Fireball power");
+    up->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
+                params[CrystalParams::T1WizardCost]);
+    up->setEffects(Upgrade::Effects().addEffect(
+        states[State::BoughtPowerWizard],
+        [](const Number& lvl) { return lvl == 1; }));
+    mPowWizBuy = mUpgrades->subscribe(up);
 
     // Buy time wizard
-    up = std::make_shared<Upgrade>();
-    up->setMaxLevel(1)
-        .setCostSource(
-            ParameterSystem::Param<CRYSTAL>(CrystalParams::T1WizardCost))
-        .setMoneySource(Upgrade::Defaults::CRYSTAL_MAGIC)
-        .setImg(WIZ_IMGS.at(TIME_WIZARD))
-        .setDescription(
-            "Time Wizard boosts Wizard fire rate and freezes time for a "
-            "massive power boost");
-    mTimeWizBuy = mUpgrades->subscribe(
-        [this](UpgradePtr u) {
-            WizardSystem::States::set(WizardSystem::State::BoughtTimeWizard,
-                                      u->getLevel() == 1);
-        },
-        up);
+    up = std::make_shared<Upgrade>(params[CrystalParams::BuyTimeWizLvl], 1);
+    up->setImage(WIZ_IMGS.at(TIME_WIZARD));
+    up->setDescription(
+        "Time Wizard boosts Wizard fire rate and freezes time for a "
+        "massive power boost");
+    up->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
+                params[CrystalParams::T1WizardCost]);
+    up->setEffects(Upgrade::Effects().addEffect(
+        states[State::BoughtTimeWizard],
+        [](const Number& lvl) { return lvl == 1; }));
+    mTimeWizBuy = mUpgrades->subscribe(up);
 
     // Buy catalyst
-    up = std::make_shared<Upgrade>();
-    up->setMaxLevel(1)
-        .setCostSource(
-            ParameterSystem::Param<CRYSTAL>(CrystalParams::CatalystCost))
-        .setMoneySource(Upgrade::Defaults::CRYSTAL_SHARDS)
-        .setImg(WIZ_IMGS.at(CATALYST))
-        .setDescription(
-            "Catalyst stores magic and uses it to boost fireballs that pass "
-            "nearby");
-    mCatalystBuy = mUpgrades->subscribe(
-        [this](UpgradePtr u) {
-            WizardSystem::States::set(WizardSystem::State::BoughtCatalyst,
-                                      u->getLevel() == 1);
-        },
-        up);
+    up = std::make_shared<Upgrade>(params[CrystalParams::BuyCatalystLvl], 1);
+    up->setImage(WIZ_IMGS.at(CATALYST));
+    up->setDescription(
+        "Catalyst stores magic and boosts fireballs that pass "
+        "nearby");
+    up->setCost(Upgrade::Defaults::CRYSTAL_SHARDS,
+                params[CrystalParams::CatalystCost]);
+    up->setEffects(Upgrade::Effects().addEffect(
+        states[State::BoughtCatalyst],
+        [](const Number& lvl) { return lvl == 1; }));
+    mCatalystBuy = mUpgrades->subscribe(up);
 }
 void Crystal::setParamTriggers() {
-    mParamSubs.push_back(
-        ParameterSystem::Param<CRYSTAL>(CrystalParams::Magic)
-            .subscribe(std::bind(&Crystal::calcMagicEffect, this)));
-    mParamSubs.push_back(
-        ParameterSystem::Param<CRYSTAL>(CrystalParams::Magic)
-            .subscribe(std::bind(&Crystal::calcShardGain, this)));
-    mParamSubs.push_back(ParameterSystem::ParamMap<CRYSTAL>(
-                             {CrystalParams::Magic, CrystalParams::Shards})
-                             .subscribe(std::bind(&Crystal::drawMagic, this)));
-}
-void Crystal::setEventTriggers() {
-    WizardSystem::States states;
-    mStateSubs.push_back(
-        states.subscribe(WizardSystem::State::BoughtFirstT1, [this](bool val) {
-            ParameterSystem::Param<CRYSTAL>(CrystalParams::T1WizardCost)
-                .set(val ? T1_COST2 : T1_COST1);
-        }));
-    mStateSubs.push_back(states.subscribe(
-        {WizardSystem::State::BoughtPowerWizard,
-         WizardSystem::State::BoughtTimeWizard},
+    ParameterSystem::Params<CRYSTAL> params;
+    ParameterSystem::States states;
+
+    mParamSubs.push_back(params[CrystalParams::MagicEffect].subscribeTo(
+        {params[CrystalParams::Magic]}, {},
+        [this]() { return calcMagicEffect(); }));
+    mParamSubs.push_back(params[CrystalParams::ShardGain].subscribeTo(
+        {params[CrystalParams::Magic]}, {},
+        [this]() { return calcShardGain(); }));
+    mParamSubs.push_back(ParameterSystem::subscribe(
+        {params[CrystalParams::Magic], params[CrystalParams::Shards]}, {},
+        [this]() { drawMagic(); }));
+    mParamSubs.push_back(params[CrystalParams::T1WizardCost].subscribeTo(
+        states[State::BoughtFirstT1],
+        [this](bool val) { return val ? T1_COST2 : T1_COST1; }));
+    mParamSubs.push_back(states[State::BoughtFirstT1].subscribeTo(
+        {}, {states[State::BoughtPowerWizard], states[State::BoughtTimeWizard]},
         []() {
-            WizardSystem::States states;
-            bool power = states.get(WizardSystem::State::BoughtPowerWizard),
-                 time = states.get(WizardSystem::State::BoughtTimeWizard);
-            states.set(WizardSystem::State::BoughtFirstT1, power || time);
-            states.set(WizardSystem::State::BoughtSecondT1, power && time);
+            ParameterSystem::States states;
+            return states[State::BoughtPowerWizard].get() ||
+                   states[State::BoughtTimeWizard].get();
         }));
-    mStateSubs.push_back(
-        states.subscribe(WizardSystem::State::ResetT1,
-                         [this](bool val) { mCatalystBuy->setActive(val); }));
+    mParamSubs.push_back(states[State::BoughtSecondT1].subscribeTo(
+        {}, {states[State::BoughtPowerWizard], states[State::BoughtTimeWizard]},
+        []() {
+            ParameterSystem::States states;
+            return states[State::BoughtPowerWizard].get() &&
+                   states[State::BoughtTimeWizard].get();
+        }));
+    mParamSubs.push_back(states[State::ResetT1].subscribe(
+        [this](bool val) { mCatalystBuy->setActive(val); }));
 }
 
 void Crystal::onUpdate(Time dt) {
@@ -179,6 +161,13 @@ void Crystal::onRender(SDL_Renderer* r) {
 
 void Crystal::onClick(Event::MouseButton b, bool clicked) {
     WizardBase::onClick(b, clicked);
+    if (clicked) {
+        auto param = ParameterSystem::Param<CRYSTAL>(CrystalParams::Magic);
+        param.set(param.get() * 2);
+        if (param.get() > Number(1, 6)) {
+            triggerT1Reset();
+        }
+    }
 }
 
 void Crystal::onHide(WizardId id, bool hide) {
@@ -193,37 +182,16 @@ void Crystal::onHide(WizardId id, bool hide) {
 }
 
 void Crystal::onResetT1() {
-    ParameterSystem::Params<CRYSTAL> params;
-    Number shards = params.get(CrystalParams::Shards) +
-                    params.get(CrystalParams::ShardGain);
-    int catLvl = 0;
-    if (mCatalystBuy) {
-        catLvl = UpgradeList::Get(mCatalystBuy)->getLevel();
-    }
-
     WizardBase::onResetT1();
 
-    WizardSystem::States states;
-    states.set(WizardSystem::State::BoughtPowerWizard, false);
-    states.set(WizardSystem::State::BoughtTimeWizard, false);
-
     mFireRings.clear();
-
-    params.set(CrystalParams::Shards, shards);
-    if (mCatalystBuy) {
-        auto up = UpgradeList::Get(mCatalystBuy);
-        up->setLevel(catLvl);
-        mCatalystBuy->get<UpgradeList::ON_LEVEL>()(up);
-        up->updateInfo();
-    }
 }
 
 void Crystal::onFireballHit(const Fireball& fireball) {
     switch (fireball.getSourceId()) {
         case WIZARD: {
-            ParameterSystem::Param<CRYSTAL> param(CrystalParams::Magic);
-            Number magic = param.get() + fireball.getValue();
-            param.set(magic);
+            auto magic = ParameterSystem::Param<CRYSTAL>(CrystalParams::Magic);
+            magic.set(magic.get() + fireball.getValue());
             addMessage("+" + fireball.getValue().toString());
         } break;
         case POWER_WIZARD: {
@@ -232,26 +200,25 @@ void Crystal::onFireballHit(const Fireball& fireball) {
     }
 }
 
-void Crystal::calcMagicEffect() {
+Number Crystal::calcMagicEffect() {
     ParameterSystem::Params<CRYSTAL> params;
-    Number effect = (params.get(CrystalParams::Magic) + 1).logTen() + 1;
-    params.set(CrystalParams::MagicEffect, effect);
+    return (params[CrystalParams::Magic].get() + 1).logTen() + 1;
 }
 
-void Crystal::calcShardGain() {
+Number Crystal::calcShardGain() {
     ParameterSystem::Params<CRYSTAL> params;
-    Number shards = (params.get(CrystalParams::Magic) + 1).logTen();
+    Number shards = (params[CrystalParams::Magic].get() + 1).logTen();
     if (shards < 1) {
         shards = 0;
     }
-    params.set(CrystalParams::ShardGain, shards);
+    return shards;
 }
 
 void Crystal::drawMagic() {
     ParameterSystem::Params<CRYSTAL> params;
     std::stringstream ss;
-    ss << params.get(CrystalParams::Magic) << "\n"
-       << params.get(CrystalParams::Shards);
+    ss << params[CrystalParams::Magic].get() << "\n"
+       << params[CrystalParams::Shards].get();
     mMagicText.tData.text = ss.str();
     mMagicText.tData.w = mPos->rect.W();
     mMagicText.renderText();
@@ -289,9 +256,9 @@ void Crystal::addMessage(const std::string& msg) {
 }
 
 void Crystal::triggerT1Reset() {
-    WizardSystem::Events::send(WizardSystem::Event::T1Reset);
-    WizardSystem::States state;
-    if (!state.get(WizardSystem::State::ResetT1)) {
-        state.set(WizardSystem::State::ResetT1, true);
+    // Events::send(Event::T1Reset);
+    auto resetT1 = ParameterSystem::Param(State::ResetT1);
+    if (!resetT1.get()) {
+        resetT1.set(true);
     }
 }

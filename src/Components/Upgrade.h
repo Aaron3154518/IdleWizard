@@ -1,6 +1,7 @@
 #ifndef UPGRADE_H
 #define UPGRADE_H
 
+#include <Components/Empty.h>
 #include <RenderSystem/RenderSystem.h>
 #include <RenderSystem/TextureBuilder.h>
 #include <ServiceSystem/Component.h>
@@ -26,6 +27,7 @@
 #include <functional>
 #include <vector>
 
+/*
 class Upgrade {
    public:
     enum Status : uint8_t {
@@ -138,9 +140,11 @@ class TileUpgrade : public Upgrade {
 };
 
 typedef std::shared_ptr<TileUpgrade> TileUpgradePtr;
+*/
 
 // For managing multiple upgrades
-typedef Observable<UpgradePtr> UpgradeListBase;
+typedef Observable<UpgradeBasePtr> UpgradeListBase;
+
 class UpgradeList : public UpgradeListBase {
    public:
     enum : size_t { DATA };
@@ -154,7 +158,7 @@ class UpgradeList : public UpgradeListBase {
     void draw(TextureBuilder tex, float scroll, SDL_Point offset = {0, 0});
 
     // Static functions
-    static UpgradePtr Get(SubscriptionPtr sub);
+    static UpgradeBasePtr Get(SubscriptionPtr sub);
 
    private:
     void computeRects();

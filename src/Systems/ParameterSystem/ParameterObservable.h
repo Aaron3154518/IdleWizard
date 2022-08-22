@@ -14,6 +14,7 @@ typedef ForwardObservable<void()> ParamObservableBase;
 
 typedef std::shared_ptr<ParamObservableBase> ParamObservableBasePtr;
 typedef ParamObservableBase::SubscriptionPtr ParameterSubscriptionPtr;
+typedef ParamObservableBase::SubscriptionWPtr ParameterSubscriptionWPtr;
 
 class ValueObservable : public ParamObservableBase {
    public:

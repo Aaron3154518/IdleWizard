@@ -34,11 +34,9 @@ class WizardBase : public Component {
     WizardBase(WizardId id);
 
     virtual void init();
-    virtual void setDefaultValues();
     virtual void setSubscriptions();
     virtual void setUpgrades();
     virtual void setParamTriggers();
-    virtual void setEventTriggers();
 
     virtual void onResize(ResizeData data);
     virtual void onRender(SDL_Renderer* r);
@@ -66,7 +64,6 @@ class WizardBase : public Component {
     WizardSystem::HideObservable::SubscriptionPtr mHideSub;
     ParameterSystem::StateSubscriptionPtr mT1ResetSub;
     std::list<ParameterSystem::ParameterSubscriptionPtr> mParamSubs;
-    std::list<ParameterSystem::StateSubscriptionPtr> mStateSubs;
 
     UpgradeListPtr mUpgrades = std::make_shared<UpgradeList>();
 

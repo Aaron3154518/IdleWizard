@@ -26,6 +26,7 @@ struct ValueParam {
 
     const Number& get() const;
 
+    ParameterSubscriptionPtr subscribe(std::function<void()> func) const;
     ParameterSubscriptionPtr subscribe(
         std::function<void(const Number&)> func) const;
 
@@ -51,6 +52,7 @@ struct StateParam {
 
     bool get() const;
 
+    ParameterSubscriptionPtr subscribe(std::function<void()> func) const;
     ParameterSubscriptionPtr subscribe(std::function<void(bool)> func) const;
 
     const param_t mKey;

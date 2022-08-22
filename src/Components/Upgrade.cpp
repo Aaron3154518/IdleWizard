@@ -1,5 +1,6 @@
 #include "Upgrade.h"
 
+/*
 const SDL_Color Upgrade::DESC_BKGRND{175, 175, 175, 255};
 const FontData Upgrade::DESC_FONT{-1, 20, "|"};
 
@@ -291,6 +292,7 @@ Upgrade& TileUpgrade::setEffects(
     }
     return *this;
 }
+*/
 
 // UpgradeList
 int UpgradeList::size() const { return mSubscriptions.size(); }
@@ -387,7 +389,7 @@ void UpgradeList::draw(TextureBuilder tex, float scroll, SDL_Point offset) {
                 case Upgrade::Status::BOUGHT:
                     rd.color = BLUE;
                     break;
-                case Upgrade::Status::BUYABLE:
+                case Upgrade::Status::CAN_BUY:
                     rd.color = GREEN;
                     break;
                 case Upgrade::Status::CANT_BUY:
@@ -487,7 +489,7 @@ void UpgradeList::computeRects() {
     }
 }
 
-UpgradePtr UpgradeList::Get(SubscriptionPtr sub) {
+UpgradeBasePtr UpgradeList::Get(SubscriptionPtr sub) {
     return sub->get<UpgradeList::DATA>();
 }
 
@@ -522,7 +524,7 @@ void UpgradeScroller::init() {
                   std::placeholders::_2),
         mPos);
     mDragSub = ServiceSystem::Get<DragService, DragObservable>()->subscribe(
-        std::bind(&UpgradeScroller::onDragStart, this),
+        [this]() { onDragStart(); },
         std::bind(&UpgradeScroller::onDrag, this, std::placeholders::_1,
                   std::placeholders::_2, std::placeholders::_3,
                   std::placeholders::_4),
@@ -530,7 +532,7 @@ void UpgradeScroller::init() {
     mHoverSub = ServiceSystem::Get<HoverService, HoverObservable>()->subscribe(
         []() {},
         std::bind(&UpgradeScroller::onHover, this, std::placeholders::_1),
-        std::bind(&UpgradeScroller::onMouseLeave, this), mPos);
+        [this]() { onMouseLeave(); }, mPos);
     mUpgradeSub =
         ServiceSystem::Get<UpgradeService, UpgradeListObservable>()->subscribe(
             std::bind(&UpgradeScroller::onSetUpgrades, this,

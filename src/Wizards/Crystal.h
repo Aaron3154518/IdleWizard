@@ -34,11 +34,9 @@ class Crystal : public WizardBase {
 
    private:
     void init();
-    void setDefaultValues();
     void setSubscriptions();
     void setUpgrades();
     void setParamTriggers();
-    void setEventTriggers();
 
     void onRender(SDL_Renderer* r);
     void onUpdate(Time dt);
@@ -47,8 +45,8 @@ class Crystal : public WizardBase {
     void onResetT1();
     void onFireballHit(const Fireball& fireball);
 
-    void calcMagicEffect();
-    void calcShardGain();
+    Number calcMagicEffect();
+    Number calcShardGain();
     void drawMagic();
 
     std::unique_ptr<FireRing>& createFireRing(const Number& val);
@@ -68,6 +66,8 @@ class Crystal : public WizardBase {
     std::vector<std::unique_ptr<FireRing>> mFireRings;
 
     TextRenderData mMagicText;
+
+    const static std::vector<bool> DEFAULT_PARAMS;
 };
 
 #endif

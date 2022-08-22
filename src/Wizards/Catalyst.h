@@ -10,6 +10,7 @@
 #include <ServiceSystem/CoreServices/RenderService.h>
 #include <Systems/ParameterSystem/ParameterAccess.h>
 #include <Systems/ParameterSystem/WizardParameters.h>
+#include <Systems/WizardSystem.h>
 #include <Wizards/WizardBase.h>
 #include <Wizards/WizardIds.h>
 
@@ -24,12 +25,11 @@ class Catalyst : public WizardBase {
     void setSubscriptions();
     void setUpgrades();
     void setParamTriggers();
-    void setEventTriggers();
 
     void onRender(SDL_Renderer* r);
     void onFireballHit(const Fireball& fireball);
 
-    void calcMagicEffect();
+    Number calcMagicEffect();
     void drawMagic();
 
     Fireball::HitObservable::IdSubscriptionPtr mFireballSub;

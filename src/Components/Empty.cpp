@@ -37,6 +37,10 @@ void UpgradeBase::setInfo(const std::string& info) {
 }
 
 void UpgradeBase::drawIcon(TextureBuilder& tex, const Rect& r) {
+    if (!mImg) {
+        return;
+    }
+
     RenderData rData;
     rData.texture = mImg;
     rData.dest = r;

@@ -44,7 +44,7 @@ class Crystal : public WizardBase {
     void onUpdate(Time dt);
     void onClick(Event::MouseButton b, bool clicked);
     void onHide(WizardId id, bool hide);
-    void onResetT1();
+    void onReset(WizardSystem::ResetTier tier);
     void onFireballHit(const Fireball& fireball);
 
     Number calcMagicEffect();

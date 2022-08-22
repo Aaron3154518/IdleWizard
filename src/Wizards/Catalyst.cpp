@@ -2,10 +2,12 @@
 
 // Catalyst
 void Catalyst::setDefaults() {
+    using WizardSystem::ResetTier;
+
     ParameterSystem::Params<CATALYST> params;
 
-    params[CatalystParams::Magic]->setDefault(0);
-    params[CatalystParams::Capacity]->setDefault(100);
+    params[CatalystParams::Magic]->init(0);
+    params[CatalystParams::Capacity]->init(100);
 }
 
 Catalyst::Catalyst() : WizardBase(CATALYST) {}

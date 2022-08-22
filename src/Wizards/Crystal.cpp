@@ -5,14 +5,23 @@ const Number Crystal::T1_COST1 = 500, Crystal::T1_COST2 = 5e4;
 const SDL_Color Crystal::MSG_COLOR{200, 0, 175, 255};
 
 void Crystal::setDefaults() {
+    using WizardSystem::ResetTier;
+
     ParameterSystem::Params<CRYSTAL> params;
 
     // Default 0
-    params.setDefaults({CrystalParams::Magic, CrystalParams::Shards}, 0);
+    params[CrystalParams::Magic]->init(0, ResetTier::T1);
+    params[CrystalParams::Shards]->init(0, ResetTier::T2);
+
+    params[CrystalParams::CatalystCost]->init(1);
+
+    params[CrystalParams::BuyTimeWizLvl]->init(ResetTier::T1);
+    params[CrystalParams::BuyPowerWizLvl]->init(ResetTier::T1);
+    params[CrystalParams::BuyCatalystLvl]->init(ResetTier::T2);
 
     ParameterSystem::States states;
 
-    states[State::ResetT1]->setDefault(false);
+    states[State::ResetT1]->init(false);
 }
 
 Crystal::Crystal() : WizardBase(CRYSTAL) {}
@@ -188,7 +197,7 @@ void Crystal::onHide(WizardId id, bool hide) {
     }
 }
 
-void Crystal::onResetT1() { mFireRings.clear(); }
+void Crystal::onReset(WizardSystem::ResetTier tier) { mFireRings.clear(); }
 
 void Crystal::onFireballHit(const Fireball& fireball) {
     switch (fireball.getSourceId()) {
@@ -259,7 +268,12 @@ void Crystal::addMessage(const std::string& msg) {
 }
 
 void Crystal::triggerT1Reset() {
-    // Events::send(Event::T1Reset);
+    auto shards = ParameterSystem::Param<CRYSTAL>(CrystalParams::Shards);
+    auto shardGain = ParameterSystem::Param<CRYSTAL>(CrystalParams::ShardGain);
+    shards.set(shards.get() + shardGain.get());
+
+    WizardSystem::Reset(WizardSystem::ResetTier::T1);
+
     auto resetT1 = ParameterSystem::Param(State::ResetT1);
     if (!resetT1.get()) {
         resetT1.set(true);

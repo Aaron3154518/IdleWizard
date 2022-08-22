@@ -36,7 +36,7 @@ class TimeWizard : public WizardBase {
     bool onCostTimer(Timer& timer);
     void onRender(SDL_Renderer*);
     void onHide(WizardId id, bool hide);
-    void onResetT1();
+    void onReset(WizardSystem::ResetTier tier);
     bool startFreeze(Timer& timer);
     bool endFreeze(Timer& timer);
     void startFreezeCycle();

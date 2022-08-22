@@ -3,6 +3,7 @@
 
 #include <ServiceSystem/Observable.h>
 #include <Systems/ParameterSystem/WizardStates.h>
+#include <Systems/WizardSystem.h>
 #include <Utils/Number.h>
 
 #include <initializer_list>
@@ -66,15 +67,15 @@ class BaseValueObservable : public ValueObservable {
 
     using ValueObservable::set;
 
-    void setResetTier(ResetTier tier);
+    void init(Number defVal);
+    void init(WizardSystem::ResetTier tier);
+    void init(Number defVal, WizardSystem::ResetTier tier);
 
-    void setDefault(const Number& val);
-
-    Number mDefault;
+    Number mDefault = 0;
+    WizardSystem::ResetTier mResetTier = WizardSystem::ResetTier::NONE;
 
    private:
-    SubscriptionPtr mResetSub;
-    ResetTier mResetTier = ResetTier::T1;
+    WizardSystem::ResetObservable::SubscriptionPtr mResetSub;
 };
 
 typedef std::shared_ptr<BaseValueObservable> BaseValueObservablePtr;
@@ -85,15 +86,15 @@ class BaseStateObservable : public StateObservable {
 
     using StateObservable::set;
 
-    void setResetTier(ResetTier tier);
+    void init(bool defVal);
+    void init(WizardSystem::ResetTier tier);
+    void init(bool defVal, WizardSystem::ResetTier tier);
 
-    void setDefault(bool state);
-
-    bool mDefault;
+    bool mDefault = false;
+    WizardSystem::ResetTier mResetTier = WizardSystem::ResetTier::NONE;
 
    private:
-    SubscriptionPtr mResetSub;
-    ResetTier mResetTier = ResetTier::T1;
+    WizardSystem::ResetObservable::SubscriptionPtr mResetSub;
 };
 
 typedef std::shared_ptr<BaseStateObservable> BaseStateObservablePtr;

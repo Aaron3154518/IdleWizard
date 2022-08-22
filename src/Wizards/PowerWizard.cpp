@@ -6,11 +6,15 @@ const std::string PowerWizard::POWER_UP_IMG =
     "res/upgrades/power_fireball_upgrade.png";
 
 void PowerWizard::setDefaults() {
+    using WizardSystem::ResetTier;
+
     ParameterSystem::Params<POWER_WIZARD> params;
 
-    params[PowerWizardParams::BasePower]->setDefault(5);
-    params[PowerWizardParams::BaseSpeed]->setDefault(.25);
-    params[PowerWizardParams::Duration]->setDefault(1000);
+    params[PowerWizardParams::BasePower]->init(5);
+    params[PowerWizardParams::BaseSpeed]->init(.25);
+    params[PowerWizardParams::Duration]->init(1000);
+
+    params[PowerWizardParams::PowerUpLvl]->init(ResetTier::T1);
 }
 
 PowerWizard::PowerWizard() : WizardBase(POWER_WIZARD) {}
@@ -109,7 +113,7 @@ void PowerWizard::onHide(WizardId id, bool hide) {
     }
 }
 
-void PowerWizard::onResetT1() {
+void PowerWizard::onReset(WizardSystem::ResetTier tier) {
     mFireballs.clear();
     mFireballFreezeCnt = 0;
 

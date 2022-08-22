@@ -1,7 +1,7 @@
 #include "UpgradeList.h"
 
 // UpgradeList
-int UpgradeList::size() const { return mSubscriptions.size(); }
+int UpgradeList::size() const { return getNumActive(); }
 
 void UpgradeList::onClick(SDL_Point mouse) {
     for (auto pair : mFrontRects) {
@@ -151,7 +151,7 @@ void UpgradeList::computeRects() {
     float cX = mRect.halfW();
     float cY = mRect.halfH() - w / 4;
 
-    std::vector<float> rectAngles(mSubscriptions.size());
+    std::vector<float> rectAngles(getNumActive());
     int backLen = 0, frontLen = 0;
 
     for (int i = NUM_STEPS; i >= 0; i--) {
@@ -159,7 +159,7 @@ void UpgradeList::computeRects() {
         do {
             float angle = fmod(minTheta + i * sign * STEP + TWO_PI, TWO_PI);
             int idx = baseIdx - (NUM_STEPS - i) * sign;
-            if (idx >= 0 && idx < mSubscriptions.size()) {
+            if (idx >= 0 && idx < getNumActive()) {
                 rectAngles[idx] = angle;
                 if (angle < M_PI) {
                     backLen++;

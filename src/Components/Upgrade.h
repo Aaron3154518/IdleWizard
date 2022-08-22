@@ -96,7 +96,8 @@ class Upgrade : public UpgradeBase {
    public:
     struct Cost {
        public:
-        Cost(ParameterSystem::BaseValue money, ParameterSystem::NodeValue cost);
+        Cost(ParameterSystem::BaseValue money,
+             ParameterSystem::ValueParam cost);
         Cost(ParameterSystem::BaseValue level, ParameterSystem::BaseValue money,
              ParameterSystem::NodeValue cost,
              std::function<Number(const Number&)> costFunc);
@@ -110,7 +111,7 @@ class Upgrade : public UpgradeBase {
             std::function<void()> func) const;
 
        private:
-        ParameterSystem::NodeValue mCost;
+        ParameterSystem::ValueParam mCost;
         ParameterSystem::BaseValue mMoney;
         ParameterSystem::ParameterSubscriptionPtr mCostSub;
     };
@@ -130,7 +131,7 @@ class Upgrade : public UpgradeBase {
     void buy();
 
     void setCost(ParameterSystem::BaseValue money,
-                 ParameterSystem::NodeValue cost);
+                 ParameterSystem::ValueParam cost);
     void setCost(ParameterSystem::BaseValue money,
                  ParameterSystem::NodeValue cost,
                  std::function<Number(const Number&)> costFunc);

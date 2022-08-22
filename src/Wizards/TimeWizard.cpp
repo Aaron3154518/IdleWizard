@@ -8,12 +8,17 @@ const std::string TimeWizard::FREEZE_UP_IMG =
 const std::string TimeWizard::SPEED_UP_IMG = "res/upgrades/speed_upgrade.png";
 
 void TimeWizard::setDefaults() {
+    using WizardSystem::ResetTier;
+
     ParameterSystem::Params<TIME_WIZARD> params;
 
-    params[TimeWizardParams::SpeedBaseEffect]->setDefault(1.5);
-    params[TimeWizardParams::FreezeBaseEffect]->setDefault(1.1);
-    params[TimeWizardParams::FreezeDelay]->setDefault(30000);
-    params[TimeWizardParams::FreezeDuration]->setDefault(5000);
+    params[TimeWizardParams::SpeedBaseEffect]->init(1.5);
+    params[TimeWizardParams::FreezeBaseEffect]->init(1.1);
+    params[TimeWizardParams::FreezeDelay]->init(30000);
+    params[TimeWizardParams::FreezeDuration]->init(5000);
+
+    params[TimeWizardParams::SpeedUpLvl]->init(ResetTier::T1);
+    params[TimeWizardParams::FreezeUpLvl]->init(ResetTier::T1);
 }
 
 TimeWizard::TimeWizard() : WizardBase(TIME_WIZARD) {}
@@ -177,7 +182,7 @@ void TimeWizard::onHide(WizardId id, bool hide) {
     }
 }
 
-void TimeWizard::onResetT1() {
+void TimeWizard::onReset(WizardSystem::ResetTier tier) {
     if (mCostTimerSub) {
         mCostTimerSub->get<TimerObservable::DATA>().reset();
     }

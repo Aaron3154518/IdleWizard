@@ -172,13 +172,6 @@ struct Params {
     BaseValue operator[](WizardBaseType<id> key) { return Param<id>(key); }
 
     NodeValue operator[](WizardNodeType<id> key) { return Param<id>(key); }
-
-    void setDefaults(const std::initializer_list<WizardBaseType<id>>& keys,
-                     const Number& val) {
-        for (auto key : keys) {
-            operator[](key)->setDefault(val);
-        }
-    }
 };
 
 // Provides easy access to state params
@@ -186,8 +179,6 @@ struct States {
     BaseState operator[](State::B key);
 
     NodeState operator[](State::N key);
-
-    void setDefaults(const std::initializer_list<State::B> keys, bool state);
 };
 }  // namespace ParameterSystem
 

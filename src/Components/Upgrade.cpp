@@ -150,7 +150,7 @@ void Toggle::setLevel(unsigned int lvl) {
 
 // Cost
 Upgrade::Cost::Cost(ParameterSystem::BaseValue money,
-                    ParameterSystem::NodeValue cost)
+                    ParameterSystem::ValueParam cost)
     : mMoney(money), mCost(cost) {}
 Upgrade::Cost::Cost(ParameterSystem::BaseValue level,
                     ParameterSystem::BaseValue money,
@@ -211,7 +211,7 @@ void Upgrade::buy() {
 }
 
 void Upgrade::setCost(ParameterSystem::BaseValue money,
-                      ParameterSystem::NodeValue cost) {
+                      ParameterSystem::ValueParam cost) {
     mCost = std::make_unique<Cost>(money, cost);
     mCostSub = mCost->subscribe([this]() { updateInfo(); });
 }

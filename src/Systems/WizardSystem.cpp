@@ -12,15 +12,15 @@ bool HideObservable::isHidden(WizardId id) const {
     return it != mHidden.end() && it->second;
 }
 
-bool Hidden(WizardId id) {
-    return ServiceSystem::Get<WizardService, HideObservable>()->isHidden(id);
-}
+bool Hidden(WizardId id) { return GetHideObservable()->isHidden(id); }
 
 std::shared_ptr<HideObservable> GetHideObservable() {
     return ServiceSystem::Get<WizardService, HideObservable>();
 }
 
-// Events
-// void Events::send(Event::_ e) { set(e, true); }
+void Reset(ResetTier tier) { GetResetObservable()->next(tier); }
 
+std::shared_ptr<ResetObservable> GetResetObservable() {
+    return ServiceSystem::Get<WizardService, ResetObservable>();
+}
 }  // namespace WizardSystem

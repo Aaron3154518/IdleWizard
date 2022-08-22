@@ -212,11 +212,4 @@ ParameterSubscriptionPtr subscribe(
 BaseState States::operator[](State::B key) { return Param(key); }
 
 NodeState States::operator[](State::N key) { return Param(key); }
-
-void States::setDefaults(const std::initializer_list<State::B> keys,
-                         bool state) {
-    for (auto key : keys) {
-        operator[](key)->setDefault(state);
-    }
-}
 }  // namespace ParameterSystem

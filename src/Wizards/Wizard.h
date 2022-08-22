@@ -43,7 +43,7 @@ class Wizard : public WizardBase {
 
     void onRender(SDL_Renderer* r);
     void onHide(WizardId id, bool hide);
-    void onResetT1();
+    void onReset(WizardSystem::ResetTier tier);
     bool onTimer(Timer& timer);
     void onFireballHit(const Fireball& fireball);
     void onFireballFireRingHit(Fireball& fireball,

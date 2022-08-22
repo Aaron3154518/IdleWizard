@@ -17,12 +17,4 @@ enum N : param_t {
 };
 }  // namespace State
 
-enum Events : param_t {
-    T1Reset = 0,
-};
-
-enum ResetTier : param_t {
-    T1 = 0,
-};
-
 #endif

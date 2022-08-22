@@ -11,18 +11,24 @@ void ValueObservable::set(const Number& val) {
 
 // BaseValueObservable
 BaseValueObservable::BaseValueObservable() {
-    set(mDefault);
-    setResetTier(mResetTier);
+    mResetSub = WizardSystem::GetResetObservable()->subscribe(
+        [this](WizardSystem::ResetTier tier) {
+            if (mResetTier <= tier) {
+                set(mDefault);
+            }
+        });
 }
 
-void BaseValueObservable::setResetTier(ResetTier tier) {
+void BaseValueObservable::init(Number defVal) { init(defVal, mResetTier); }
+
+void BaseValueObservable::init(WizardSystem::ResetTier tier) {
     mResetTier = tier;
-    // mResetSub = TBD
 }
 
-void BaseValueObservable::setDefault(const Number& val) {
-    mDefault = val;
-    set(val);
+void BaseValueObservable::init(Number defVal, WizardSystem::ResetTier tier) {
+    mDefault = defVal;
+    mResetTier = tier;
+    set(mDefault);
 }
 
 // StateObservable
@@ -35,17 +41,24 @@ void StateObservable::set(bool state) {
 
 // BaseStateObservable
 BaseStateObservable::BaseStateObservable() {
-    set(mDefault);
-    setResetTier(mResetTier);
+    mResetSub = WizardSystem::GetResetObservable()->subscribe(
+        [this](WizardSystem::ResetTier tier) {
+            if (mResetTier <= tier) {
+                set(mDefault);
+            }
+        });
 }
 
-void BaseStateObservable::setResetTier(ResetTier tier) {
+void BaseStateObservable::init(bool defVal) { init(defVal, mResetTier); }
+
+void BaseStateObservable::init(WizardSystem::ResetTier tier) {
     mResetTier = tier;
-    // mResetSub = TBD
 }
 
-void BaseStateObservable::setDefault(bool state) {
-    mDefault = state;
-    set(state);
+void BaseStateObservable::init(bool defVal, WizardSystem::ResetTier tier) {
+    mDefault = defVal;
+    mResetTier = tier;
+    set(mDefault);
 }
+
 }  // namespace ParameterSystem

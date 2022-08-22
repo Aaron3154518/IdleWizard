@@ -12,15 +12,19 @@ const std::string Wizard::FIREBALL_BUFFED_IMG =
 const std::vector<WizardId> Wizard::TARGETS = {CRYSTAL, CATALYST};
 
 void Wizard::setDefaults() {
+    using WizardSystem::ResetTier;
+
     ParameterSystem::Params<WIZARD> params;
 
-    // Default 0
-    params[WizardParams::BaseCritSpread]->setDefault(0);
+    params[WizardParams::BaseCritSpread]->init(0);
+    params[WizardParams::BasePower]->init(1);
+    params[WizardParams::BasePower]->init(1);
+    params[WizardParams::BaseCrit]->init(1);
+    params[WizardParams::PowerWizEffect]->init(1);
 
-    // Default 1
-    params.setDefaults({WizardParams::BasePower, WizardParams::BasePower,
-                        WizardParams::BaseCrit, WizardParams::PowerWizEffect},
-                       1);
+    params[WizardParams::CritUpLvl]->init(ResetTier::T1);
+    params[WizardParams::MultiUpLvl]->init(ResetTier::T1);
+    params[WizardParams::PowerUpLvl]->init(ResetTier::T1);
 }
 
 Wizard::Wizard() : WizardBase(WIZARD) {}
@@ -208,7 +212,7 @@ void Wizard::onHide(WizardId id, bool hide) {
     }
 }
 
-void Wizard::onResetT1() {
+void Wizard::onReset(WizardSystem::ResetTier tier) {
     mFireballs.clear();
     mFireballFreezeCnt = 0;
     mPowWizBoosts.clear();

@@ -46,6 +46,8 @@ enum B : param_t {
     Magic = 0,
     Shards,
 
+    CatalystCost,
+
     BuyPowerWizLvl,
     BuyTimeWizLvl,
     BuyCatalystLvl,
@@ -56,7 +58,6 @@ enum N : param_t {
     ShardGain,
 
     T1WizardCost,
-    CatalystCost,
 };
 }  // namespace CrystalParams
 namespace CatalystParams {

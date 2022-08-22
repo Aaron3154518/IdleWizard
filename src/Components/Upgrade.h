@@ -13,9 +13,8 @@
 #include <ServiceSystem/Observable.h>
 #include <ServiceSystem/Service.h>
 #include <ServiceSystem/ServiceSystem.h>
-#include <Systems/ParameterSystem/Parameter.h>
-#include <Systems/ParameterSystem/ParameterService.h>
-#include <Systems/ParameterSystem/WizardParams.h>
+#include <Systems/ParameterSystem/ParameterAccess.h>
+#include <Systems/ParameterSystem/ParameterObservable.h>
 #include <Utils/Colors.h>
 #include <Utils/Event.h>
 #include <Utils/Number.h>
@@ -29,10 +28,26 @@
 
 class Upgrade {
    public:
+    enum Status : uint8_t {
+        BOUGHT = 0,
+        BUYABLE,
+        CANT_BUY,
+        NOT_BUYABLE,
+    };
+
+    struct ValueUpdate {
+        ParameterSystem::NodeValue node;
+        std::function<Number(const Number&)> func;
+    };
+
+    struct StateUpdate {
+        ParameterSystem::NodeState node;
+        std::function<bool(const Number&)> func;
+    };
+
     struct Defaults {
-        const static ParameterSystem::Param<CRYSTAL> CRYSTAL_MAGIC,
-            CRYSTAL_SHARDS;
-        const static ParameterSystem::Param<CATALYST> CATALYST_MAGIC;
+        const static ParameterSystem::BaseValue CRYSTAL_MAGIC, CRYSTAL_SHARDS,
+            CATALYST_MAGIC;
 
         static bool CanBuy(std::shared_ptr<Upgrade> u);
         static std::string AdditiveEffect(const Number& effect);
@@ -40,83 +55,95 @@ class Upgrade {
         static std::string PercentEffect(const Number& effect);
     };
 
-    Upgrade() = default;
+    Upgrade(ParameterSystem::BaseValue lvl);
     // No copying to avoid memory issues with parameter subscriptions
     Upgrade(const Upgrade& other) = delete;
     Upgrade& operator=(const Upgrade& other) = delete;
 
     bool mIncludeInfo = true;
 
-    SharedTexture mImg, mDesc, mInfo;
-
-    int getMaxLevel() const;
-    int getLevel() const;
-    const std::string& getEffect() const;
-    bool hasCostSource() const;
-    const std::unique_ptr<ParameterSystem::ParamBase>& getCostSource() const;
-    bool hasMoneySource() const;
-    const std::unique_ptr<ParameterSystem::ParamBase>& getMoneySource() const;
-
     Upgrade& setMaxLevel(int maxLevel);
-    Upgrade& setLevel(int level);
-    Upgrade& setEffect(const std::string& effect);
-    Upgrade& setEffectSource(
-        const ParameterSystem::ParamBase& param,
-        std::function<std::string(const Number&)> onEffect);
-    Upgrade& setEffectSource(const ParameterSystem::ParamMapBase& params,
-                             std::function<std::string()> onEffect);
-    Upgrade& clearEffectSource();
-    Upgrade& setCostSource(const ParameterSystem::ParamBase& param);
-    Upgrade& clearCostSource();
-    Upgrade& setMoneySource(const ParameterSystem::ParamBase& param);
-    Upgrade& clearMoneySource();
+    Upgrade& setOnLevel(std::function<void(const Number&)> func);
+    Upgrade& setMoney(ParameterSystem::BaseValue param);
+    Upgrade& setCost(ParameterSystem::NodeValue param,
+                     std::function<Number(const Number&)> func);
+    Upgrade& setEffectStr(const std::string& str);
+    Upgrade& setEffect(
+        ValueUpdate val,
+        std::function<std::string(const Number&)> getEffectString);
+    Upgrade& setEffect(StateUpdate state,
+                       std::function<std::string(bool)> getEffectString);
+    Upgrade& setEffects(const std::initializer_list<ValueUpdate>& values,
+                        const std::initializer_list<StateUpdate>& states,
+                        std::function<std::string()> getEffectString);
+
     Upgrade& setImg(std::string img);
     Upgrade& setDescription(std::string desc);
 
-    void drawDescription(TextureBuilder tex, SDL_FPoint offset = {0, 0}) const;
+    Status getStatus() const;
+    void buy();
+
+    void drawIcon(TextureBuilder& tex, const Rect& r);
+    void drawDescription(TextureBuilder tex, SDL_FPoint offset = {0, 0});
 
     std::string getInfo() const;
-
-    void updateEffect();
-    void updateInfo();
 
     static SharedTexture createDescription(std::string text);
 
     const static SDL_Color DESC_BKGRND;
     const static FontData DESC_FONT;
 
-   private:
+   protected:
+    Upgrade& addEffect(ValueUpdate val);
+    Upgrade& addEffect(StateUpdate state);
+    Upgrade& clearEffects();
+
     // maxLevel < 0: Can buy infinitely
     // maxLevel = 0: Can't buy
     // maxLevel > 0: Can by maxLevel times
     int mMaxLevel = 0;
-    int mLevel = 0;
-    std::string mEffect = "";
 
-    std::unique_ptr<ParameterSystem::ParamBase> mCostSrc, mMoneySrc;
-    ParameterSystem::ParameterObservable::SubscriptionPtr mCostSub, mEffectSub;
+    std::string mEffect = "";
+    bool mUpdateInfo = false;
+    SharedTexture mImg, mDesc, mInfo;
+
+    ParameterSystem::NodeValuePtr mCostSrc;
+    ParameterSystem::BaseValuePtr mLevelSrc, mMoneySrc;
+    std::list<ParameterSystem::NodeValue> mValueEffectSrcs;
+    std::list<ParameterSystem::NodeState> mStateEffectSrcs;
+
+    std::list<ParameterSystem::ParameterSubscriptionPtr> mEffectSubs;
+    ParameterSystem::ParameterSubscriptionPtr mLevelSub, mCostSub, mEffectSub;
 };
 
 typedef std::shared_ptr<Upgrade> UpgradePtr;
 
+class TileUpgrade : public Upgrade {
+   public:
+    TileUpgrade() = default;
+
+    Upgrade& setMoney(ParameterSystem::BaseValue param);
+    Upgrade& setCost(ParameterSystem::NodeValue param,
+                     std::function<Number(const Number&)> func);
+
+    Upgrade& setEffect(
+        ParameterSystem::NodeValue val,
+        std::function<std::string(const Number&)> getEffectString);
+    Upgrade& setEffect(ParameterSystem::NodeState state,
+                       std::function<std::string(bool)> getEffectString);
+    Upgrade& setEffects(
+        const std::initializer_list<ParameterSystem::NodeValue>& values,
+        const std::initializer_list<ParameterSystem::NodeState>& states,
+        std::function<std::string()> getEffectString);
+};
+
+typedef std::shared_ptr<TileUpgrade> TileUpgradePtr;
+
 // For managing multiple upgrades
-typedef Observable<void(UpgradePtr), bool(UpgradePtr), UpgradePtr>
-    UpgradeListBase;
+typedef Observable<UpgradePtr> UpgradeListBase;
 class UpgradeList : public UpgradeListBase {
    public:
-    enum : size_t { ON_LEVEL = 0, CAN_BUY, DATA };
-    enum UpgradeStatus : uint8_t {
-        BOUGHT = 0,
-        BUYABLE,
-        CANT_BUY,
-        NOT_BUYABLE,
-    };
-
-    SubscriptionPtr subscribe(std::function<void(UpgradePtr)> func,
-                              UpgradePtr up);
-    SubscriptionPtr subscribe(UpgradePtr up);
-
-    void onSubscribe(SubscriptionPtr sub);
+    enum : size_t { DATA };
 
     int size() const;
 
@@ -126,15 +153,10 @@ class UpgradeList : public UpgradeListBase {
 
     void draw(TextureBuilder tex, float scroll, SDL_Point offset = {0, 0});
 
-    void reset();
-
     // Static functions
     static UpgradePtr Get(SubscriptionPtr sub);
 
    private:
-    UpgradeStatus getSubStatus(SubscriptionPtr sub);
-    void onSubClick(SubscriptionPtr sub);
-
     void computeRects();
 
     int mCount;

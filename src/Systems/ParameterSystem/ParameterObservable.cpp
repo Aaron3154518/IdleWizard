@@ -1,13 +1,41 @@
 #include "ParameterObservable.h"
 
 namespace ParameterSystem {
-const Number& ParameterObservable::get() const { return mVal; }
+// ValueObservable
+const Number& ValueObservable::get() const { return mVal; }
 
-void ParameterObservable::set(const Number& val) {
+void ValueObservable::set(const Number& val) {
     mVal = val;
-    ParameterObservableBase::next();
+    next();
 }
 
-void ParameterObservable::onSubscribe(SubscriptionPtr sub) { sub->get<0>()(); }
+// BaseValueObservable
+BaseValueObservable::BaseValueObservable() {
+    set(mDefault);
+    setResetTier(mResetTier);
+}
 
+void BaseValueObservable::setResetTier(ResetTier tier) {
+    mResetTier = tier;
+    // mResetSub = TBD
+}
+
+// StateObservable
+bool StateObservable::get() const { return mState; }
+
+void StateObservable::set(bool state) {
+    mState = state;
+    next();
+}
+
+// BaseStateObservable
+BaseStateObservable::BaseStateObservable() {
+    set(mDefault);
+    setResetTier(mResetTier);
+}
+
+void BaseStateObservable::setResetTier(ResetTier tier) {
+    mResetTier = tier;
+    // mResetSub = TBD
+}
 }  // namespace ParameterSystem

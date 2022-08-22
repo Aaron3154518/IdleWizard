@@ -1,17 +1,17 @@
 #include "Catalyst.h"
 
 // Catalyst
+const std::vector<bool> Catalyst::DEFAULT_PARAMS = {
+    ParameterSystem::SetDefault<CATALYST>(CatalystParams::Magic, 0),
+    ParameterSystem::SetDefault<CATALYST>(CatalystParams::Capacity, 100),
+};
+
 Catalyst::Catalyst() : WizardBase(CATALYST) {}
 
 void Catalyst::init() {
     mMagicText.tData.font = AssetManager::getFont(FONT);
 
     WizardBase::init();
-}
-void Catalyst::setDefaultValues() {
-    ParameterSystem::Params<CATALYST> params;
-    params.set(CatalystParams::Magic, 0);
-    params.set(CatalystParams::Capacity, 100);
 }
 void Catalyst::setSubscriptions() {
     mFireballSub =
@@ -23,9 +23,9 @@ void Catalyst::setSubscriptions() {
 }
 void Catalyst::setUpgrades() {
     // Power Display
-    UpgradePtr up = std::make_shared<Upgrade>();
+    TileUpgradePtr up = std::make_shared<TileUpgrade>();
     up->setMaxLevel(0)
-        .setEffectSource(
+        .setEffect(
             ParameterSystem::Param<CATALYST>(CatalystParams::MagicEffect),
             Upgrade::Defaults::MultiplicativeEffect)
         .setImg(WIZ_IMGS.at(mId))

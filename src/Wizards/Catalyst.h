@@ -8,8 +8,8 @@
 #include <RenderSystem/Shapes.h>
 #include <RenderSystem/TextureBuilder.h>
 #include <ServiceSystem/CoreServices/RenderService.h>
-#include <Systems/ParameterSystem/Parameter.h>
-#include <Systems/ParameterSystem/WizardParams.h>
+#include <Systems/ParameterSystem/ParameterAccess.h>
+#include <Systems/ParameterSystem/WizardParameters.h>
 #include <Wizards/WizardBase.h>
 #include <Wizards/WizardIds.h>
 
@@ -21,7 +21,6 @@ class Catalyst : public WizardBase {
 
    private:
     void init();
-    void setDefaultValues();
     void setSubscriptions();
     void setUpgrades();
     void setParamTriggers();
@@ -37,6 +36,8 @@ class Catalyst : public WizardBase {
     UpgradeList::SubscriptionPtr mMagicEffectDisplay;
 
     TextRenderData mMagicText;
+
+    const static std::vector<bool> DEFAULT_PARAMS;
 };
 
 #endif

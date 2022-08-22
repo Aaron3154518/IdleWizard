@@ -12,7 +12,7 @@
 #include <ServiceSystem/Observable.h>
 #include <ServiceSystem/Service.h>
 #include <ServiceSystem/ServiceSystem.h>
-#include <Systems/ParameterSystem/WizardParams.h>
+#include <Systems/ParameterSystem/WizardParameters.h>
 #include <Systems/TargetSystem.h>
 #include <Systems/TimeSystem.h>
 #include <Utils/Number.h>

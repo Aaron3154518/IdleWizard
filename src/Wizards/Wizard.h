@@ -12,8 +12,8 @@
 #include <ServiceSystem/EventServices/ResizeService.h>
 #include <ServiceSystem/ServiceSystem.h>
 #include <ServiceSystem/UpdateServices/TimerService.h>
-#include <Systems/ParameterSystem/Parameter.h>
-#include <Systems/ParameterSystem/WizardParams.h>
+#include <Systems/ParameterSystem/ParameterAccess.h>
+#include <Systems/ParameterSystem/WizardParameters.h>
 #include <Systems/TimeSystem.h>
 #include <Systems/WizardSystem.h>
 #include <Wizards/WizardBase.h>

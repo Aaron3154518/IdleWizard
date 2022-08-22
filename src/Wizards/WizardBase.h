@@ -15,7 +15,6 @@
 #include <ServiceSystem/ServiceSystem.h>
 #include <Systems/ParameterSystem/ParameterObservable.h>
 #include <Systems/TargetSystem.h>
-#include <Systems/WizardSystem.h>
 #include <Wizards/WizardIds.h>
 
 #include <memory>

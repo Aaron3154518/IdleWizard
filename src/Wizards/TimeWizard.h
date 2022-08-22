@@ -10,8 +10,8 @@
 #include <ServiceSystem/CoreServices/UpdateService.h>
 #include <ServiceSystem/Lockable.h>
 #include <ServiceSystem/UpdateServices/TimerService.h>
-#include <Systems/ParameterSystem/Parameter.h>
-#include <Systems/ParameterSystem/WizardParams.h>
+#include <Systems/ParameterSystem/ParameterAccess.h>
+#include <Systems/ParameterSystem/WizardParameters.h>
 #include <Wizards/WizardBase.h>
 #include <Wizards/WizardIds.h>
 

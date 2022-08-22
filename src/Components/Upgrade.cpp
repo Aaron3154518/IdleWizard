@@ -1,16 +1,15 @@
 #include "Upgrade.h"
 
-// Upgrade
 const SDL_Color Upgrade::DESC_BKGRND{175, 175, 175, 255};
 const FontData Upgrade::DESC_FONT{-1, 20, "|"};
 
 // Defaults
-const ParameterSystem::Param<CRYSTAL> Upgrade::Defaults::CRYSTAL_MAGIC(
-    CrystalParams::Magic);
-const ParameterSystem::Param<CRYSTAL> Upgrade::Defaults::CRYSTAL_SHARDS(
-    CrystalParams::Shards);
-const ParameterSystem::Param<CATALYST> Upgrade::Defaults::CATALYST_MAGIC(
-    CatalystParams::Magic);
+const ParameterSystem::BaseValue Upgrade::Defaults::CRYSTAL_MAGIC =
+    ParameterSystem::Param<CRYSTAL>(CrystalParams::Magic);
+const ParameterSystem::BaseValue Upgrade::Defaults::CRYSTAL_SHARDS =
+    ParameterSystem::Param<CRYSTAL>(CrystalParams::Shards);
+const ParameterSystem::BaseValue Upgrade::Defaults::CATALYST_MAGIC =
+    ParameterSystem::Param<CATALYST>(CatalystParams::Magic);
 
 bool Upgrade::Defaults::CanBuy(UpgradePtr u) {
     return !u->mCostSrc || !u->mMoneySrc ||
@@ -27,83 +26,150 @@ std::string Upgrade::Defaults::PercentEffect(const Number& effect) {
     return (effect * 100).toString() + "%";
 }
 
-// Getters/setters
-int Upgrade::getMaxLevel() const { return mMaxLevel; }
-int Upgrade::getLevel() const { return mLevel; }
-const std::string& Upgrade::getEffect() const { return mEffect; }
-bool Upgrade::hasCostSource() const { return (bool)mCostSrc; }
-const std::unique_ptr<ParameterSystem::ParamBase>& Upgrade::getCostSource()
-    const {
-    return mCostSrc;
-}
-bool Upgrade::hasMoneySource() const { return (bool)mMoneySrc; }
-const std::unique_ptr<ParameterSystem::ParamBase>& Upgrade::getMoneySource()
-    const {
-    return mMoneySrc;
+// Upgrade
+Upgrade::Upgrade(ParameterSystem::BaseValue lvl) {
+    mLevelSrc = std::make_unique<ParameterSystem::BaseValue>(lvl);
 }
 
 Upgrade& Upgrade::setMaxLevel(int maxLevel) {
     mMaxLevel = maxLevel;
     return *this;
 }
-Upgrade& Upgrade::setLevel(int level) {
-    mLevel = level;
-    return *this;
+
+Upgrade& Upgrade::setOnLevel(std::function<void(const Number&)> func) {
+    mLevelSub = mLevelSrc->subscribe(func);
 }
-Upgrade& Upgrade::setEffect(const std::string& effect) {
-    mEffect = effect;
+
+Upgrade& Upgrade::setMoney(ParameterSystem::BaseValue param) {
+    mMoneySrc = std::make_unique<ParameterSystem::BaseValue>(param);
     return *this;
 }
 
-Upgrade& Upgrade::setEffectSource(
-    const ParameterSystem::ParamBase& param,
-    std::function<std::string(const Number&)> onEffect) {
-    mEffectSub = param.subscribe([this, param, onEffect]() {
-        mEffect = onEffect(param.get());
-        updateInfo();
+Upgrade& Upgrade::setCost(ParameterSystem::NodeValue param,
+                          std::function<Number(const Number&)> func) {
+    mCostSrc = std::make_unique<ParameterSystem::NodeValue>(param);
+    mCostSub = mCostSrc->subscribeTo(*mLevelSrc, func);
+    return *this;
+}
+
+Upgrade& Upgrade::setEffectStr(const std::string& str) {
+    mEffect = str;
+    mUpdateInfo = true;
+}
+Upgrade& Upgrade::setEffect(
+    ValueUpdate val,
+    std::function<std::string(const Number&)> getEffectString) {
+    clearEffects();
+    addEffect(val);
+    setEffectStr(getEffectString(val.node.get()));
+    mEffectSub = val.node.subscribe([this, getEffectString](const Number& val) {
+        setEffectStr(getEffectString(val));
     });
     return *this;
 }
-Upgrade& Upgrade::setEffectSource(const ParameterSystem::ParamMapBase& params,
-                                  std::function<std::string()> onEffect) {
-    mEffectSub = params.subscribe([this, onEffect]() {
-        mEffect = onEffect();
-        updateInfo();
+Upgrade& Upgrade::setEffect(StateUpdate state,
+                            std::function<std::string(bool)> getEffectString) {
+    clearEffects();
+    addEffect(state);
+    setEffectStr(getEffectString(state.node.get()));
+    mEffectSub = state.node.subscribe([this, getEffectString](bool state) {
+        setEffectStr(getEffectString(state));
     });
     return *this;
 }
-Upgrade& Upgrade::clearEffectSource() {
+Upgrade& Upgrade::setEffects(const std::initializer_list<ValueUpdate>& values,
+                             const std::initializer_list<StateUpdate>& states,
+                             std::function<std::string()> getEffectString) {
+    setEffectStr(getEffectString());
+    auto func = [this, getEffectString]() { setEffectStr(getEffectString()); };
+
+    clearEffects();
+    for (auto val : values) {
+        addEffect(val);
+        if (!mEffectSub) {
+            mEffectSub = val.node.getObservable()->subscribe(func);
+        }
+    }
+    for (auto state : states) {
+        addEffect(state);
+        if (!mEffectSub) {
+            mEffectSub = state.node.getObservable()->subscribe(func);
+        }
+    }
+    return *this;
+}
+
+Upgrade& Upgrade::addEffect(ValueUpdate val) {
+    mValueEffectSrcs.push_back(val.node);
+    mEffectSubs.push_back(val.node.subscribeTo(*mLevelSrc, val.func));
+    if (mEffectSub) {
+        val.node.getObservable()->subscribe(mEffectSub);
+    }
+}
+Upgrade& Upgrade::addEffect(StateUpdate state) {
+    mStateEffectSrcs.push_back(state.node);
+    mEffectSubs.push_back(state.node.subscribeTo(*mLevelSrc, state.func));
+    if (mEffectSub) {
+        state.node.getObservable()->subscribe(mEffectSub);
+    }
+}
+
+Upgrade& Upgrade::clearEffects() {
+    mEffectSubs.clear();
+    mValueEffectSrcs.clear();
+    mStateEffectSrcs.clear();
     mEffectSub.reset();
     return *this;
 }
-Upgrade& Upgrade::setCostSource(const ParameterSystem::ParamBase& param) {
-    mCostSrc = std::make_unique<ParameterSystem::ParamBase>(param);
-    mCostSub = mCostSrc->subscribe(std::bind(&Upgrade::updateInfo, this));
-    return *this;
-}
-Upgrade& Upgrade::clearCostSource() {
-    mCostSrc.reset();
-    mCostSub.reset();
-    return *this;
-}
-Upgrade& Upgrade::setMoneySource(const ParameterSystem::ParamBase& param) {
-    mMoneySrc = std::make_unique<ParameterSystem::ParamBase>(param);
-    return *this;
-}
-Upgrade& Upgrade::clearMoneySource() {
-    mMoneySrc.reset();
-    return *this;
-}
+
 Upgrade& Upgrade::setImg(std::string img) {
     mImg = AssetManager::getTexture(img);
     return *this;
 }
+
 Upgrade& Upgrade::setDescription(std::string desc) {
     mDesc = createDescription(desc);
     return *this;
 }
 
-void Upgrade::drawDescription(TextureBuilder tex, SDL_FPoint offset) const {
+Upgrade::Status Upgrade::getStatus() const {
+    if (mMaxLevel == 0) {
+        return NOT_BUYABLE;
+    }
+    if (mMaxLevel > 0 && mLevelSrc->get() >= mMaxLevel) {
+        return BOUGHT;
+    }
+    if (mCostSrc && mMoneySrc && mCostSrc->get() > mMoneySrc->get()) {
+        return CANT_BUY;
+    }
+    return BUYABLE;
+}
+
+void Upgrade::buy() {
+    if (getStatus() != BUYABLE) {
+        return;
+    }
+
+    if (mCostSrc && mMoneySrc) {
+        mMoneySrc->set(mMoneySrc->get() - mCostSrc->get());
+    }
+    mLevelSrc->set(mLevelSrc->get() + 1);
+}
+
+void Upgrade::drawIcon(TextureBuilder& tex, const Rect& r) {
+    RenderData rData;
+    rData.texture = mImg;
+    rData.dest = r;
+    rData.shrinkToTexture();
+    tex.draw(rData);
+}
+
+void Upgrade::drawDescription(TextureBuilder tex, SDL_FPoint offset) {
+    if (mUpdateInfo) {
+        mInfo = createDescription(getInfo());
+        mUpdateInfo = false;
+    }
+
     RectData rd;
     rd.color = DESC_BKGRND;
 
@@ -150,13 +216,14 @@ std::string Upgrade::getInfo() const {
     std::stringstream ss;
     ss << mEffect;
     if (mMaxLevel > 0) {
+        Number lvl = mLevelSrc->get();
         if (!mEffect.empty()) {
             ss << "\n";
         }
         if (mMaxLevel > 1) {
-            ss << mLevel << "/" << mMaxLevel << ": ";
+            ss << lvl << "/" << mMaxLevel << ": ";
         }
-        if (mLevel < mMaxLevel) {
+        if (lvl < mMaxLevel) {
             if (mCostSrc) {
                 ss << "$" << mCostSrc->get();
             }
@@ -166,13 +233,6 @@ std::string Upgrade::getInfo() const {
     }
     return ss.str();
 }
-
-void Upgrade::updateEffect() {
-    if (mEffectSub) {
-        mEffectSub->get<0>()();
-    }
-}
-void Upgrade::updateInfo() { mInfo = createDescription(getInfo()); }
 
 SharedTexture Upgrade::createDescription(std::string text) {
     if (text.empty()) {
@@ -186,58 +246,71 @@ SharedTexture Upgrade::createDescription(std::string text) {
     return tData.renderTextWrapped();
 }
 
-// UpgradeList
-UpgradeList::SubscriptionPtr UpgradeList::subscribe(
-    std::function<void(UpgradePtr)> func, UpgradePtr up) {
-    return UpgradeListBase::subscribe(func, Upgrade::Defaults::CanBuy, up);
+// TileUpgrade
+Upgrade& TileUpgrade::setEffect(
+    ParameterSystem::NodeValue val,
+    std::function<std::string(const Number&)> getEffectString) {
+    clearEffects();
+    mValueEffectSrcs.push_back(val);
+    setEffectStr(getEffectString(val.get()));
+    mEffectSub = val.subscribe([this, getEffectString](const Number& val) {
+        setEffectStr(getEffectString(val));
+    });
+    return *this;
 }
-UpgradeList::SubscriptionPtr UpgradeList::subscribe(UpgradePtr up) {
-    return UpgradeListBase::subscribe([](UpgradePtr u) {},
-                                      Upgrade::Defaults::CanBuy, up);
+Upgrade& TileUpgrade::setEffect(
+    ParameterSystem::NodeState state,
+    std::function<std::string(bool)> getEffectString) {
+    clearEffects();
+    mStateEffectSrcs.push_back(state);
+    setEffectStr(getEffectString(state.get()));
+    mEffectSub = state.subscribe([this, getEffectString](bool state) {
+        setEffectStr(getEffectString(state));
+    });
+    return *this;
 }
+Upgrade& TileUpgrade::setEffects(
+    const std::initializer_list<ParameterSystem::NodeValue>& values,
+    const std::initializer_list<ParameterSystem::NodeState>& states,
+    std::function<std::string()> getEffectString) {
+    setEffectStr(getEffectString());
+    auto func = [this, getEffectString]() { setEffectStr(getEffectString()); };
 
-void UpgradeList::onSubscribe(SubscriptionPtr sub) {
-    sub->get<ON_LEVEL>()(sub->get<DATA>());
-    sub->get<DATA>()->updateInfo();
-}
-
-UpgradeList::UpgradeStatus UpgradeList::getSubStatus(SubscriptionPtr sub) {
-    UpgradePtr up = sub->get<DATA>();
-    if (up->getMaxLevel() == 0) {
-        return UpgradeStatus::NOT_BUYABLE;
-    }
-    if (up->getMaxLevel() > 0 && up->getLevel() >= up->getMaxLevel()) {
-        return UpgradeStatus::BOUGHT;
-    }
-    return sub->get<CAN_BUY>()(up) ? UpgradeStatus::BUYABLE
-                                   : UpgradeStatus::CANT_BUY;
-}
-void UpgradeList::onSubClick(SubscriptionPtr sub) {
-    UpgradePtr up = sub->get<DATA>();
-    if ((up->getMaxLevel() < 0 || up->getLevel() < up->getMaxLevel()) &&
-        getSubStatus(sub) == UpgradeStatus::BUYABLE) {
-        if (up->hasMoneySource() && up->hasCostSource()) {
-            up->getMoneySource()->set(up->getMoneySource()->get() -
-                                      up->getCostSource()->get());
+    clearEffects();
+    for (auto val : values) {
+        mValueEffectSrcs.push_back(val);
+        if (!mEffectSub) {
+            mEffectSub = val.getObservable()->subscribe(func);
         }
-        up->setLevel(up->getLevel() + 1);
-        sub->get<ON_LEVEL>()(up);
-        up->updateInfo();
     }
+    for (auto state : states) {
+        mStateEffectSrcs.push_back(state);
+        if (!mEffectSub) {
+            mEffectSub = state.getObservable()->subscribe(func);
+        }
+    }
+    return *this;
 }
 
+// UpgradeList
 int UpgradeList::size() const { return mSubscriptions.size(); }
 
 void UpgradeList::onClick(SDL_Point mouse) {
     for (auto pair : mFrontRects) {
         if (SDL_PointInRect(&mouse, pair.first)) {
-            onSubClick(pair.second.lock());
+            auto sub = pair.second.lock();
+            if (sub) {
+                sub->get<DATA>()->buy();
+            }
             return;
         }
     }
     for (auto pair : mBackRects) {
         if (SDL_PointInRect(&mouse, pair.first)) {
-            onSubClick(pair.second.lock());
+            auto sub = pair.second.lock();
+            if (sub) {
+                sub->get<DATA>()->buy();
+            }
             return;
         }
     }
@@ -307,30 +380,25 @@ void UpgradeList::draw(TextureBuilder tex, float scroll, SDL_Point offset) {
         RectData rd;
         if (!sub) {
             rd.color = WHITE;
+            tex.draw(rd.set(r, 3));
         } else {
-            switch (getSubStatus(sub)) {
-                case UpgradeStatus::BOUGHT:
+            auto up = sub->get<DATA>();
+            switch (up->getStatus()) {
+                case Upgrade::Status::BOUGHT:
                     rd.color = BLUE;
                     break;
-                case UpgradeStatus::BUYABLE:
+                case Upgrade::Status::BUYABLE:
                     rd.color = GREEN;
                     break;
-                case UpgradeStatus::CANT_BUY:
+                case Upgrade::Status::CANT_BUY:
                     rd.color = RED;
                     break;
-                case UpgradeStatus::NOT_BUYABLE:
+                case Upgrade::Status::NOT_BUYABLE:
                     rd.color = BLACK;
                     break;
             }
-        }
-        tex.draw(rd.set(r, 3));
-
-        if (sub) {
-            RenderData rData;
-            rData.texture = sub->get<DATA>()->mImg;
-            rData.dest = r;
-            rData.shrinkToTexture();
-            tex.draw(rData);
+            tex.draw(rd.set(r, 3));
+            up->drawIcon(tex, r);
         }
     };
 
@@ -340,16 +408,6 @@ void UpgradeList::draw(TextureBuilder tex, float scroll, SDL_Point offset) {
 
     for (auto pair : mFrontRects) {
         drawUpgrade(pair.first, pair.second.lock());
-    }
-}
-
-void UpgradeList::reset() {
-    for (auto it = abegin(), endIt = aend(); it != endIt; ++it) {
-        auto sub = *it;
-        auto up = sub->get<DATA>();
-        up->setLevel(0);
-        sub->get<ON_LEVEL>()(up);
-        up->updateInfo();
     }
 }
 

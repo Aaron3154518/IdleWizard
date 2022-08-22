@@ -7,16 +7,14 @@ const std::string TimeWizard::FREEZE_UP_IMG =
     "res/upgrades/time_freeze_upgrade.png";
 const std::string TimeWizard::SPEED_UP_IMG = "res/upgrades/speed_upgrade.png";
 
-const std::vector<bool> TimeWizard::DEFAULT_PARAMS = {
-    ParameterSystem::SetDefault<TIME_WIZARD>(TimeWizardParams::SpeedBaseEffect,
-                                             1.5),
-    ParameterSystem::SetDefault<TIME_WIZARD>(TimeWizardParams::FreezeDelay,
-                                             30000),
-    ParameterSystem::SetDefault<TIME_WIZARD>(TimeWizardParams::FreezeDuration,
-                                             5000),
-    ParameterSystem::SetDefault<TIME_WIZARD>(TimeWizardParams::FreezeBaseEffect,
-                                             1.1),
-};
+void TimeWizard::setDefaults() {
+    ParameterSystem::Params<TIME_WIZARD> params;
+
+    params[TimeWizardParams::SpeedBaseEffect]->setDefault(1.5);
+    params[TimeWizardParams::FreezeBaseEffect]->setDefault(1.1);
+    params[TimeWizardParams::FreezeDelay]->setDefault(30000);
+    params[TimeWizardParams::FreezeDuration]->setDefault(5000);
+}
 
 TimeWizard::TimeWizard() : WizardBase(TIME_WIZARD) {}
 

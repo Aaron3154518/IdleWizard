@@ -33,6 +33,8 @@ class Wizard : public WizardBase {
 
     const static std::vector<WizardId> TARGETS;
 
+    static void setDefaults();
+
    private:
     void init();
     void setSubscriptions();
@@ -85,8 +87,6 @@ class Wizard : public WizardBase {
 
     std::vector<FireballPtr> mFireballs;
     int mFireballFreezeCnt;
-
-    const static std::vector<bool> DEFAULT_PARAMS;
 };
 
 #endif

@@ -168,7 +168,7 @@ void Upgrade::Cost::buy() const { mMoney.set(mMoney.get() - mCost.get()); }
 ParameterSystem::ParameterSubscriptionPtr Upgrade::Cost::subscribe(
     std::function<void()> func) const {
     ParameterSystem::ParameterSubscriptionPtr sub = mCost.subscribe(func);
-    mMoney.getObservable()->subscribe(sub);
+    mMoney->subscribe(sub);
     return sub;
 }
 
@@ -226,14 +226,14 @@ ParameterSystem::ParameterSubscriptionPtr Upgrade::Effects::subscribeToEffects(
         if (!sub) {
             sub = param.first.subscribe(useEffect);
         } else {
-            param.first.getObservable()->subscribe(sub);
+            param.first->subscribe(sub);
         }
     }
     for (auto param : mStateParams) {
         if (!sub) {
             sub = param.first.subscribe(useEffect);
         } else {
-            param.first.getObservable()->subscribe(sub);
+            param.first->subscribe(sub);
         }
     }
     return sub;

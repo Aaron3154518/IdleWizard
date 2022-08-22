@@ -11,13 +11,17 @@ const std::string Wizard::FIREBALL_BUFFED_IMG =
 
 const std::vector<WizardId> Wizard::TARGETS = {CRYSTAL, CATALYST};
 
-const std::vector<bool> Wizard::DEFAULT_PARAMS = {
-    ParameterSystem::SetDefault<WIZARD>(WizardParams::BasePower, 1),
-    ParameterSystem::SetDefault<WIZARD>(WizardParams::BaseSpeed, 1),
-    ParameterSystem::SetDefault<WIZARD>(WizardParams::BaseCrit, 1),
-    ParameterSystem::SetDefault<WIZARD>(WizardParams::BaseCritSpread, 0),
-    ParameterSystem::SetDefault<WIZARD>(WizardParams::PowerWizEffect, 1),
-};
+void Wizard::setDefaults() {
+    ParameterSystem::Params<WIZARD> params;
+
+    // Default 0
+    params[WizardParams::BaseCritSpread]->setDefault(0);
+
+    // Default 1
+    params.setDefaults({WizardParams::BasePower, WizardParams::BasePower,
+                        WizardParams::BaseCrit, WizardParams::PowerWizEffect},
+                       1);
+}
 
 Wizard::Wizard() : WizardBase(WIZARD) {}
 

@@ -1,10 +1,12 @@
 #include "Catalyst.h"
 
 // Catalyst
-const std::vector<bool> Catalyst::DEFAULT_PARAMS = {
-    ParameterSystem::SetDefault<CATALYST>(CatalystParams::Magic, 0),
-    ParameterSystem::SetDefault<CATALYST>(CatalystParams::Capacity, 100),
-};
+void Catalyst::setDefaults() {
+    ParameterSystem::Params<CATALYST> params;
+
+    params[CatalystParams::Magic]->setDefault(0);
+    params[CatalystParams::Capacity]->setDefault(100);
+}
 
 Catalyst::Catalyst() : WizardBase(CATALYST) {}
 

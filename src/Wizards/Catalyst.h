@@ -20,6 +20,8 @@ class Catalyst : public WizardBase {
    public:
     Catalyst();
 
+    static void setDefaults();
+
    private:
     void init();
     void setSubscriptions();
@@ -36,8 +38,6 @@ class Catalyst : public WizardBase {
     UpgradeList::SubscriptionPtr mMagicEffectDisplay;
 
     TextRenderData mMagicText;
-
-    const static std::vector<bool> DEFAULT_PARAMS;
 };
 
 #endif

@@ -68,6 +68,8 @@ class BaseValueObservable : public ValueObservable {
 
     void setResetTier(ResetTier tier);
 
+    void setDefault(const Number& val);
+
     Number mDefault;
 
    private:
@@ -84,6 +86,8 @@ class BaseStateObservable : public StateObservable {
     using StateObservable::set;
 
     void setResetTier(ResetTier tier);
+
+    void setDefault(bool state);
 
     bool mDefault;
 

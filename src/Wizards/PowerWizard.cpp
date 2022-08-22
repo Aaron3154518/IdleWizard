@@ -5,13 +5,13 @@ const std::string PowerWizard::FIREBALL_IMG = "res/projectiles/fireball2.png";
 const std::string PowerWizard::POWER_UP_IMG =
     "res/upgrades/power_fireball_upgrade.png";
 
-const std::vector<bool> PowerWizard::DEFAULT_PARAMS = {
-    ParameterSystem::SetDefault<POWER_WIZARD>(PowerWizardParams::BasePower, 5),
-    ParameterSystem::SetDefault<POWER_WIZARD>(PowerWizardParams::BaseSpeed,
-                                              .25),
-    ParameterSystem::SetDefault<POWER_WIZARD>(PowerWizardParams::Duration,
-                                              1000),
-};
+void PowerWizard::setDefaults() {
+    ParameterSystem::Params<POWER_WIZARD> params;
+
+    params[PowerWizardParams::BasePower]->setDefault(5);
+    params[PowerWizardParams::BaseSpeed]->setDefault(.25);
+    params[PowerWizardParams::Duration]->setDefault(1000);
+}
 
 PowerWizard::PowerWizard() : WizardBase(POWER_WIZARD) {}
 

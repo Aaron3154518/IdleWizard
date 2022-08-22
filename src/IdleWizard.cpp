@@ -20,6 +20,14 @@ int main(int argc, char* argv[]) {
 
     GameSystem::Init(options);
 
+    // Initialize Parameters
+    Wizard::setDefaults();
+    Crystal::setDefaults();
+    Catalyst::setDefaults();
+    PowerWizard::setDefaults();
+    TimeWizard::setDefaults();
+
+    // Create Components
     std::unique_ptr<UpgradeScroller> upgradeScroller =
         ComponentFactory<UpgradeScroller>::New();
     std::unique_ptr<Wizard> wizard = ComponentFactory<Wizard>::New();

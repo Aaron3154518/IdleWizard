@@ -20,6 +20,11 @@ void BaseValueObservable::setResetTier(ResetTier tier) {
     // mResetSub = TBD
 }
 
+void BaseValueObservable::setDefault(const Number& val) {
+    mDefault = val;
+    set(val);
+}
+
 // StateObservable
 bool StateObservable::get() const { return mState; }
 
@@ -37,5 +42,10 @@ BaseStateObservable::BaseStateObservable() {
 void BaseStateObservable::setResetTier(ResetTier tier) {
     mResetTier = tier;
     // mResetSub = TBD
+}
+
+void BaseStateObservable::setDefault(bool state) {
+    mDefault = state;
+    set(state);
 }
 }  // namespace ParameterSystem

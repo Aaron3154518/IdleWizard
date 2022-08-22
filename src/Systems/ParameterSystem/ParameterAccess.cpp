@@ -12,21 +12,21 @@ ValueParam& ValueParam::operator=(const ValueParam& other) {
     return *this;
 }
 
-ValueObservablePtr ValueParam::getObservable() const {
+ValueObservablePtr ValueParam::operator->() const {
     if (mIsBase) {
         return ParameterDag::GetBase(mId, mKey);
     }
     return ParameterDag::GetNode(mId, mKey);
 }
 
-const Number& ValueParam::get() const { return getObservable()->get(); }
+const Number& ValueParam::get() const { return operator->()->get(); }
 
 ParameterSubscriptionPtr ValueParam::subscribe(std::function<void()> func,
                                                bool fire) const {
     if (fire) {
         func();
     }
-    return getObservable()->subscribe(func);
+    return operator->()->subscribe(func);
 }
 ParameterSubscriptionPtr ValueParam::subscribe(
     std::function<void(const Number&)> func, bool fire) const {
@@ -51,21 +51,21 @@ StateParam& StateParam::operator=(const StateParam& other) {
     return *this;
 }
 
-StateObservablePtr StateParam::getObservable() const {
+StateObservablePtr StateParam::operator->() const {
     if (mIsBase) {
         return ParameterDag::GetBase(mKey);
     }
     return ParameterDag::GetNode(mKey);
 }
 
-bool StateParam::get() const { return getObservable()->get(); }
+bool StateParam::get() const { return operator->()->get(); }
 
 ParameterSubscriptionPtr StateParam::subscribe(std::function<void()> func,
                                                bool fire) const {
     if (fire) {
         func();
     }
-    return getObservable()->subscribe(func);
+    return operator->()->subscribe(func);
 }
 ParameterSubscriptionPtr StateParam::subscribe(std::function<void(bool)> func,
                                                bool fire) const {
@@ -81,25 +81,25 @@ ParameterSubscriptionPtr StateParam::subscribe(std::function<void(bool)> func,
 // BaseValue
 BaseValue::BaseValue(WizardId id, param_t key) : ValueParam(id, key, true) {}
 
-BaseValueObservablePtr BaseValue::getObservable() const {
+BaseValueObservablePtr BaseValue::operator->() const {
     return ParameterDag::GetBase(mId, mKey);
 }
 
-void BaseValue::set(const Number& val) const { getObservable()->set(val); }
+void BaseValue::set(const Number& val) const { operator->()->set(val); }
 
 // BaseState
 BaseState::BaseState(param_t key) : StateParam(key, true) {}
 
-BaseStateObservablePtr BaseState::getObservable() const {
+BaseStateObservablePtr BaseState::operator->() const {
     return ParameterDag::GetBase(mKey);
 }
 
-void BaseState::set(bool state) const { getObservable()->set(state); }
+void BaseState::set(bool state) const { operator->()->set(state); }
 
 // NodeValue
 NodeValue::NodeValue(WizardId id, param_t key) : ValueParam(id, key, false) {}
 
-NodeValueObservablePtr NodeValue::getObservable() const {
+NodeValueObservablePtr NodeValue::operator->() const {
     return ParameterDag::GetNode(mId, mKey);
 }
 
@@ -141,7 +141,7 @@ ParameterSubscriptionPtr NodeValue::subscribeTo(
 // NodeState
 NodeState::NodeState(param_t key) : StateParam(key, false) {}
 
-NodeStateObservablePtr NodeState::getObservable() const {
+NodeStateObservablePtr NodeState::operator->() const {
     return ParameterDag::GetNode(mKey);
 }
 
@@ -190,16 +190,16 @@ ParameterSubscriptionPtr subscribe(
     ParameterSubscriptionPtr sub;
     for (auto val : values) {
         if (!sub) {
-            sub = val.getObservable()->subscribe(func);
+            sub = val->subscribe(func);
         } else {
-            val.getObservable()->subscribe(sub);
+            val->subscribe(sub);
         }
     }
     for (auto state : values) {
         if (!sub) {
-            sub = state.getObservable()->subscribe(func);
+            sub = state->subscribe(func);
         } else {
-            state.getObservable()->subscribe(sub);
+            state->subscribe(sub);
         }
     }
     if (fire) {
@@ -213,8 +213,10 @@ BaseState States::operator[](State::B key) { return Param(key); }
 
 NodeState States::operator[](State::N key) { return Param(key); }
 
-bool SetDefault(State::B key, bool val) {
-    Param(key).getObservable()->mDefault = val;
-    return true;
+void States::setDefaults(const std::initializer_list<State::B> keys,
+                         bool state) {
+    for (auto key : keys) {
+        operator[](key)->setDefault(state);
+    }
 }
 }  // namespace ParameterSystem

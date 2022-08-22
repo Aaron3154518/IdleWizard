@@ -88,13 +88,13 @@ Upgrade& Upgrade::setEffects(const std::initializer_list<ValueUpdate>& values,
     for (auto val : values) {
         addEffect(val);
         if (!mEffectSub) {
-            mEffectSub = val.node.getObservable()->subscribe(func);
+            mEffectSub = val.node->subscribe(func);
         }
     }
     for (auto state : states) {
         addEffect(state);
         if (!mEffectSub) {
-            mEffectSub = state.node.getObservable()->subscribe(func);
+            mEffectSub = state.node->subscribe(func);
         }
     }
     return *this;
@@ -104,14 +104,14 @@ Upgrade& Upgrade::addEffect(ValueUpdate val) {
     mValueEffectSrcs.push_back(val.node);
     mEffectSubs.push_back(val.node.subscribeTo(*mLevelSrc, val.func));
     if (mEffectSub) {
-        val.node.getObservable()->subscribe(mEffectSub);
+        val.node->subscribe(mEffectSub);
     }
 }
 Upgrade& Upgrade::addEffect(StateUpdate state) {
     mStateEffectSrcs.push_back(state.node);
     mEffectSubs.push_back(state.node.subscribeTo(*mLevelSrc, state.func));
     if (mEffectSub) {
-        state.node.getObservable()->subscribe(mEffectSub);
+        state.node->subscribe(mEffectSub);
     }
 }
 
@@ -281,13 +281,13 @@ Upgrade& TileUpgrade::setEffects(
     for (auto val : values) {
         mValueEffectSrcs.push_back(val);
         if (!mEffectSub) {
-            mEffectSub = val.getObservable()->subscribe(func);
+            mEffectSub = val->subscribe(func);
         }
     }
     for (auto state : states) {
         mStateEffectSrcs.push_back(state);
         if (!mEffectSub) {
-            mEffectSub = state.getObservable()->subscribe(func);
+            mEffectSub = state->subscribe(func);
         }
     }
     return *this;

@@ -24,6 +24,8 @@ class PowerWizard : public WizardBase {
 
     const static std::string FIREBALL_IMG, POWER_UP_IMG;
 
+    static void setDefaults();
+
    private:
     void setSubscriptions();
     void setUpgrades();
@@ -52,8 +54,6 @@ class PowerWizard : public WizardBase {
 
     std::vector<FireballPtr> mFireballs;
     int mFireballFreezeCnt;
-
-    const static std::vector<bool> DEFAULT_PARAMS;
 };
 
 #endif

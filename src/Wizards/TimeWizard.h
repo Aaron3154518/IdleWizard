@@ -25,6 +25,8 @@ class TimeWizard : public WizardBase {
     const static std::string ACTIVE_IMG, FREEZE_IMG, FREEZE_UP_IMG,
         SPEED_UP_IMG;
 
+    static void setDefaults();
+
    private:
     void init();
     void setSubscriptions();
@@ -55,8 +57,6 @@ class TimeWizard : public WizardBase {
     TogglePtr mActiveToggle;
 
     ProgressBar mFreezePb;
-
-    const static std::vector<bool> DEFAULT_PARAMS;
 };
 
 #endif

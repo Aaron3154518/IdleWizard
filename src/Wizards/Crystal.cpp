@@ -4,10 +4,12 @@
 const Number Crystal::T1_COST1 = 500, Crystal::T1_COST2 = 5e4;
 const SDL_Color Crystal::MSG_COLOR{200, 0, 175, 255};
 
-const std::vector<bool> Crystal::DEFAULT_PARAMS = {
-    ParameterSystem::SetDefault<CRYSTAL>(CrystalParams::Magic, 0),
-    ParameterSystem::SetDefault<CRYSTAL>(CrystalParams::Shards, 0),
-};
+void Crystal::setDefaults() {
+    ParameterSystem::Params<CRYSTAL> params;
+
+    // Default 0
+    params.setDefaults({CrystalParams::Magic, CrystalParams::Shards}, 0);
+}
 
 Crystal::Crystal() : WizardBase(CRYSTAL) {}
 

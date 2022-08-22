@@ -32,6 +32,8 @@ class Crystal : public WizardBase {
         SDL_FPoint mTrajectory;
     };
 
+    static void setDefaults();
+
    private:
     void init();
     void setSubscriptions();
@@ -66,8 +68,6 @@ class Crystal : public WizardBase {
     std::vector<std::unique_ptr<FireRing>> mFireRings;
 
     TextRenderData mMagicText;
-
-    const static std::vector<bool> DEFAULT_PARAMS;
 };
 
 #endif

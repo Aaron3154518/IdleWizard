@@ -22,7 +22,7 @@ struct ValueParam {
 
     ValueParam& operator=(const ValueParam& other);
 
-    ValueObservablePtr getObservable() const;
+    ValueObservablePtr operator->() const;
 
     const Number& get() const;
 
@@ -49,7 +49,7 @@ struct StateParam {
 
     StateParam& operator=(const StateParam& other);
 
-    StateObservablePtr getObservable() const;
+    StateObservablePtr operator->() const;
 
     bool get() const;
 
@@ -73,7 +73,7 @@ struct BaseValue : public ValueParam {
     friend BaseValue Param(WizardBaseType<id> key);
 
    public:
-    BaseValueObservablePtr getObservable() const;
+    BaseValueObservablePtr operator->() const;
 
     void set(const Number& val) const;
 
@@ -87,7 +87,7 @@ struct BaseState : public StateParam {
     friend BaseState Param(State::B key);
 
    public:
-    BaseStateObservablePtr getObservable() const;
+    BaseStateObservablePtr operator->() const;
 
     void set(bool state) const;
 
@@ -103,7 +103,7 @@ struct NodeValue : public ValueParam {
     friend NodeValue Param(WizardNodeType<id> key);
 
    public:
-    NodeValueObservablePtr getObservable() const;
+    NodeValueObservablePtr operator->() const;
 
     ParameterSubscriptionPtr subscribeTo(
         const std::initializer_list<ValueParam>& values,
@@ -126,7 +126,7 @@ struct NodeState : public StateParam {
     friend NodeState Param(State::N key);
 
    public:
-    NodeStateObservablePtr getObservable() const;
+    NodeStateObservablePtr operator->() const;
 
     ParameterSubscriptionPtr subscribeTo(
         const std::initializer_list<ValueParam>& values,
@@ -172,6 +172,13 @@ struct Params {
     BaseValue operator[](WizardBaseType<id> key) { return Param<id>(key); }
 
     NodeValue operator[](WizardNodeType<id> key) { return Param<id>(key); }
+
+    void setDefaults(const std::initializer_list<WizardBaseType<id>>& keys,
+                     const Number& val) {
+        for (auto key : keys) {
+            operator[](key)->setDefault(val);
+        }
+    }
 };
 
 // Provides easy access to state params
@@ -179,16 +186,9 @@ struct States {
     BaseState operator[](State::B key);
 
     NodeState operator[](State::N key);
+
+    void setDefaults(const std::initializer_list<State::B> keys, bool state);
 };
-
-template <WizardId id>
-bool SetDefault(WizardBaseType<id> key, const Number& val) {
-    Param<id>(key).getObservable()->mDefault = val;
-    Param<id>(key).getObservable()->set(val);
-    return true;
-}
-
-bool SetDefault(State::B key, bool val);
 }  // namespace ParameterSystem
 
 #endif

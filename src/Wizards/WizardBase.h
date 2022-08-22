@@ -2,7 +2,7 @@
 #define WIZARD_BASE_H
 
 #include <Components/Fireball.h>
-#include <Components/Upgrade.h>
+#include <Components/UpgradeList.h>
 #include <RenderSystem/AssetManager.h>
 #include <RenderSystem/RenderTypes.h>
 #include <RenderSystem/TextureBuilder.h>

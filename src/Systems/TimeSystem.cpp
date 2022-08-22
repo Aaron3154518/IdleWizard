@@ -5,8 +5,7 @@ namespace TimeSystem {
 void UpdateObservable::init() {
     mUpdateSub =
         ServiceSystem::Get<::UpdateService, ::UpdateObservable>()->subscribe(
-            std::bind(&UpdateObservable::onUpdate, this,
-                      std::placeholders::_1));
+            [this](Time dt) { onUpdate(dt); });
 }
 
 void UpdateObservable::onUpdate(Time dt) {

@@ -49,7 +49,7 @@ class Wizard : public WizardBase {
     void onFireballFireRingHit(Fireball& fireball,
                                const Number& fireRingEffect);
     bool onPowWizTimer(Timer& timer);
-    void onPowWizTimerUpdate(Time dt, Timer timer);
+    void onPowWizTimerUpdate(Time dt, Timer& timer);
     void onFreeze(TimeSystem::FreezeType type);
     void onUnfreeze(TimeSystem::FreezeType type);
 

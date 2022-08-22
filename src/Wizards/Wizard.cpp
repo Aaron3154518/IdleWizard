@@ -33,21 +33,20 @@ void Wizard::init() {
 void Wizard::setSubscriptions() {
     mFireballTimerSub =
         ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
-            std::bind(&Wizard::onTimer, this, std::placeholders::_1),
-            Timer(1000));
+            [this](Timer& t) { return onTimer(t); }, Timer(1000));
     mFireballSub =
         ServiceSystem::Get<FireballService, Fireball::HitObservable>()
-            ->subscribe(
-                std::bind(&Wizard::onFireballHit, this, std::placeholders::_1),
-                mId);
+            ->subscribe([this](const Fireball& f) { onFireballHit(f); }, mId);
     mFireballFireRingSub =
         ServiceSystem::Get<FireballService, Fireball::FireRingHitObservable>()
-            ->subscribe(std::bind(&Wizard::onFireballFireRingHit, this,
-                                  std::placeholders::_1, std::placeholders::_2),
-                        mId);
+            ->subscribe(
+                [this](Fireball& f, const Number& e) {
+                    onFireballFireRingHit(f, e);
+                },
+                mId);
     mFreezeSub = TimeSystem::GetFreezeObservable()->subscribe(
-        std::bind(&Wizard::onFreeze, this, std::placeholders::_1),
-        std::bind(&Wizard::onUnfreeze, this, std::placeholders::_1));
+        [this](TimeSystem::FreezeType f) { onFreeze(f); },
+        [this](TimeSystem::FreezeType f) { onUnfreeze(f); });
     attachSubToVisibility(mFireballTimerSub);
     attachSubToVisibility(mFireballSub);
     attachSubToVisibility(mFireballFireRingSub);
@@ -279,9 +278,8 @@ void Wizard::onFireballHit(const Fireball& fireball) {
             params[WizardParams::PowerWizEffect].set(
                 mPowWizBoosts.front().first);
             mPowWizTimerSub = TimeSystem::GetTimerObservable()->subscribe(
-                std::bind(&Wizard::onPowWizTimer, this, std::placeholders::_1),
-                std::bind(&Wizard::onPowWizTimerUpdate, this,
-                          std::placeholders::_1, std::placeholders::_2),
+                [this](Timer& t) { return onPowWizTimer(t); },
+                [this](Time dt, Timer& t) { onPowWizTimerUpdate(dt, t); },
                 Timer(mPowWizBoosts.front().second.toFloat()));
         } break;
     }
@@ -306,7 +304,7 @@ bool Wizard::onPowWizTimer(Timer& timer) {
     timer.length = mPowWizBoosts.begin()->second.toFloat();
     return true;
 }
-void Wizard::onPowWizTimerUpdate(Time dt, Timer timer) {
+void Wizard::onPowWizTimerUpdate(Time dt, Timer& timer) {
     mPowWizBoosts.begin()->second = timer.getTimeLeft();
 }
 

@@ -53,20 +53,18 @@ Fireball::Fireball(SDL_FPoint c, WizardId src, WizardId target,
 void Fireball::init() {
     mResizeSub =
         ServiceSystem::Get<ResizeService, ResizeObservable>()->subscribe(
-            std::bind(&Fireball::onResize, this, std::placeholders::_1));
+            [this](ResizeData d) { onResize(d); });
     mUpdateSub = TimeSystem::GetUpdateObservable()->subscribe(
-        std::bind(&Fireball::onUpdate, this, std::placeholders::_1));
+        [this](Time dt) { onUpdate(dt); });
     mRenderSub =
         ServiceSystem::Get<RenderService, RenderObservable>()->subscribe(
-            std::bind(&Fireball::onRender, this, std::placeholders::_1), mPos);
+            [this](SDL_Renderer* r) { onRender(r); }, mPos);
     mFireballSub =
         ServiceSystem::Get<FireballService, FireballObservable>()->subscribe(
             [this](SDL_FPoint p) { mTargetPos = p; }, mTargetId);
     mFireRingSub =
         ServiceSystem::Get<FireRingService, FireRing::HitObservable>()
-            ->subscribe(
-                std::bind(&Fireball::onFireRing, this, std::placeholders::_1),
-                mPos);
+            ->subscribe([this](const Number& e) { onFireRing(e); }, mPos);
 
     launch(mTargetPos);
 }

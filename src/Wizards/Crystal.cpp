@@ -26,12 +26,10 @@ void Crystal::init() {
 void Crystal::setSubscriptions() {
     mUpdateSub =
         ServiceSystem::Get<UpdateService, UpdateObservable>()->subscribe(
-            std::bind(&Crystal::onUpdate, this, std::placeholders::_1));
+            [this](Time dt) { onUpdate(dt); });
     mFireballSub =
         ServiceSystem::Get<FireballService, Fireball::HitObservable>()
-            ->subscribe(
-                std::bind(&Crystal::onFireballHit, this, std::placeholders::_1),
-                mId);
+            ->subscribe([this](const Fireball& f) { onFireballHit(f); }, mId);
     attachSubToVisibility(mUpdateSub);
     attachSubToVisibility(mFireballSub);
 }

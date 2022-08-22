@@ -18,9 +18,7 @@ void Catalyst::init() {
 void Catalyst::setSubscriptions() {
     mFireballSub =
         ServiceSystem::Get<FireballService, Fireball::HitObservable>()
-            ->subscribe(std::bind(&Catalyst::onFireballHit, this,
-                                  std::placeholders::_1),
-                        mId);
+            ->subscribe([this](const Fireball& f) { onFireballHit(f); }, mId);
     attachSubToVisibility(mFireballSub);
 }
 void Catalyst::setUpgrades() {

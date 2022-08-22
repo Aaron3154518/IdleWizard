@@ -28,8 +28,7 @@ void TimeWizard::init() {
 void TimeWizard::setSubscriptions() {
     mCostTimerSub =
         ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
-            std::bind(&TimeWizard::onCostTimer, this, std::placeholders::_1),
-            Timer(50));
+            [this](Timer& t) { return onCostTimer(t); }, Timer(50));
     attachSubToVisibility(mCostTimerSub);
 }
 void TimeWizard::setUpgrades() {
@@ -188,7 +187,7 @@ bool TimeWizard::startFreeze(Timer& timer) {
     TimeSystem::Freeze(TimeSystem::FreezeType::TIME_WIZARD);
     mFreezeTimerSub =
         ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
-            std::bind(&TimeWizard::endFreeze, this, std::placeholders::_1),
+            [this](Timer& t) { return endFreeze(t); },
             [this](Time dt, Timer& timer) {
                 mFreezePb.set(1 - timer.getPercent());
             },
@@ -210,7 +209,7 @@ bool TimeWizard::endFreeze(Timer& timer) {
 void TimeWizard::startFreezeCycle() {
     mFreezeDelaySub =
         ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
-            std::bind(&TimeWizard::startFreeze, this, std::placeholders::_1),
+            [this](Timer& t) { return startFreeze(t); },
             [this](Time dt, Timer& timer) {
                 mFreezePb.set(timer.getPercent());
             },

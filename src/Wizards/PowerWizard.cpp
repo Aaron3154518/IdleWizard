@@ -18,11 +18,10 @@ PowerWizard::PowerWizard() : WizardBase(POWER_WIZARD) {}
 void PowerWizard::setSubscriptions() {
     mFireballTimerSub =
         ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
-            std::bind(&PowerWizard::onTimer, this, std::placeholders::_1),
-            Timer(1000));
+            [this](Timer& t) { return onTimer(t); }, Timer(1000));
     mFreezeSub = TimeSystem::GetFreezeObservable()->subscribe(
-        std::bind(&PowerWizard::onFreeze, this, std::placeholders::_1),
-        std::bind(&PowerWizard::onUnfreeze, this, std::placeholders::_1));
+        [this](TimeSystem::FreezeType t) { onFreeze(t); },
+        [this](TimeSystem::FreezeType t) { onUnfreeze(t); });
     attachSubToVisibility(mFireballTimerSub);
     attachSubToVisibility(mFreezeSub);
 }

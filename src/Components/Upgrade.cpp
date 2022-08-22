@@ -511,32 +511,25 @@ UpgradeScroller::UpgradeScroller()
 void UpgradeScroller::init() {
     mResizeSub =
         ServiceSystem::Get<ResizeService, ResizeObservable>()->subscribe(
-            std::bind(&UpgradeScroller::onResize, this, std::placeholders::_1));
+            [this](ResizeData d) { onResize(d); });
     mUpdateSub =
         ServiceSystem::Get<UpdateService, UpdateObservable>()->subscribe(
-            std::bind(&UpgradeScroller::onUpdate, this, std::placeholders::_1));
+            [this](Time dt) { onUpdate(dt); });
     mRenderSub =
         ServiceSystem::Get<RenderService, RenderObservable>()->subscribe(
-            std::bind(&UpgradeScroller::onRender, this, std::placeholders::_1),
-            mPos);
+            [this](SDL_Renderer* r) { onRender(r); }, mPos);
     mMouseSub = ServiceSystem::Get<MouseService, MouseObservable>()->subscribe(
-        std::bind(&UpgradeScroller::onClick, this, std::placeholders::_1,
-                  std::placeholders::_2),
-        mPos);
+        [this](Event::MouseButton b, bool c) { onClick(b, c); }, mPos);
     mDragSub = ServiceSystem::Get<DragService, DragObservable>()->subscribe(
         [this]() { onDragStart(); },
-        std::bind(&UpgradeScroller::onDrag, this, std::placeholders::_1,
-                  std::placeholders::_2, std::placeholders::_3,
-                  std::placeholders::_4),
+        [this](float x, float y, float dx, float dy) { onDrag(x, y, dx, dy); },
         []() {}, mPos, mDrag);
     mHoverSub = ServiceSystem::Get<HoverService, HoverObservable>()->subscribe(
-        []() {},
-        std::bind(&UpgradeScroller::onHover, this, std::placeholders::_1),
+        []() {}, [this](SDL_Point m) { onHover(m); },
         [this]() { onMouseLeave(); }, mPos);
     mUpgradeSub =
         ServiceSystem::Get<UpgradeService, UpgradeListObservable>()->subscribe(
-            std::bind(&UpgradeScroller::onSetUpgrades, this,
-                      std::placeholders::_1));
+            [this](UpgradeListPtr us) { onSetUpgrades(us); });
 }
 
 void UpgradeScroller::onResize(ResizeData data) {

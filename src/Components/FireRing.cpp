@@ -15,9 +15,9 @@ void FireRing::init() {
     pos->mouse = false;
     mRenderSub =
         ServiceSystem::Get<RenderService, RenderObservable>()->subscribe(
-            std::bind(&FireRing::onRender, this, std::placeholders::_1), pos);
+            [this](SDL_Renderer* r) { onRender(r); }, pos);
     mUpdateSub = TimeSystem::GetUpdateObservable()->subscribe(
-        std::bind(&FireRing::onUpdate, this, std::placeholders::_1));
+        [this](Time dt) { onUpdate(dt); });
     mRingSub =
         ServiceSystem::Get<FireRingService, HitObservable>()
             ->subscribeToFireballs(FireballObservable(mCircle.c, mCircle.r2));

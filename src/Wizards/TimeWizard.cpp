@@ -89,10 +89,10 @@ void TimeWizard::setUpgrades() {
     up->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
                 params[TimeWizardParams::FreezeUpCost],
                 [](const Number& lvl) { return 150 * (1.6 ^ lvl); });
-    up->setEffects(Upgrade::Effects().addEffect(
+    up->setEffect(
         params[TimeWizardParams::FreezeUp],
         [](const Number& lvl) { return 1.02 ^ lvl; },
-        Upgrade::Defaults::MultiplicativeEffect));
+        Upgrade::Defaults::MultiplicativeEffect);
     mFreezeUp = mUpgrades->subscribe(up);
 
     // Speed upgrade
@@ -104,10 +104,10 @@ void TimeWizard::setUpgrades() {
     up->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
                 params[TimeWizardParams::SpeedUpCost],
                 [](const Number& lvl) { return 250 ^ (lvl / 12 + 1); });
-    up->setEffects(Upgrade::Effects().addEffect(
+    up->setEffect(
         params[TimeWizardParams::SpeedUp],
         [](const Number& lvl) { return lvl * .05; },
-        Upgrade::Defaults::AdditiveEffect));
+        Upgrade::Defaults::AdditiveEffect);
     mSpeedUp = mUpgrades->subscribe(up);
 }
 void TimeWizard::setParamTriggers() {

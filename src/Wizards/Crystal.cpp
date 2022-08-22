@@ -54,9 +54,8 @@ void Crystal::setUpgrades() {
         "increased Fireball power");
     up->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
                 params[CrystalParams::T1WizardCost]);
-    up->setEffects(Upgrade::Effects().addEffect(
-        states[State::BoughtPowerWizard],
-        [](const Number& lvl) { return lvl == 1; }));
+    up->setEffect(states[State::BoughtPowerWizard],
+                  [](const Number& lvl) { return lvl == 1; });
     mPowWizBuy = mUpgrades->subscribe(up);
 
     // Buy time wizard
@@ -67,9 +66,8 @@ void Crystal::setUpgrades() {
         "massive power boost");
     up->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
                 params[CrystalParams::T1WizardCost]);
-    up->setEffects(Upgrade::Effects().addEffect(
-        states[State::BoughtTimeWizard],
-        [](const Number& lvl) { return lvl == 1; }));
+    up->setEffect(states[State::BoughtTimeWizard],
+                  [](const Number& lvl) { return lvl == 1; });
     mTimeWizBuy = mUpgrades->subscribe(up);
 
     // Buy catalyst
@@ -80,9 +78,8 @@ void Crystal::setUpgrades() {
         "nearby");
     up->setCost(Upgrade::Defaults::CRYSTAL_SHARDS,
                 params[CrystalParams::CatalystCost]);
-    up->setEffects(Upgrade::Effects().addEffect(
-        states[State::BoughtCatalyst],
-        [](const Number& lvl) { return lvl == 1; }));
+    up->setEffect(states[State::BoughtCatalyst],
+                  [](const Number& lvl) { return lvl == 1; });
     mCatalystBuy = mUpgrades->subscribe(up);
 }
 void Crystal::setParamTriggers() {

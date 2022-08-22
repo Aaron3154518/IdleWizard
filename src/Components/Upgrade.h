@@ -115,37 +115,10 @@ class Upgrade : public UpgradeBase {
         ParameterSystem::ParameterSubscriptionPtr mCostSub;
     };
 
-    struct Effects {
-       public:
-        typedef std::function<Number(const Number&)> ValueFunc;
-        typedef std::function<bool(const Number&)> StateFunc;
-        typedef std::function<std::string()> EffectFunc;
-
-        Effects();
-        Effects(EffectFunc func);
-
-        Effects& addEffect(ParameterSystem::NodeValue param, ValueFunc func);
-        Effects& addEffect(ParameterSystem::NodeValue param, ValueFunc valFunc,
-                           std::function<std::string(const Number&)> effFunc);
-        Effects& addEffect(ParameterSystem::NodeState param, StateFunc func);
-        Effects& addEffect(ParameterSystem::NodeState param,
-                           StateFunc stateFunc,
-                           std::function<std::string(bool)> effFunc);
-
-        std::list<ParameterSystem::ParameterSubscriptionPtr> subscribeToLevel(
-            ParameterSystem::BaseValue level) const;
-        ParameterSystem::ParameterSubscriptionPtr subscribeToEffects(
-            std::function<void(const std::string&)> func) const;
-
-       private:
-        EffectFunc mGetEffect = nullptr;
-        std::list<std::pair<ParameterSystem::NodeValue, ValueFunc>>
-            mValueParams;
-        std::list<std::pair<ParameterSystem::NodeState, StateFunc>>
-            mStateParams;
-    };
-
    public:
+    typedef std::function<Number(const Number&)> ValueFunc;
+    typedef std::function<bool(const Number&)> StateFunc;
+
     Upgrade(
         ParameterSystem::BaseValue level, unsigned int maxLevel,
         std::function<void(const Number&)> onLevel = [](const Number&) {});
@@ -163,7 +136,17 @@ class Upgrade : public UpgradeBase {
                  std::function<Number(const Number&)> costFunc);
     void clearCost();
 
-    void setEffects(const Effects& effects);
+    void setEffect(
+        ParameterSystem::NodeValue param, ValueFunc func,
+        std::function<std::string(const Number&)> effectFunc = nullptr);
+    void setEffect(ParameterSystem::NodeState param, StateFunc func,
+                   std::function<std::string(bool)> effectFunc = nullptr);
+    void setEffects(
+        std::initializer_list<std::pair<ParameterSystem::NodeValue, ValueFunc>>
+            values,
+        std::initializer_list<std::pair<ParameterSystem::NodeState, StateFunc>>
+            states,
+        std::function<std::string()> func = nullptr);
     void clearEffects();
 
     void updateInfo();

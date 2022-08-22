@@ -86,9 +86,9 @@ void Wizard::setUpgrades() {
     up->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
                 params[WizardParams::PowerUpCost],
                 [](const Number& lvl) { return 25 * (1.75 ^ lvl); });
-    up->setEffects(Upgrade::Effects().addEffect(
+    up->setEffect(
         params[WizardParams::PowerUp], [](const Number& lvl) { return lvl; },
-        Upgrade::Defaults::AdditiveEffect));
+        Upgrade::Defaults::AdditiveEffect);
     mPowerUp = mUpgrades->subscribe(up);
 
     // Crit Upgrade
@@ -100,18 +100,18 @@ void Wizard::setUpgrades() {
     up->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
                 params[WizardParams::CritUpCost],
                 [](const Number& lvl) { return 100 * (1.5 ^ lvl); });
-    up->setEffects(
-        Upgrade::Effects([]() {
-            ParameterSystem::Params<WIZARD> params;
-            std::stringstream ss;
-            ss << "Crit: +" << params[WizardParams::CritUp].get()
-               << " | Spread: *" << params[WizardParams::CritSpreadUp].get();
-            return ss.str();
-        })
-            .addEffect(params[WizardParams::CritUp],
-                       [](const Number& lvl) { return (1.1 ^ lvl) - 1; })
-            .addEffect(params[WizardParams::CritSpreadUp],
-                       [](const Number& lvl) { return .95 ^ lvl; }));
+    up->setEffects({{params[WizardParams::CritUp],
+                     [](const Number& lvl) { return (1.1 ^ lvl) - 1; }},
+                    {params[WizardParams::CritSpreadUp],
+                     [](const Number& lvl) { return .95 ^ lvl; }}},
+                   {}, []() {
+                       ParameterSystem::Params<WIZARD> params;
+                       std::stringstream ss;
+                       ss << "Crit: +" << params[WizardParams::CritUp].get()
+                          << " | Spread: *"
+                          << params[WizardParams::CritSpreadUp].get();
+                       return ss.str();
+                   });
     mCritUp = mUpgrades->subscribe(up);
 
     // Multi Upgrade
@@ -121,10 +121,10 @@ void Wizard::setUpgrades() {
     up->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
                 params[WizardParams::MultiUpCost],
                 [](const Number& lvl) { return 150 * (1.4 ^ lvl); });
-    up->setEffects(Upgrade::Effects().addEffect(
+    up->setEffect(
         params[WizardParams::MultiUp],
         [](const Number& lvl) { return .05 * lvl; },
-        Upgrade::Defaults::PercentEffect));
+        Upgrade::Defaults::PercentEffect);
     mMultiUp = mUpgrades->subscribe(up);
 }
 void Wizard::setParamTriggers() {

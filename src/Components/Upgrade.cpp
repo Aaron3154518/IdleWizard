@@ -33,7 +33,7 @@ void UpgradeBase::setDescription(const std::string& desc) {
 
 void UpgradeBase::setInfo(const std::string& info) {
     mInfoStr = info;
-    mInfo = createDescription(info);
+    mUpdateInfo = true;
 }
 
 void UpgradeBase::drawIcon(TextureBuilder& tex, const Rect& r) {
@@ -50,7 +50,7 @@ void UpgradeBase::drawIcon(TextureBuilder& tex, const Rect& r) {
 
 void UpgradeBase::drawDescription(TextureBuilder tex, SDL_FPoint offset) {
     if (mUpdateInfo) {
-        setInfo(mInfoStr);
+        mInfo = createDescription(mInfoStr);
         mUpdateInfo = false;
     }
 
@@ -168,74 +168,6 @@ void Upgrade::Cost::buy() const { mMoney.set(mMoney.get() - mCost.get()); }
 ParameterSystem::ParameterSubscriptionPtr Upgrade::Cost::subscribe(
     std::function<void()> func) const {
     ParameterSystem::ParameterSubscriptionPtr sub = mCost.subscribe(func);
-    mMoney->subscribe(sub);
-    return sub;
-}
-
-// Effects
-Upgrade::Effects::Effects() {}
-Upgrade::Effects::Effects(EffectFunc func) : mGetEffect(func) {}
-
-Upgrade::Effects& Upgrade::Effects::addEffect(ParameterSystem::NodeValue param,
-                                              ValueFunc func) {
-    mValueParams.push_back(std::make_pair(param, func));
-    return *this;
-}
-Upgrade::Effects& Upgrade::Effects::addEffect(
-    ParameterSystem::NodeValue param, ValueFunc valFunc,
-    std::function<std::string(const Number&)> effFunc) {
-    addEffect(param, valFunc);
-    mGetEffect = [param, effFunc]() { return effFunc(param.get()); };
-    return *this;
-}
-Upgrade::Effects& Upgrade::Effects::addEffect(ParameterSystem::NodeState param,
-                                              StateFunc func) {
-    mStateParams.push_back(std::make_pair(param, func));
-    return *this;
-}
-Upgrade::Effects& Upgrade::Effects::addEffect(
-    ParameterSystem::NodeState param, StateFunc stateFunc,
-    std::function<std::string(bool)> effFunc) {
-    addEffect(param, stateFunc);
-    mGetEffect = [param, effFunc]() { return effFunc(param.get()); };
-    return *this;
-}
-
-std::list<ParameterSystem::ParameterSubscriptionPtr>
-Upgrade::Effects::subscribeToLevel(ParameterSystem::BaseValue level) const {
-    std::list<ParameterSystem::ParameterSubscriptionPtr> subs;
-    for (auto param : mValueParams) {
-        subs.push_back(param.first.subscribeTo(level, param.second));
-    }
-    for (auto param : mStateParams) {
-        subs.push_back(param.first.subscribeTo(level, param.second));
-    }
-    return subs;
-}
-ParameterSystem::ParameterSubscriptionPtr Upgrade::Effects::subscribeToEffects(
-    std::function<void(const std::string&)> func) const {
-    if (!mGetEffect) {
-        return nullptr;
-    }
-
-    auto getEffect = mGetEffect;
-    auto useEffect = [func, getEffect]() { func(getEffect()); };
-
-    ParameterSystem::ParameterSubscriptionPtr sub;
-    for (auto param : mValueParams) {
-        if (!sub) {
-            sub = param.first.subscribe(useEffect);
-        } else {
-            param.first->subscribe(sub);
-        }
-    }
-    for (auto param : mStateParams) {
-        if (!sub) {
-            sub = param.first.subscribe(useEffect);
-        } else {
-            param.first->subscribe(sub);
-        }
-    }
     return sub;
 }
 
@@ -252,8 +184,10 @@ Upgrade::Upgrade(ParameterSystem::BaseValue level,
                  ParameterSystem::ValueParam maxLevel,
                  std::function<void(const Number&)> onLevel)
     : Upgrade(level, std::max(0, maxLevel.get().toInt()), onLevel) {
-    mMaxLevelSub = maxLevel.subscribe(
-        [this](const Number& lvl) { mMaxLevel = std::max(0, lvl.toInt()); });
+    mMaxLevelSub = maxLevel.subscribe([this](const Number& lvl) {
+        mMaxLevel = std::max(0, lvl.toInt());
+        updateInfo();
+    });
 }
 
 Upgrade::Status Upgrade::getStatus() {
@@ -279,6 +213,7 @@ void Upgrade::buy() {
 void Upgrade::setCost(ParameterSystem::BaseValue money,
                       ParameterSystem::NodeValue cost) {
     mCost = std::make_unique<Cost>(money, cost);
+    mCostSub = mCost->subscribe([this]() { updateInfo(); });
 }
 void Upgrade::setCost(ParameterSystem::BaseValue money,
                       ParameterSystem::NodeValue cost,
@@ -286,18 +221,72 @@ void Upgrade::setCost(ParameterSystem::BaseValue money,
     mCost = std::make_unique<Cost>(mLevel, money, cost, costFunc);
     mCostSub = mCost->subscribe([this]() { updateInfo(); });
 }
-void Upgrade::clearCost() { mCost.reset(); }
+void Upgrade::clearCost() {
+    mCost.reset();
+    mCostSub.reset();
+    updateInfo();
+}
 
-void Upgrade::setEffects(const Effects& effects) {
-    mEffectLevelSubs = effects.subscribeToLevel(mLevel);
-    mEffectSub = effects.subscribeToEffects([this](const std::string& str) {
-        mEffectStr = str;
-        updateInfo();
-    });
+void Upgrade::setEffect(ParameterSystem::NodeValue param, ValueFunc func,
+                        std::function<std::string(const Number&)> effectFunc) {
+    if (effectFunc) {
+        setEffects({{param, func}}, {},
+                   [param, effectFunc]() { return effectFunc(param.get()); });
+    } else {
+        setEffects({{param, func}}, {});
+    }
+}
+void Upgrade::setEffect(ParameterSystem::NodeState param, StateFunc func,
+                        std::function<std::string(bool)> effectFunc) {
+    if (effectFunc) {
+        setEffects({}, {{param, func}},
+                   [param, effectFunc]() { return effectFunc(param.get()); });
+    } else {
+        setEffects({}, {{param, func}});
+    }
+}
+void Upgrade::setEffects(
+    std::initializer_list<std::pair<ParameterSystem::NodeValue, ValueFunc>>
+        values,
+    std::initializer_list<std::pair<ParameterSystem::NodeState, StateFunc>>
+        states,
+    std::function<std::string()> func) {
+    mEffectLevelSubs.clear();
+    mEffectSub.reset();
+    for (auto param : values) {
+        mEffectLevelSubs.push_back(
+            param.first.subscribeTo(mLevel, param.second));
+        if (func) {
+            if (!mEffectSub) {
+                mEffectSub = param.first.subscribe([this, func]() {
+                    mEffectStr = func();
+                    updateInfo();
+                });
+            } else {
+                param.first->subscribe(mEffectSub);
+            }
+        }
+    }
+    for (auto param : states) {
+        mEffectLevelSubs.push_back(
+            param.first.subscribeTo(mLevel, param.second));
+        if (func) {
+            if (!mEffectSub) {
+                mEffectSub = param.first.subscribe([this, func]() {
+                    mEffectStr = func();
+                    updateInfo();
+                });
+            } else {
+                param.first->subscribe(mEffectSub);
+            }
+        }
+    }
 }
 void Upgrade::clearEffects() {
     mEffectLevelSubs.clear();
     mEffectSub.reset();
+    mEffectStr = "";
+    updateInfo();
 }
 
 void Upgrade::updateInfo() {
@@ -319,6 +308,5 @@ void Upgrade::updateInfo() {
             ss << (mMaxLevel > 1 ? "Maxed" : "Bought");
         }
     }
-    mInfoStr = ss.str();
-    mUpdateInfo = true;
+    setInfo(ss.str());
 }

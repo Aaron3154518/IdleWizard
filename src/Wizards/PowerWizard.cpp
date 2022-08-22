@@ -45,10 +45,10 @@ void PowerWizard::setUpgrades() {
     up->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
                 params[PowerWizardParams::PowerUpCost],
                 [](const Number& lvl) { return 125 * (1.5 ^ lvl); });
-    up->setEffects(Upgrade::Effects().addEffect(
+    up->setEffect(
         params[PowerWizardParams::PowerUp],
         [](const Number& lvl) { return 1.1 ^ lvl; },
-        Upgrade::Defaults::MultiplicativeEffect));
+        Upgrade::Defaults::MultiplicativeEffect);
     mPowerUp = mUpgrades->subscribe(up);
 }
 void PowerWizard::setParamTriggers() {

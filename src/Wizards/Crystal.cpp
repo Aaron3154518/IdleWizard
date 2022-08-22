@@ -9,6 +9,10 @@ void Crystal::setDefaults() {
 
     // Default 0
     params.setDefaults({CrystalParams::Magic, CrystalParams::Shards}, 0);
+
+    ParameterSystem::States states;
+
+    states[State::ResetT1]->setDefault(false);
 }
 
 Crystal::Crystal() : WizardBase(CRYSTAL) {}

@@ -195,7 +195,7 @@ ParameterSubscriptionPtr subscribe(
             val->subscribe(sub);
         }
     }
-    for (auto state : values) {
+    for (auto state : states) {
         if (!sub) {
             sub = state->subscribe(func);
         } else {

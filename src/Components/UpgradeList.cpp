@@ -85,7 +85,7 @@ void UpgradeList::draw(TextureBuilder tex, float scroll, SDL_Point offset) {
 
     auto drawUpgrade = [this, &tex, offset](Rect r, SubscriptionPtr sub) {
         r.move(offset.x, offset.y);
-        RectData rd;
+        RectShape rd;
         if (!sub) {
             rd.color = WHITE;
             tex.draw(rd.set(r, 3));
@@ -258,7 +258,7 @@ void UpgradeScroller::onUpdate(Time dt) {
     }
 }
 void UpgradeScroller::onRender(SDL_Renderer* r) {
-    RectData rd;
+    RectShape rd;
     rd.color = BGKRND;
     mTex.draw(rd);
 

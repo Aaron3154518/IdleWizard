@@ -60,7 +60,7 @@ class FireRing : public Component {
 
     bool mDead = false;
 
-    CircleData mCircle;
+    CircleShape mCircle;
     Number mEffect;
 
     RenderObservable::SubscriptionPtr mRenderSub;

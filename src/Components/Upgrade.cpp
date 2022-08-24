@@ -54,7 +54,7 @@ void UpgradeBase::drawDescription(TextureBuilder tex, SDL_FPoint offset) {
         mUpdateInfo = false;
     }
 
-    RectData rd;
+    RectShape rd;
     rd.color = DESC_BKGRND;
 
     RenderData descData;
@@ -85,14 +85,14 @@ void UpgradeBase::drawDescription(TextureBuilder tex, SDL_FPoint offset) {
         }
 
         rd.color = BLACK;
-        tex.draw(rd.set(rd.r2, 1));
+        tex.draw(rd.set(rd.get().r2, 1));
     } else if (mDesc) {
         tex.draw(rd.set(descData.dest));
 
         tex.draw(descData);
 
         rd.color = BLACK;
-        tex.draw(rd.set(rd.r2, 1));
+        tex.draw(rd.set(rd.get().r2, 1));
     }
 }
 

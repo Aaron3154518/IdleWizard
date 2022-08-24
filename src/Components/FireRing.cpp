@@ -18,21 +18,22 @@ void FireRing::init() {
             [this](SDL_Renderer* r) { onRender(r); }, pos);
     mUpdateSub = TimeSystem::GetUpdateObservable()->subscribe(
         [this](Time dt) { onUpdate(dt); });
-    mRingSub =
-        ServiceSystem::Get<FireRingService, HitObservable>()
-            ->subscribeToFireballs(FireballObservable(mCircle.c, mCircle.r2));
+    mRingSub = ServiceSystem::Get<FireRingService, HitObservable>()
+                   ->subscribeToFireballs(
+                       FireballObservable(mCircle.get().c, mCircle.get().r2));
 }
 
 void FireRing::onRender(SDL_Renderer* r) { TextureBuilder().draw(mCircle); }
 
 void FireRing::onUpdate(Time dt) {
-    mCircle.set(mCircle.c, mCircle.r1 + GROWTH * dt.s(), WIDTH);
-    mRingSub->get<0>().next(mCircle.c, mCircle.r2, mEffect);
+    const CircleData& cData = mCircle.get();
+    mCircle.set(cData.c, cData.r1 + GROWTH * dt.s(), WIDTH);
+    mRingSub->get<0>().next(cData.c, cData.r2, mEffect);
     SDL_Point dim = RenderSystem::getWindowSize();
-    float dx = fmax(mCircle.c.x, dim.x - mCircle.c.x),
-          dy = fmax(mCircle.c.y, dim.y - mCircle.c.y);
+    float dx = fmax(cData.c.x, dim.x - cData.c.x),
+          dy = fmax(cData.c.y, dim.y - cData.c.y);
     float mag = sqrt(dx * dx + dy * dy);
-    if (mag < mCircle.r1) {
+    if (mag < cData.r1) {
         mDead = true;
         mUpdateSub.reset();
         mRenderSub.reset();

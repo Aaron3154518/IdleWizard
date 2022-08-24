@@ -52,7 +52,7 @@ void WizardBase::onResize(ResizeData data) {
 
 void WizardBase::onRender(SDL_Renderer* r) {
     if (mDrag->dragging) {
-        RectData rd;
+        RectShape rd;
         rd.color = GRAY;
         rd.set(mPos->rect, 5);
         TextureBuilder().draw(rd);

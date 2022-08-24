@@ -163,7 +163,7 @@ bool TimeWizard::onCostTimer(Timer& timer) {
 void TimeWizard::onRender(SDL_Renderer* r) {
     WizardBase::onRender(r);
 
-    mFreezePb.rect = Rect(mPos->rect.x(), mPos->rect.y2(), mPos->rect.w(),
+    mFreezePb.dest = Rect(mPos->rect.x(), mPos->rect.y2(), mPos->rect.w(),
                           mPos->rect.h() / 15);
     TextureBuilder().draw(mFreezePb);
 }

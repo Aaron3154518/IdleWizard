@@ -2,6 +2,7 @@
 #define FIREBALL_H
 
 #include <Components/FireRing.h>
+#include <Components/FireballService.h>
 #include <RenderSystem/AssetManager.h>
 #include <RenderSystem/Shapes.h>
 #include <RenderSystem/TextureBuilder.h>
@@ -9,43 +10,22 @@
 #include <ServiceSystem/Component.h>
 #include <ServiceSystem/CoreServices/RenderService.h>
 #include <ServiceSystem/EventServices/ResizeService.h>
-#include <ServiceSystem/Observable.h>
-#include <ServiceSystem/Service.h>
 #include <ServiceSystem/ServiceSystem.h>
 #include <Systems/ParameterSystem/WizardParameters.h>
 #include <Systems/TargetSystem.h>
 #include <Systems/TimeSystem.h>
 #include <Utils/Number.h>
 #include <Utils/Time.h>
+#include <Wizards/Catalyst.h>
 #include <Wizards/WizardIds.h>
 
 #include <array>
 #include <memory>
 
-typedef Observable<void(SDL_FPoint), WizardId> FireballObservableBase;
-
-class FireballObservable : public FireballObservableBase {
-   public:
-    enum : size_t { FUNC = 0, DATA };
-
-    void next(WizardId id, SDL_FPoint pos);
-
-    SDL_FPoint getPos(WizardId id) const;
-
-   private:
-    void onSubscribe(SubscriptionPtr sub);
-
-    SDL_FPoint mTargets[WizardId::size];
-};
-
 class Fireball : public Component {
     friend class FireballObservable;
 
    public:
-    typedef TargetSystem::TargetObservable<const Fireball&> HitObservable;
-    typedef TargetSystem::TargetObservable<Fireball&, const Number&>
-        FireRingHitObservable;
-
     enum State : uint8_t {
         HitFireRing = 0,
         PowerWizBoosted,
@@ -87,6 +67,7 @@ class Fireball : public Component {
     void onResize(ResizeData data);
     void onRender(SDL_Renderer* renderer);
     void onFireRing(const Number& effect);
+    void onCatalyst(const Number& effect);
 
     bool mDead = false;
     const WizardId mSrcId, mTargetId;
@@ -105,14 +86,11 @@ class Fireball : public Component {
     RenderObservable::SubscriptionPtr mRenderSub;
     FireballObservable::SubscriptionPtr mFireballSub;
     FireRing::HitObservable::SubscriptionPtr mFireRingSub;
+    Catalyst::HitObservable::SubscriptionPtr mCatalystSub;
 
     const static int COLLIDE_ERR, MAX_SPEED, ACCELERATION, ACCEL_ZONE;
 };
 
 typedef std::unique_ptr<Fireball> FireballPtr;
-
-class FireballService
-    : public Service<FireballObservable, Fireball::HitObservable,
-                     Fireball::FireRingHitObservable> {};
 
 #endif

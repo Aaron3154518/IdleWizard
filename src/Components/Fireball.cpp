@@ -1,29 +1,5 @@
 #include "Fireball.h"
 
-// FireballObservable
-void FireballObservable::onSubscribe(SubscriptionPtr sub) {
-    sub->get<FUNC>()(mTargets[sub->get<DATA>()]);
-}
-
-void FireballObservable::next(WizardId id, SDL_FPoint pos) {
-    if (id == WizardId::size) {
-        throw std::runtime_error("Cannot use size as a target");
-    }
-    mTargets[id] = pos;
-    for (auto sub : *this) {
-        if (sub->get<DATA>() == id) {
-            sub->get<FUNC>()(pos);
-        }
-    }
-}
-
-SDL_FPoint FireballObservable::getPos(WizardId id) const {
-    if (id == WizardId::size) {
-        throw std::runtime_error("Cannot use size as a target");
-    }
-    return mTargets[id];
-}
-
 // Fireball
 const int Fireball::COLLIDE_ERR = 10;
 const int Fireball::MAX_SPEED = 150;
@@ -40,7 +16,7 @@ Fireball::Fireball(SDL_FPoint c, WizardId src, WizardId target,
 
 Fireball::Fireball(SDL_FPoint c, WizardId src, WizardId target,
                    const std::string& img, const NumberMap& vals)
-    : mPos(std::make_shared<UIComponent>(Rect(), 0)),
+    : mPos(std::make_shared<UIComponent>(Rect(), Elevation::PROJECTILES)),
       mTargetId(target),
       mSrcId(src),
       mVals(vals),
@@ -65,6 +41,9 @@ void Fireball::init() {
     mFireRingSub =
         ServiceSystem::Get<FireRingService, FireRing::HitObservable>()
             ->subscribe([this](const Number& e) { onFireRing(e); }, mPos);
+    mCatalystSub =
+        ServiceSystem::Get<CatalystService, Catalyst::HitObservable>()
+            ->subscribe([this](const Number& e) { onCatalyst(e); }, mPos);
 
     launch(mTargetPos);
 }
@@ -128,7 +107,7 @@ void Fireball::onUpdate(Time dt) {
     // Check in case we were moved onto the target
     if (mag < COLLIDE_ERR) {
         mDead = true;
-        ServiceSystem::Get<FireballService, Fireball::HitObservable>()->next(
+        ServiceSystem::Get<FireballService, FireballHitObservable>()->next(
             mTargetId, *this);
         mResizeSub.reset();
         mRenderSub.reset();
@@ -158,7 +137,18 @@ void Fireball::onRender(SDL_Renderer* renderer) { TextureBuilder().draw(mImg); }
 void Fireball::onFireRing(const Number& effect) {
     if (!getState(State::HitFireRing) && !getState(State::PowerWizBoosted)) {
         getState(State::HitFireRing) = true;
-        ServiceSystem::Get<FireballService, Fireball::FireRingHitObservable>()
+        ServiceSystem::Get<FireballService, FireballFireRingHitObservable>()
             ->next(mSrcId, *this, effect);
+    }
+}
+
+void Fireball::onCatalyst(const Number& effect) {
+    switch (mSrcId) {
+        case WIZARD:
+            getValue() *= effect;
+            break;
+        case POWER_WIZARD:
+            getValue(PowerWizardParams::Power) *= effect;
+            break;
     }
 }

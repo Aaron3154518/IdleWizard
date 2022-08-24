@@ -18,6 +18,29 @@
 
 class Catalyst : public WizardBase {
    public:
+    typedef Observable<void(const Number&), UIComponentPtr> HitObservableBase;
+    class HitObservable : public HitObservableBase, public Component {
+        friend class Catalyst;
+
+       public:
+        enum : uint8_t { FUNC = 0, DATA };
+
+        void setPos(const CircleData& pos);
+
+       private:
+        void init();
+
+        bool onTimer(Timer& timer);
+
+        CircleData mPos;
+
+        TimeSystem::TimerObservable::SubscriptionPtr mTimerSub;
+
+        std::mt19937 gen = std::mt19937(rand());
+        std::uniform_real_distribution<float> rDist;
+    };
+
+   public:
     Catalyst();
 
     static void setDefaults();
@@ -32,12 +55,19 @@ class Catalyst : public WizardBase {
     void onFireballHit(const Fireball& fireball);
 
     Number calcMagicEffect();
+    Number calcRange();
     void drawMagic();
+    void updateRange();
+
+    void setPos(float x, float y);
 
     Fireball::HitObservable::IdSubscriptionPtr mFireballSub;
-    UpgradeList::SubscriptionPtr mMagicEffectDisplay;
+    UpgradeList::SubscriptionPtr mMagicEffectDisplay, mRangeUp;
 
+    CircleShape mRange;
     TextRenderData mMagicText;
 };
+
+class CatalystService : public Service<Catalyst::HitObservable> {};
 
 #endif

@@ -6,7 +6,7 @@ const int FireRing::WIDTH = 30;
 const SDL_Color FireRing::COLOR = {21, 101, 192, 255};
 
 FireRing::FireRing(SDL_Point c, const Number& effect) : mEffect(effect) {
-    mCircle.set(c, 0, WIDTH).color = COLOR;
+    mCircle.setCenter(c).setRadius(0, WIDTH).color = COLOR;
 }
 
 void FireRing::init() {
@@ -27,7 +27,7 @@ void FireRing::onRender(SDL_Renderer* r) { TextureBuilder().draw(mCircle); }
 
 void FireRing::onUpdate(Time dt) {
     const CircleData& cData = mCircle.get();
-    mCircle.set(cData.c, cData.r1 + GROWTH * dt.s(), WIDTH);
+    mCircle.setCenter(cData.c).setRadius(cData.r1 + GROWTH * dt.s(), WIDTH);
     mRingSub->get<0>().next(cData.c, cData.r2, mEffect);
     SDL_Point dim = RenderSystem::getWindowSize();
     float dx = fmax(cData.c.x, dim.x - cData.c.x),

@@ -11,7 +11,7 @@ void Crystal::setDefaults() {
 
     // Default 0
     params[CrystalParams::Magic]->init(0, ResetTier::T1);
-    params[CrystalParams::Shards]->init(0, ResetTier::T2);
+    params[CrystalParams::Shards]->init(100, ResetTier::T2);
 
     params[CrystalParams::CatalystCost]->init(1);
 
@@ -21,7 +21,7 @@ void Crystal::setDefaults() {
 
     ParameterSystem::States states;
 
-    states[State::ResetT1]->init(false);
+    states[State::ResetT1]->init(true);
 }
 
 Crystal::Crystal() : WizardBase(CRYSTAL) {}

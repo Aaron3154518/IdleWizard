@@ -64,10 +64,18 @@ namespace CatalystParams {
 enum B : param_t {
     Magic = 0,
     Capacity,
+
+    BaseRange,
+
+    RangeUpLvl,
 };
 
 enum N : param_t {
     MagicEffect = 0,
+    Range,
+
+    RangeUpCost,
+    RangeUp,
 };
 }  // namespace CatalystParams
 namespace PowerWizardParams {

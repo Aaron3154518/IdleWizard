@@ -1,7 +1,7 @@
 #ifndef WIZARD_BASE_H
 #define WIZARD_BASE_H
 
-#include <Components/Fireball.h>
+#include <Components/FireballService.h>
 #include <Components/UpgradeList.h>
 #include <RenderSystem/AssetManager.h>
 #include <RenderSystem/RenderTypes.h>

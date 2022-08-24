@@ -31,6 +31,15 @@ const WizardMap<std::string> WIZ_NAMES = {{CRYSTAL, "Crystal"},
                                           {POWER_WIZARD, "Power Wizard"},
                                           {TIME_WIZARD, "Time Wizard"}};
 
-enum Elevation { EFFECTS = 0, UPGRADES = 1, WIZARDS = 2, OVERLAYS = 10 };
+namespace Elevation {
+enum : uint8_t {
+    EFFECTS = 0,
+    UPGRADES,
+    CATALYST,
+    PROJECTILES,
+    WIZARDS,
+    OVERLAYS
+};
+}
 
 #endif

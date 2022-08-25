@@ -1,13 +1,50 @@
 #include "CatalystRing.h"
 
 namespace CatalystRing {
+// HitObservable::Zap
+HitObservable::Zap::Zap(SDL_Point p1, SDL_Point p2) : mP1(p1), mP2(p2) {}
+
+bool HitObservable::Zap::dead() const { return !mTimerSub; }
+
+void HitObservable::Zap::init() {
+    mTimerSub = TimeSystem::GetTimerObservable()->subscribe(
+        [this](Timer& t) { return onTimer(t); }, Timer(500));
+}
+
+bool HitObservable::Zap::onTimer(Timer& timer) {
+    mTimerSub.reset();
+    return false;
+}
+
 // HitObservable
-void HitObservable::setPos(const CircleData& pos) { mPos = pos; }
+const std::string HitObservable::ZAP_IMG = "res/projectiles/catalyst_zap.png";
+
+HitObservable::HitObservable()
+    : mPos(std::make_shared<UIComponent>(Rect(), Elevation::CATALYST_ZAP)) {
+    mPos->mouse = false;
+}
+
+void HitObservable::setPos(const CircleData& circle) { mCircle = circle; }
 
 void HitObservable::init() {
+    mRenderSub =
+        ServiceSystem::Get<RenderService, RenderObservable>()->subscribe(
+            [this](SDL_Renderer* r) { onRender(r); }, mPos);
     mTimerSub = TimeSystem::GetTimerObservable()->subscribe(
         [this](Timer& t) { return onTimer(t); },
         [this](Time dt, Timer& t) { onTimerUpdate(dt, t); }, Timer(1000));
+}
+
+void HitObservable::onRender(SDL_Renderer* r) {
+    for (auto it = mZaps.begin(); it != mZaps.end();) {
+        if ((*it)->dead()) {
+            it = mZaps.erase(it);
+        } else {
+            SDL_RenderDrawLine(r, (*it)->mP1.x, (*it)->mP1.y, (*it)->mP2.x,
+                               (*it)->mP2.y);
+            ++it;
+        }
+    }
 }
 
 bool HitObservable::onTimer(Timer& timer) {
@@ -24,7 +61,9 @@ void HitObservable::onTimerUpdate(Time dt, Timer& timer) {
             if (sub) {
                 ParameterSystem::Params<CATALYST> params;
                 sub->get<FUNC>()(params[CatalystParams::MagicEffect].get());
-                std::cerr << "Shoot fireball" << std::endl;
+                Rect fBallRect = sub->get<DATA>()->rect;
+                mZaps.push_back(std::move(ComponentFactory<Zap>::New(
+                    SDL_Point{fBallRect.CX(), fBallRect.CY()}, mCircle.c)));
             }
             mReady = false;
         }
@@ -35,9 +74,10 @@ std::vector<HitObservable::SubscriptionWPtr> HitObservable::getInRange() {
     std::vector<SubscriptionWPtr> inRange;
     for (auto sub : *this) {
         auto& pos = sub->get<DATA>();
-        float dx = mPos.c.x - pos->rect.cX(), dy = mPos.c.y - pos->rect.cY();
+        float dx = mCircle.c.x - pos->rect.cX(),
+              dy = mCircle.c.y - pos->rect.cY();
         float mag = sqrtf(dx * dx + dy * dy);
-        if (mag < mPos.r2) {
+        if (mag < mCircle.r2) {
             inRange.push_back(sub);
         }
     }

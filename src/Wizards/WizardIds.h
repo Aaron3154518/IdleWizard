@@ -36,6 +36,7 @@ enum : uint8_t {
     EFFECTS = 0,
     UPGRADES,
     CATALYST,
+    CATALYST_ZAP,
     PROJECTILES,
     WIZARDS,
     OVERLAYS

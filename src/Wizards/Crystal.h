@@ -2,7 +2,8 @@
 #define CRYSTAL_H
 
 #include <Components/FireRing.h>
-#include <Components/Fireball.h>
+#include <Components/Fireballs/PowerWizFireball.h>
+#include <Components/Fireballs/WizardFireball.h>
 #include <Components/Upgrade.h>
 #include <RenderSystem/AssetManager.h>
 #include <RenderSystem/RenderTypes.h>
@@ -45,7 +46,8 @@ class Crystal : public WizardBase {
     void onClick(Event::MouseButton b, bool clicked);
     void onHide(WizardId id, bool hide);
     void onReset(WizardSystem::ResetTier tier);
-    void onFireballHit(const Fireball& fireball);
+    void onWizFireballHit(const WizardFireball& fireball);
+    void onPowFireballHit(const PowerWizFireball& fireball);
 
     Number calcMagicEffect();
     Number calcShardGain();
@@ -58,7 +60,8 @@ class Crystal : public WizardBase {
     void triggerT1Reset();
 
     UpdateObservable::SubscriptionPtr mUpdateSub;
-    Fireball::HitObservable::IdSubscriptionPtr mFireballSub;
+    WizardFireball::HitObservable::IdSubscriptionPtr mWizFireballHitSub;
+    PowerWizFireball::HitObservable::IdSubscriptionPtr mPowFireballHitSub;
     UpgradeList::SubscriptionPtr mMagicEffectDisplay, mPowWizBuy, mTimeWizBuy,
         mCatalystBuy;
 

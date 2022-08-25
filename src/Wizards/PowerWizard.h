@@ -1,7 +1,7 @@
 #ifndef POWER_WIZARD_H
 #define POWER_WIZARD_H
 
-#include <Components/Fireball.h>
+#include <Components/Fireballs/PowerWizFireball.h>
 #include <Components/Upgrade.h>
 #include <RenderSystem/AssetManager.h>
 #include <RenderSystem/RenderTypes.h>
@@ -46,14 +46,16 @@ class PowerWizard : public WizardBase {
     void shootFireball();
     void shootFireball(SDL_FPoint target);
 
+    PowerWizFireball::Data newFireballData(WizardId target);
+
     void setPos(float x, float y);
 
     TimerObservable::SubscriptionPtr mFireballTimerSub;
     TimeSystem::FreezeObservable::SubscriptionPtr mFreezeSub;
     UpgradeList::SubscriptionPtr mPowerDisplay, mPowerUp;
 
-    std::vector<FireballPtr> mFireballs;
-    int mFireballFreezeCnt;
+    PowerWizFireballPtr mFreezeFireball;
+    std::vector<PowerWizFireballPtr> mFireballs;
 };
 
 #endif

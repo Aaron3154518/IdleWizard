@@ -4,10 +4,10 @@
 #include <ServiceSystem/Observable.h>
 
 template <class T>
-class FireballHitObservable : public ObservableCopy<T> {
+class FireballManager : public ObservableCopy<T> {
    public:
     class TObservable : public Observable<T> {
-        friend class FireballHitObservable<T>;
+        friend class FireballManager<T>;
     };
     typedef typename TObservable::SubscriptionPtr FireballsSubscriptionPtr;
 

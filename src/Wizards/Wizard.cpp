@@ -38,22 +38,13 @@ void Wizard::setSubscriptions() {
     mFireballTimerSub =
         ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
             [this](Timer& t) { return onTimer(t); }, Timer(1000));
-    mFireballSub =
-        ServiceSystem::Get<FireballService, Fireball::HitObservable>()
-            ->subscribe([this](const Fireball& f) { onFireballHit(f); }, mId);
-    mFireballFireRingSub =
-        ServiceSystem::Get<FireballService, Fireball::FireRingHitObservable>()
-            ->subscribe(
-                [this](Fireball& f, const Number& e) {
-                    onFireballFireRingHit(f, e);
-                },
-                mId);
+    mPowFireballHitSub = PowerWizFireball::GetHitObservable()->subscribe(
+        [this](const PowerWizFireball& f) { onPowFireballHit(f); }, mId);
     mFreezeSub = TimeSystem::GetFreezeObservable()->subscribe(
         [this](TimeSystem::FreezeType f) { onFreeze(f); },
         [this](TimeSystem::FreezeType f) { onUnfreeze(f); });
     attachSubToVisibility(mFireballTimerSub);
-    attachSubToVisibility(mFireballSub);
-    attachSubToVisibility(mFireballFireRingSub);
+    attachSubToVisibility(mPowFireballHitSub);
     attachSubToVisibility(mFreezeSub);
 }
 void Wizard::setUpgrades() {
@@ -201,7 +192,7 @@ void Wizard::onHide(WizardId id, bool hide) {
                 break;
             default:
                 std::remove_if(mFireballs.begin(), mFireballs.end(),
-                               [id](const FireballPtr& ball) {
+                               [id](const WizardFireballPtr& ball) {
                                    return ball->getTargetId() == id;
                                });
                 break;
@@ -214,7 +205,6 @@ void Wizard::onHide(WizardId id, bool hide) {
 
 void Wizard::onReset(WizardSystem::ResetTier tier) {
     mFireballs.clear();
-    mFireballFreezeCnt = 0;
     mPowWizBoosts.clear();
 
     if (mFireballTimerSub) {
@@ -236,63 +226,48 @@ bool Wizard::onTimer(Timer& timer) {
     return true;
 }
 
-void Wizard::onFireballHit(const Fireball& fireball) {
-    switch (fireball.getSourceId()) {
-        case POWER_WIZARD: {
-            Number power = fireball.getValue(PowerWizardParams::Power),
-                   duration = fireball.getValue(PowerWizardParams::Duration);
-            for (auto it = mPowWizBoosts.begin(), end = mPowWizBoosts.end();
-                 duration > 0 && it != end; ++it) {
-                if (power >= it->first) {  // Replace current
-                    if (power == it->first &&
-                        duration <= it->first) {  // No change
-                        break;
-                    }
-                    if (duration < it->second) {  // Reduce current
-                        mPowWizBoosts.insert(
-                            it + 1,
-                            std::make_pair(it->first, it->second - duration));
-                    } else {  // Remove current and
-                              // update future
-                        Number durationLeft = duration - it->second;
-                        for (auto it2 = it + 1; durationLeft > 0 && it2 != end;
-                             ++it2) {
-                            if (durationLeft < it2->second) {  // Reduce future
-                                it2->second -= durationLeft;
-                                durationLeft = 0;
-                            } else {  // Remove future
-                                durationLeft -= it2->second;
-                                it2 = mPowWizBoosts.erase(it2);
-                                if (it2 == end) {
-                                    break;
-                                }
-                            }
+void Wizard::onPowFireballHit(const PowerWizFireball& fireball) {
+    Number power = fireball.power(), duration = fireball.duration();
+    for (auto it = mPowWizBoosts.begin(), end = mPowWizBoosts.end();
+         duration > 0 && it != end; ++it) {
+        if (power >= it->first) {  // Replace current
+            if (power == it->first && duration <= it->first) {  // No change
+                break;
+            }
+            if (duration < it->second) {  // Reduce current
+                mPowWizBoosts.insert(
+                    it + 1, std::make_pair(it->first, it->second - duration));
+            } else {  // Remove current and
+                      // update future
+                Number durationLeft = duration - it->second;
+                for (auto it2 = it + 1; durationLeft > 0 && it2 != end; ++it2) {
+                    if (durationLeft < it2->second) {  // Reduce future
+                        it2->second -= durationLeft;
+                        durationLeft = 0;
+                    } else {  // Remove future
+                        durationLeft -= it2->second;
+                        it2 = mPowWizBoosts.erase(it2);
+                        if (it2 == end) {
+                            break;
                         }
                     }
-                    it->first = power;
-                    it->second = duration;
                 }
-                duration -= it->second;
             }
-            if (duration > 0) {
-                mPowWizBoosts.push_back(std::make_pair(power, duration));
-            }
-
-            ParameterSystem::Params<WIZARD> params;
-            params[WizardParams::PowerWizEffect].set(
-                mPowWizBoosts.front().first);
-            mPowWizTimerSub = TimeSystem::GetTimerObservable()->subscribe(
-                [this](Timer& t) { return onPowWizTimer(t); },
-                [this](Time dt, Timer& t) { onPowWizTimerUpdate(dt, t); },
-                Timer(mPowWizBoosts.front().second.toFloat()));
-        } break;
+            it->first = power;
+            it->second = duration;
+        }
+        duration -= it->second;
     }
-}
+    if (duration > 0) {
+        mPowWizBoosts.push_back(std::make_pair(power, duration));
+    }
 
-void Wizard::onFireballFireRingHit(Fireball& fireball,
-                                   const Number& fireRingEffect) {
-    fireball.getValue() *= fireRingEffect;
-    fireball.setSize(fireball.getSize() * 1.15);
+    ParameterSystem::Params<WIZARD> params;
+    params[WizardParams::PowerWizEffect].set(mPowWizBoosts.front().first);
+    mPowWizTimerSub = TimeSystem::GetTimerObservable()->subscribe(
+        [this](Timer& t) { return onPowWizTimer(t); },
+        [this](Time dt, Timer& t) { onPowWizTimerUpdate(dt, t); },
+        Timer(mPowWizBoosts.front().second.toFloat()));
 }
 
 bool Wizard::onPowWizTimer(Timer& timer) {
@@ -312,22 +287,16 @@ void Wizard::onPowWizTimerUpdate(Time dt, Timer& timer) {
     mPowWizBoosts.begin()->second = timer.getTimeLeft();
 }
 
-void Wizard::onFreeze(TimeSystem::FreezeType type) {
-    switch (type) {
-        case TimeSystem::FreezeType::TIME_WIZARD:
-            mFireballFreezeCnt = 0;
-            break;
-    };
-}
+void Wizard::onFreeze(TimeSystem::FreezeType type) {}
 void Wizard::onUnfreeze(TimeSystem::FreezeType type) {
     switch (type) {
         case TimeSystem::FreezeType::TIME_WIZARD:
-            if (mFireballFreezeCnt > 0 && !mFireballs.empty()) {
+            if (mFreezeFireball) {
                 Number freezeEffect = ParameterSystem::Param<TIME_WIZARD>(
                                           TimeWizardParams::FreezeEffect)
                                           .get();
-                FireballPtr& fireball = mFireballs.back();
-                fireball->getValue() ^= freezeEffect;
+                mFreezeFireball->applyTimeEffect(freezeEffect);
+                mFireballs.push_back(std::move(mFreezeFireball));
             }
             break;
     }
@@ -335,24 +304,19 @@ void Wizard::onUnfreeze(TimeSystem::FreezeType type) {
 
 void Wizard::shootFireball() {
     bool frozen = TimeSystem::Frozen(TimeSystem::FreezeType::TIME_WIZARD);
-    if (!frozen || mFireballFreezeCnt == 0) {
-        FireballData fp = newFireball();
-        mFireballs.push_back(std::move(ComponentFactory<Fireball>::New(
-            SDL_FPoint{mPos->rect.cX(), mPos->rect.cY()}, mId, mTarget,
-            mPowWizBoosts.empty() ? FIREBALL_IMG : FIREBALL_BUFFED_IMG,
-            fp.power)));
-        auto& fireball = mFireballs.back();
-        fireball->setSize(fireball->getSize() * fp.sizeFactor);
-        if (!mPowWizBoosts.empty()) {
-            fireball->getState(Fireball::State::PowerWizBoosted) = true;
+    auto data = newFireballData();
+    if (!frozen) {
+        mFireballs.push_back(std::move(ComponentFactory<WizardFireball>::New(
+            SDL_FPoint{mPos->rect.cX(), mPos->rect.cY()}, mTarget, data,
+            !mPowWizBoosts.empty())));
+    } else {
+        if (!mFreezeFireball) {
+            mFreezeFireball = std::move(ComponentFactory<WizardFireball>::New(
+                SDL_FPoint{mPos->rect.cX(), mPos->rect.cY()}, mTarget, data,
+                !mPowWizBoosts.empty()));
+        } else {
+            mFreezeFireball->addFireball(data);
         }
-    }
-    if (frozen) {
-        auto& fireball = mFireballs.back();
-        if (++mFireballFreezeCnt > 1) {
-            fireball->getValue() += newFireball().power;
-        }
-        fireball->setSize(fmin(pow(mFireballFreezeCnt, 1.0 / 3.0), 10));
     }
 }
 
@@ -408,7 +372,7 @@ Number Wizard::calcCritSpread() {
            params[WizardParams::CritSpreadUp].get();
 }
 
-Wizard::FireballData Wizard::newFireball() {
+WizardFireball::Data Wizard::newFireballData() {
     ParameterSystem::Params<WIZARD> params;
     Number power = params[WizardParams::Power].get();
 
@@ -426,8 +390,7 @@ Wizard::FireballData Wizard::newFireball() {
 
 void Wizard::setPos(float x, float y) {
     WizardBase::setPos(x, y);
-    if (TimeSystem::Frozen(TimeSystem::FreezeType::TIME_WIZARD) &&
-        mFireballFreezeCnt > 0) {
-        mFireballs.back()->setPos(mPos->rect.cX(), mPos->rect.cY());
+    if (mFreezeFireball) {
+        mFreezeFireball->setPos(mPos->rect.cX(), mPos->rect.cY());
     }
 }

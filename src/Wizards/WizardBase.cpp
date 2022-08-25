@@ -88,7 +88,7 @@ void WizardBase::setPos(float x, float y) {
     mPos->rect.setPos(x, y, Rect::Align::CENTER);
     mPos->rect.fitWithin(Rect(0, 0, screenDim.x, screenDim.y));
     mImg.dest = mPos->rect;
-    ServiceSystem::Get<FireballService, FireballObservable>()->next(
+    ServiceSystem::Get<FireballService, FireballTargetPosObservable>()->next(
         mId, {mPos->rect.cX(), mPos->rect.cY()});
 }
 

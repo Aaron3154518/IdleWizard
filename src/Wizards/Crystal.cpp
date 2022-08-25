@@ -36,11 +36,13 @@ void Crystal::setSubscriptions() {
     mUpdateSub =
         ServiceSystem::Get<UpdateService, UpdateObservable>()->subscribe(
             [this](Time dt) { onUpdate(dt); });
-    mFireballSub =
-        ServiceSystem::Get<FireballService, Fireball::HitObservable>()
-            ->subscribe([this](const Fireball& f) { onFireballHit(f); }, mId);
+    mWizFireballHitSub = WizardFireball::GetHitObservable()->subscribe(
+        [this](const WizardFireball& f) { onWizFireballHit(f); }, mId);
+    mPowFireballHitSub = PowerWizFireball::GetHitObservable()->subscribe(
+        [this](const PowerWizFireball& f) { onPowFireballHit(f); }, mId);
     attachSubToVisibility(mUpdateSub);
-    attachSubToVisibility(mFireballSub);
+    attachSubToVisibility(mWizFireballHitSub);
+    attachSubToVisibility(mPowFireballHitSub);
 }
 void Crystal::setUpgrades() {
     ParameterSystem::Params<CRYSTAL> params;
@@ -199,17 +201,14 @@ void Crystal::onHide(WizardId id, bool hide) {
 
 void Crystal::onReset(WizardSystem::ResetTier tier) { mFireRings.clear(); }
 
-void Crystal::onFireballHit(const Fireball& fireball) {
-    switch (fireball.getSourceId()) {
-        case WIZARD: {
-            auto magic = ParameterSystem::Param<CRYSTAL>(CrystalParams::Magic);
-            magic.set(magic.get() + fireball.getValue());
-            addMessage("+" + fireball.getValue().toString());
-        } break;
-        case POWER_WIZARD: {
-            createFireRing(fireball.getValue(PowerWizardParams::Power));
-        } break;
-    }
+void Crystal::onWizFireballHit(const WizardFireball& fireball) {
+    auto magic = ParameterSystem::Param<CRYSTAL>(CrystalParams::Magic);
+    magic.set(magic.get() + fireball.power());
+    addMessage("+" + fireball.power().toString());
+}
+
+void Crystal::onPowFireballHit(const PowerWizFireball& fireball) {
+    createFireRing(fireball.power());
 }
 
 Number Crystal::calcMagicEffect() {

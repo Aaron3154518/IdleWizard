@@ -1,7 +1,7 @@
 #ifndef FIRE_RING_H
 #define FIRE_RING_H
 
-#include <Components/FireballHit.h>
+#include <Components/Fireballs/FireballManager.h>
 #include <RenderSystem/AssetManager.h>
 #include <RenderSystem/RenderSystem.h>
 #include <RenderSystem/Shapes.h>
@@ -42,7 +42,11 @@ class FireRing : public Component {
         int mR;
     };
 
-    typedef FireballHitObservable<FireballObservable> HitObservable;
+    typedef FireballManager<FireRing::FireballObservable> HitObservable;
+
+    class Service : public ::Service<HitObservable> {};
+
+    static std::shared_ptr<HitObservable> GetHitObservable();
 
    public:
     FireRing(SDL_Point c, const Number& effect);
@@ -67,8 +71,5 @@ class FireRing : public Component {
     TimeSystem::UpdateObservable::SubscriptionPtr mUpdateSub;
     HitObservable::FireballsSubscriptionPtr mRingSub;
 };
-
-class FireRingService
-    : public Service<FireRing::HitObservable, FireRing::HitObservable> {};
 
 #endif

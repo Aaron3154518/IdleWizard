@@ -12,6 +12,7 @@
 #include <ServiceSystem/UpdateServices/TimerService.h>
 #include <Systems/ParameterSystem/ParameterAccess.h>
 #include <Systems/ParameterSystem/WizardParameters.h>
+#include <Systems/TimeSystem.h>
 #include <Systems/WizardSystem.h>
 #include <Wizards/WizardBase.h>
 #include <Wizards/WizardIds.h>

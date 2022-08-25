@@ -6,21 +6,13 @@ const int Fireball::MAX_SPEED = 150;
 const int Fireball::ACCELERATION = 300;
 const int Fireball::ACCEL_ZONE = 100;
 
-const int Fireball::DEF_VALUE_KEY = 0;
+// const int Fireball::DEF_VALUE_KEY = 0;
 
 const Rect Fireball::IMG_RECT(0, 0, 40, 40);
 
-Fireball::Fireball(SDL_FPoint c, WizardId src, WizardId target,
-                   const std::string& img, const Number& val)
-    : Fireball(c, src, target, img, {{DEF_VALUE_KEY, val}}) {}
-
-Fireball::Fireball(SDL_FPoint c, WizardId src, WizardId target,
-                   const std::string& img, const NumberMap& vals)
+Fireball::Fireball(SDL_FPoint c, WizardId target, const std::string& img)
     : mPos(std::make_shared<UIComponent>(Rect(), Elevation::PROJECTILES)),
-      mTargetId(target),
-      mSrcId(src),
-      mVals(vals),
-      mState({false}) {
+      mTargetId(target) {
     mImg.texture = AssetManager::getTexture(img);
     mImg.dest.setPos(c.x, c.y, Rect::Align::CENTER);
     setSize(1);
@@ -35,15 +27,9 @@ void Fireball::init() {
     mRenderSub =
         ServiceSystem::Get<RenderService, RenderObservable>()->subscribe(
             [this](SDL_Renderer* r) { onRender(r); }, mPos);
-    mFireballSub =
-        ServiceSystem::Get<FireballService, FireballObservable>()->subscribe(
-            [this](SDL_FPoint p) { mTargetPos = p; }, mTargetId);
-    mFireRingSub =
-        ServiceSystem::Get<FireRingService, FireRing::HitObservable>()
-            ->subscribe([this](const Number& e) { onFireRing(e); }, mPos);
-    mCatalystSub =
-        ServiceSystem::Get<CatalystService, Catalyst::HitObservable>()
-            ->subscribe([this](const Number& e) { onCatalyst(e); }, mPos);
+    mTargetSub =
+        ServiceSystem::Get<FireballService, FireballTargetPosObservable>()
+            ->subscribe([this](SDL_FPoint p) { mTargetPos = p; }, mTargetId);
 
     launch(mTargetPos);
 }
@@ -72,25 +58,6 @@ void Fireball::setPos(float x, float y) {
     mImg.dest = mPos->rect;
 }
 
-bool Fireball::getState(State state) const {
-    if (state == State::size) {
-        throw std::runtime_error(
-            "Fireball::getState(): Cannot use State::size");
-    }
-    return mState[state];
-}
-bool& Fireball::getState(State state) {
-    if (state == State::size) {
-        throw std::runtime_error(
-            "Fireball::getState(): Cannot use State::size");
-    }
-    return mState[state];
-}
-
-const Number& Fireball::getValue(int key) const { return mVals.at(key); }
-Number& Fireball::getValue(int key) { return mVals[key]; }
-
-WizardId Fireball::getSourceId() const { return mSrcId; }
 WizardId Fireball::getTargetId() const { return mTargetId; }
 
 void Fireball::onResize(ResizeData data) {
@@ -106,14 +73,12 @@ void Fireball::onUpdate(Time dt) {
     float mag = std::sqrt(dx * dx + dy * dy);
     // Check in case we were moved onto the target
     if (mag < COLLIDE_ERR) {
+        onDeath();
         mDead = true;
-        ServiceSystem::Get<FireballService, FireballHitObservable>()->next(
-            mTargetId, *this);
         mResizeSub.reset();
         mRenderSub.reset();
         mUpdateSub.reset();
-        mFireballSub.reset();
-        mFireRingSub.reset();
+        mTargetSub.reset();
     } else {
         float frac = fmax((ACCEL_ZONE / mag), 1) * ACCELERATION / mag;
         mA.x = dx * frac;
@@ -134,21 +99,4 @@ void Fireball::onUpdate(Time dt) {
 
 void Fireball::onRender(SDL_Renderer* renderer) { TextureBuilder().draw(mImg); }
 
-void Fireball::onFireRing(const Number& effect) {
-    if (!getState(State::HitFireRing) && !getState(State::PowerWizBoosted)) {
-        getState(State::HitFireRing) = true;
-        ServiceSystem::Get<FireballService, FireballFireRingHitObservable>()
-            ->next(mSrcId, *this, effect);
-    }
-}
-
-void Fireball::onCatalyst(const Number& effect) {
-    switch (mSrcId) {
-        case WIZARD:
-            getValue() *= effect;
-            break;
-        case POWER_WIZARD:
-            getValue(PowerWizardParams::Power) *= effect;
-            break;
-    }
-}
+void Fireball::onDeath() {}

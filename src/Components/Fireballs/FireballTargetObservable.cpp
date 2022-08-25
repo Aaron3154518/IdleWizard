@@ -1,11 +1,11 @@
-#include "FireballService.h"
+#include "FireballTargetObservable.h"
 
 // FireballObservable
-void FireballObservable::onSubscribe(SubscriptionPtr sub) {
+void FireballTargetPosObservable::onSubscribe(SubscriptionPtr sub) {
     sub->get<FUNC>()(mTargets[sub->get<DATA>()]);
 }
 
-void FireballObservable::next(WizardId id, SDL_FPoint pos) {
+void FireballTargetPosObservable::next(WizardId id, SDL_FPoint pos) {
     if (id == WizardId::size) {
         throw std::runtime_error("Cannot use size as a target");
     }
@@ -17,7 +17,7 @@ void FireballObservable::next(WizardId id, SDL_FPoint pos) {
     }
 }
 
-SDL_FPoint FireballObservable::getPos(WizardId id) const {
+SDL_FPoint FireballTargetPosObservable::getPos(WizardId id) const {
     if (id == WizardId::size) {
         throw std::runtime_error("Cannot use size as a target");
     }

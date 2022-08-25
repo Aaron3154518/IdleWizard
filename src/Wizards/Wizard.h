@@ -1,7 +1,8 @@
 #ifndef WIZARD_H
 #define WIZARD_H
 
-#include <Components/Fireball.h>
+#include <Components/Fireballs/PowerWizFireball.h>
+#include <Components/Fireballs/WizardFireball.h>
 #include <Components/Upgrade.h>
 #include <RenderSystem/AssetManager.h>
 #include <RenderSystem/RenderTypes.h>
@@ -45,9 +46,7 @@ class Wizard : public WizardBase {
     void onHide(WizardId id, bool hide);
     void onReset(WizardSystem::ResetTier tier);
     bool onTimer(Timer& timer);
-    void onFireballHit(const Fireball& fireball);
-    void onFireballFireRingHit(Fireball& fireball,
-                               const Number& fireRingEffect);
+    void onPowFireballHit(const PowerWizFireball& fireball);
     bool onPowWizTimer(Timer& timer);
     void onPowWizTimerUpdate(Time dt, Timer& timer);
     void onFreeze(TimeSystem::FreezeType type);
@@ -59,11 +58,7 @@ class Wizard : public WizardBase {
     Number calcCrit();
     Number calcCritSpread();
 
-    struct FireballData {
-        Number power;
-        float sizeFactor;
-    };
-    FireballData newFireball();
+    WizardFireball::Data newFireballData();
 
     void shootFireball();
     void shootFireball(SDL_FPoint target);
@@ -74,8 +69,7 @@ class Wizard : public WizardBase {
 
     TimerObservable::SubscriptionPtr mFireballTimerSub;
     TimeSystem::TimerObservable::SubscriptionPtr mPowWizTimerSub;
-    Fireball::HitObservable::IdSubscriptionPtr mFireballSub;
-    Fireball::FireRingHitObservable::IdSubscriptionPtr mFireballFireRingSub;
+    PowerWizFireball::HitObservable::IdSubscriptionPtr mPowFireballHitSub;
     TimeSystem::FreezeObservable::SubscriptionPtr mFreezeSub;
     UpgradeList::SubscriptionPtr mPowerDisplay, mTargetUp, mPowerUp, mMultiUp,
         mCritUp;
@@ -85,8 +79,8 @@ class Wizard : public WizardBase {
 
     WizardId mTarget = CRYSTAL;
 
-    std::vector<FireballPtr> mFireballs;
-    int mFireballFreezeCnt;
+    WizardFireballPtr mFreezeFireball;
+    std::vector<WizardFireballPtr> mFireballs;
 };
 
 #endif

@@ -43,14 +43,6 @@ void Wizard::init() {
     mPowBkgrnd.set(POWER_BKGRND);
 
     WizardBase::init();
-
-    mAnimTimerSub = TimeSystem::GetTimerObservable()->subscribe(
-        [this](Timer& t) {
-            mImg.nextFrame();
-            WizardSystem::GetWizardImageObservable()->next(mId, mImg);
-            return true;
-        },
-        Timer(MSPF));
 }
 void Wizard::setSubscriptions() {
     mFireballTimerSub =
@@ -61,6 +53,13 @@ void Wizard::setSubscriptions() {
     mFreezeSub = TimeSystem::GetFreezeObservable()->subscribe(
         [this](TimeSystem::FreezeType f) { onFreeze(f); },
         [this](TimeSystem::FreezeType f) { onUnfreeze(f); });
+    mAnimTimerSub = TimeSystem::GetTimerObservable()->subscribe(
+        [this](Timer& t) {
+            mImg.nextFrame();
+            WizardSystem::GetWizardImageObservable()->next(mId, mImg);
+            return true;
+        },
+        Timer(MSPF));
     attachSubToVisibility(mFireballTimerSub);
     attachSubToVisibility(mPowFireballHitSub);
     attachSubToVisibility(mFreezeSub);

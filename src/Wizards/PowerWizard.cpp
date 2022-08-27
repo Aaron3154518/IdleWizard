@@ -1,9 +1,9 @@
 #include "PowerWizard.h"
 
 // PowerWizard
-const unsigned int PowerWizard::MSPF = 150, PowerWizard::NUM_FRAMES = 5;
+const unsigned int PowerWizard::MSPF = 150, PowerWizard::NUM_FRAMES = 8;
 
-const std::string PowerWizard::IMG = "res/wizards/power_wizard.png";
+const std::string PowerWizard::IMG = "res/wizards/power_wizard_ss.png";
 const std::string PowerWizard::FIREBALL_IMG = "res/projectiles/fireball2.png";
 const std::string PowerWizard::POWER_UP_IMG =
     "res/upgrades/power_fireball_upgrade.png";
@@ -23,7 +23,7 @@ void PowerWizard::setDefaults() {
 PowerWizard::PowerWizard() : WizardBase(POWER_WIZARD) {}
 
 void PowerWizard::init() {
-    mImg.set(IMG).setDest(IMG_RECT);
+    mImg.set(IMG, NUM_FRAMES).setDest(IMG_RECT);
     mPos->rect = mImg.getDest();
     WizardSystem::GetWizardImageObservable()->next(mId, mImg);
 
@@ -36,6 +36,13 @@ void PowerWizard::setSubscriptions() {
     mFreezeSub = TimeSystem::GetFreezeObservable()->subscribe(
         [this](TimeSystem::FreezeType t) { onFreeze(t); },
         [this](TimeSystem::FreezeType t) { onUnfreeze(t); });
+    mAnimTimerSub = TimeSystem::GetTimerObservable()->subscribe(
+        [this](Timer& t) {
+            mImg.nextFrame();
+            WizardSystem::GetWizardImageObservable()->next(mId, mImg);
+            return true;
+        },
+        Timer(MSPF));
     attachSubToVisibility(mFireballTimerSub);
     attachSubToVisibility(mFreezeSub);
 }
@@ -45,7 +52,7 @@ void PowerWizard::setUpgrades() {
 
     // Power Display
     DisplayPtr dUp = std::make_shared<Display>();
-    dUp->setImage(WIZ_IMGS.at(mId));
+    dUp->setImage(mId);
     dUp->setDescription("Power");
     dUp->setEffect(params[PowerWizardParams::Power],
                    Upgrade::Defaults::MultiplicativeEffect);

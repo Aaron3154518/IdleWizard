@@ -43,15 +43,6 @@ void Crystal::init() {
     mMagicRender.setFit(RenderData::FitMode::Texture);
 
     WizardBase::init();
-
-    mAnimTimerSub = TimeSystem::GetTimerObservable()->subscribe(
-        [this](Timer& t) {
-            mImg.nextFrame();
-            WizardSystem::GetWizardImageObservable()->next(mId, mImg);
-            t.length = mImg.getFrame() == 0 ? getAnimationDelay() : MSPF;
-            return true;
-        },
-        Timer(MSPF));
 }
 void Crystal::setSubscriptions() {
     mUpdateSub =
@@ -61,6 +52,14 @@ void Crystal::setSubscriptions() {
         [this](const WizardFireball& f) { onWizFireballHit(f); }, mId);
     mPowFireballHitSub = PowerWizFireball::GetHitObservable()->subscribe(
         [this](const PowerWizFireball& f) { onPowFireballHit(f); }, mId);
+    mAnimTimerSub = TimeSystem::GetTimerObservable()->subscribe(
+        [this](Timer& t) {
+            mImg.nextFrame();
+            WizardSystem::GetWizardImageObservable()->next(mId, mImg);
+            t.length = mImg.getFrame() == 0 ? getAnimationDelay() : MSPF;
+            return true;
+        },
+        Timer(MSPF));
     attachSubToVisibility(mUpdateSub);
     attachSubToVisibility(mWizFireballHitSub);
     attachSubToVisibility(mPowFireballHitSub);
@@ -71,7 +70,7 @@ void Crystal::setUpgrades() {
 
     // Power Display
     DisplayPtr dUp = std::make_shared<Display>();
-    dUp->setImage(WIZ_IMGS.at(mId));
+    dUp->setImage(mId);
     dUp->setDescription("Multiplier based on crystal damage");
     dUp->setEffect(params[CrystalParams::MagicEffect],
                    Upgrade::Defaults::MultiplicativeEffect);

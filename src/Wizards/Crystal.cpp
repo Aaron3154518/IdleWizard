@@ -3,7 +3,10 @@
 // Crystal
 const Number Crystal::T1_COST1 = 500, Crystal::T1_COST2 = 5e4;
 const SDL_Color Crystal::MSG_COLOR{200, 0, 175, 255};
-const std::string Crystal::IMG = "res/wizards/crystal.png";
+
+const unsigned int Crystal::MSPF = 100, Crystal::NUM_FRAMES = 13;
+
+const std::string Crystal::IMG = "res/wizards/crystal_ss.png";
 
 void Crystal::setDefaults() {
     using WizardSystem::ResetTier;
@@ -28,7 +31,7 @@ void Crystal::setDefaults() {
 Crystal::Crystal() : WizardBase(CRYSTAL) {}
 
 void Crystal::init() {
-    mImg.set(IMG).setDest(IMG_RECT);
+    mImg.set(IMG, NUM_FRAMES).setDest(IMG_RECT);
     mPos->rect = mImg.getDest();
     WizardSystem::GetWizardImageObservable()->next(mId, mImg);
 
@@ -40,6 +43,15 @@ void Crystal::init() {
     mMagicRender.setFit(RenderData::FitMode::Texture);
 
     WizardBase::init();
+
+    mAnimTimerSub = TimeSystem::GetTimerObservable()->subscribe(
+        [this](Timer& t) {
+            mImg.nextFrame();
+            WizardSystem::GetWizardImageObservable()->next(mId, mImg);
+            t.length = mImg.getFrame() == 0 ? getAnimationDelay() : MSPF;
+            return true;
+        },
+        Timer(MSPF));
 }
 void Crystal::setSubscriptions() {
     mUpdateSub =
@@ -190,7 +202,7 @@ void Crystal::onClick(Event::MouseButton b, bool clicked) {
         auto param = ParameterSystem::Param<CRYSTAL>(CrystalParams::Magic);
         param.set(param.get() * 2);
         if (param.get() > Number(1, 6)) {
-            triggerT1Reset();
+            // triggerT1Reset();
         }
     }
 }
@@ -240,6 +252,11 @@ void Crystal::drawMagic() {
     mMagicText.text = ss.str();
     mMagicText.w = mPos->rect.W();
     mMagicRender.set(mMagicText);
+}
+
+int Crystal::getAnimationDelay() {
+    auto magic = ParameterSystem::Param<CRYSTAL>(CrystalParams::Magic);
+    return fmaxf(0, 10000 - ((magic.get() + 1).logTen() ^ 2).toFloat());
 }
 
 std::unique_ptr<FireRing>& Crystal::createFireRing(const Number& val) {

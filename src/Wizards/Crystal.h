@@ -25,6 +25,8 @@ class Crystal : public WizardBase {
 
     const static Number T1_COST1, T1_COST2;
     const static SDL_Color MSG_COLOR;
+
+    const static unsigned int MSPF, NUM_FRAMES;
     const static std::string IMG;
 
     struct Message {
@@ -53,6 +55,8 @@ class Crystal : public WizardBase {
     Number calcMagicEffect();
     Number calcShardGain();
     void drawMagic();
+
+    int getAnimationDelay();
 
     std::unique_ptr<FireRing>& createFireRing(const Number& val);
 

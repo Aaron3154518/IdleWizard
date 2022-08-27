@@ -1,6 +1,8 @@
 #include "Catalyst.h"
 
 // Catalyst
+const unsigned int Catalyst::MSPF = 150, Catalyst::NUM_FRAMES = 5;
+
 const std::string Catalyst::IMG = "res/wizards/catalyst.png";
 
 void Catalyst::setDefaults() {

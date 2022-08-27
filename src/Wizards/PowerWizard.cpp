@@ -1,6 +1,8 @@
 #include "PowerWizard.h"
 
 // PowerWizard
+const unsigned int PowerWizard::MSPF = 150, PowerWizard::NUM_FRAMES = 5;
+
 const std::string PowerWizard::IMG = "res/wizards/power_wizard.png";
 const std::string PowerWizard::FIREBALL_IMG = "res/projectiles/fireball2.png";
 const std::string PowerWizard::POWER_UP_IMG =

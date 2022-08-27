@@ -21,6 +21,7 @@ class Catalyst : public WizardBase {
    public:
     Catalyst();
 
+    const static unsigned int MSPF, NUM_FRAMES;
     const static std::string IMG;
 
     static void setDefaults();

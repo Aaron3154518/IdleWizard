@@ -1,6 +1,8 @@
 #include "TimeWizard.h"
 
 // TimeWizard
+const unsigned int TimeWizard::MSPF = 150, TimeWizard::NUM_FRAMES = 5;
+
 const std::string TimeWizard::IMG = "res/wizards/time_wizard.png";
 const std::string TimeWizard::ACTIVE_IMG = "res/wizards/time_wizard_active.png";
 const std::string TimeWizard::FREEZE_IMG = "res/wizards/time_wizard_freeze.png";

@@ -22,6 +22,7 @@ class PowerWizard : public WizardBase {
    public:
     PowerWizard();
 
+    const static unsigned int MSPF, NUM_FRAMES;
     const static std::string IMG, FIREBALL_IMG, POWER_UP_IMG;
 
     static void setDefaults();

@@ -35,6 +35,7 @@ Wizard::Wizard() : WizardBase(WIZARD) {}
 void Wizard::init() {
     mImg.set(IMG, NUM_FRAMES).setDest(IMG_RECT);
     mPos->rect = mImg.getDest();
+    WizardSystem::GetWizardImageObservable()->next(mId, mImg);
     SDL_Point screenDim = RenderSystem::getWindowSize();
     setPos((rDist(gen) * .5 + .25) * screenDim.x,
            (rDist(gen) * .5 + .25) * screenDim.y);
@@ -46,6 +47,7 @@ void Wizard::init() {
     mAnimTimerSub = TimeSystem::GetTimerObservable()->subscribe(
         [this](Timer& t) {
             mImg.nextFrame();
+            WizardSystem::GetWizardImageObservable()->next(mId, mImg);
             return true;
         },
         Timer(MSPF));
@@ -68,7 +70,7 @@ void Wizard::setUpgrades() {
 
     // Power Display
     DisplayPtr dUp = std::make_shared<Display>();
-    dUp->setImage(WIZ_IMGS.at(mId));
+    dUp->setImage(mId);
     dUp->setDescription("Power");
     dUp->setEffect(params[WizardParams::Power],
                    Upgrade::Defaults::MultiplicativeEffect);

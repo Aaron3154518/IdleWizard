@@ -3,6 +3,7 @@
 
 #include <RenderSystem/RenderSystem.h>
 #include <Systems/ParameterSystem/ParameterAccess.h>
+#include <Systems/WizardSystem.h>
 
 #include <list>
 #include <memory>
@@ -29,6 +30,7 @@ class UpgradeBase {
     virtual Status getStatus();
     virtual void buy();
 
+    void setImage(WizardId id);
     void setImage(const std::string& file);
     void setDescription(const std::string& desc);
     void setInfo(const std::string& info);
@@ -46,7 +48,9 @@ class UpgradeBase {
     bool mUpdateInfo = false;
 
    private:
-    SharedTexture mImg, mDesc, mInfo;
+   RenderData mImg;
+    SharedTexture mDesc, mInfo;
+    WizardSystem::WizardImageObservable::IdSubscriptionPtr mWizImgSub;
 };
 
 typedef std::shared_ptr<UpgradeBase> UpgradeBasePtr;

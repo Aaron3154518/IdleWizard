@@ -22,6 +22,7 @@ Catalyst::Catalyst() : WizardBase(CATALYST) {
 void Catalyst::init() {
     mImg.set(IMG).setDest(IMG_RECT);
     mPos->rect = mImg.getDest();
+    WizardSystem::GetWizardImageObservable()->next(mId, mImg);
 
     mMagicText.font = AssetManager::getFont(FONT);
     mMagicRender.setFit(RenderData::FitMode::Texture);

@@ -23,8 +23,14 @@ UpgradeBase::Status UpgradeBase::getStatus() { return NOT_BUYABLE; }
 
 void UpgradeBase::buy() {}
 
+void UpgradeBase::setImage(WizardId id) {
+    mWizImgSub = WizardSystem::GetWizardImageObservable()->subscribe(
+        [this](const RenderData& data) { mImg = data; }, id);
+}
+
 void UpgradeBase::setImage(const std::string& file) {
-    mImg = AssetManager::getTexture(file);
+    mWizImgSub.reset();
+    mImg.set(file);
 }
 
 void UpgradeBase::setDescription(const std::string& desc) {
@@ -37,11 +43,7 @@ void UpgradeBase::setInfo(const std::string& info) {
 }
 
 void UpgradeBase::drawIcon(TextureBuilder& tex, const Rect& r) {
-    if (!mImg) {
-        return;
-    }
-
-    tex.draw(RenderData().set(mImg).setDest(r));
+    tex.draw(mImg.setDest(r));
 }
 
 void UpgradeBase::drawDescription(TextureBuilder tex, SDL_FPoint offset) {

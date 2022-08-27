@@ -30,6 +30,8 @@ Crystal::Crystal() : WizardBase(CRYSTAL) {}
 void Crystal::init() {
     mImg.set(IMG).setDest(IMG_RECT);
     mPos->rect = mImg.getDest();
+    WizardSystem::GetWizardImageObservable()->next(mId, mImg);
+
     SDL_Point screenDim = RenderSystem::getWindowSize();
     setPos(screenDim.x / 2, screenDim.y / 2);
 

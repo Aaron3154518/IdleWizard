@@ -23,6 +23,7 @@ PowerWizard::PowerWizard() : WizardBase(POWER_WIZARD) {}
 void PowerWizard::init() {
     mImg.set(IMG).setDest(IMG_RECT);
     mPos->rect = mImg.getDest();
+    WizardSystem::GetWizardImageObservable()->next(mId, mImg);
 
     WizardBase::init();
 }

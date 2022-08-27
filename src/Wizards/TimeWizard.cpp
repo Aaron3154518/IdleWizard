@@ -27,6 +27,7 @@ TimeWizard::TimeWizard() : WizardBase(TIME_WIZARD) {}
 void TimeWizard::init() {
     mImg.set(IMG).setDest(IMG_RECT);
     mPos->rect = mImg.getDest();
+    WizardSystem::GetWizardImageObservable()->next(mId, mImg);
 
     WizardBase::init();
 }
@@ -257,4 +258,5 @@ void TimeWizard::updateImg() {
                        : IMG)
         .setDest(imgR);
     mPos->rect = mImg.getDest();
+    WizardSystem::GetWizardImageObservable()->next(mId, mImg);
 }

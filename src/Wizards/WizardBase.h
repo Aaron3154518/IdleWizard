@@ -15,6 +15,7 @@
 #include <ServiceSystem/ServiceSystem.h>
 #include <Systems/ParameterSystem/ParameterObservable.h>
 #include <Systems/TargetSystem.h>
+#include <Systems/TimeSystem.h>
 #include <Systems/WizardSystem.h>
 #include <Wizards/WizardIds.h>
 
@@ -47,8 +48,6 @@ class WizardBase : public Component {
 
     virtual void setPos(float x, float y);
 
-    void setImage(const std::string& img);
-
     void attachSubToVisibility(SubscriptionBaseWPtr wSub);
     void detachSubFromVisibility(SubscriptionBasePtr ub);
 
@@ -62,6 +61,7 @@ class WizardBase : public Component {
     RenderObservable::SubscriptionPtr mRenderSub;
     MouseObservable::SubscriptionPtr mMouseSub;
     DragObservable::SubscriptionPtr mDragSub;
+    TimeSystem::TimerObservable::SubscriptionPtr mAnimTimerSub;
     WizardSystem::HideObservable::SubscriptionPtr mHideSub;
     WizardSystem::ResetObservable::SubscriptionPtr mResetSub;
     std::list<ParameterSystem::ParameterSubscriptionPtr> mParamSubs;

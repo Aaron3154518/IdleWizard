@@ -3,6 +3,7 @@
 
 #include <Components/Fireballs/FireballTargetObservable.h>
 #include <RenderSystem/AssetManager.h>
+#include <RenderSystem/RenderTypes.h>
 #include <RenderSystem/Shapes.h>
 #include <RenderSystem/TextureBuilder.h>
 #include <SDL.h>

@@ -11,10 +11,6 @@ WizardBase::WizardBase(WizardId id)
 WizardBase::~WizardBase() {}
 
 void WizardBase::init() {
-    setImage(WIZ_IMGS.at(mId));
-    SDL_Point screenDim = RenderSystem::getWindowSize();
-    setPos(rDist(gen) * screenDim.x, rDist(gen) * screenDim.y);
-
     mResizeSub =
         ServiceSystem::Get<ResizeService, ResizeObservable>()->subscribe(
             [this](ResizeData data) { onResize(data); });
@@ -51,14 +47,13 @@ void WizardBase::onResize(ResizeData data) {
 }
 
 void WizardBase::onRender(SDL_Renderer* r) {
+    TextureBuilder tex;
+
     if (mDrag->dragging) {
-        RectShape rd;
-        rd.color = GRAY;
-        rd.set(mPos->rect, 5);
-        TextureBuilder().draw(rd);
+        tex.draw(RectShape(GRAY).set(mPos->rect, 5));
     }
 
-    TextureBuilder().draw(mImg);
+    tex.draw(mImg);
 }
 
 void WizardBase::onClick(Event::MouseButton b, bool clicked) {
@@ -85,19 +80,13 @@ void WizardBase::onReset(WizardSystem::ResetTier tier) {}
 
 void WizardBase::setPos(float x, float y) {
     SDL_Point screenDim = RenderSystem::getWindowSize();
-    mPos->rect.setPos(x, y, Rect::Align::CENTER);
-    mPos->rect.fitWithin(Rect(0, 0, screenDim.x, screenDim.y));
-    mImg.dest = mPos->rect;
+    Rect imgR = mImg.getRect();
+    imgR.setPos(x, y, Rect::Align::CENTER);
+    imgR.fitWithin(Rect(0, 0, screenDim.x, screenDim.y));
+    mImg.setDest(imgR);
+    mPos->rect = mImg.getDest();
     ServiceSystem::Get<FireballService, FireballTargetPosObservable>()->next(
         mId, {mPos->rect.cX(), mPos->rect.cY()});
-}
-
-void WizardBase::setImage(const std::string& img) {
-    mImg.texture = AssetManager::getTexture(img);
-    mImg.dest = IMG_RECT;
-    mImg.dest.setPos(mPos->rect.cX(), mPos->rect.cY(), Rect::Align::CENTER);
-    mImg.shrinkToTexture();
-    mPos->rect = mImg.dest;
 }
 
 void WizardBase::attachSubToVisibility(SubscriptionBaseWPtr wSub) {

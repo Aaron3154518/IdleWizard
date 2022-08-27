@@ -29,7 +29,8 @@ class Wizard : public WizardBase {
    public:
     Wizard();
 
-    const static std::string POWER_UP_IMG, SPEED_UP_IMG, MULTI_UP_IMG,
+    const static unsigned int MSPF, NUM_FRAMES;
+    const static std::string IMG, POWER_UP_IMG, SPEED_UP_IMG, MULTI_UP_IMG,
         POWER_BKGRND, FIREBALL_IMG, FIREBALL_BUFFED_IMG, CRIT_UP_IMG;
 
     const static std::vector<WizardId> TARGETS;

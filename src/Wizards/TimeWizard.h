@@ -23,7 +23,7 @@ class TimeWizard : public WizardBase {
    public:
     TimeWizard();
 
-    const static std::string ACTIVE_IMG, FREEZE_IMG, FREEZE_UP_IMG,
+    const static std::string IMG, ACTIVE_IMG, FREEZE_IMG, FREEZE_UP_IMG,
         SPEED_UP_IMG;
 
     static void setDefaults();

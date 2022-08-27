@@ -21,6 +21,8 @@ class Catalyst : public WizardBase {
    public:
     Catalyst();
 
+    const static std::string IMG;
+
     static void setDefaults();
 
    private:
@@ -43,7 +45,8 @@ class Catalyst : public WizardBase {
     UpgradeList::SubscriptionPtr mMagicEffectDisplay, mRangeUp;
 
     CircleShape mRange;
-    TextRenderData mMagicText;
+    TextData mMagicText;
+    RenderData mMagicRender;
 };
 
 #endif

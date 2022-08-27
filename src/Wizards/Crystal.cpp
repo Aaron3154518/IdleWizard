@@ -3,6 +3,7 @@
 // Crystal
 const Number Crystal::T1_COST1 = 500, Crystal::T1_COST2 = 5e4;
 const SDL_Color Crystal::MSG_COLOR{200, 0, 175, 255};
+const std::string Crystal::IMG = "res/wizards/crystal.png";
 
 void Crystal::setDefaults() {
     using WizardSystem::ResetTier;
@@ -27,8 +28,14 @@ void Crystal::setDefaults() {
 Crystal::Crystal() : WizardBase(CRYSTAL) {}
 
 void Crystal::init() {
-    mMagicText.tData.font = mMsgTData.font = AssetManager::getFont(FONT);
+    mImg.set(IMG).setDest(IMG_RECT);
+    mPos->rect = mImg.getDest();
+    SDL_Point screenDim = RenderSystem::getWindowSize();
+    setPos(screenDim.x / 2, screenDim.y / 2);
+
+    mMagicText.font = mMsgTData.font = AssetManager::getFont(FONT);
     mMsgTData.color = MSG_COLOR;
+    mMagicRender.setFit(RenderData::FitMode::Texture);
 
     WizardBase::init();
 }
@@ -147,8 +154,9 @@ void Crystal::onUpdate(Time dt) {
                 }
             }
         } else if (it->mMoving) {
-            it->mRData.dest.move(it->mTrajectory.x * dt.s(),
-                                 it->mTrajectory.y * dt.s());
+            Rect msgR = it->mRData.getRect();
+            msgR.move(it->mTrajectory.x * dt.s(), it->mTrajectory.y * dt.s());
+            it->mRData.setDest(msgR);
         }
     }
 }
@@ -158,10 +166,7 @@ void Crystal::onRender(SDL_Renderer* r) {
 
     TextureBuilder tex;
 
-    mMagicText.dest =
-        Rect(mPos->rect.x(), mPos->rect.y2(), mPos->rect.w(), FONT.h * 2);
-    mMagicText.shrinkToTexture(Rect::CENTER, Rect::TOP_LEFT);
-    tex.draw(mMagicText);
+    tex.draw(mMagicRender);
 
     for (auto msg : mMessages) {
         tex.draw(msg.mRData);
@@ -230,9 +235,9 @@ void Crystal::drawMagic() {
     std::stringstream ss;
     ss << params[CrystalParams::Magic].get() << "\n"
        << params[CrystalParams::Shards].get();
-    mMagicText.tData.text = ss.str();
-    mMagicText.tData.w = mPos->rect.W();
-    mMagicText.renderText();
+    mMagicText.text = ss.str();
+    mMagicText.w = mPos->rect.W();
+    mMagicRender.set(mMagicText);
 }
 
 std::unique_ptr<FireRing>& Crystal::createFireRing(const Number& val) {
@@ -244,14 +249,14 @@ std::unique_ptr<FireRing>& Crystal::createFireRing(const Number& val) {
 void Crystal::addMessage(const std::string& msg) {
     mMsgTData.text = msg;
 
-    RenderData rData;
-    rData.texture = mMsgTData.renderText();
-    rData.fitToTexture();
-
     float dx = (rDist(gen) - .5) * mPos->rect.halfW(),
           dy = (rDist(gen) - .5) * mPos->rect.halfH();
-    rData.dest.setPos(mPos->rect.cX() + dx, mPos->rect.cY() + dy,
-                      Rect::Align::CENTER);
+    RenderData rData =
+        RenderData()
+            .set(mMsgTData)
+            .setFit(RenderData::FitMode::Texture)
+            .setDest(Rect(mPos->rect.cX() + dx, mPos->rect.cY() + dy, 0, 0));
+
     SDL_FPoint trajectory{copysignf(rDist(gen), dx), copysignf(rDist(gen), dy)};
     if (trajectory.x == 0 && trajectory.y == 0) {
         trajectory.y = 1;
@@ -277,4 +282,11 @@ void Crystal::triggerT1Reset() {
     if (!resetT1.get()) {
         resetT1.set(true);
     }
+}
+
+void Crystal::setPos(float x, float y) {
+    WizardBase::setPos(x, y);
+
+    mMagicRender.setDest(
+        Rect(mPos->rect.x(), mPos->rect.y2(), mPos->rect.w(), FONT.h * 2));
 }

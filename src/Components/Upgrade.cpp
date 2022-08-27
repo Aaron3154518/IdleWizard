@@ -41,11 +41,7 @@ void UpgradeBase::drawIcon(TextureBuilder& tex, const Rect& r) {
         return;
     }
 
-    RenderData rData;
-    rData.texture = mImg;
-    rData.dest = r;
-    rData.shrinkToTexture();
-    tex.draw(rData);
+    tex.draw(RenderData().set(mImg).setDest(r));
 }
 
 void UpgradeBase::drawDescription(TextureBuilder tex, SDL_FPoint offset) {
@@ -54,28 +50,26 @@ void UpgradeBase::drawDescription(TextureBuilder tex, SDL_FPoint offset) {
         mUpdateInfo = false;
     }
 
-    RectShape rd;
-    rd.color = DESC_BKGRND;
+    RectShape rd = RectShape(DESC_BKGRND);
 
     RenderData descData;
     if (mDesc) {
-        descData.texture = mDesc;
-        descData.shrinkToTexture();
-        descData.dest.setPos(offset.x, offset.y, Rect::CENTER, Rect::TOP_LEFT);
+        descData.set(mDesc)
+            .setFitAlign(Rect::CENTER, Rect::TOP_LEFT)
+            .setDest(Rect(offset.x, offset.y, 0, 0));
     } else {
-        descData.dest = Rect(offset.x, offset.y, 0, 0);
+        descData.setDest(Rect(offset.x, offset.y, 0, 0));
     }
 
     if (mInfo) {
-        RenderData infoData;
-        infoData.texture = mInfo;
-        infoData.shrinkToTexture();
-        float w = infoData.dest.w();
-        w = std::max(w, descData.dest.w());
-        infoData.dest.setPos(descData.dest.cX(), descData.dest.y2(),
-                             Rect::CENTER, Rect::TOP_LEFT);
+        RenderData infoData =
+            RenderData().set(mInfo).setFitAlign(Rect::CENTER, Rect::TOP_LEFT);
+        float w = infoData.getDest().w();
+        w = std::max(w, descData.getDest().w());
+        infoData.setDest(
+            Rect(descData.getDest().cX(), descData.getDest().y2(), 0, 0));
 
-        Rect rdRect(0, offset.y, w, infoData.dest.y2() - offset.y);
+        Rect rdRect(0, offset.y, w, infoData.getDest().y2() - offset.y);
         rdRect.setPosX(offset.x, Rect::CENTER);
         tex.draw(rd.set(rdRect));
         tex.draw(infoData);
@@ -84,14 +78,14 @@ void UpgradeBase::drawDescription(TextureBuilder tex, SDL_FPoint offset) {
             tex.draw(descData);
         }
 
-        rd.color = BLACK;
+        rd.mColor = BLACK;
         tex.draw(rd.set(rd.get().r2, 1));
     } else if (mDesc) {
-        tex.draw(rd.set(descData.dest));
+        tex.draw(rd.set(descData.getDest()));
 
         tex.draw(descData);
 
-        rd.color = BLACK;
+        rd.mColor = BLACK;
         tex.draw(rd.set(rd.get().r2, 1));
     }
 }

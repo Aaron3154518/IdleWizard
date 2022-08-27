@@ -22,11 +22,12 @@ class PowerWizard : public WizardBase {
    public:
     PowerWizard();
 
-    const static std::string FIREBALL_IMG, POWER_UP_IMG;
+    const static std::string IMG, FIREBALL_IMG, POWER_UP_IMG;
 
     static void setDefaults();
 
    private:
+    void init();
     void setSubscriptions();
     void setUpgrades();
     void setParamTriggers();

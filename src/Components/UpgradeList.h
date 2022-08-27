@@ -62,7 +62,7 @@ class UpgradeScroller : public Component {
    public:
     UpgradeScroller();
 
-    const static SDL_Color BGKRND;
+    const static SDL_Color BKGRND;
     const static Rect RECT;
 
    private:

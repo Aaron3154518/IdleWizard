@@ -1,6 +1,7 @@
 #include "PowerWizard.h"
 
 // PowerWizard
+const std::string PowerWizard::IMG = "res/wizards/power_wizard.png";
 const std::string PowerWizard::FIREBALL_IMG = "res/projectiles/fireball2.png";
 const std::string PowerWizard::POWER_UP_IMG =
     "res/upgrades/power_fireball_upgrade.png";
@@ -19,6 +20,12 @@ void PowerWizard::setDefaults() {
 
 PowerWizard::PowerWizard() : WizardBase(POWER_WIZARD) {}
 
+void PowerWizard::init() {
+    mImg.set(IMG).setDest(IMG_RECT);
+    mPos->rect = mImg.getDest();
+
+    WizardBase::init();
+}
 void PowerWizard::setSubscriptions() {
     mFireballTimerSub =
         ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(

@@ -25,6 +25,7 @@ class Crystal : public WizardBase {
 
     const static Number T1_COST1, T1_COST2;
     const static SDL_Color MSG_COLOR;
+    const static std::string IMG;
 
     struct Message {
         RenderData mRData;
@@ -59,6 +60,8 @@ class Crystal : public WizardBase {
 
     void triggerT1Reset();
 
+    void setPos(float x, float y);
+
     UpdateObservable::SubscriptionPtr mUpdateSub;
     WizardFireball::HitObservable::IdSubscriptionPtr mWizFireballHitSub;
     PowerWizFireball::HitObservable::IdSubscriptionPtr mPowFireballHitSub;
@@ -70,7 +73,8 @@ class Crystal : public WizardBase {
 
     std::vector<std::unique_ptr<FireRing>> mFireRings;
 
-    TextRenderData mMagicText;
+    TextData mMagicText;
+    RenderData mMagicRender;
 };
 
 #endif

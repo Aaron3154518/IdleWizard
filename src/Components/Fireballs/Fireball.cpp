@@ -13,8 +13,9 @@ const Rect Fireball::IMG_RECT(0, 0, 40, 40);
 Fireball::Fireball(SDL_FPoint c, WizardId target, const std::string& img)
     : mPos(std::make_shared<UIComponent>(Rect(), Elevation::PROJECTILES)),
       mTargetId(target) {
-    mImg.texture = AssetManager::getTexture(img);
-    mImg.dest.setPos(c.x, c.y, Rect::Align::CENTER);
+    Rect imgR = IMG_RECT;
+    imgR.setPos(c.x, c.y, Rect::Align::CENTER);
+    mImg.set(img).setDest(imgR);
     setSize(1);
 }
 
@@ -47,22 +48,26 @@ void Fireball::launch(SDL_FPoint target) {
 float Fireball::getSize() const { return mSize; }
 void Fireball::setSize(float size) {
     mSize = fmin(fmax(size, 0), 50);
-    mImg.dest.setDim(IMG_RECT.w() * size, IMG_RECT.h() * size,
-                     Rect::Align::CENTER);
-    mImg.shrinkToTexture();
-    mPos->rect = mImg.dest;
+    Rect imgR = mImg.getRect();
+    imgR.setDim(IMG_RECT.w() * size, IMG_RECT.h() * size, Rect::Align::CENTER);
+    mImg.setDest(imgR);
+    mPos->rect = mImg.getDest();
 }
 
 void Fireball::setPos(float x, float y) {
-    mPos->rect.setPos(x, y, Rect::Align::CENTER);
-    mImg.dest = mPos->rect;
+    Rect imgR = mImg.getRect();
+    imgR.setPos(x, y, Rect::Align::CENTER);
+    mImg.setDest(imgR);
+    mPos->rect = mImg.getDest();
 }
 
 WizardId Fireball::getTargetId() const { return mTargetId; }
 
 void Fireball::onResize(ResizeData data) {
-    mPos->rect.moveFactor((float)data.newW / data.oldW,
-                          (float)data.newH / data.oldH);
+    Rect imgR = mImg.getRect();
+    imgR.moveFactor((float)data.newW / data.oldW, (float)data.newH / data.oldH);
+    mImg.setDest(imgR);
+    mPos->rect = mImg.getDest();
 }
 
 void Fireball::onUpdate(Time dt) {
@@ -83,7 +88,8 @@ void Fireball::onUpdate(Time dt) {
         float frac = fmax((ACCEL_ZONE / mag), 1) * ACCELERATION / mag;
         mA.x = dx * frac;
         mA.y = dy * frac;
-        mPos->rect.move(mV.x * sec + mA.y * aCoeff, mV.y * sec + mA.y * aCoeff);
+        Rect imgR = mImg.getRect();
+        imgR.move(mV.x * sec + mA.y * aCoeff, mV.y * sec + mA.y * aCoeff);
         mV.x += mA.x * sec;
         mV.y += mA.y * sec;
         // Cap speed
@@ -93,7 +99,8 @@ void Fireball::onUpdate(Time dt) {
             mV.x *= frac;
             mV.y *= frac;
         }
-        mImg.dest = mPos->rect;
+        mImg.setDest(imgR);
+        mPos->rect = mImg.getDest();
     }
 }
 

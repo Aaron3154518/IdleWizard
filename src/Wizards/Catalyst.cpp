@@ -1,6 +1,8 @@
 #include "Catalyst.h"
 
 // Catalyst
+const std::string Catalyst::IMG = "res/wizards/catalyst.png";
+
 void Catalyst::setDefaults() {
     using WizardSystem::ResetTier;
 
@@ -18,10 +20,13 @@ Catalyst::Catalyst() : WizardBase(CATALYST) {
 }
 
 void Catalyst::init() {
-    mMagicText.tData.font = AssetManager::getFont(FONT);
+    mImg.set(IMG).setDest(IMG_RECT);
+    mPos->rect = mImg.getDest();
 
-    mRange.color = PURPLE;
-    mRange.setDashed(50);
+    mMagicText.font = AssetManager::getFont(FONT);
+    mMagicRender.setFit(RenderData::FitMode::Texture);
+
+    mRange = CircleShape(PURPLE).setDashed(50);
 
     WizardBase::init();
 }
@@ -102,10 +107,7 @@ void Catalyst::onRender(SDL_Renderer* r) {
 
     tex.draw(mRange);
 
-    mMagicText.dest = Rect(mPos->rect.x(), mPos->rect.y2(), mPos->rect.w(), 0);
-    mMagicText.dest.setHeight(FONT.h, Rect::Align::TOP_LEFT);
-    mMagicText.shrinkToTexture();
-    tex.draw(mMagicText);
+    tex.draw(mMagicRender);
 }
 
 Number Catalyst::calcMagicEffect() {
@@ -121,10 +123,9 @@ Number Catalyst::calcRange() {
 
 void Catalyst::drawMagic() {
     ParameterSystem::Params<CATALYST> params;
-    mMagicText.tData.text = params[CatalystParams::Magic].get().toString() +
-                            "/" +
-                            params[CatalystParams::Capacity].get().toString();
-    mMagicText.renderText();
+    mMagicText.text = params[CatalystParams::Magic].get().toString() + "/" +
+                      params[CatalystParams::Capacity].get().toString();
+    mMagicRender.set(mMagicText);
 }
 
 void Catalyst::updateRange() {
@@ -137,6 +138,10 @@ void Catalyst::updateRange() {
 
 void Catalyst::setPos(float x, float y) {
     WizardBase::setPos(x, y);
+
+    mMagicRender.setDest(
+        Rect(mPos->rect.x(), mPos->rect.y2(), mPos->rect.w(), FONT.h));
+
     mRange.setCenter({mPos->rect.CX(), mPos->rect.CY()});
     CatalystRing::GetHitObservable()->setPos(mRange.get());
 }

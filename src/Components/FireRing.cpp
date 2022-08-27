@@ -41,7 +41,7 @@ std::shared_ptr<FireRing::HitObservable> FireRing::GetHitObservable() {
 }
 
 FireRing::FireRing(SDL_Point c, const Number& effect) : mEffect(effect) {
-    mCircle.setCenter(c).setRadius(0, WIDTH).color = COLOR;
+    mCircle = CircleShape(COLOR).setCenter(c).setRadius(0, WIDTH);
 }
 
 void FireRing::init() {

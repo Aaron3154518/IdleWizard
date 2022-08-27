@@ -1,6 +1,9 @@
 #include "Wizard.h"
 
 // Wizard
+const unsigned int Wizard::MSPF = 150, Wizard::NUM_FRAMES = 5;
+
+const std::string Wizard::IMG = "res/wizards/wizard_ss.png";
 const std::string Wizard::POWER_UP_IMG = "res/upgrades/fireball_upgrade.png";
 const std::string Wizard::MULTI_UP_IMG = "res/upgrades/multi_upgrade.png";
 const std::string Wizard::CRIT_UP_IMG = "res/upgrades/crit_upgrade.png";
@@ -30,9 +33,22 @@ void Wizard::setDefaults() {
 Wizard::Wizard() : WizardBase(WIZARD) {}
 
 void Wizard::init() {
-    mPowBkgrnd.texture = AssetManager::getTexture(POWER_BKGRND);
+    mImg.set(IMG, NUM_FRAMES).setDest(IMG_RECT);
+    mPos->rect = mImg.getDest();
+    SDL_Point screenDim = RenderSystem::getWindowSize();
+    setPos((rDist(gen) * .5 + .25) * screenDim.x,
+           (rDist(gen) * .5 + .25) * screenDim.y);
+
+    mPowBkgrnd.set(POWER_BKGRND);
 
     WizardBase::init();
+
+    mAnimTimerSub = TimeSystem::GetTimerObservable()->subscribe(
+        [this](Timer& t) {
+            mImg.nextFrame();
+            return true;
+        },
+        Timer(MSPF));
 }
 void Wizard::setSubscriptions() {
     mFireballTimerSub =
@@ -164,11 +180,11 @@ void Wizard::setParamTriggers() {
 }
 
 void Wizard::onRender(SDL_Renderer* r) {
+    TextureBuilder tex;
+
     if (mPowWizTimerSub &&
         mPowWizTimerSub->get<TimerObservable::DATA>().isActive()) {
-        mPowBkgrnd.dest = mPos->rect;
-        mPowBkgrnd.shrinkToTexture();
-        TextureBuilder().draw(mPowBkgrnd);
+        tex.draw(mPowBkgrnd.setDest(mPos->rect));
     }
 
     WizardBase::onRender(r);

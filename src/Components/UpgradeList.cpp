@@ -87,22 +87,22 @@ void UpgradeList::draw(TextureBuilder tex, float scroll, SDL_Point offset) {
         r.move(offset.x, offset.y);
         RectShape rd;
         if (!sub) {
-            rd.color = WHITE;
+            rd.mColor = WHITE;
             tex.draw(rd.set(r, 3));
         } else {
             auto up = sub->get<DATA>();
             switch (up->getStatus()) {
                 case Upgrade::Status::BOUGHT:
-                    rd.color = BLUE;
+                    rd.mColor = BLUE;
                     break;
                 case Upgrade::Status::CAN_BUY:
-                    rd.color = GREEN;
+                    rd.mColor = GREEN;
                     break;
                 case Upgrade::Status::CANT_BUY:
-                    rd.color = RED;
+                    rd.mColor = RED;
                     break;
                 case Upgrade::Status::NOT_BUYABLE:
-                    rd.color = BLACK;
+                    rd.mColor = BLACK;
                     break;
             }
             tex.draw(rd.set(r, 3));
@@ -200,7 +200,7 @@ UpgradeBasePtr UpgradeList::Get(SubscriptionPtr sub) {
 }
 
 // UpgradeScroller
-const SDL_Color UpgradeScroller::BGKRND = GRAY;
+const SDL_Color UpgradeScroller::BKGRND = GRAY;
 const Rect UpgradeScroller::RECT(0, 0, 100, 100);
 
 UpgradeScroller::UpgradeScroller()
@@ -211,7 +211,7 @@ UpgradeScroller::UpgradeScroller()
     mPos->rect.setPosX(screenDim.x / 2, Rect::Align::CENTER);
 
     mTex = TextureBuilder(mPos->rect.W(), mPos->rect.H());
-    mTexData.texture = mTex.getTexture();
+    mTexData.set(mTex.getTexture());
 }
 
 void UpgradeScroller::init() {
@@ -243,7 +243,7 @@ void UpgradeScroller::onResize(ResizeData data) {
     mPos->rect.setPosX(data.newW / 2, Rect::Align::CENTER);
 
     mTex = TextureBuilder(mPos->rect.W(), mPos->rect.H());
-    mTexData.texture = mTex.getTexture();
+    mTexData.set(mTex.getTexture());
 }
 void UpgradeScroller::onUpdate(Time dt) {
     if (!mDrag->dragging) {
@@ -258,16 +258,14 @@ void UpgradeScroller::onUpdate(Time dt) {
     }
 }
 void UpgradeScroller::onRender(SDL_Renderer* r) {
-    RectShape rd;
-    rd.color = BGKRND;
-    mTex.draw(rd);
+    mTex.draw(RectShape(BKGRND));
 
     if (mUpgrades) {
         mUpgrades->draw(mTex, mScroll);
     }
 
     // Draw texture to screen
-    mTexData.dest = mPos->rect;
+    mTexData.setDest(mPos->rect);
     TextureBuilder().draw(mTexData);
 }
 void UpgradeScroller::onClick(Event::MouseButton b, bool clicked) {

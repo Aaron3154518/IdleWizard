@@ -1,6 +1,7 @@
 #include "TimeWizard.h"
 
 // TimeWizard
+const std::string TimeWizard::IMG = "res/wizards/time_wizard.png";
 const std::string TimeWizard::ACTIVE_IMG = "res/wizards/time_wizard_active.png";
 const std::string TimeWizard::FREEZE_IMG = "res/wizards/time_wizard_freeze.png";
 const std::string TimeWizard::FREEZE_UP_IMG =
@@ -24,9 +25,8 @@ void TimeWizard::setDefaults() {
 TimeWizard::TimeWizard() : WizardBase(TIME_WIZARD) {}
 
 void TimeWizard::init() {
-    // Freeze display
-    mFreezePb.bkgrnd = TRANSPARENT;
-    mFreezePb.blendMode = SDL_BLENDMODE_BLEND;
+    mImg.set(IMG).setDest(IMG_RECT);
+    mPos->rect = mImg.getDest();
 
     WizardBase::init();
 }
@@ -200,7 +200,7 @@ bool TimeWizard::startFreeze(Timer& timer) {
                       TimeWizardParams::FreezeDuration)
                       .get()
                       .toFloat()));
-    mFreezePb.color = CYAN;
+    mFreezePb.set(CYAN, TRANSPARENT);
     updateImg();
     return false;
 }
@@ -222,7 +222,7 @@ void TimeWizard::startFreezeCycle() {
                       TimeWizardParams::FreezeDelay)
                       .get()
                       .toFloat()));
-    mFreezePb.color = BLUE;
+    mFreezePb.set(BLUE, TRANSPARENT);
     updateImg();
 }
 
@@ -249,8 +249,12 @@ Number TimeWizard::calcCost() {
 }
 
 void TimeWizard::updateImg() {
-    setImage(TimeSystem::Frozen(TimeSystem::FreezeType::TIME_WIZARD)
+    Rect imgR = mImg.getRect();
+    imgR.setPos(mPos->rect.cX(), mPos->rect.cY(), Rect::Align::CENTER);
+    mImg.set(TimeSystem::Frozen(TimeSystem::FreezeType::TIME_WIZARD)
                  ? FREEZE_IMG
              : mActive ? ACTIVE_IMG
-                       : WIZ_IMGS.at(mId));
+                       : IMG)
+        .setDest(imgR);
+    mPos->rect = mImg.getDest();
 }

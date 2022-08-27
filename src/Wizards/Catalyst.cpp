@@ -31,6 +31,8 @@ void Catalyst::init() {
 
     mRange = CircleShape(PURPLE).setDashed(50);
 
+    setPos(mPos->rect.cX(), mPos->rect.cY());
+
     WizardBase::init();
 }
 void Catalyst::setSubscriptions() {

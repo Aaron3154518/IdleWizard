@@ -64,8 +64,10 @@ void UpgradeBase::drawDescription(TextureBuilder tex, SDL_FPoint offset) {
     }
 
     if (mInfo) {
-        RenderData infoData =
-            RenderData().set(mInfo).setFitAlign(Rect::CENTER, Rect::TOP_LEFT);
+        RenderData infoData = RenderData()
+                                  .set(mInfo)
+                                  .setFitAlign(Rect::CENTER, Rect::TOP_LEFT)
+                                  .setDest(Rect(0, 0, 0, 0));
         float w = infoData.getDest().w();
         w = std::max(w, descData.getDest().w());
         infoData.setDest(
@@ -119,11 +121,8 @@ void Display::setEffects(
     const std::initializer_list<ParameterSystem::ValueParam>& valueParams,
     const std::initializer_list<ParameterSystem::StateParam>& stateParams,
     std::function<std::string()> func) {
-    mEffectSub =
-        ParameterSystem::subscribe(valueParams, stateParams, [this, func]() {
-            mInfoStr = func();
-            mUpdateInfo = true;
-        });
+    mEffectSub = ParameterSystem::subscribe(
+        valueParams, stateParams, [this, func]() { setInfo(func()); });
 }
 
 // Toggle

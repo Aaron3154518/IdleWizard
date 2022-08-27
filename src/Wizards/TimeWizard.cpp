@@ -1,11 +1,17 @@
 #include "TimeWizard.h"
 
 // TimeWizard
+const SDL_Color TimeWizard::CLOCK_COLOR = CYAN,
+                TimeWizard::SLOW_HAND_COLOR = BLUE,
+                TimeWizard::FAST_HAND_COLOR{128, 128, 255, 255};
+const float TimeWizard::CLOCK_HAND_W = 20 * DEG_TO_RAD,
+            TimeWizard::SLOW_HAND_SPEED = 20 * DEG_TO_RAD,
+            TimeWizard::FAST_HAND_SPEED = 200 * DEG_TO_RAD;
+
 const unsigned int TimeWizard::MSPF = 100, TimeWizard::NUM_FRAMES = 8;
 
 const std::string TimeWizard::IMG = "res/wizards/time_wizard_ss.png";
-const std::string TimeWizard::ACTIVE_IMG = "res/wizards/time_wizard_active.png";
-const std::string TimeWizard::FREEZE_IMG = "res/wizards/time_wizard_freeze.png";
+const std::string TimeWizard::FREEZE_IMG = "res/wizards/time_wizard_frozen.png";
 const std::string TimeWizard::FREEZE_UP_IMG =
     "res/upgrades/time_freeze_upgrade.png";
 const std::string TimeWizard::SPEED_UP_IMG = "res/upgrades/speed_upgrade.png";
@@ -31,11 +37,17 @@ void TimeWizard::setDefaults() {
 TimeWizard::TimeWizard() : WizardBase(TIME_WIZARD) {}
 
 void TimeWizard::init() {
-    mImg.set(IMG, NUM_FRAMES).setDest(IMG_RECT);
+    updateImg();
+    mImg.setDest(IMG_RECT);
     mPos->rect = mImg.getDest();
-    WizardSystem::GetWizardImageObservable()->next(mId, mImg);
 
     mFreezePb = ProgressBar(SDL_BLENDMODE_BLEND).set(BLACK, BLACK);
+
+    mClock = CircleShape(CLOCK_COLOR);
+    mSlowHand =
+        CircleShape(SLOW_HAND_COLOR).setAngleRad(M_PI - CLOCK_HAND_W, M_PI);
+    mFastHand =
+        CircleShape(FAST_HAND_COLOR).setAngleRad(M_PI - CLOCK_HAND_W, M_PI);
 
     WizardBase::init();
 }
@@ -58,7 +70,7 @@ void TimeWizard::setUpgrades() {
 
     // Power Display
     DisplayPtr dUp = std::make_shared<Display>();
-    dUp->setImage(WIZ_IMGS.at(mId));
+    dUp->setImage(mId);
     dUp->setDescription("Speed multiplier");
     dUp->setEffects({params[TimeWizardParams::FreezeDelay],
                      params[TimeWizardParams::FreezeDuration],
@@ -85,10 +97,10 @@ void TimeWizard::setUpgrades() {
             if (sub) {
                 sub->get<0>()();
             }
-            tUp.setImage(mActive ? ACTIVE_IMG : WIZ_IMGS.at(mId));
             updateImg();
         },
         2);
+    mActiveToggle->setImage(WIZ_IMGS.at(mId));
     mActiveToggle->setDescription(
         "Consume magic for a fire rate multiplier to all Wizards");
     mActiveToggle->setEffects(
@@ -187,11 +199,19 @@ bool TimeWizard::onCostTimer(Timer& timer) {
 }
 
 void TimeWizard::onRender(SDL_Renderer* r) {
+    TextureBuilder tex;
+
+    if (TimeSystem::Frozen(TimeSystem::FreezeType::TIME_WIZARD)) {
+        tex.draw(mClock);
+        tex.draw(mSlowHand);
+        tex.draw(mFastHand);
+    }
+
     WizardBase::onRender(r);
 
     mFreezePb.dest = Rect(mPos->rect.x(), mPos->rect.y2(), mPos->rect.w(),
                           mPos->rect.h() / 15);
-    TextureBuilder().draw(mFreezePb);
+    tex.draw(mFreezePb);
 }
 
 void TimeWizard::onHide(WizardId id, bool hide) {
@@ -219,9 +239,7 @@ bool TimeWizard::startFreeze(Timer& timer) {
     mFreezeTimerSub =
         ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
             [this](Timer& t) { return endFreeze(t); },
-            [this](Time dt, Timer& timer) {
-                mFreezePb.set(1 - timer.getPercent());
-            },
+            [this](Time dt, Timer& timer) { onFreezeTimer(dt, timer); },
             Timer(ParameterSystem::Param<TIME_WIZARD>(
                       TimeWizardParams::FreezeDuration)
                       .get()
@@ -229,6 +247,19 @@ bool TimeWizard::startFreeze(Timer& timer) {
     mFreezePb.mColor = CYAN;
     updateImg();
     return false;
+}
+
+void TimeWizard::onFreezeTimer(Time dt, Timer& timer) {
+    mFreezePb.set(1 - timer.getPercent());
+    float freezeEffect =
+        (ParameterSystem::Param<TIME_WIZARD>(TimeWizardParams::FreezeEffect)
+             .get() ^
+         2)
+            .toFloat();
+    float a1 = mSlowHand.get().a1 - dt.s() * SLOW_HAND_SPEED * freezeEffect;
+    mSlowHand.setAngleRad(a1, a1 + CLOCK_HAND_W);
+    a1 = mFastHand.get().a1 - dt.s() * FAST_HAND_SPEED * freezeEffect;
+    mFastHand.setAngleRad(a1, a1 + CLOCK_HAND_W);
 }
 
 bool TimeWizard::endFreeze(Timer& timer) {
@@ -283,5 +314,18 @@ void TimeWizard::updateImg() {
         mImg.set(IMG, NUM_FRAMES);
     }
     mPos->rect = mImg.setDest(imgR).getDest();
+
+    int rad = (int)fminf(mPos->rect.halfW(), mPos->rect.halfH());
+    mClock.setRadius(rad, -10);
+    mSlowHand.setRadius(rad, -10);
+    mFastHand.setRadius(rad, -10);
+
     WizardSystem::GetWizardImageObservable()->next(mId, mImg);
+}
+
+void TimeWizard::setPos(float x, float y) {
+    WizardBase::setPos(x, y);
+    mClock.setCenter({mPos->rect.CX(), mPos->rect.CY()});
+    mSlowHand.setCenter({mPos->rect.CX(), mPos->rect.CY()});
+    mFastHand.setCenter({mPos->rect.CX(), mPos->rect.CY()});
 }

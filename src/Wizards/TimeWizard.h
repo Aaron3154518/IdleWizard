@@ -23,9 +23,11 @@ class TimeWizard : public WizardBase {
    public:
     TimeWizard();
 
+    const static SDL_Color CLOCK_COLOR, SLOW_HAND_COLOR, FAST_HAND_COLOR;
+    const static float CLOCK_HAND_W, SLOW_HAND_SPEED, FAST_HAND_SPEED;
+
     const static unsigned int MSPF, NUM_FRAMES;
-    const static std::string IMG, ACTIVE_IMG, FREEZE_IMG, FREEZE_UP_IMG,
-        SPEED_UP_IMG;
+    const static std::string IMG, FREEZE_IMG, FREEZE_UP_IMG, SPEED_UP_IMG;
 
     static void setDefaults();
 
@@ -40,6 +42,7 @@ class TimeWizard : public WizardBase {
     void onHide(WizardId id, bool hide);
     void onReset(WizardSystem::ResetTier tier);
     bool startFreeze(Timer& timer);
+    void onFreezeTimer(Time dt, Timer& timer);
     bool endFreeze(Timer& timer);
     void startFreezeCycle();
 
@@ -48,6 +51,8 @@ class TimeWizard : public WizardBase {
     Number calcCost();
 
     void updateImg();
+
+    void setPos(float x, float y);
 
     bool mActive = false, mCanAfford = false;
 
@@ -59,6 +64,7 @@ class TimeWizard : public WizardBase {
     TogglePtr mActiveToggle;
 
     ProgressBar mFreezePb;
+    CircleShape mClock, mSlowHand, mFastHand;
 };
 
 #endif

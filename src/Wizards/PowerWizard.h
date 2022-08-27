@@ -53,6 +53,7 @@ class PowerWizard : public WizardBase {
     void setPos(float x, float y);
 
     TimerObservable::SubscriptionPtr mFireballTimerSub;
+    TimeSystem::TimerObservable::SubscriptionPtr mAnimTimerSub;
     TimeSystem::FreezeObservable::SubscriptionPtr mFreezeSub;
     UpgradeList::SubscriptionPtr mPowerDisplay, mPowerUp;
 

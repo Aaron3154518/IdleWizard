@@ -67,6 +67,7 @@ class Crystal : public WizardBase {
     void setPos(float x, float y);
 
     UpdateObservable::SubscriptionPtr mUpdateSub;
+    TimeSystem::TimerObservable::SubscriptionPtr mAnimTimerSub;
     WizardFireball::HitObservable::IdSubscriptionPtr mWizFireballHitSub;
     PowerWizFireball::HitObservable::IdSubscriptionPtr mPowFireballHitSub;
     UpgradeList::SubscriptionPtr mMagicEffectDisplay, mPowWizBuy, mTimeWizBuy,

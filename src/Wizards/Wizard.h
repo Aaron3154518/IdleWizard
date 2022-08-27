@@ -29,7 +29,7 @@ class Wizard : public WizardBase {
    public:
     Wizard();
 
-    const static unsigned int MSPF, NUM_FRAMES;
+    const static unsigned int MSPF, NUM_FRAMES, POW_BK_MSPF, POW_BK_NUM_FRAMES;
     const static std::string IMG, POWER_UP_IMG, SPEED_UP_IMG, MULTI_UP_IMG,
         POWER_BKGRND, FIREBALL_IMG, FIREBALL_BUFFED_IMG, CRIT_UP_IMG;
 
@@ -69,7 +69,8 @@ class Wizard : public WizardBase {
     RenderData mPowBkgrnd;
 
     TimerObservable::SubscriptionPtr mFireballTimerSub;
-    TimeSystem::TimerObservable::SubscriptionPtr mPowWizTimerSub;
+    TimeSystem::TimerObservable::SubscriptionPtr mPowWizTimerSub, mAnimTimerSub,
+        mPowBkAnimTimerSub;
     PowerWizFireball::HitObservable::IdSubscriptionPtr mPowFireballHitSub;
     TimeSystem::FreezeObservable::SubscriptionPtr mFreezeSub;
     UpgradeList::SubscriptionPtr mPowerDisplay, mTargetUp, mPowerUp, mMultiUp,

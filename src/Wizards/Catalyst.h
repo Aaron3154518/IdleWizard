@@ -42,6 +42,7 @@ class Catalyst : public WizardBase {
 
     void setPos(float x, float y);
 
+    TimeSystem::TimerObservable::SubscriptionPtr mAnimTimerSub;
     WizardFireball::HitObservable::IdSubscriptionPtr mWizFireballSub;
     UpgradeList::SubscriptionPtr mMagicEffectDisplay, mRangeUp;
 

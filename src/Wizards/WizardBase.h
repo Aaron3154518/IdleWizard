@@ -61,7 +61,6 @@ class WizardBase : public Component {
     RenderObservable::SubscriptionPtr mRenderSub;
     MouseObservable::SubscriptionPtr mMouseSub;
     DragObservable::SubscriptionPtr mDragSub;
-    TimeSystem::TimerObservable::SubscriptionPtr mAnimTimerSub;
     WizardSystem::HideObservable::SubscriptionPtr mHideSub;
     WizardSystem::ResetObservable::SubscriptionPtr mResetSub;
     std::list<ParameterSystem::ParameterSubscriptionPtr> mParamSubs;

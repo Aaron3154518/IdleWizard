@@ -52,7 +52,7 @@ class TimeWizard : public WizardBase {
     bool mActive = false, mCanAfford = false;
 
     TimerObservable::SubscriptionPtr mCostTimerSub, mFreezeDelaySub,
-        mFreezeTimerSub;
+        mFreezeTimerSub, mAnimTimerSub;
     UpgradeList::SubscriptionPtr mEffectDisplay, mActiveUp, mFreezeUp, mSpeedUp;
     ParameterSystem::ParameterSubscriptionWPtr mSpeedEffectSub;
 

@@ -29,6 +29,8 @@ void TimeWizard::init() {
     mPos->rect = mImg.getDest();
     WizardSystem::GetWizardImageObservable()->next(mId, mImg);
 
+    mFreezePb = ProgressBar(SDL_BLENDMODE_BLEND).set(BLACK, BLACK);
+
     WizardBase::init();
 }
 void TimeWizard::setSubscriptions() {
@@ -201,7 +203,7 @@ bool TimeWizard::startFreeze(Timer& timer) {
                       TimeWizardParams::FreezeDuration)
                       .get()
                       .toFloat()));
-    mFreezePb.set(CYAN, TRANSPARENT);
+    mFreezePb.mColor = CYAN;
     updateImg();
     return false;
 }
@@ -223,7 +225,7 @@ void TimeWizard::startFreezeCycle() {
                       TimeWizardParams::FreezeDelay)
                       .get()
                       .toFloat()));
-    mFreezePb.set(BLUE, TRANSPARENT);
+    mFreezePb.mColor = BLUE;
     updateImg();
 }
 

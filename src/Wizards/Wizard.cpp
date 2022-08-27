@@ -21,7 +21,7 @@ void Wizard::setDefaults() {
 
     params[WizardParams::BaseCritSpread]->init(0);
     params[WizardParams::BasePower]->init(1);
-    params[WizardParams::BasePower]->init(1);
+    params[WizardParams::BaseSpeed]->init(1);
     params[WizardParams::BaseCrit]->init(1);
     params[WizardParams::PowerWizEffect]->init(1);
 

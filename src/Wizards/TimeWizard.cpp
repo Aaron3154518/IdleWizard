@@ -22,6 +22,10 @@ void TimeWizard::setDefaults() {
 
     params[TimeWizardParams::SpeedUpLvl]->init(ResetTier::T1);
     params[TimeWizardParams::FreezeUpLvl]->init(ResetTier::T1);
+
+    ParameterSystem::States states;
+
+    states[State::TimeWizActive]->init(false, ResetTier::T1);
 }
 
 TimeWizard::TimeWizard() : WizardBase(TIME_WIZARD) {}
@@ -132,7 +136,8 @@ void TimeWizard::setParamTriggers() {
     mParamSubs.push_back(params[TimeWizardParams::SpeedEffect].subscribeTo(
         {params[TimeWizardParams::SpeedBaseEffect],
          params[TimeWizardParams::SpeedUp]},
-        {}, [this]() { return calcSpeedEffect(); }));
+        {states[State::TimeWizActive]},
+        [this]() { return calcSpeedEffect(); }));
 
     mParamSubs.push_back(params[TimeWizardParams::SpeedCost].subscribeTo(
         {params[TimeWizardParams::SpeedEffect]}, {},
@@ -160,7 +165,7 @@ bool TimeWizard::onCostTimer(Timer& timer) {
         }
     }
     if (mCanAfford != prevAfford) {
-        calcSpeedEffect();
+        ParameterSystem::Param(State::TimeWizActive).set(mCanAfford);
     }
     return true;
 }
@@ -240,7 +245,7 @@ Number TimeWizard::calcFreezeEffect() {
 Number TimeWizard::calcSpeedEffect() {
     ParameterSystem::Params<TIME_WIZARD> params;
     Number effect = 1;
-    if (mActive && mCanAfford) {
+    if (ParameterSystem::Param(State::TimeWizActive).get()) {
         effect = params[TimeWizardParams::SpeedBaseEffect].get() +
                  params[TimeWizardParams::SpeedUp].get();
     }

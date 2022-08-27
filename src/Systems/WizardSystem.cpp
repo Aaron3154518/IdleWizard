@@ -18,6 +18,14 @@ std::shared_ptr<HideObservable> GetHideObservable() {
     return ServiceSystem::Get<WizardService, HideObservable>();
 }
 
+const RenderData& GetWizardImage(WizardId id) {
+    return GetWizardImageObservable()->get(id);
+}
+
+std::shared_ptr<WizardImageObservable> GetWizardImageObservable() {
+    return ServiceSystem::Get<WizardService, WizardImageObservable>();
+}
+
 void Reset(ResetTier tier) { GetResetObservable()->next(tier); }
 
 std::shared_ptr<ResetObservable> GetResetObservable() {

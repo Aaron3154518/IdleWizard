@@ -58,7 +58,7 @@ class Fireball : public Component {
     ResizeObservable::SubscriptionPtr mResizeSub;
     TimeSystem::UpdateObservable::SubscriptionPtr mUpdateSub;
     RenderObservable::SubscriptionPtr mRenderSub;
-    FireballTargetPosObservable::SubscriptionPtr mTargetSub;
+    FireballTargetPosObservable::IdSubscriptionPtr mTargetSub;
 
     const static int COLLIDE_ERR, MAX_SPEED, ACCELERATION, ACCEL_ZONE;
 };

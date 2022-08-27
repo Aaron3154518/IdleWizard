@@ -1,9 +1,11 @@
 #ifndef WIZARD_SYSTEM_H
 #define WIZARD_SYSTEM_H
 
+#include <RenderSystem/RenderTypes.h>
 #include <ServiceSystem/Observable.h>
 #include <ServiceSystem/Service.h>
 #include <ServiceSystem/ServiceSystem.h>
+#include <Systems/TargetSystem.h>
 #include <Wizards/WizardIds.h>
 
 namespace WizardSystem {
@@ -23,6 +25,13 @@ bool Hidden(WizardId id);
 
 std::shared_ptr<HideObservable> GetHideObservable();
 
+// For handling wizard animations/images
+typedef TargetSystem::TargetDataObservable<RenderData> WizardImageObservable;
+
+const RenderData& GetWizardImage(WizardId id);
+
+std::shared_ptr<WizardImageObservable> GetWizardImageObservable();
+
 enum ResetTier : uint8_t {
     T1 = 0,
     T2,
@@ -37,7 +46,8 @@ void Reset(ResetTier tier);
 
 std::shared_ptr<ResetObservable> GetResetObservable();
 
-class WizardService : public Service<HideObservable, ResetObservable> {};
+class WizardService
+    : public Service<HideObservable, ResetObservable, WizardImageObservable> {};
 }  // namespace WizardSystem
 
 #endif

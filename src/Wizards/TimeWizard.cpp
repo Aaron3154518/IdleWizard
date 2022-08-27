@@ -1,9 +1,9 @@
 #include "TimeWizard.h"
 
 // TimeWizard
-const unsigned int TimeWizard::MSPF = 150, TimeWizard::NUM_FRAMES = 5;
+const unsigned int TimeWizard::MSPF = 100, TimeWizard::NUM_FRAMES = 8;
 
-const std::string TimeWizard::IMG = "res/wizards/time_wizard.png";
+const std::string TimeWizard::IMG = "res/wizards/time_wizard_ss.png";
 const std::string TimeWizard::ACTIVE_IMG = "res/wizards/time_wizard_active.png";
 const std::string TimeWizard::FREEZE_IMG = "res/wizards/time_wizard_freeze.png";
 const std::string TimeWizard::FREEZE_UP_IMG =
@@ -31,7 +31,7 @@ void TimeWizard::setDefaults() {
 TimeWizard::TimeWizard() : WizardBase(TIME_WIZARD) {}
 
 void TimeWizard::init() {
-    mImg.set(IMG).setDest(IMG_RECT);
+    mImg.set(IMG, NUM_FRAMES).setDest(IMG_RECT);
     mPos->rect = mImg.getDest();
     WizardSystem::GetWizardImageObservable()->next(mId, mImg);
 
@@ -43,6 +43,14 @@ void TimeWizard::setSubscriptions() {
     mCostTimerSub =
         ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
             [this](Timer& t) { return onCostTimer(t); }, Timer(50));
+    mAnimTimerSub =
+        ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
+            [this](Timer& t) {
+                mImg.nextFrame();
+                WizardSystem::GetWizardImageObservable()->next(mId, mImg);
+                return true;
+            },
+            Timer(MSPF));
     attachSubToVisibility(mCostTimerSub);
 }
 void TimeWizard::setUpgrades() {
@@ -143,6 +151,14 @@ void TimeWizard::setParamTriggers() {
         {params[TimeWizardParams::SpeedEffect]}, {},
         [this]() { return calcCost(); }));
     mSpeedEffectSub = mParamSubs.back();
+
+    mParamSubs.push_back(params[TimeWizardParams::SpeedEffect].subscribe(
+        [this](const Number& val) {
+            if (mAnimTimerSub) {
+                mAnimTimerSub->get<TimerObservable::DATA>().length =
+                    (int)(MSPF / val.toFloat());
+            }
+        }));
 
     mParamSubs.push_back(
         states[State::BoughtTimeWizard].subscribe([this](bool bought) {
@@ -261,11 +277,11 @@ Number TimeWizard::calcCost() {
 void TimeWizard::updateImg() {
     Rect imgR = mImg.getRect();
     imgR.setPos(mPos->rect.cX(), mPos->rect.cY(), Rect::Align::CENTER);
-    mImg.set(TimeSystem::Frozen(TimeSystem::FreezeType::TIME_WIZARD)
-                 ? FREEZE_IMG
-             : mActive ? ACTIVE_IMG
-                       : IMG)
-        .setDest(imgR);
-    mPos->rect = mImg.getDest();
+    if (TimeSystem::Frozen(TimeSystem::FreezeType::TIME_WIZARD)) {
+        mImg.set(FREEZE_IMG);
+    } else {
+        mImg.set(IMG, NUM_FRAMES);
+    }
+    mPos->rect = mImg.setDest(imgR).getDest();
     WizardSystem::GetWizardImageObservable()->next(mId, mImg);
 }

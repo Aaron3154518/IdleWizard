@@ -2,7 +2,7 @@
 
 // PowerWizFireball
 const AnimationData PowerWizFireball::IMG{
-    "res/projectiles/power_fireball_ss.png", 6, 100};
+    "res/projectiles/power_fireball_ss.png", 6, 75};
 
 std::shared_ptr<PowerWizFireball::HitObservable>
 PowerWizFireball::GetHitObservable() {

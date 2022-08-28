@@ -23,6 +23,9 @@ class Fireball : public Component {
    public:
     const static Rect IMG_RECT;
 
+    const static unsigned int MSPF, NUM_FRAMES;
+    const static std::string IMG;
+
     Fireball(SDL_FPoint c, WizardId target, const std::string& img);
     virtual ~Fireball() = default;
 
@@ -56,6 +59,7 @@ class Fireball : public Component {
     float mSize = 1;
 
     ResizeObservable::SubscriptionPtr mResizeSub;
+    TimerObservable::SubscriptionPtr mAnimTimerSub;
     TimeSystem::UpdateObservable::SubscriptionPtr mUpdateSub;
     RenderObservable::SubscriptionPtr mRenderSub;
     WizardSystem::WizardPosObservable::IdSubscriptionPtr mTargetSub;

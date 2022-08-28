@@ -6,6 +6,9 @@ const int Fireball::MAX_SPEED = 150;
 const int Fireball::ACCELERATION = 300;
 const int Fireball::ACCEL_ZONE = 100;
 
+const unsigned int Fireball::MSPF = 100, Fireball::NUM_FRAMES = 6;
+const std::string Fireball::IMG = "res/projectiles/fireball_ss.png";
+
 // const int Fireball::DEF_VALUE_KEY = 0;
 
 const Rect Fireball::IMG_RECT(0, 0, 40, 40);
@@ -15,7 +18,7 @@ Fireball::Fireball(SDL_FPoint c, WizardId target, const std::string& img)
       mTargetId(target) {
     Rect imgR = IMG_RECT;
     imgR.setPos(c.x, c.y, Rect::Align::CENTER);
-    mImg.set(img).setDest(imgR);
+    mImg.set(IMG, NUM_FRAMES).setDest(imgR);
     setSize(1);
 }
 
@@ -30,6 +33,13 @@ void Fireball::init() {
             [this](SDL_Renderer* r) { onRender(r); }, mPos);
     mTargetSub = WizardSystem::GetWizardPosObservable()->subscribe(
         [this](SDL_FPoint p) { mTargetPos = p; }, mTargetId);
+    mAnimTimerSub =
+        ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
+            [this](Timer& t) {
+                mImg.nextFrame();
+                return true;
+            },
+            Timer(MSPF));
 
     launch(mTargetPos);
 }

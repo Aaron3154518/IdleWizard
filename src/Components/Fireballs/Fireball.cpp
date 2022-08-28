@@ -8,6 +8,8 @@ const int Fireball::ACCEL_ZONE = 100;
 
 const Rect Fireball::IMG_RECT(0, 0, 40, 40);
 
+constexpr int FIREBALL_BASE_ROT_DEG = -45;
+
 Fireball::Fireball(SDL_FPoint c, WizardId target, const std::string& img)
     : Fireball(c, target, AnimationData{img}) {}
 Fireball::Fireball(SDL_FPoint c, WizardId target, const AnimationData& img)
@@ -115,7 +117,7 @@ void Fireball::onUpdate(Time dt) {
                 theta += 180;
             }
         }
-        theta -= 45;
+        theta += FIREBALL_BASE_ROT_DEG;
 
         Rect imgR = mImg.getRect();
         imgR.move(dx, dy);

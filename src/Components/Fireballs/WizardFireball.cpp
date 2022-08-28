@@ -3,7 +3,7 @@
 // WizardFireball
 const AnimationData WizardFireball::IMG{"res/projectiles/fireball_ss.png", 6,
                                         100},
-    WizardFireball::POW_IMG{"res/projectiles/fireball_buffed.png"};
+    WizardFireball::POW_IMG{"res/projectiles/fireball_buffed_ss.png", 6, 100};
 
 std::shared_ptr<WizardFireball::HitObservable>
 WizardFireball::GetHitObservable() {

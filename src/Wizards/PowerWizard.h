@@ -12,6 +12,7 @@
 #include <Systems/ParameterSystem/ParameterAccess.h>
 #include <Systems/ParameterSystem/WizardParameters.h>
 #include <Systems/WizardSystem.h>
+#include <Utils/AnimationData.h>
 #include <Wizards/WizardBase.h>
 #include <Wizards/WizardIds.h>
 
@@ -22,8 +23,8 @@ class PowerWizard : public WizardBase {
    public:
     PowerWizard();
 
-    const static unsigned int MSPF, NUM_FRAMES;
-    const static std::string IMG, FIREBALL_IMG, POWER_UP_IMG;
+    const static AnimationData IMG;
+    const static std::string FIREBALL_IMG, POWER_UP_IMG;
 
     static void setDefaults();
 

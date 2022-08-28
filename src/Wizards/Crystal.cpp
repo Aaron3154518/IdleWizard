@@ -4,9 +4,7 @@
 const Number Crystal::T1_COST1 = 500, Crystal::T1_COST2 = 5e4;
 const SDL_Color Crystal::MSG_COLOR{200, 0, 175, 255};
 
-const unsigned int Crystal::MSPF = 100, Crystal::NUM_FRAMES = 13;
-
-const std::string Crystal::IMG = "res/wizards/crystal_ss.png";
+const AnimationData Crystal::IMG{"res/wizards/crystal_ss.png", 13, 100};
 
 void Crystal::setDefaults() {
     using WizardSystem::ResetTier;
@@ -31,7 +29,7 @@ void Crystal::setDefaults() {
 Crystal::Crystal() : WizardBase(CRYSTAL) {}
 
 void Crystal::init() {
-    mImg.set(IMG, NUM_FRAMES).setDest(IMG_RECT);
+    mImg.set(IMG).setDest(IMG_RECT);
     mPos->rect = mImg.getDest();
     WizardSystem::GetWizardImageObservable()->next(mId, mImg);
 
@@ -56,10 +54,11 @@ void Crystal::setSubscriptions() {
         [this](Timer& t) {
             mImg.nextFrame();
             WizardSystem::GetWizardImageObservable()->next(mId, mImg);
-            t.length = mImg.getFrame() == 0 ? getAnimationDelay() : MSPF;
+            t.length =
+                mImg.getFrame() == 0 ? getAnimationDelay() : IMG.frame_ms;
             return true;
         },
-        Timer(MSPF));
+        IMG);
     attachSubToVisibility(mUpdateSub);
     attachSubToVisibility(mWizFireballHitSub);
     attachSubToVisibility(mPowFireballHitSub);

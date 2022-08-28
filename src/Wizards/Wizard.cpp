@@ -1,15 +1,12 @@
 #include "Wizard.h"
 
 // Wizard
-const unsigned int Wizard::MSPF = 150, Wizard::NUM_FRAMES = 5;
-const unsigned int Wizard::POW_BK_MSPF = 100, Wizard::POW_BK_NUM_FRAMES = 6;
+const AnimationData Wizard::IMG{"res/wizards/wizard_ss.png", 5, 150},
+    Wizard::POWER_BKGRND{"res/wizards/power_effect_bkgrnd_ss.png", 6, 100};
 
-const std::string Wizard::IMG = "res/wizards/wizard_ss.png";
 const std::string Wizard::POWER_UP_IMG = "res/upgrades/fireball_upgrade.png";
 const std::string Wizard::MULTI_UP_IMG = "res/upgrades/multi_upgrade.png";
 const std::string Wizard::CRIT_UP_IMG = "res/upgrades/crit_upgrade.png";
-const std::string Wizard::POWER_BKGRND =
-    "res/wizards/power_effect_bkgrnd_ss.png";
 const std::string Wizard::FIREBALL_IMG = "res/projectiles/fireball.png";
 const std::string Wizard::FIREBALL_BUFFED_IMG =
     "res/projectiles/fireball_buffed.png";
@@ -35,14 +32,14 @@ void Wizard::setDefaults() {
 Wizard::Wizard() : WizardBase(WIZARD) {}
 
 void Wizard::init() {
-    mImg.set(IMG, NUM_FRAMES).setDest(IMG_RECT);
+    mImg.set(IMG).setDest(IMG_RECT);
     mPos->rect = mImg.getDest();
     WizardSystem::GetWizardImageObservable()->next(mId, mImg);
     SDL_Point screenDim = RenderSystem::getWindowSize();
     setPos((rDist(gen) * .5 + .25) * screenDim.x,
            (rDist(gen) * .5 + .25) * screenDim.y);
 
-    mPowBkgrnd.set(POWER_BKGRND, POW_BK_NUM_FRAMES);
+    mPowBkgrnd.set(POWER_BKGRND);
 
     WizardBase::init();
 }
@@ -61,13 +58,13 @@ void Wizard::setSubscriptions() {
             WizardSystem::GetWizardImageObservable()->next(mId, mImg);
             return true;
         },
-        Timer(MSPF));
+        IMG);
     mPowBkAnimTimerSub = TimeSystem::GetTimerObservable()->subscribe(
         [this](Timer& t) {
             mPowBkgrnd.nextFrame();
             return true;
         },
-        Timer(POW_BK_MSPF));
+        POWER_BKGRND);
     attachSubToVisibility(mFireballTimerSub);
     attachSubToVisibility(mPowFireballHitSub);
     attachSubToVisibility(mFreezeSub);

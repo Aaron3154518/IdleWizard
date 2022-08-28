@@ -13,6 +13,7 @@
 #include <ServiceSystem/EventServices/MouseService.h>
 #include <Systems/ParameterSystem/ParameterAccess.h>
 #include <Systems/ParameterSystem/WizardParameters.h>
+#include <Utils/AnimationData.h>
 #include <Wizards/WizardBase.h>
 #include <Wizards/WizardIds.h>
 
@@ -26,8 +27,7 @@ class Crystal : public WizardBase {
     const static Number T1_COST1, T1_COST2;
     const static SDL_Color MSG_COLOR;
 
-    const static unsigned int MSPF, NUM_FRAMES;
-    const static std::string IMG;
+    const static AnimationData IMG;
 
     struct Message {
         RenderData mRData;

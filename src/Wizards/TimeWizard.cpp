@@ -1,13 +1,9 @@
 #include "TimeWizard.h"
 
 // TimeWizard
-const unsigned int TimeWizard::MSPF = 100, TimeWizard::NUM_FRAMES = 8;
-const unsigned int TimeWizard::FROZEN_MSPF = 100,
-                   TimeWizard::FROZEN_NUM_FRAMES = 9;
+const AnimationData TimeWizard::IMG{"res/wizards/time_wizard_ss.png", 8, 100},
+    TimeWizard::FREEZE_IMG{"res/wizards/time_wizard_frozen_ss.png", 9, 100};
 
-const std::string TimeWizard::IMG = "res/wizards/time_wizard_ss.png";
-const std::string TimeWizard::FREEZE_IMG =
-    "res/wizards/time_wizard_frozen_ss.png";
 const std::string TimeWizard::FREEZE_UP_IMG =
     "res/upgrades/time_freeze_upgrade.png";
 const std::string TimeWizard::SPEED_UP_IMG = "res/upgrades/speed_upgrade.png";
@@ -52,14 +48,12 @@ void TimeWizard::setSubscriptions() {
                 WizardSystem::GetWizardImageObservable()->next(mId, mImg);
                 if (TimeSystem::Frozen(TimeSystem::FreezeType::TIME_WIZARD)) {
                     t.length = mImg.getFrame() != 0
-                                   ? FROZEN_MSPF
+                                   ? FREEZE_IMG.frame_ms
                                    : (int)(rDist(gen) * 500) + 1000;
-                } else {
-                    t.length = MSPF;
                 }
                 return true;
             },
-            Timer(MSPF));
+            IMG);
     attachSubToVisibility(mCostTimerSub);
 }
 void TimeWizard::setUpgrades() {
@@ -168,9 +162,10 @@ void TimeWizard::setParamTriggers() {
 
     mParamSubs.push_back(params[TimeWizardParams::SpeedEffect].subscribe(
         [this](const Number& val) {
+            mImgAnimData.frame_ms =
+                (unsigned int)(IMG.frame_ms / val.toFloat());
             if (mAnimTimerSub) {
-                mAnimTimerSub->get<TimerObservable::DATA>().length =
-                    (int)(MSPF / val.toFloat());
+                mAnimTimerSub->get<TimerObservable::DATA>() = mImgAnimData;
             }
         }));
 
@@ -305,15 +300,10 @@ void TimeWizard::updateImg() {
     Rect imgR = mImg.getRect();
     imgR.setPos(mPos->rect.cX(), mPos->rect.cY(), Rect::Align::CENTER);
     bool frozen = TimeSystem::Frozen(TimeSystem::FreezeType::TIME_WIZARD);
-    if (frozen) {
-        mImg.set(FREEZE_IMG, FROZEN_NUM_FRAMES);
-    } else {
-        mImg.set(IMG, NUM_FRAMES);
-    }
+    mImg.set(frozen ? FREEZE_IMG : mImgAnimData);
     if (mAnimTimerSub) {
-        Timer& timer = mAnimTimerSub->get<TimerObservable::DATA>();
-        timer.length = frozen ? FROZEN_MSPF : MSPF;
-        timer.timer = 0;
+        mAnimTimerSub->get<TimerObservable::DATA>() =
+            frozen ? FREEZE_IMG : mImgAnimData;
     }
     mPos->rect = mImg.setDest(imgR).getDest();
     WizardSystem::GetWizardImageObservable()->next(mId, mImg);

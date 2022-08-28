@@ -1,9 +1,8 @@
 #include "PowerWizard.h"
 
 // PowerWizard
-const unsigned int PowerWizard::MSPF = 150, PowerWizard::NUM_FRAMES = 8;
+const AnimationData PowerWizard::IMG{"res/wizards/power_wizard_ss.png", 8, 150};
 
-const std::string PowerWizard::IMG = "res/wizards/power_wizard_ss.png";
 const std::string PowerWizard::FIREBALL_IMG = "res/projectiles/fireball2.png";
 const std::string PowerWizard::POWER_UP_IMG =
     "res/upgrades/power_fireball_upgrade.png";
@@ -23,7 +22,7 @@ void PowerWizard::setDefaults() {
 PowerWizard::PowerWizard() : WizardBase(POWER_WIZARD) {}
 
 void PowerWizard::init() {
-    mImg.set(IMG, NUM_FRAMES).setDest(IMG_RECT);
+    mImg.set(IMG).setDest(IMG_RECT);
     mPos->rect = mImg.getDest();
     WizardSystem::GetWizardImageObservable()->next(mId, mImg);
 
@@ -42,7 +41,7 @@ void PowerWizard::setSubscriptions() {
             WizardSystem::GetWizardImageObservable()->next(mId, mImg);
             return true;
         },
-        Timer(MSPF));
+        IMG);
     attachSubToVisibility(mFireballTimerSub);
     attachSubToVisibility(mFreezeSub);
 }

@@ -1,7 +1,7 @@
 #include "PowerWizFireball.h"
 
 // PowerWizFireball
-const std::string PowerWizFireball::IMG = "res/projectiles/fireball2.png";
+const AnimationData PowerWizFireball::IMG{"res/projectiles/fireball2.png"};
 
 std::shared_ptr<PowerWizFireball::HitObservable>
 PowerWizFireball::GetHitObservable() {

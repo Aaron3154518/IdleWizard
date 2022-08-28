@@ -7,9 +7,6 @@ const AnimationData Wizard::IMG{"res/wizards/wizard_ss.png", 5, 150},
 const std::string Wizard::POWER_UP_IMG = "res/upgrades/fireball_upgrade.png";
 const std::string Wizard::MULTI_UP_IMG = "res/upgrades/multi_upgrade.png";
 const std::string Wizard::CRIT_UP_IMG = "res/upgrades/crit_upgrade.png";
-const std::string Wizard::FIREBALL_IMG = "res/projectiles/fireball.png";
-const std::string Wizard::FIREBALL_BUFFED_IMG =
-    "res/projectiles/fireball_buffed.png";
 
 const std::vector<WizardId> Wizard::TARGETS = {CRYSTAL, CATALYST};
 

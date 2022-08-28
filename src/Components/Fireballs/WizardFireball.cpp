@@ -1,9 +1,9 @@
 #include "WizardFireball.h"
 
 // WizardFireball
-const std::string WizardFireball::IMG = "res/projectiles/fireball.png";
-const std::string WizardFireball::POW_IMG =
-    "res/projectiles/fireball_buffed.png";
+const AnimationData WizardFireball::IMG{"res/projectiles/fireball_ss.png", 6,
+                                        100},
+    WizardFireball::POW_IMG{"res/projectiles/fireball_buffed.png"};
 
 std::shared_ptr<WizardFireball::HitObservable>
 WizardFireball::GetHitObservable() {

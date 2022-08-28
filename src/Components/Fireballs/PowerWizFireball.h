@@ -35,7 +35,7 @@ class PowerWizFireball : public Fireball {
 
     void applyTimeEffect(const Number& effect);
 
-    const static std::string IMG;
+    const static AnimationData IMG;
 
    private:
     void init();

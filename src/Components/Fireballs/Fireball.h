@@ -12,6 +12,7 @@
 #include <ServiceSystem/ServiceSystem.h>
 #include <Systems/TimeSystem.h>
 #include <Systems/WizardSystem.h>
+#include <Utils/AnimationData.h>
 #include <Utils/Time.h>
 #include <Wizards/WizardIds.h>
 
@@ -23,10 +24,8 @@ class Fireball : public Component {
    public:
     const static Rect IMG_RECT;
 
-    const static unsigned int MSPF, NUM_FRAMES;
-    const static std::string IMG;
-
     Fireball(SDL_FPoint c, WizardId target, const std::string& img);
+    Fireball(SDL_FPoint c, WizardId target, const AnimationData& img);
     virtual ~Fireball() = default;
 
     bool dead() const;
@@ -55,6 +54,7 @@ class Fireball : public Component {
     UIComponentPtr mPos;
 
     RenderData mImg;
+    AnimationData mImgAnim;
 
     float mSize = 1;
 

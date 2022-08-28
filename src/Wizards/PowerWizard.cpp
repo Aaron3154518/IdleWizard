@@ -3,7 +3,6 @@
 // PowerWizard
 const AnimationData PowerWizard::IMG{"res/wizards/power_wizard_ss.png", 8, 150};
 
-const std::string PowerWizard::FIREBALL_IMG = "res/projectiles/fireball2.png";
 const std::string PowerWizard::POWER_UP_IMG =
     "res/upgrades/power_fireball_upgrade.png";
 

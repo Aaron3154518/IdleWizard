@@ -24,7 +24,7 @@ class PowerWizard : public WizardBase {
     PowerWizard();
 
     const static AnimationData IMG;
-    const static std::string FIREBALL_IMG, POWER_UP_IMG;
+    const static std::string POWER_UP_IMG;
 
     static void setDefaults();
 

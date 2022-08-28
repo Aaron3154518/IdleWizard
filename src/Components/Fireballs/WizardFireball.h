@@ -35,7 +35,7 @@ class WizardFireball : public Fireball {
 
     void applyTimeEffect(const Number& effect);
 
-    const static std::string IMG, POW_IMG;
+    const static AnimationData IMG, POW_IMG;
 
    private:
     void init();

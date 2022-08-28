@@ -31,4 +31,12 @@ void Reset(ResetTier tier) { GetResetObservable()->next(tier); }
 std::shared_ptr<ResetObservable> GetResetObservable() {
     return ServiceSystem::Get<WizardService, ResetObservable>();
 }
+
+SDL_FPoint GetWizardPos(WizardId id) {
+    return GetWizardPosObservable()->get(id);
+}
+
+std::shared_ptr<WizardPosObservable> GetWizardPosObservable() {
+    return ServiceSystem::Get<WizardService, WizardPosObservable>();
+}
 }  // namespace WizardSystem

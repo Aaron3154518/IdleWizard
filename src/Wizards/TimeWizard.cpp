@@ -2,11 +2,11 @@
 
 // TimeWizard
 const SDL_Color TimeWizard::CLOCK_COLOR = CYAN,
-                TimeWizard::SLOW_HAND_COLOR = BLUE,
-                TimeWizard::FAST_HAND_COLOR{128, 128, 255, 255};
+                TimeWizard::SMALL_HAND_COLOR = BLUE,
+                TimeWizard::LARGE_HAND_COLOR{128, 128, 255, 255};
 const float TimeWizard::CLOCK_HAND_W = 20 * DEG_TO_RAD,
-            TimeWizard::SLOW_HAND_SPEED = 20 * DEG_TO_RAD,
-            TimeWizard::FAST_HAND_SPEED = 200 * DEG_TO_RAD;
+            TimeWizard::SMALL_HAND_SPEED = 20 * DEG_TO_RAD,
+            TimeWizard::LARGE_HAND_SPEED = 200 * DEG_TO_RAD;
 
 const unsigned int TimeWizard::MSPF = 100, TimeWizard::NUM_FRAMES = 8;
 
@@ -15,6 +15,8 @@ const std::string TimeWizard::FREEZE_IMG = "res/wizards/time_wizard_frozen.png";
 const std::string TimeWizard::FREEZE_UP_IMG =
     "res/upgrades/time_freeze_upgrade.png";
 const std::string TimeWizard::SPEED_UP_IMG = "res/upgrades/speed_upgrade.png";
+const std::string TimeWizard::SMALL_HAND = "res/wizards/clock_hand_small.png";
+const std::string TimeWizard::LARGE_HAND = "res/wizards/clock_hand_large.png";
 
 void TimeWizard::setDefaults() {
     using WizardSystem::ResetTier;
@@ -45,9 +47,9 @@ void TimeWizard::init() {
 
     mClock = CircleShape(CLOCK_COLOR);
     mSlowHand =
-        CircleShape(SLOW_HAND_COLOR).setAngleRad(M_PI - CLOCK_HAND_W, M_PI);
+        CircleShape(SMALL_HAND_COLOR).setAngleRad(M_PI - CLOCK_HAND_W, M_PI);
     mFastHand =
-        CircleShape(FAST_HAND_COLOR).setAngleRad(M_PI - CLOCK_HAND_W, M_PI);
+        CircleShape(LARGE_HAND_COLOR).setAngleRad(M_PI - CLOCK_HAND_W, M_PI);
 
     WizardBase::init();
 }
@@ -256,9 +258,9 @@ void TimeWizard::onFreezeTimer(Time dt, Timer& timer) {
              .get() ^
          2)
             .toFloat();
-    float a1 = mSlowHand.get().a1 - dt.s() * SLOW_HAND_SPEED * freezeEffect;
+    float a1 = mSlowHand.get().a1 - dt.s() * SMALL_HAND_SPEED * freezeEffect;
     mSlowHand.setAngleRad(a1, a1 + CLOCK_HAND_W);
-    a1 = mFastHand.get().a1 - dt.s() * FAST_HAND_SPEED * freezeEffect;
+    a1 = mFastHand.get().a1 - dt.s() * LARGE_HAND_SPEED * freezeEffect;
     mFastHand.setAngleRad(a1, a1 + CLOCK_HAND_W);
 }
 

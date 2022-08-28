@@ -32,6 +32,13 @@ const RenderData& GetWizardImage(WizardId id);
 
 std::shared_ptr<WizardImageObservable> GetWizardImageObservable();
 
+// For handling wizard positions
+typedef TargetSystem::TargetDataObservable<SDL_FPoint> WizardPosObservable;
+
+SDL_FPoint GetWizardPos(WizardId id);
+
+std::shared_ptr<WizardPosObservable> GetWizardPosObservable();
+
 enum ResetTier : uint8_t {
     T1 = 0,
     T2,
@@ -47,7 +54,8 @@ void Reset(ResetTier tier);
 std::shared_ptr<ResetObservable> GetResetObservable();
 
 class WizardService
-    : public Service<HideObservable, ResetObservable, WizardImageObservable> {};
+    : public Service<HideObservable, ResetObservable, WizardImageObservable,
+                     WizardPosObservable> {};
 }  // namespace WizardSystem
 
 #endif

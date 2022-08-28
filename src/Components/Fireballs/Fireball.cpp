@@ -28,9 +28,8 @@ void Fireball::init() {
     mRenderSub =
         ServiceSystem::Get<RenderService, RenderObservable>()->subscribe(
             [this](SDL_Renderer* r) { onRender(r); }, mPos);
-    mTargetSub =
-        ServiceSystem::Get<FireballService, FireballTargetPosObservable>()
-            ->subscribe([this](SDL_FPoint p) { mTargetPos = p; }, mTargetId);
+    mTargetSub = WizardSystem::GetWizardPosObservable()->subscribe(
+        [this](SDL_FPoint p) { mTargetPos = p; }, mTargetId);
 
     launch(mTargetPos);
 }

@@ -1,7 +1,6 @@
 #ifndef FIREBALL_H
 #define FIREBALL_H
 
-#include <Components/Fireballs/FireballTargetObservable.h>
 #include <RenderSystem/AssetManager.h>
 #include <RenderSystem/RenderTypes.h>
 #include <RenderSystem/Shapes.h>
@@ -12,6 +11,7 @@
 #include <ServiceSystem/EventServices/ResizeService.h>
 #include <ServiceSystem/ServiceSystem.h>
 #include <Systems/TimeSystem.h>
+#include <Systems/WizardSystem.h>
 #include <Utils/Time.h>
 #include <Wizards/WizardIds.h>
 
@@ -58,7 +58,7 @@ class Fireball : public Component {
     ResizeObservable::SubscriptionPtr mResizeSub;
     TimeSystem::UpdateObservable::SubscriptionPtr mUpdateSub;
     RenderObservable::SubscriptionPtr mRenderSub;
-    FireballTargetPosObservable::IdSubscriptionPtr mTargetSub;
+    WizardSystem::WizardPosObservable::IdSubscriptionPtr mTargetSub;
 
     const static int COLLIDE_ERR, MAX_SPEED, ACCELERATION, ACCEL_ZONE;
 };

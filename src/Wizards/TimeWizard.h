@@ -23,11 +23,12 @@ class TimeWizard : public WizardBase {
    public:
     TimeWizard();
 
-    const static SDL_Color CLOCK_COLOR, SLOW_HAND_COLOR, FAST_HAND_COLOR;
-    const static float CLOCK_HAND_W, SLOW_HAND_SPEED, FAST_HAND_SPEED;
+    const static SDL_Color CLOCK_COLOR, SMALL_HAND_COLOR, LARGE_HAND_COLOR;
+    const static float CLOCK_HAND_W, SMALL_HAND_SPEED, LARGE_HAND_SPEED;
 
     const static unsigned int MSPF, NUM_FRAMES;
-    const static std::string IMG, FREEZE_IMG, FREEZE_UP_IMG, SPEED_UP_IMG;
+    const static std::string IMG, FREEZE_IMG, FREEZE_UP_IMG, SPEED_UP_IMG,
+        LARGE_HAND, SMALL_HAND;
 
     static void setDefaults();
 
@@ -65,6 +66,7 @@ class TimeWizard : public WizardBase {
 
     ProgressBar mFreezePb;
     CircleShape mClock, mSlowHand, mFastHand;
+    RenderData mSmallHand, mLargeHand;
 };
 
 #endif

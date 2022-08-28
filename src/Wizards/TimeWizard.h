@@ -25,7 +25,7 @@ class TimeWizard : public WizardBase {
    public:
     TimeWizard();
 
-    const static unsigned int MSPF, NUM_FRAMES;
+    const static unsigned int MSPF, NUM_FRAMES, FROZEN_MSPF, FROZEN_NUM_FRAMES;
     const static std::string IMG, FREEZE_IMG, FREEZE_UP_IMG, SPEED_UP_IMG;
 
     static void setDefaults();

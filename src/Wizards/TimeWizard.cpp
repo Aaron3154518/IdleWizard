@@ -2,9 +2,12 @@
 
 // TimeWizard
 const unsigned int TimeWizard::MSPF = 100, TimeWizard::NUM_FRAMES = 8;
+const unsigned int TimeWizard::FROZEN_MSPF = 100,
+                   TimeWizard::FROZEN_NUM_FRAMES = 9;
 
 const std::string TimeWizard::IMG = "res/wizards/time_wizard_ss.png";
-const std::string TimeWizard::FREEZE_IMG = "res/wizards/time_wizard_frozen.png";
+const std::string TimeWizard::FREEZE_IMG =
+    "res/wizards/time_wizard_frozen_ss.png";
 const std::string TimeWizard::FREEZE_UP_IMG =
     "res/upgrades/time_freeze_upgrade.png";
 const std::string TimeWizard::SPEED_UP_IMG = "res/upgrades/speed_upgrade.png";
@@ -47,6 +50,13 @@ void TimeWizard::setSubscriptions() {
             [this](Timer& t) {
                 mImg.nextFrame();
                 WizardSystem::GetWizardImageObservable()->next(mId, mImg);
+                if (TimeSystem::Frozen(TimeSystem::FreezeType::TIME_WIZARD)) {
+                    t.length = mImg.getFrame() != 0
+                                   ? FROZEN_MSPF
+                                   : (int)(rDist(gen) * 500) + 1000;
+                } else {
+                    t.length = MSPF;
+                }
                 return true;
             },
             Timer(MSPF));
@@ -294,10 +304,16 @@ Number TimeWizard::calcClockSpeed() {
 void TimeWizard::updateImg() {
     Rect imgR = mImg.getRect();
     imgR.setPos(mPos->rect.cX(), mPos->rect.cY(), Rect::Align::CENTER);
-    if (TimeSystem::Frozen(TimeSystem::FreezeType::TIME_WIZARD)) {
-        mImg.set(FREEZE_IMG);
+    bool frozen = TimeSystem::Frozen(TimeSystem::FreezeType::TIME_WIZARD);
+    if (frozen) {
+        mImg.set(FREEZE_IMG, FROZEN_NUM_FRAMES);
     } else {
         mImg.set(IMG, NUM_FRAMES);
+    }
+    if (mAnimTimerSub) {
+        Timer& timer = mAnimTimerSub->get<TimerObservable::DATA>();
+        timer.length = frozen ? FROZEN_MSPF : MSPF;
+        timer.timer = 0;
     }
     mPos->rect = mImg.setDest(imgR).getDest();
     WizardSystem::GetWizardImageObservable()->next(mId, mImg);

@@ -87,8 +87,7 @@ void Fireball::onUpdate(Time dt) {
         float frac = fmax((ACCEL_ZONE / mag), 1) * ACCELERATION / mag;
         mA.x = dx * frac;
         mA.y = dy * frac;
-        Rect imgR = mImg.getRect();
-        imgR.move(mV.x * sec + mA.y * aCoeff, mV.y * sec + mA.y * aCoeff);
+        float dx = mV.x * sec + mA.x * aCoeff, dy = mV.y * sec + mA.y * aCoeff;
         mV.x += mA.x * sec;
         mV.y += mA.y * sec;
         // Cap speed
@@ -98,7 +97,19 @@ void Fireball::onUpdate(Time dt) {
             mV.x *= frac;
             mV.y *= frac;
         }
-        mImg.setDest(imgR);
+
+        float theta = 0;
+        if (dx != 0) {
+            theta = atanf(dy / dx) / DEG_TO_RAD;
+            if (dx < 0) {
+                theta += 180;
+            }
+        }
+        theta -= 45;
+
+        Rect imgR = mImg.getRect();
+        imgR.move(dx, dy);
+        mImg.setDest(imgR).setRotationDeg(theta);
         mPos->rect = mImg.getDest();
     }
 }

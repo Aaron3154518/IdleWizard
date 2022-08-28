@@ -1,11 +1,13 @@
 #ifndef TIME_WIZARD_H
 #define TIME_WIZARD_H
 
+#include <Components/TimeWizClock.h>
 #include <Components/Upgrade.h>
 #include <RenderSystem/AssetManager.h>
 #include <RenderSystem/RenderTypes.h>
 #include <RenderSystem/Shapes.h>
 #include <RenderSystem/TextureBuilder.h>
+#include <ServiceSystem/Component.h>
 #include <ServiceSystem/CoreServices/RenderService.h>
 #include <ServiceSystem/CoreServices/UpdateService.h>
 #include <ServiceSystem/Lockable.h>
@@ -23,12 +25,8 @@ class TimeWizard : public WizardBase {
    public:
     TimeWizard();
 
-    const static SDL_Color CLOCK_COLOR, SMALL_HAND_COLOR, LARGE_HAND_COLOR;
-    const static float CLOCK_HAND_W, SMALL_HAND_SPEED, LARGE_HAND_SPEED;
-
     const static unsigned int MSPF, NUM_FRAMES;
-    const static std::string IMG, FREEZE_IMG, FREEZE_UP_IMG, SPEED_UP_IMG,
-        LARGE_HAND, SMALL_HAND;
+    const static std::string IMG, FREEZE_IMG, FREEZE_UP_IMG, SPEED_UP_IMG;
 
     static void setDefaults();
 
@@ -50,6 +48,7 @@ class TimeWizard : public WizardBase {
     Number calcFreezeEffect();
     Number calcSpeedEffect();
     Number calcCost();
+    Number calcClockSpeed();
 
     void updateImg();
 
@@ -65,8 +64,8 @@ class TimeWizard : public WizardBase {
     TogglePtr mActiveToggle;
 
     ProgressBar mFreezePb;
-    CircleShape mClock, mSlowHand, mFastHand;
-    RenderData mSmallHand, mLargeHand;
+
+    std::unique_ptr<TimeWizClock> mTClock;
 };
 
 #endif

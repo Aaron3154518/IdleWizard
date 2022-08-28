@@ -14,7 +14,7 @@ void Crystal::setDefaults() {
     ParameterSystem::Params<CRYSTAL> params;
 
     // Default 0
-    params[CrystalParams::Magic]->init(0, ResetTier::T1);
+    params[CrystalParams::Magic]->init(Number(1, 5), ResetTier::T1);
     params[CrystalParams::Shards]->init(100, ResetTier::T2);
 
     params[CrystalParams::CatalystCost]->init(1);

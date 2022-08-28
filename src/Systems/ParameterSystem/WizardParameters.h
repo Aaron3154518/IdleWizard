@@ -118,6 +118,7 @@ enum N : param_t {
     FreezeEffect,
     FreezeUp,
     FreezeUpCost,
+    ClockSpeed,
 };
 }  // namespace TimeWizardParams
 

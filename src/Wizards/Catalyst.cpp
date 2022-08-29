@@ -129,12 +129,11 @@ Number Catalyst::calcRange() {
 void Catalyst::drawMagic() {
     ParameterSystem::Params<CATALYST> params;
     std::stringstream ss;
-    ss << "{i" << Money::GetMoneyIcon(params[CatalystParams::Magic]) << "} "
-       << params[CatalystParams::Magic].get().toString() << "/{b}"
+    ss << "{i} " << params[CatalystParams::Magic].get().toString() << "/{b}"
        << params[CatalystParams::Capacity].get().toString();
-    mMagicText.text = ss.str();
-    mMagicText.w = mPos->rect.W();
-    mMagicRender.set(mMagicText);
+    mMagicRender.set(mMagicText.setText(
+        ss.str(), mPos->rect.W(),
+        {Money::GetMoneyIcon(params[CatalystParams::Magic])}));
 }
 
 void Catalyst::updateRange() {

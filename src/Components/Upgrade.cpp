@@ -37,8 +37,10 @@ void UpgradeBase::setDescription(const std::string& desc) {
     mDesc = createDescription(desc);
 }
 
-void UpgradeBase::setInfo(const std::string& info) {
+void UpgradeBase::setInfo(const std::string& info,
+                          const std::initializer_list<RenderData>& imgs) {
     mInfoStr = info;
+    mInfoImgs = imgs;
     mUpdateInfo = true;
 }
 
@@ -48,7 +50,7 @@ void UpgradeBase::drawIcon(TextureBuilder& tex, const Rect& r) {
 
 void UpgradeBase::drawDescription(TextureBuilder tex, SDL_FPoint offset) {
     if (mUpdateInfo) {
-        mInfo = createDescription(mInfoStr);
+        mInfo = createDescription(mInfoStr, mInfoImgs);
         mUpdateInfo = false;
     }
 
@@ -92,15 +94,15 @@ void UpgradeBase::drawDescription(TextureBuilder tex, SDL_FPoint offset) {
     }
 }
 
-SharedTexture UpgradeBase::createDescription(std::string text) {
+SharedTexture UpgradeBase::createDescription(
+    std::string text, const std::vector<RenderData>& imgs) {
     if (text.empty()) {
         return nullptr;
     }
 
     TextData tData;
     tData.font = AssetManager::getFont(DESC_FONT);
-    tData.w = RenderSystem::getWindowSize().x / 3;
-    tData.text = text;
+    tData.setText(text, RenderSystem::getWindowSize().x / 3, imgs);
     return tData.renderTextWrapped();
 }
 
@@ -161,6 +163,9 @@ const ParameterSystem::BaseValue& Upgrade::Cost::getMoneyParam() const {
 }
 const Number& Upgrade::Cost::getCost() const { return mCost.get(); }
 const Number& Upgrade::Cost::getMoney() const { return mMoney.get(); }
+const RenderData& Upgrade::Cost::getMoneyIcon() const {
+    return Money::GetMoneyIcon(mMoney);
+}
 bool Upgrade::Cost::canBuy() const { return mCost.get() <= mMoney.get(); }
 void Upgrade::Cost::buy() const { mMoney.set(mMoney.get() - mCost.get()); }
 
@@ -301,12 +306,15 @@ void Upgrade::updateInfo() {
         }
         if (lvl < mMaxLevel) {
             if (mCost) {
-                ss << "{i" << Money::GetMoneyIcon(mCost->getMoneyParam()) << "}"
-                   << mCost->getCost();
+                ss << "{i}" << mCost->getCost();
             }
         } else {
             ss << (mMaxLevel > 1 ? "Maxed" : "Bought");
         }
     }
-    setInfo(ss.str());
+    if (mCost) {
+        setInfo(ss.str(), {mCost->getMoneyIcon()});
+    } else {
+        setInfo(ss.str());
+    }
 }

@@ -15,7 +15,7 @@ void TimeWizard::setDefaults() {
 
     params[TimeWizardParams::SpeedBaseEffect]->init(1.5);
     params[TimeWizardParams::FreezeBaseEffect]->init(1.1);
-    params[TimeWizardParams::FreezeDelay]->init(3000);
+    params[TimeWizardParams::FreezeDelay]->init(300000);
     params[TimeWizardParams::FreezeDuration]->init(10000);
 
     params[TimeWizardParams::SpeedUpLvl]->init(ResetTier::T1);

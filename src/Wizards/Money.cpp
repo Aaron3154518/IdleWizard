@@ -1,24 +1,36 @@
 #include "Money.h"
 
 namespace Money {
-std::string GetMoneyIcon(const ParameterSystem::ValueParam& param) {
+const RenderData& GetMoneyIcon(const ParameterSystem::ValueParam& param) {
+    static RenderData DEFAULT,
+        CRYSTAL_MAGIC = RenderData().set("res/money/crystal_magic.png", 6),
+        CRYSTAL_SHARDS = RenderData().set("res/money/crystal_shard.png"),
+        CATALYST_MAGIC = RenderData().set("res/wizards/catalyst.png");
+    static TimerObservable::SubscriptionPtr CRYS_MAG_SUB =
+        ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
+            [](Timer& t) {
+                CRYSTAL_MAGIC.nextFrame();
+                return true;
+            },
+            Timer(100));
+
     switch (param.mId) {
         case CRYSTAL:
             switch (param.mKey) {
                 case CrystalParams::Magic:
-                    return "res/wizards/crystal.png";
+                    return CRYSTAL_MAGIC;
                 case CrystalParams::Shards:
-                    return "res/wizards/wizard.png";
+                    return CRYSTAL_SHARDS;
             }
             break;
         case CATALYST:
             switch (param.mKey) {
                 case CatalystParams::Magic:
-                    return "res/wizards/catalyst.png";
+                    return CATALYST_MAGIC;
             };
             break;
     };
 
-    return "";
+    return DEFAULT;
 }
 }  // namespace Money

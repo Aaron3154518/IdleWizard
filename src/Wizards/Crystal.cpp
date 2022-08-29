@@ -29,6 +29,8 @@ void Crystal::setDefaults() {
 Crystal::Crystal() : WizardBase(CRYSTAL) {}
 
 void Crystal::init() {
+    ParameterSystem::Params<CRYSTAL> params;
+
     mImg.set(IMG).setDest(IMG_RECT);
     mPos->rect = mImg.getDest();
     WizardSystem::GetWizardImageObservable()->next(mId, mImg);
@@ -245,12 +247,11 @@ Number Crystal::calcShardGain() {
 void Crystal::drawMagic() {
     ParameterSystem::Params<CRYSTAL> params;
     std::stringstream ss;
-    ss << "{i" << Money::GetMoneyIcon(params[CrystalParams::Magic]) << "} "
-       << params[CrystalParams::Magic].get() << "\n"
-       << "{i" << Money::GetMoneyIcon(params[CrystalParams::Shards]) << "} "
-       << params[CrystalParams::Shards].get();
-    mMagicText.text = ss.str();
-    mMagicText.w = mPos->rect.W();
+    ss << "{i}" << params[CrystalParams::Magic].get() << "\n"
+       << "{i}" << params[CrystalParams::Shards].get();
+    mMagicText.setText(ss.str(), mPos->rect.W(),
+                       {Money::GetMoneyIcon(params[CrystalParams::Magic]),
+                        Money::GetMoneyIcon(params[CrystalParams::Shards])});
     mMagicRender.set(mMagicText);
 }
 
@@ -266,7 +267,7 @@ std::unique_ptr<FireRing>& Crystal::createFireRing(const Number& val) {
 }
 
 void Crystal::addMessage(const std::string& msg) {
-    mMsgTData.text = msg;
+    mMsgTData.setText(msg);
 
     float dx = (rDist(gen) - .5) * mPos->rect.halfW(),
           dy = (rDist(gen) - .5) * mPos->rect.halfH();

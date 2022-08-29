@@ -6,6 +6,7 @@
 #include <Systems/WizardSystem.h>
 #include <Wizards/Money.h>
 
+#include <initializer_list>
 #include <list>
 #include <memory>
 
@@ -34,18 +35,21 @@ class UpgradeBase {
     void setImage(WizardId id);
     void setImage(const std::string& file);
     void setDescription(const std::string& desc);
-    void setInfo(const std::string& info);
+    void setInfo(const std::string& info,
+                 const std::initializer_list<RenderData>& imgs = {});
 
     void drawIcon(TextureBuilder& tex, const Rect& r);
     void drawDescription(TextureBuilder tex, SDL_FPoint offset = {0, 0});
 
-    static SharedTexture createDescription(std::string text);
+    static SharedTexture createDescription(
+        std::string text, const std::vector<RenderData>& imgs = {});
 
     const static SDL_Color DESC_BKGRND;
     const static FontData DESC_FONT;
 
    protected:
     std::string mInfoStr = "";
+    std::vector<RenderData> mInfoImgs;
     bool mUpdateInfo = false;
 
    private:
@@ -111,6 +115,7 @@ class Upgrade : public UpgradeBase {
         const ParameterSystem::BaseValue& getMoneyParam() const;
         const Number& getCost() const;
         const Number& getMoney() const;
+        const RenderData& getMoneyIcon() const;
         bool canBuy() const;
         void buy() const;
 

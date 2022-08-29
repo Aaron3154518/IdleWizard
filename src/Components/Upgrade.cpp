@@ -2,7 +2,7 @@
 
 // UpgradeBase
 const SDL_Color UpgradeBase::DESC_BKGRND{175, 175, 175, 255};
-const FontData UpgradeBase::DESC_FONT{-1, 20, "|"};
+const FontData UpgradeBase::DESC_FONT{-1, 22, "|"};
 
 const ParameterSystem::BaseValue UpgradeBase::Defaults::CRYSTAL_MAGIC =
     ParameterSystem::Param<CRYSTAL>(CrystalParams::Magic);
@@ -54,13 +54,11 @@ void UpgradeBase::drawDescription(TextureBuilder tex, SDL_FPoint offset) {
 
     RectShape rd = RectShape(DESC_BKGRND);
 
-    RenderData descData;
+    RenderData descData = RenderData()
+                              .setDest(Rect(offset.x, offset.y, 0, 0))
+                              .setFit(RenderData::FitMode::Texture);
     if (mDesc) {
-        descData.set(mDesc)
-            .setFitAlign(Rect::CENTER, Rect::TOP_LEFT)
-            .setDest(Rect(offset.x, offset.y, 0, 0));
-    } else {
-        descData.setDest(Rect(offset.x, offset.y, 0, 0));
+        descData.set(mDesc).setFitAlign(Rect::CENTER, Rect::TOP_LEFT);
     }
 
     if (mInfo) {

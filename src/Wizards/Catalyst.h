@@ -12,6 +12,7 @@
 #include <Systems/ParameterSystem/ParameterAccess.h>
 #include <Systems/ParameterSystem/WizardParameters.h>
 #include <Systems/WizardSystem.h>
+#include <Wizards/Money.h>
 #include <Wizards/WizardBase.h>
 #include <Wizards/WizardIds.h>
 

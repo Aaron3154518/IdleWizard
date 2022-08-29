@@ -128,8 +128,12 @@ Number Catalyst::calcRange() {
 
 void Catalyst::drawMagic() {
     ParameterSystem::Params<CATALYST> params;
-    mMagicText.text = params[CatalystParams::Magic].get().toString() + "/" +
-                      params[CatalystParams::Capacity].get().toString();
+    std::stringstream ss;
+    ss << "{i" << Money::GetMoneyIcon(params[CatalystParams::Magic]) << "} "
+       << params[CatalystParams::Magic].get().toString() << "/{b}"
+       << params[CatalystParams::Capacity].get().toString();
+    mMagicText.text = ss.str();
+    mMagicText.w = mPos->rect.W();
     mMagicRender.set(mMagicText);
 }
 

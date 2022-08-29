@@ -4,6 +4,7 @@
 #include <RenderSystem/RenderSystem.h>
 #include <Systems/ParameterSystem/ParameterAccess.h>
 #include <Systems/WizardSystem.h>
+#include <Wizards/Money.h>
 
 #include <list>
 #include <memory>
@@ -48,7 +49,7 @@ class UpgradeBase {
     bool mUpdateInfo = false;
 
    private:
-   RenderData mImg;
+    RenderData mImg;
     SharedTexture mDesc, mInfo;
     WizardSystem::WizardImageObservable::IdSubscriptionPtr mWizImgSub;
 };
@@ -106,6 +107,8 @@ class Upgrade : public UpgradeBase {
              ParameterSystem::NodeValue cost,
              std::function<Number(const Number&)> costFunc);
 
+        const ParameterSystem::ValueParam& getCostParam() const;
+        const ParameterSystem::BaseValue& getMoneyParam() const;
         const Number& getCost() const;
         const Number& getMoney() const;
         bool canBuy() const;

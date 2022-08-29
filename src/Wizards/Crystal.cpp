@@ -245,7 +245,9 @@ Number Crystal::calcShardGain() {
 void Crystal::drawMagic() {
     ParameterSystem::Params<CRYSTAL> params;
     std::stringstream ss;
-    ss << params[CrystalParams::Magic].get() << "\n"
+    ss << "{i" << Money::GetMoneyIcon(params[CrystalParams::Magic]) << "} "
+       << params[CrystalParams::Magic].get() << "\n"
+       << "{i" << Money::GetMoneyIcon(params[CrystalParams::Shards]) << "} "
        << params[CrystalParams::Shards].get();
     mMagicText.text = ss.str();
     mMagicText.w = mPos->rect.W();

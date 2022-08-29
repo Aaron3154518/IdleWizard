@@ -153,6 +153,12 @@ Upgrade::Cost::Cost(ParameterSystem::BaseValue level,
     mCostSub = cost.subscribeTo(level, costFunc);
 }
 
+const ParameterSystem::ValueParam& Upgrade::Cost::getCostParam() const {
+    return mCost;
+}
+const ParameterSystem::BaseValue& Upgrade::Cost::getMoneyParam() const {
+    return mMoney;
+}
 const Number& Upgrade::Cost::getCost() const { return mCost.get(); }
 const Number& Upgrade::Cost::getMoney() const { return mMoney.get(); }
 bool Upgrade::Cost::canBuy() const { return mCost.get() <= mMoney.get(); }
@@ -295,7 +301,8 @@ void Upgrade::updateInfo() {
         }
         if (lvl < mMaxLevel) {
             if (mCost) {
-                ss << "$" << mCost->getCost();
+                ss << "{i" << Money::GetMoneyIcon(mCost->getMoneyParam()) << "}"
+                   << mCost->getCost();
             }
         } else {
             ss << (mMaxLevel > 1 ? "Maxed" : "Bought");

@@ -48,7 +48,7 @@ class Catalyst : public WizardBase {
     UpgradeList::SubscriptionPtr mMagicEffectDisplay, mRangeUp;
 
     CircleShape mRange;
-    TextData mMagicText;
+    TextDataPtr mMagicText = std::make_shared<TextData>();
     RenderData mMagicRender;
 };
 

@@ -27,6 +27,7 @@ class UpgradeBase {
         NOT_BUYABLE,
     };
 
+    UpgradeBase();
     virtual ~UpgradeBase() = default;
 
     virtual Status getStatus();
@@ -34,27 +35,25 @@ class UpgradeBase {
 
     void setImage(WizardId id);
     void setImage(const std::string& file);
-    void setDescription(const std::string& desc);
+    void setDescription(const std::string& desc,
+                        const std::initializer_list<RenderDataWPtr>& imgs = {});
     void setInfo(const std::string& info,
-                 const std::initializer_list<RenderData>& imgs = {});
+                 const std::initializer_list<RenderDataWPtr>& imgs = {});
 
     void drawIcon(TextureBuilder& tex, const Rect& r);
     void drawDescription(TextureBuilder tex, SDL_FPoint offset = {0, 0});
-
-    static SharedTexture createDescription(
-        std::string text, const std::vector<RenderData>& imgs = {});
 
     const static SDL_Color DESC_BKGRND;
     const static FontData DESC_FONT;
 
    protected:
-    std::string mInfoStr = "";
-    std::vector<RenderData> mInfoImgs;
-    bool mUpdateInfo = false;
+    static int GetDescWidth();
+
+    TextDataPtr mDescText = std::make_shared<TextData>(),
+                mInfoText = std::make_shared<TextData>();
 
    private:
-    RenderData mImg;
-    SharedTexture mDesc, mInfo;
+    RenderData mImg, mDesc, mInfo;
     WizardSystem::WizardImageObservable::IdSubscriptionPtr mWizImgSub;
 };
 
@@ -115,7 +114,7 @@ class Upgrade : public UpgradeBase {
         const ParameterSystem::BaseValue& getMoneyParam() const;
         const Number& getCost() const;
         const Number& getMoney() const;
-        const RenderData& getMoneyIcon() const;
+        const RenderDataPtr& getMoneyIcon() const;
         bool canBuy() const;
         void buy() const;
 

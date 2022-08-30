@@ -22,12 +22,14 @@ Catalyst::Catalyst() : WizardBase(CATALYST) {
 }
 
 void Catalyst::init() {
+    ParameterSystem::Params<CATALYST> params;
     mImg.set(IMG).setDest(IMG_RECT);
     mPos->rect = mImg.getDest();
     WizardSystem::GetWizardImageObservable()->next(mId, mImg);
 
-    mMagicText.font = AssetManager::getFont(FONT);
-    mMagicRender.setFit(RenderData::FitMode::Texture);
+    mMagicText->setFont(FONT).setImgs(
+        {Money::GetMoneyIcon(params[CatalystParams::Magic])});
+    mMagicRender.set(mMagicText).setFit(RenderData::FitMode::Texture);
 
     mRange = CircleShape(PURPLE).setDashed(50);
 
@@ -131,9 +133,7 @@ void Catalyst::drawMagic() {
     std::stringstream ss;
     ss << "{i} " << params[CatalystParams::Magic].get().toString() << "/{b}"
        << params[CatalystParams::Capacity].get().toString();
-    mMagicRender.set(mMagicText.setText(
-        ss.str(), mPos->rect.W(),
-        {Money::GetMoneyIcon(params[CatalystParams::Magic])}));
+    mMagicText->setText(ss.str(), mPos->rect.W());
 }
 
 void Catalyst::updateRange() {

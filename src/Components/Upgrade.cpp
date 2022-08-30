@@ -19,6 +19,20 @@ std::string Upgrade::Defaults::PercentEffect(const Number& effect) {
     return (effect * 100).toString() + "%";
 }
 
+int UpgradeBase::GetDescWidth() { return RenderSystem::getWindowSize().x / 3; }
+
+UpgradeBase::UpgradeBase() {
+    mDescText->setFont(DESC_FONT);
+    mDesc.set(mDescText)
+        .setFit(RenderData::FitMode::Texture)
+        .setFitAlign(Rect::CENTER, Rect::TOP_LEFT);
+
+    mInfoText->setFont(DESC_FONT);
+    mInfo.set(mInfoText)
+        .setFit(RenderData::FitMode::Texture)
+        .setFitAlign(Rect::CENTER, Rect::TOP_LEFT);
+}
+
 UpgradeBase::Status UpgradeBase::getStatus() { return NOT_BUYABLE; }
 
 void UpgradeBase::buy() {}
@@ -33,15 +47,15 @@ void UpgradeBase::setImage(const std::string& file) {
     mImg.set(file);
 }
 
-void UpgradeBase::setDescription(const std::string& desc) {
-    mDesc = createDescription(desc);
+void UpgradeBase::setDescription(
+    const std::string& desc,
+    const std::initializer_list<RenderDataWPtr>& imgs) {
+    mDescText->setText(desc, GetDescWidth()).setImgs(imgs);
 }
 
 void UpgradeBase::setInfo(const std::string& info,
-                          const std::initializer_list<RenderData>& imgs) {
-    mInfoStr = info;
-    mInfoImgs = imgs;
-    mUpdateInfo = true;
+                          const std::initializer_list<RenderDataWPtr>& imgs) {
+    mInfoText->setText(info, GetDescWidth()).setImgs(imgs);
 }
 
 void UpgradeBase::drawIcon(TextureBuilder& tex, const Rect& r) {
@@ -49,61 +63,27 @@ void UpgradeBase::drawIcon(TextureBuilder& tex, const Rect& r) {
 }
 
 void UpgradeBase::drawDescription(TextureBuilder tex, SDL_FPoint offset) {
-    if (mUpdateInfo) {
-        mInfo = createDescription(mInfoStr, mInfoImgs);
-        mUpdateInfo = false;
-    }
-
     RectShape rd = RectShape(DESC_BKGRND);
 
-    RenderData descData = RenderData()
-                              .setDest(Rect(offset.x, offset.y, 0, 0))
-                              .setFit(RenderData::FitMode::Texture);
-    if (mDesc) {
-        descData.set(mDesc).setFitAlign(Rect::CENTER, Rect::TOP_LEFT);
-    }
+    mDesc.setDest(Rect(offset.x, offset.y, 0, 0));
+    mInfo.setDest(Rect(0, 0, 0, 0));
+    float w = mInfo.getDest().w();
+    w = std::max(w, mDesc.getDest().w());
+    mInfo.setDest(Rect(mDesc.getDest().cX(), mDesc.getDest().y2(), 0, 0));
 
-    if (mInfo) {
-        RenderData infoData = RenderData()
-                                  .set(mInfo)
-                                  .setFitAlign(Rect::CENTER, Rect::TOP_LEFT)
-                                  .setDest(Rect(0, 0, 0, 0));
-        float w = infoData.getDest().w();
-        w = std::max(w, descData.getDest().w());
-        infoData.setDest(
-            Rect(descData.getDest().cX(), descData.getDest().y2(), 0, 0));
-
-        Rect rdRect(0, offset.y, w, infoData.getDest().y2() - offset.y);
-        rdRect.setPosX(offset.x, Rect::CENTER);
+    Rect rdRect(0, offset.y, w, mInfo.getDest().y2() - offset.y);
+    rdRect.setPosX(offset.x, Rect::CENTER);
+    if (!rdRect.empty()) {
         tex.draw(rd.set(rdRect));
-        tex.draw(infoData);
+    }
 
-        if (mDesc) {
-            tex.draw(descData);
-        }
+    tex.draw(mInfo);
+    tex.draw(mDesc);
 
-        rd.mColor = BLACK;
-        tex.draw(rd.set(rd.get().r2, 1));
-    } else if (mDesc) {
-        tex.draw(rd.set(descData.getDest()));
-
-        tex.draw(descData);
-
+    if (!rdRect.empty()) {
         rd.mColor = BLACK;
         tex.draw(rd.set(rd.get().r2, 1));
     }
-}
-
-SharedTexture UpgradeBase::createDescription(
-    std::string text, const std::vector<RenderData>& imgs) {
-    if (text.empty()) {
-        return nullptr;
-    }
-
-    TextData tData;
-    tData.font = AssetManager::getFont(DESC_FONT);
-    tData.setText(text, RenderSystem::getWindowSize().x / 3, imgs);
-    return tData.renderTextWrapped();
 }
 
 // Display
@@ -163,7 +143,7 @@ const ParameterSystem::BaseValue& Upgrade::Cost::getMoneyParam() const {
 }
 const Number& Upgrade::Cost::getCost() const { return mCost.get(); }
 const Number& Upgrade::Cost::getMoney() const { return mMoney.get(); }
-const RenderData& Upgrade::Cost::getMoneyIcon() const {
+const RenderDataPtr& Upgrade::Cost::getMoneyIcon() const {
     return Money::GetMoneyIcon(mMoney);
 }
 bool Upgrade::Cost::canBuy() const { return mCost.get() <= mMoney.get(); }

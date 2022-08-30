@@ -79,7 +79,7 @@ class Crystal : public WizardBase {
 
     std::vector<std::unique_ptr<FireRing>> mFireRings;
 
-    TextData mMagicText;
+    TextDataPtr mMagicText = std::make_shared<TextData>();
     RenderData mMagicRender;
 };
 

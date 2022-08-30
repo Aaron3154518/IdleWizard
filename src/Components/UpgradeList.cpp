@@ -258,7 +258,8 @@ void UpgradeScroller::onUpdate(Time dt) {
     }
 }
 void UpgradeScroller::onRender(SDL_Renderer* r) {
-    mTex.draw(RectShape(BKGRND));
+    RectShape rect(BKGRND);
+    mTex.draw(rect);
 
     if (mUpgrades) {
         mUpgrades->draw(mTex, mScroll);

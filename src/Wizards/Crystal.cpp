@@ -38,9 +38,12 @@ void Crystal::init() {
     SDL_Point screenDim = RenderSystem::getWindowSize();
     setPos(screenDim.x / 2, screenDim.y / 2);
 
-    mMagicText.font = mMsgTData.font = AssetManager::getFont(FONT);
-    mMsgTData.color = MSG_COLOR;
-    mMagicRender.setFit(RenderData::FitMode::Texture);
+    mMagicText->setFont(FONT).setImgs(
+        {Money::GetMoneyIcon(params[CrystalParams::Magic]),
+         Money::GetMoneyIcon(params[CrystalParams::Shards])});
+    ;
+    mMagicRender.set(mMagicText).setFit(RenderData::FitMode::Texture);
+    mMsgTData.setFont(FONT).setColor(MSG_COLOR);
 
     WizardBase::init();
 }
@@ -249,10 +252,7 @@ void Crystal::drawMagic() {
     std::stringstream ss;
     ss << "{i}" << params[CrystalParams::Magic].get() << "\n"
        << "{i}" << params[CrystalParams::Shards].get();
-    mMagicText.setText(ss.str(), mPos->rect.W(),
-                       {Money::GetMoneyIcon(params[CrystalParams::Magic]),
-                        Money::GetMoneyIcon(params[CrystalParams::Shards])});
-    mMagicRender.set(mMagicText);
+    mMagicText->setText(ss.str(), mPos->rect.W());
 }
 
 int Crystal::getAnimationDelay() {

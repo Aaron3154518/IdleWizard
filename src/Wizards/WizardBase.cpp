@@ -50,7 +50,8 @@ void WizardBase::onRender(SDL_Renderer* r) {
     TextureBuilder tex;
 
     if (mDrag->dragging) {
-        tex.draw(RectShape(GRAY).set(mPos->rect, 5));
+        auto rect = RectShape(GRAY).set(mPos->rect, 5);
+        tex.draw(rect);
     }
 
     tex.draw(mImg);

@@ -3,8 +3,8 @@
 // Fireball
 const int Fireball::COLLIDE_ERR = 10;
 const int Fireball::MAX_SPEED = 150;
-const int Fireball::ACCELERATION = 300;
-const int Fireball::ACCEL_ZONE = 100;
+const int Fireball::ACCELERATION = 30;
+const int Fireball::ACCEL_ZONE = 1;
 
 const Rect Fireball::IMG_RECT(0, 0, 40, 40);
 
@@ -86,9 +86,9 @@ void Fireball::onUpdate(Time dt) {
     float aCoeff = sec * sec / 2;
     float dx = mTargetPos.x - mPos->rect.cX(),
           dy = mTargetPos.y - mPos->rect.cY();
-    float mag = std::sqrt(dx * dx + dy * dy);
+    float d = std::sqrt(dx * dx + dy * dy);
     // Check in case we were moved onto the target
-    if (mag < COLLIDE_ERR) {
+    if (d < COLLIDE_ERR) {
         onDeath();
         mDead = true;
         mResizeSub.reset();
@@ -96,14 +96,14 @@ void Fireball::onUpdate(Time dt) {
         mUpdateSub.reset();
         mTargetSub.reset();
     } else {
-        float frac = fmax((ACCEL_ZONE / mag), 1) * ACCELERATION / mag;
+        float frac = (mV.x * mV.x + mV.y * mV.y) * 1.1 / (d * d);
         mA.x = dx * frac;
         mA.y = dy * frac;
         float dx = mV.x * sec + mA.x * aCoeff, dy = mV.y * sec + mA.y * aCoeff;
         mV.x += mA.x * sec;
         mV.y += mA.y * sec;
         // Cap speed
-        mag = std::sqrt(mV.x * mV.x + mV.y * mV.y);
+        float mag = std::sqrt(mV.x * mV.x + mV.y * mV.y);
         if (mag > MAX_SPEED) {
             frac = MAX_SPEED / mag;
             mV.x *= frac;

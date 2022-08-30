@@ -29,7 +29,9 @@ void Catalyst::init() {
 
     mMagicText->setFont(FONT).setImgs(
         {Money::GetMoneyIcon(params[CatalystParams::Magic])});
-    mMagicRender.set(mMagicText).setFit(RenderData::FitMode::Texture);
+    mMagicRender.set(mMagicText)
+        .setFit(RenderData::FitMode::Texture)
+        .setFitAlign(Rect::Align::CENTER, Rect::Align::TOP_LEFT);
 
     mRange = CircleShape(PURPLE).setDashed(50);
 

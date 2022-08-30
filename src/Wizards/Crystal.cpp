@@ -41,8 +41,9 @@ void Crystal::init() {
     mMagicText->setFont(FONT).setImgs(
         {Money::GetMoneyIcon(params[CrystalParams::Magic]),
          Money::GetMoneyIcon(params[CrystalParams::Shards])});
-    ;
-    mMagicRender.set(mMagicText).setFit(RenderData::FitMode::Texture);
+    mMagicRender.set(mMagicText)
+        .setFit(RenderData::FitMode::Texture)
+        .setFitAlign(Rect::Align::CENTER, Rect::Align::TOP_LEFT);
     mMsgTData.setFont(FONT).setColor(MSG_COLOR);
 
     WizardBase::init();
@@ -203,7 +204,7 @@ void Crystal::onClick(Event::MouseButton b, bool clicked) {
     WizardBase::onClick(b, clicked);
     if (clicked) {
         auto param = ParameterSystem::Param<CRYSTAL>(CrystalParams::Magic);
-        param.set(param.get() * 2);
+        param.set(param.get() * 3);
         if (param.get() > Number(1, 6)) {
             // triggerT1Reset();
         }

@@ -9,14 +9,14 @@ const ParameterSystem::BaseValue UpgradeBase::Defaults::CRYSTAL_MAGIC =
 const ParameterSystem::BaseValue UpgradeBase::Defaults::CRYSTAL_SHARDS =
     ParameterSystem::Param<CRYSTAL>(CrystalParams::Shards);
 
-std::string Upgrade::Defaults::AdditiveEffect(const Number& effect) {
-    return "+" + effect.toString();
+TextUpdateData Upgrade::Defaults::AdditiveEffect(const Number& effect) {
+    return {"+" + effect.toString()};
 }
-std::string Upgrade::Defaults::MultiplicativeEffect(const Number& effect) {
-    return effect.toString() + "x";
+TextUpdateData Upgrade::Defaults::MultiplicativeEffect(const Number& effect) {
+    return {effect.toString() + "x"};
 }
-std::string Upgrade::Defaults::PercentEffect(const Number& effect) {
-    return (effect * 100).toString() + "%";
+TextUpdateData Upgrade::Defaults::PercentEffect(const Number& effect) {
+    return {(effect * 100).toString() + "%"};
 }
 
 int UpgradeBase::GetDescWidth() { return RenderSystem::getWindowSize().x / 3; }
@@ -47,15 +47,12 @@ void UpgradeBase::setImage(const std::string& file) {
     mImg.set(file);
 }
 
-void UpgradeBase::setDescription(
-    const std::string& desc,
-    const std::initializer_list<RenderDataWPtr>& imgs) {
-    mDescText->setText(desc, GetDescWidth()).setImgs(imgs);
+void UpgradeBase::setDescription(const TextUpdateData& data) {
+    mDescText->setText(data.text, GetDescWidth()).setImgs(data.imgs);
 }
 
-void UpgradeBase::setInfo(const std::string& info,
-                          const std::initializer_list<RenderDataWPtr>& imgs) {
-    mInfoText->setText(info, GetDescWidth()).setImgs(imgs);
+void UpgradeBase::setInfo(const TextUpdateData& data) {
+    mInfoText->setText(data.text, GetDescWidth()).setImgs(data.imgs);
 }
 
 void UpgradeBase::drawIcon(TextureBuilder& tex, const Rect& r) {
@@ -90,17 +87,17 @@ void UpgradeBase::drawDescription(TextureBuilder tex, SDL_FPoint offset) {
 UpgradeBase::Status Display::getStatus() { return NOT_BUYABLE; }
 
 void Display::setEffect(ParameterSystem::ValueParam param,
-                        std::function<std::string(const Number&)> func) {
+                        std::function<TextUpdateData(const Number&)> func) {
     setEffects({param}, {}, [param, func]() { return func(param.get()); });
 }
 void Display::setEffect(ParameterSystem::StateParam param,
-                        std::function<std::string(bool)> func) {
+                        std::function<TextUpdateData(bool)> func) {
     setEffects({}, {param}, [param, func]() { return func(param.get()); });
 }
 void Display::setEffects(
     const std::initializer_list<ParameterSystem::ValueParam>& valueParams,
     const std::initializer_list<ParameterSystem::StateParam>& stateParams,
-    std::function<std::string()> func) {
+    std::function<TextUpdateData()> func) {
     mEffectSub = ParameterSystem::subscribe(
         valueParams, stateParams, [this, func]() { setInfo(func()); });
 }
@@ -211,8 +208,9 @@ void Upgrade::clearCost() {
     updateInfo();
 }
 
-void Upgrade::setEffect(ParameterSystem::NodeValue param, ValueFunc func,
-                        std::function<std::string(const Number&)> effectFunc) {
+void Upgrade::setEffect(
+    ParameterSystem::NodeValue param, ValueFunc func,
+    std::function<TextUpdateData(const Number&)> effectFunc) {
     if (effectFunc) {
         setEffects({{param, func}}, {},
                    [param, effectFunc]() { return effectFunc(param.get()); });
@@ -221,7 +219,7 @@ void Upgrade::setEffect(ParameterSystem::NodeValue param, ValueFunc func,
     }
 }
 void Upgrade::setEffect(ParameterSystem::NodeState param, StateFunc func,
-                        std::function<std::string(bool)> effectFunc) {
+                        std::function<TextUpdateData(bool)> effectFunc) {
     if (effectFunc) {
         setEffects({}, {{param, func}},
                    [param, effectFunc]() { return effectFunc(param.get()); });
@@ -234,7 +232,7 @@ void Upgrade::setEffects(
         values,
     std::initializer_list<std::pair<ParameterSystem::NodeState, StateFunc>>
         states,
-    std::function<std::string()> func) {
+    std::function<TextUpdateData()> func) {
     mEffectLevelSubs.clear();
     mEffectSub.reset();
     for (auto param : values) {
@@ -243,7 +241,7 @@ void Upgrade::setEffects(
         if (func) {
             if (!mEffectSub) {
                 mEffectSub = param.first.subscribe([this, func]() {
-                    mEffectStr = func();
+                    mEffectText = func();
                     updateInfo();
                 });
             } else {
@@ -257,7 +255,7 @@ void Upgrade::setEffects(
         if (func) {
             if (!mEffectSub) {
                 mEffectSub = param.first.subscribe([this, func]() {
-                    mEffectStr = func();
+                    mEffectText = func();
                     updateInfo();
                 });
             } else {
@@ -269,16 +267,16 @@ void Upgrade::setEffects(
 void Upgrade::clearEffects() {
     mEffectLevelSubs.clear();
     mEffectSub.reset();
-    mEffectStr = "";
+    mEffectText = {};
     updateInfo();
 }
 
 void Upgrade::updateInfo() {
     std::stringstream ss;
-    ss << mEffectStr;
+    ss << mEffectText.text;
     if (mMaxLevel > 0) {
         Number lvl = mLevel.get();
-        if (!mEffectStr.empty()) {
+        if (!mEffectText.text.empty()) {
             ss << "\n";
         }
         if (mMaxLevel > 1) {
@@ -292,9 +290,9 @@ void Upgrade::updateInfo() {
             ss << (mMaxLevel > 1 ? "Maxed" : "Bought");
         }
     }
+    std::vector<RenderDataWPtr> imgs = mEffectText.imgs;
     if (mCost) {
-        setInfo(ss.str(), {mCost->getMoneyIcon()});
-    } else {
-        setInfo(ss.str());
+        imgs.push_back(mCost->getMoneyIcon());
     }
+    setInfo({ss.str(), imgs});
 }

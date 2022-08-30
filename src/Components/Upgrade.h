@@ -10,14 +10,19 @@
 #include <list>
 #include <memory>
 
+struct TextUpdateData {
+    std::string text = "";
+    std::vector<RenderDataWPtr> imgs;
+};
+
 class UpgradeBase {
    public:
     struct Defaults {
         const static ParameterSystem::BaseValue CRYSTAL_MAGIC, CRYSTAL_SHARDS;
 
-        static std::string AdditiveEffect(const Number& effect);
-        static std::string MultiplicativeEffect(const Number& effect);
-        static std::string PercentEffect(const Number& effect);
+        static TextUpdateData AdditiveEffect(const Number& effect);
+        static TextUpdateData MultiplicativeEffect(const Number& effect);
+        static TextUpdateData PercentEffect(const Number& effect);
     };
 
     enum Status : uint8_t {
@@ -35,10 +40,8 @@ class UpgradeBase {
 
     void setImage(WizardId id);
     void setImage(const std::string& file);
-    void setDescription(const std::string& desc,
-                        const std::initializer_list<RenderDataWPtr>& imgs = {});
-    void setInfo(const std::string& info,
-                 const std::initializer_list<RenderDataWPtr>& imgs = {});
+    void setDescription(const TextUpdateData& data);
+    void setInfo(const TextUpdateData& data);
 
     void drawIcon(TextureBuilder& tex, const Rect& r);
     void drawDescription(TextureBuilder tex, SDL_FPoint offset = {0, 0});
@@ -66,13 +69,13 @@ class Display : public UpgradeBase {
     virtual Status getStatus();
 
     void setEffect(ParameterSystem::ValueParam param,
-                   std::function<std::string(const Number&)> func);
+                   std::function<TextUpdateData(const Number&)> func);
     void setEffect(ParameterSystem::StateParam param,
-                   std::function<std::string(bool)> func);
+                   std::function<TextUpdateData(bool)> func);
     void setEffects(
         const std::initializer_list<ParameterSystem::ValueParam>& valueParams,
         const std::initializer_list<ParameterSystem::StateParam>& stateParams,
-        std::function<std::string()> func);
+        std::function<TextUpdateData()> func);
 
    private:
     ParameterSystem::ParameterSubscriptionPtr mEffectSub;
@@ -150,15 +153,15 @@ class Upgrade : public UpgradeBase {
 
     void setEffect(
         ParameterSystem::NodeValue param, ValueFunc func,
-        std::function<std::string(const Number&)> effectFunc = nullptr);
+        std::function<TextUpdateData(const Number&)> effectFunc = nullptr);
     void setEffect(ParameterSystem::NodeState param, StateFunc func,
-                   std::function<std::string(bool)> effectFunc = nullptr);
+                   std::function<TextUpdateData(bool)> effectFunc = nullptr);
     void setEffects(
         std::initializer_list<std::pair<ParameterSystem::NodeValue, ValueFunc>>
             values,
         std::initializer_list<std::pair<ParameterSystem::NodeState, StateFunc>>
             states,
-        std::function<std::string()> func = nullptr);
+        std::function<TextUpdateData()> func = nullptr);
     void clearEffects();
 
     void updateInfo();
@@ -174,7 +177,7 @@ class Upgrade : public UpgradeBase {
     ParameterSystem::ParameterSubscriptionPtr mCostSub;
 
     // Effects
-    std::string mEffectStr = "";
+    TextUpdateData mEffectText;
     std::list<ParameterSystem::ParameterSubscriptionPtr> mEffectLevelSubs;
     ParameterSystem::ParameterSubscriptionPtr mEffectSub;
 };

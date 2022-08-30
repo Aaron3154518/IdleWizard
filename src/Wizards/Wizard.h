@@ -52,8 +52,7 @@ class Wizard : public WizardBase {
     void onPowFireballHit(const PowerWizFireball& fireball);
     bool onPowWizTimer(Timer& timer);
     void onPowWizTimerUpdate(Time dt, Timer& timer);
-    void onFreeze(TimeSystem::FreezeType type);
-    void onUnfreeze(TimeSystem::FreezeType type);
+    void onTimeFreeze(bool frozen);
 
     Number calcPower();
     Number calcSpeed();
@@ -74,7 +73,6 @@ class Wizard : public WizardBase {
     TimeSystem::TimerObservable::SubscriptionPtr mPowWizTimerSub, mAnimTimerSub,
         mPowBkAnimTimerSub;
     PowerWizFireball::HitObservable::IdSubscriptionPtr mPowFireballHitSub;
-    TimeSystem::FreezeObservable::SubscriptionPtr mFreezeSub;
     UpgradeList::SubscriptionPtr mPowerDisplay, mTargetUp, mPowerUp, mMultiUp,
         mCritUp;
 

@@ -31,9 +31,6 @@ void PowerWizard::setSubscriptions() {
     mFireballTimerSub =
         ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
             [this](Timer& t) { return onTimer(t); }, Timer(1000));
-    mFreezeSub = TimeSystem::GetFreezeObservable()->subscribe(
-        [this](TimeSystem::FreezeType t) { onFreeze(t); },
-        [this](TimeSystem::FreezeType t) { onUnfreeze(t); });
     mAnimTimerSub = TimeSystem::GetTimerObservable()->subscribe(
         [this](Timer& t) {
             mImg.nextFrame();
@@ -42,7 +39,6 @@ void PowerWizard::setSubscriptions() {
         },
         IMG);
     attachSubToVisibility(mFireballTimerSub);
-    attachSubToVisibility(mFreezeSub);
 }
 void PowerWizard::setUpgrades() {
     ParameterSystem::Params<POWER_WIZARD> params;
@@ -51,7 +47,7 @@ void PowerWizard::setUpgrades() {
     // Power Display
     DisplayPtr dUp = std::make_shared<Display>();
     dUp->setImage(mId);
-    dUp->setDescription("Power");
+    dUp->setDescription({"Power"});
     dUp->setEffect(params[PowerWizardParams::Power],
                    Upgrade::Defaults::MultiplicativeEffect);
     mPowerDisplay = mUpgrades->subscribe(dUp);
@@ -60,7 +56,7 @@ void PowerWizard::setUpgrades() {
     UpgradePtr up =
         std::make_shared<Upgrade>(params[PowerWizardParams::PowerUpLvl], 15);
     up->setImage(POWER_UP_IMG);
-    up->setDescription("Increase power effect by *1.15");
+    up->setDescription({"Increase power effect by *1.15"});
     up->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
                 params[PowerWizardParams::PowerUpCost],
                 [](const Number& lvl) { return 125 * (1.5 ^ lvl); });
@@ -88,6 +84,9 @@ void PowerWizard::setParamTriggers() {
     mParamSubs.push_back(params[PowerWizardParams::FireRingEffect].subscribeTo(
         {params[PowerWizardParams::Power]}, {},
         [this]() { return calcFireRingEffect(); }));
+
+    mParamSubs.push_back(states[State::TimeWizFrozen].subscribe(
+        [this](bool val) { onTimeFreeze(val); }));
 
     mParamSubs.push_back(
         params[PowerWizardParams::Speed].subscribe([this]() { calcTimer(); }));
@@ -141,18 +140,13 @@ bool PowerWizard::onTimer(Timer& timer) {
     return true;
 }
 
-void PowerWizard::onFreeze(TimeSystem::FreezeType type) {}
-void PowerWizard::onUnfreeze(TimeSystem::FreezeType type) {
-    switch (type) {
-        case TimeSystem::FreezeType::TIME_WIZARD:
-            if (mFreezeFireball) {
-                Number freezeEffect = ParameterSystem::Param<TIME_WIZARD>(
-                                          TimeWizardParams::FreezeEffect)
-                                          .get();
-                mFreezeFireball->applyTimeEffect(freezeEffect);
-                mFireballs.push_back(std::move(mFreezeFireball));
-            }
-            break;
+void PowerWizard::onTimeFreeze(bool frozen) {
+    if (!frozen && mFreezeFireball) {
+        Number freezeEffect =
+            ParameterSystem::Param<TIME_WIZARD>(TimeWizardParams::FreezeEffect)
+                .get();
+        mFreezeFireball->applyTimeEffect(freezeEffect);
+        mFireballs.push_back(std::move(mFreezeFireball));
     }
 }
 
@@ -164,9 +158,8 @@ void PowerWizard::shootFireball() {
 
     WizardId target = getTarget();
 
-    bool frozen = TimeSystem::Frozen(TimeSystem::FreezeType::TIME_WIZARD);
     auto data = newFireballData(target);
-    if (!frozen) {
+    if (!ParameterSystem::Param(State::TimeWizFrozen).get()) {
         mFireballs.push_back(std::move(ComponentFactory<PowerWizFireball>::New(
             SDL_FPoint{mPos->rect.cX(), mPos->rect.cY()}, target, data)));
     } else {

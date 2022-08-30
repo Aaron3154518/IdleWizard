@@ -76,7 +76,7 @@ void Crystal::setUpgrades() {
     // Power Display
     DisplayPtr dUp = std::make_shared<Display>();
     dUp->setImage(mId);
-    dUp->setDescription("Multiplier based on crystal damage");
+    dUp->setDescription({"Multiplier based on crystal damage"});
     dUp->setEffect(params[CrystalParams::MagicEffect],
                    Upgrade::Defaults::MultiplicativeEffect);
     mMagicEffectDisplay = mUpgrades->subscribe(dUp);
@@ -86,8 +86,8 @@ void Crystal::setUpgrades() {
         std::make_shared<Upgrade>(params[CrystalParams::BuyPowerWizLvl], 1);
     up->setImage(WIZ_IMGS.at(POWER_WIZARD));
     up->setDescription(
-        "Power Wizard empowers the Wizard and overloads the Crystal for "
-        "increased Fireball power");
+        {"Power Wizard empowers the Wizard and overloads the Crystal for "
+         "increased Fireball power"});
     up->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
                 params[CrystalParams::T1WizardCost]);
     up->setEffect(states[State::BoughtPowerWizard],
@@ -98,8 +98,8 @@ void Crystal::setUpgrades() {
     up = std::make_shared<Upgrade>(params[CrystalParams::BuyTimeWizLvl], 1);
     up->setImage(WIZ_IMGS.at(TIME_WIZARD));
     up->setDescription(
-        "Time Wizard boosts Wizard fire rate and freezes time for a "
-        "massive power boost");
+        {"Time Wizard boosts Wizard fire rate and freezes time for a "
+         "massive power boost"});
     up->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
                 params[CrystalParams::T1WizardCost]);
     up->setEffect(states[State::BoughtTimeWizard],
@@ -110,8 +110,8 @@ void Crystal::setUpgrades() {
     up = std::make_shared<Upgrade>(params[CrystalParams::BuyCatalystLvl], 1);
     up->setImage(WIZ_IMGS.at(CATALYST));
     up->setDescription(
-        "Catalyst stores magic and boosts fireballs that pass "
-        "nearby");
+        {"Catalyst stores magic and boosts fireballs that pass "
+         "nearby"});
     up->setCost(Upgrade::Defaults::CRYSTAL_SHARDS,
                 params[CrystalParams::CatalystCost]);
     up->setEffect(states[State::BoughtCatalyst],

@@ -7,6 +7,7 @@ namespace State {
 enum B : param_t {
     ResetT1 = 0,
     TimeWizActive,
+    TimeWizFrozen,
 };
 
 enum N : param_t {

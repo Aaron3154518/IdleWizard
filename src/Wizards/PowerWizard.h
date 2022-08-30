@@ -38,8 +38,7 @@ class PowerWizard : public WizardBase {
     void onHide(WizardId id, bool hide);
     void onReset(WizardSystem::ResetTier tier);
     bool onTimer(Timer& timer);
-    void onFreeze(TimeSystem::FreezeType type);
-    void onUnfreeze(TimeSystem::FreezeType type);
+    void onTimeFreeze(bool frozen);
 
     Number calcPower();
     Number calcSpeed();
@@ -56,7 +55,6 @@ class PowerWizard : public WizardBase {
 
     TimerObservable::SubscriptionPtr mFireballTimerSub;
     TimeSystem::TimerObservable::SubscriptionPtr mAnimTimerSub;
-    TimeSystem::FreezeObservable::SubscriptionPtr mFreezeSub;
     UpgradeList::SubscriptionPtr mPowerDisplay, mPowerUp;
 
     PowerWizFireballPtr mFreezeFireball;

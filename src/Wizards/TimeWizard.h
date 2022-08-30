@@ -56,14 +56,14 @@ class TimeWizard : public WizardBase {
 
     void setPos(float x, float y);
 
-    bool mActive = false, mCanAfford = false;
+    bool mActive = false;
 
     TimerObservable::SubscriptionPtr mCostTimerSub, mFreezeDelaySub,
         mFreezeTimerSub, mAnimTimerSub;
     UpgradeList::SubscriptionPtr mEffectDisplay, mActiveUp, mFreezeUp, mSpeedUp;
-    ParameterSystem::ParameterSubscriptionWPtr mSpeedEffectSub;
 
     TogglePtr mActiveToggle;
+    Lock mTimeLock;
 
     ProgressBar mFreezePb;
 

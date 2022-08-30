@@ -52,22 +52,23 @@ void Catalyst::setUpgrades() {
     dUp->setImage(WIZ_IMGS.at(mId));
     dUp->setEffects(
         {params[CatalystParams::MagicEffect], params[CatalystParams::Range]},
-        {}, []() {
+        {}, []() -> TextUpdateData {
             ParameterSystem::Params<CATALYST> params;
 
             std::stringstream ss;
             ss << "Multiplier: "
                << Upgrade::Defaults::MultiplicativeEffect(
                       params[CatalystParams::MagicEffect].get())
+                      .text
                << "\nRange: " << params[CatalystParams::Range].get();
-            return ss.str();
+            return {ss.str()};
         });
     mMagicEffectDisplay = mUpgrades->subscribe(dUp);
 
     UpgradePtr up =
         std::make_shared<Upgrade>(params[CatalystParams::RangeUpLvl], 5);
     up->setImage("");
-    up->setDescription("Increase range of fireball boost");
+    up->setDescription({"Increase range of fireball boost"});
     up->setCost(Upgrade::Defaults::CRYSTAL_SHARDS,
                 params[CatalystParams::RangeUpCost],
                 [](const Number& lvl) { return 5 * (2 ^ lvl); });

@@ -3,7 +3,8 @@
 namespace Money {
 const RenderDataPtr& GetMoneyIcon(const ParameterSystem::ValueParam& param) {
     static RenderDataPtr DEFAULT, CRYSTAL_MAGIC, CRYSTAL_SHARDS, CATALYST_MAGIC;
-    static TimerObservable::SubscriptionPtr CRYS_MAG_SUB, CRYS_SHARD_SUB;
+    static TimerObservable::SubscriptionPtr CRYS_MAG_SUB, CRYS_SHARD_SUB,
+        CAT_MAG_SUB;
     if (!CRYSTAL_MAGIC) {
         auto timerObs = ServiceSystem::Get<TimerService, TimerObservable>();
 
@@ -27,7 +28,13 @@ const RenderDataPtr& GetMoneyIcon(const ParameterSystem::ValueParam& param) {
             Timer(100));
 
         CATALYST_MAGIC = std::make_shared<RenderData>();
-        CATALYST_MAGIC->set("res/wizards/catalyst.png");
+        CATALYST_MAGIC->set("res/money/catalyst_magic.png", 8);
+        CAT_MAG_SUB = timerObs->subscribe(
+            [](Timer& t) {
+                CATALYST_MAGIC->nextFrame();
+                return true;
+            },
+            Timer(150));
     }
 
     switch (param.mId) {

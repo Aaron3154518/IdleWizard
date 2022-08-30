@@ -2,7 +2,7 @@
 
 // Fireball
 const int Fireball::COLLIDE_ERR = 10;
-const int Fireball::MAX_SPEED = 150;
+const int Fireball::MAX_SPEED = 1000;
 
 const Rect Fireball::IMG_RECT(0, 0, 40, 40);
 
@@ -52,7 +52,7 @@ bool Fireball::dead() const { return mDead; }
 void Fireball::launch(SDL_FPoint target) {
     // Start at half max speed
     float dx = target.x - mPos->rect.cX(), dy = target.y - mPos->rect.cY();
-    float frac = sqrtf(mMaxSpeed / (dx * dx + dy * dy));
+    float frac = mMaxSpeed / 3 / sqrtf(dx * dx + dy * dy);
     mV.x = dx * frac;
     mV.y = dy * frac;
 }
@@ -98,7 +98,9 @@ void Fireball::onUpdate(Time dt) {
         mTargetSub.reset();
     } else {
         d = fminf(d / 2, mMaxSpeed);
-        float frac = mMaxSpeed * mMaxSpeed / (d * d);
+        float v_squared =
+            fmaxf(mV.x * mV.x + mV.y * mV.y, mMaxSpeed * mMaxSpeed / 4);
+        float frac = v_squared / (d * d);
         mA.x = dx * frac;
         mA.y = dy * frac;
 

@@ -64,7 +64,7 @@ class Fireball : public Component {
     RenderObservable::SubscriptionPtr mRenderSub;
     WizardSystem::WizardPosObservable::IdSubscriptionPtr mTargetSub;
 
-    const static int COLLIDE_ERR, MAX_SPEED, ACCELERATION, ACCEL_ZONE;
+    const static int COLLIDE_ERR, MAX_SPEED;
 };
 
 typedef std::unique_ptr<Fireball> FireballPtr;

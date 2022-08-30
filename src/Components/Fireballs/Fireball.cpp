@@ -2,9 +2,7 @@
 
 // Fireball
 const int Fireball::COLLIDE_ERR = 10;
-const int Fireball::MAX_SPEED = 150;
-const int Fireball::ACCELERATION = 30;
-const int Fireball::ACCEL_ZONE = 1;
+const int Fireball::MAX_SPEED = 600;
 
 const Rect Fireball::IMG_RECT(0, 0, 40, 40);
 
@@ -86,7 +84,7 @@ void Fireball::onUpdate(Time dt) {
     float aCoeff = sec * sec / 2;
     float dx = mTargetPos.x - mPos->rect.cX(),
           dy = mTargetPos.y - mPos->rect.cY();
-    float d = std::sqrt(dx * dx + dy * dy);
+    float d = sqrtf(dx * dx + dy * dy);
     // Check in case we were moved onto the target
     if (d < COLLIDE_ERR) {
         onDeath();
@@ -96,14 +94,18 @@ void Fireball::onUpdate(Time dt) {
         mUpdateSub.reset();
         mTargetSub.reset();
     } else {
-        float frac = (mV.x * mV.x + mV.y * mV.y) * 1.1 / (d * d);
+        d = fminf(d / 2, MAX_SPEED);
+        float frac = MAX_SPEED * MAX_SPEED / (d * d);
         mA.x = dx * frac;
         mA.y = dy * frac;
-        float dx = mV.x * sec + mA.x * aCoeff, dy = mV.y * sec + mA.y * aCoeff;
+
+        float moveX = mV.x * sec + mA.x * aCoeff,
+              moveY = mV.y * sec + mA.y * aCoeff;
         mV.x += mA.x * sec;
         mV.y += mA.y * sec;
+
         // Cap speed
-        float mag = std::sqrt(mV.x * mV.x + mV.y * mV.y);
+        float mag = sqrtf(mV.x * mV.x + mV.y * mV.y);
         if (mag > MAX_SPEED) {
             frac = MAX_SPEED / mag;
             mV.x *= frac;
@@ -111,16 +113,16 @@ void Fireball::onUpdate(Time dt) {
         }
 
         float theta = 0;
-        if (dx != 0) {
-            theta = atanf(dy / dx) / DEG_TO_RAD;
-            if (dx < 0) {
+        if (moveX != 0) {
+            theta = atanf(moveY / moveX) / DEG_TO_RAD;
+            if (moveX < 0) {
                 theta += 180;
             }
         }
         theta += FIREBALL_BASE_ROT_DEG;
 
         Rect imgR = mImg.getRect();
-        imgR.move(dx, dy);
+        imgR.move(moveX, moveY);
         mImg.setDest(imgR).setRotationDeg(theta);
         mPos->rect = mImg.getDest();
     }

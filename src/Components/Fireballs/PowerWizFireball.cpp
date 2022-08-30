@@ -11,7 +11,7 @@ PowerWizFireball::GetHitObservable() {
 
 PowerWizFireball::PowerWizFireball(SDL_FPoint c, WizardId target,
                                    const Data& data)
-    : Fireball(c, target, IMG),
+    : Fireball(c, target, IMG, .65),
       mSizeSum(data.sizeFactor),
       mPower(data.power),
       mDuration(data.duration) {

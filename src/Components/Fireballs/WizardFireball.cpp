@@ -12,7 +12,7 @@ WizardFireball::GetHitObservable() {
 
 WizardFireball::WizardFireball(SDL_FPoint c, WizardId target, const Data& data,
                                bool powerWizBoosted)
-    : Fireball(c, target, powerWizBoosted ? POW_IMG : IMG),
+    : Fireball(c, target, powerWizBoosted ? POW_IMG : IMG, 1),
       mSizeSum(data.sizeFactor),
       mPower(data.power),
       mPowerWizBoosted(powerWizBoosted) {

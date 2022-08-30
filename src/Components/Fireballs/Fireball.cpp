@@ -2,18 +2,21 @@
 
 // Fireball
 const int Fireball::COLLIDE_ERR = 10;
-const int Fireball::MAX_SPEED = 600;
+const int Fireball::MAX_SPEED = 150;
 
 const Rect Fireball::IMG_RECT(0, 0, 40, 40);
 
 constexpr int FIREBALL_BASE_ROT_DEG = -45;
 
-Fireball::Fireball(SDL_FPoint c, WizardId target, const std::string& img)
-    : Fireball(c, target, AnimationData{img}) {}
-Fireball::Fireball(SDL_FPoint c, WizardId target, const AnimationData& img)
+Fireball::Fireball(SDL_FPoint c, WizardId target, const std::string& img,
+                   float maxSpeedMult)
+    : Fireball(c, target, AnimationData{img}, maxSpeedMult) {}
+Fireball::Fireball(SDL_FPoint c, WizardId target, const AnimationData& img,
+                   float maxSpeedMult)
     : mPos(std::make_shared<UIComponent>(Rect(), Elevation::PROJECTILES)),
       mTargetId(target),
-      mImgAnim(img) {
+      mImgAnim(img),
+      mMaxSpeed(MAX_SPEED * maxSpeedMult) {
     Rect imgR = IMG_RECT;
     imgR.setPos(c.x, c.y, Rect::Align::CENTER);
     mImg.set(img).setDest(imgR);
@@ -49,7 +52,7 @@ bool Fireball::dead() const { return mDead; }
 void Fireball::launch(SDL_FPoint target) {
     // Start at half max speed
     float dx = target.x - mPos->rect.cX(), dy = target.y - mPos->rect.cY();
-    float frac = MAX_SPEED / std::sqrt(dx * dx + dy * dy) / 2;
+    float frac = sqrtf(mMaxSpeed / (dx * dx + dy * dy));
     mV.x = dx * frac;
     mV.y = dy * frac;
 }
@@ -94,8 +97,8 @@ void Fireball::onUpdate(Time dt) {
         mUpdateSub.reset();
         mTargetSub.reset();
     } else {
-        d = fminf(d / 2, MAX_SPEED);
-        float frac = MAX_SPEED * MAX_SPEED / (d * d);
+        d = fminf(d / 2, mMaxSpeed);
+        float frac = mMaxSpeed * mMaxSpeed / (d * d);
         mA.x = dx * frac;
         mA.y = dy * frac;
 
@@ -106,8 +109,8 @@ void Fireball::onUpdate(Time dt) {
 
         // Cap speed
         float mag = sqrtf(mV.x * mV.x + mV.y * mV.y);
-        if (mag > MAX_SPEED) {
-            frac = MAX_SPEED / mag;
+        if (mag > mMaxSpeed) {
+            frac = mMaxSpeed / mag;
             mV.x *= frac;
             mV.y *= frac;
         }

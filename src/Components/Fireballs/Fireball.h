@@ -24,8 +24,10 @@ class Fireball : public Component {
    public:
     const static Rect IMG_RECT;
 
-    Fireball(SDL_FPoint c, WizardId target, const std::string& img);
-    Fireball(SDL_FPoint c, WizardId target, const AnimationData& img);
+    Fireball(SDL_FPoint c, WizardId target, const std::string& img,
+             float maxSpeedMult);
+    Fireball(SDL_FPoint c, WizardId target, const AnimationData& img,
+             float maxSpeedMult);
     virtual ~Fireball() = default;
 
     bool dead() const;
@@ -51,6 +53,7 @@ class Fireball : public Component {
     bool mDead = false;
     const WizardId mTargetId;
     SDL_FPoint mTargetPos{0, 0}, mV{0, 0}, mA{0, 0};
+    float mMaxSpeed;
     UIComponentPtr mPos;
 
     RenderData mImg;

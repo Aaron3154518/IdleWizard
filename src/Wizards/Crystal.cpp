@@ -12,8 +12,8 @@ void Crystal::setDefaults() {
     ParameterSystem::Params<CRYSTAL> params;
 
     // Default 0
-    params[CrystalParams::Magic]->init(Number(1, 5), ResetTier::T1);
-    params[CrystalParams::Shards]->init(100, ResetTier::T2);
+    params[CrystalParams::Magic]->init(0, ResetTier::T1);
+    params[CrystalParams::Shards]->init(0, ResetTier::T2);
 
     params[CrystalParams::CatalystCost]->init(1);
 
@@ -23,7 +23,7 @@ void Crystal::setDefaults() {
 
     ParameterSystem::States states;
 
-    states[State::ResetT1]->init(true);
+    states[State::ResetT1]->init(false);
 }
 
 Crystal::Crystal() : WizardBase(CRYSTAL) {}
@@ -200,15 +200,17 @@ void Crystal::onRender(SDL_Renderer* r) {
     }
 }
 
+bool addMagic = false;
 void Crystal::onClick(Event::MouseButton b, bool clicked) {
-    WizardBase::onClick(b, clicked);
-    if (clicked) {
+    if (addMagic && clicked) {
         auto param = ParameterSystem::Param<CRYSTAL>(CrystalParams::Magic);
         param.set(param.get() * 3);
         if (param.get() > Number(1, 6)) {
             // triggerT1Reset();
         }
     }
+    addMagic = clicked;
+    WizardBase::onClick(b, clicked);
 }
 
 void Crystal::onHide(WizardId id, bool hide) {
@@ -251,8 +253,10 @@ Number Crystal::calcShardGain() {
 void Crystal::drawMagic() {
     ParameterSystem::Params<CRYSTAL> params;
     std::stringstream ss;
-    ss << "{i}" << params[CrystalParams::Magic].get() << "\n"
-       << "{i}" << params[CrystalParams::Shards].get();
+    ss << "{i}" << params[CrystalParams::Magic].get();
+    if (ParameterSystem::Param(State::ResetT1).get()) {
+        ss << "\n{i}" << params[CrystalParams::Shards].get();
+    }
     mMagicText->setText(ss.str(), mPos->rect.W());
 }
 

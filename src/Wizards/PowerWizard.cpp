@@ -60,13 +60,13 @@ void PowerWizard::setUpgrades() {
     UpgradePtr up =
         std::make_shared<Upgrade>(params[PowerWizardParams::PowerUpLvl], 15);
     up->setImage(POWER_UP_IMG);
-    up->setDescription("Increase power effect by *1.1");
+    up->setDescription("Increase power effect by *1.15");
     up->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
                 params[PowerWizardParams::PowerUpCost],
                 [](const Number& lvl) { return 125 * (1.5 ^ lvl); });
     up->setEffect(
         params[PowerWizardParams::PowerUp],
-        [](const Number& lvl) { return 1.1 ^ lvl; },
+        [](const Number& lvl) { return 1.15 ^ lvl; },
         Upgrade::Defaults::MultiplicativeEffect);
     mPowerUp = mUpgrades->subscribe(up);
 }
@@ -162,15 +162,15 @@ void PowerWizard::shootFireball() {
     Number fireRing = params[PowerWizardParams::FireRingEffect].get();
     Number duration = params[PowerWizardParams::Duration].get();
 
+    WizardId target = getTarget();
+
     bool frozen = TimeSystem::Frozen(TimeSystem::FreezeType::TIME_WIZARD);
-    WizardId target = rDist(gen) < .5 ? WIZARD : CRYSTAL;
     auto data = newFireballData(target);
     if (!frozen) {
         mFireballs.push_back(std::move(ComponentFactory<PowerWizFireball>::New(
             SDL_FPoint{mPos->rect.cX(), mPos->rect.cY()}, target, data)));
     } else {
         if (!mFreezeFireball) {
-            WizardId target = rDist(gen) < .5 ? WIZARD : CRYSTAL;
             mFreezeFireball = std::move(ComponentFactory<PowerWizFireball>::New(
                 SDL_FPoint{mPos->rect.cX(), mPos->rect.cY()}, target, data));
         } else {
@@ -184,6 +184,24 @@ void PowerWizard::shootFireball(SDL_FPoint target) {
     shootFireball();
     if (size != mFireballs.size()) {
         mFireballs.back()->launch(target);
+    }
+}
+
+WizardId PowerWizard::getTarget() {
+    int sum = mWizTargetCnt + mCrysTargetCnt;
+    if (sum == 0) {
+        mWizTargetCnt = mCrysTargetCnt = 4;
+        sum = mWizTargetCnt + mCrysTargetCnt;
+    }
+    int num = (int)(rDist(gen) * sum);
+    if (num < mWizTargetCnt) {
+        mWizTargetCnt--;
+        return WIZARD;
+    }
+    num -= mWizTargetCnt;
+    if (num < mCrysTargetCnt) {
+        mCrysTargetCnt--;
+        return CRYSTAL;
     }
 }
 
@@ -231,7 +249,7 @@ void PowerWizard::calcTimer() {
 
 Number PowerWizard::calcFireRingEffect() {
     ParameterSystem::Params<POWER_WIZARD> params;
-    return (params[PowerWizardParams::Power].get() / 10) + 1;
+    return (params[PowerWizardParams::Power].get() / 5) + 1;
 }
 
 void PowerWizard::setPos(float x, float y) {

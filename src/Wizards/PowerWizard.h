@@ -48,6 +48,7 @@ class PowerWizard : public WizardBase {
 
     void shootFireball();
     void shootFireball(SDL_FPoint target);
+    WizardId getTarget();
 
     PowerWizFireball::Data newFireballData(WizardId target);
 
@@ -60,6 +61,7 @@ class PowerWizard : public WizardBase {
 
     PowerWizFireballPtr mFreezeFireball;
     std::vector<PowerWizFireballPtr> mFireballs;
+    int mWizTargetCnt = 0, mCrysTargetCnt = 0;
 };
 
 #endif

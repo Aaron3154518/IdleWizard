@@ -15,8 +15,8 @@ void TimeWizard::setDefaults() {
 
     params[TimeWizardParams::SpeedBaseEffect]->init(1.5);
     params[TimeWizardParams::FreezeBaseEffect]->init(1.1);
-    params[TimeWizardParams::FreezeDelay]->init(300000);
-    params[TimeWizardParams::FreezeDuration]->init(10000);
+    params[TimeWizardParams::FreezeDelay]->init(30000);
+    params[TimeWizardParams::FreezeDuration]->init(5000);
 
     params[TimeWizardParams::SpeedUpLvl]->init(ResetTier::T1);
     params[TimeWizardParams::FreezeUpLvl]->init(ResetTier::T1);
@@ -116,7 +116,7 @@ void TimeWizard::setUpgrades() {
                 [](const Number& lvl) { return 150 * (1.6 ^ lvl); });
     up->setEffect(
         params[TimeWizardParams::FreezeUp],
-        [](const Number& lvl) { return 1.02 ^ lvl; },
+        [](const Number& lvl) { return 1.03 ^ lvl; },
         Upgrade::Defaults::MultiplicativeEffect);
     mFreezeUp = mUpgrades->subscribe(up);
 

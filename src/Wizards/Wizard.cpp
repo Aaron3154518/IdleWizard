@@ -17,7 +17,7 @@ void Wizard::setDefaults() {
 
     params[WizardParams::BaseCritSpread]->init(0);
     params[WizardParams::BasePower]->init(1);
-    params[WizardParams::BaseSpeed]->init(1);
+    params[WizardParams::BaseSpeed]->init(.5);
     params[WizardParams::BaseCrit]->init(1);
     params[WizardParams::PowerWizEffect]->init(1);
 
@@ -134,7 +134,7 @@ void Wizard::setUpgrades() {
     up->setDescription("Increase double fireball chance by +5%");
     up->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
                 params[WizardParams::MultiUpCost],
-                [](const Number& lvl) { return 150 * (1.4 ^ lvl); });
+                [](const Number& lvl) { return 175 * (1.3 ^ lvl); });
     up->setEffect(
         params[WizardParams::MultiUp],
         [](const Number& lvl) { return .05 * lvl; },

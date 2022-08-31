@@ -42,6 +42,8 @@ class PowerWizard : public WizardBase {
 
     Number calcPower();
     Number calcSpeed();
+    Number calcFBSpeed();
+    Number calcFBSpeedEffect();
     void calcTimer();
     Number calcFireRingEffect();
 

@@ -100,6 +100,7 @@ enum N : param_t {
 
     Speed,
     FBSpeed,
+    FBSpeedEffect,
 };
 }  // namespace PowerWizardParams
 namespace TimeWizardParams {

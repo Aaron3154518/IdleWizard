@@ -74,6 +74,7 @@ void Wizard::setUpgrades() {
                     {}, []() -> TextUpdateData {
                         ParameterSystem::Params<WIZARD> params;
                         std::stringstream ss;
+                        std::vector<RenderDataWPtr> imgs;
                         ss << "Power: "
                            << Upgrade::Defaults::MultiplicativeEffect(
                                   params[WizardParams::Power].get())
@@ -86,7 +87,8 @@ void Wizard::setUpgrades() {
                            << Upgrade::Defaults::MultiplicativeEffect(
                                   params[WizardParams::FBSpeedEffect].get())
                                   .text;
-                        return {ss.str(), {WizardFireball::GetIcon()}};
+                        imgs.push_back(WizardFireball::GetIcon());
+                        return {ss.str(), imgs};
                     });
     mPowerDisplay = mUpgrades->subscribe(dUp);
 
@@ -398,11 +400,7 @@ Number Wizard::calcFBSpeed() {
 
 Number Wizard::calcFBSpeedEffect() {
     ParameterSystem::Params<WIZARD> params;
-    Number fbSpeed = params[WizardParams::FBSpeed].get();
-
-    if (fbSpeed == 0) {
-        return 1;
-    }
+    Number fbSpeed = max(params[WizardParams::FBSpeed].get(), 1);
 
     Number twoFbSpeed = 2 * fbSpeed;
 

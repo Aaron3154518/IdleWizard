@@ -13,6 +13,7 @@ void PowerWizard::setDefaults() {
 
     params[PowerWizardParams::BasePower]->init(5);
     params[PowerWizardParams::BaseSpeed]->init(.25);
+    params[PowerWizardParams::BaseFBSpeed]->init(.75);
     params[PowerWizardParams::Duration]->init(1000);
 
     params[PowerWizardParams::PowerUpLvl]->init(ResetTier::T1);
@@ -48,8 +49,28 @@ void PowerWizard::setUpgrades() {
     DisplayPtr dUp = std::make_shared<Display>();
     dUp->setImage(mId);
     dUp->setDescription({"Power"});
-    dUp->setEffect(params[PowerWizardParams::Power],
-                   Upgrade::Defaults::MultiplicativeEffect);
+    dUp->setEffects(
+        {params[PowerWizardParams::Power], params[PowerWizardParams::FBSpeed],
+         params[PowerWizardParams::FBSpeedEffect]},
+        {}, []() -> TextUpdateData {
+            ParameterSystem::Params<POWER_WIZARD> params;
+            std::stringstream ss;
+            std::vector<RenderDataWPtr> imgs;
+            ss << "Power: "
+               << Upgrade::Defaults::MultiplicativeEffect(
+                      params[PowerWizardParams::Power].get())
+                      .text
+               << "\n{i} Speed: "
+               << Upgrade::Defaults::MultiplicativeEffect(
+                      params[PowerWizardParams::FBSpeed].get())
+                      .text
+               << ", {b}Power : "
+               << Upgrade::Defaults::MultiplicativeEffect(
+                      params[PowerWizardParams::FBSpeedEffect].get())
+                      .text;
+            imgs.push_back(PowerWizFireball::GetIcon());
+            return {ss.str(), imgs};
+        });
     mPowerDisplay = mUpgrades->subscribe(dUp);
 
     // Power upgrade
@@ -84,6 +105,15 @@ void PowerWizard::setParamTriggers() {
     mParamSubs.push_back(params[PowerWizardParams::FireRingEffect].subscribeTo(
         {params[PowerWizardParams::Power]}, {},
         [this]() { return calcFireRingEffect(); }));
+
+    mParamSubs.push_back(params[PowerWizardParams::FBSpeed].subscribeTo(
+        {params[PowerWizardParams::BaseFBSpeed],
+         timeParams[TimeWizardParams::FBSpeedUp]},
+        {}, [this]() { return calcFBSpeed(); }));
+
+    mParamSubs.push_back(params[PowerWizardParams::FBSpeedEffect].subscribeTo(
+        {params[PowerWizardParams::FBSpeed]}, {},
+        [this]() { return calcFBSpeedEffect(); }));
 
     mParamSubs.push_back(states[State::TimeWizFrozen].subscribe(
         [this](bool val) { onTimeFreeze(val); }));
@@ -200,18 +230,21 @@ WizardId PowerWizard::getTarget() {
 
 PowerWizFireball::Data PowerWizard::newFireballData(WizardId target) {
     ParameterSystem::Params<POWER_WIZARD> params;
+    Number speedEffect = params[PowerWizardParams::FBSpeedEffect].get();
 
     PowerWizFireball::Data data;
     switch (target) {
         case WIZARD:
-            data.power = params[PowerWizardParams::Power].get();
+            data.power = params[PowerWizardParams::Power].get() * speedEffect;
             break;
         case CRYSTAL:
-            data.power = params[PowerWizardParams::FireRingEffect].get();
+            data.power =
+                params[PowerWizardParams::FireRingEffect].get() * speedEffect;
             break;
     };
     data.duration = params[PowerWizardParams::Duration].get();
     data.sizeFactor = 1;
+    data.speed = params[PowerWizardParams::FBSpeed].get().toFloat();
     return data;
 }
 
@@ -227,6 +260,23 @@ Number PowerWizard::calcSpeed() {
     ParameterSystem::Params<TIME_WIZARD> timeParams;
     Number timeEffect = timeParams[TimeWizardParams::SpeedEffect].get();
     return params[PowerWizardParams::BaseSpeed].get() * timeEffect;
+}
+
+Number PowerWizard::calcFBSpeed() {
+    ParameterSystem::Params<POWER_WIZARD> params;
+    ParameterSystem::Params<TIME_WIZARD> timeParams;
+
+    return params[PowerWizardParams::BaseFBSpeed].get() *
+           timeParams[TimeWizardParams::FBSpeedUp].get();
+}
+
+Number PowerWizard::calcFBSpeedEffect() {
+    ParameterSystem::Params<POWER_WIZARD> params;
+    Number fbSpeed = max(params[PowerWizardParams::FBSpeed].get(), 1);
+
+    Number twoFbSpeed = 2 * fbSpeed;
+
+    return fbSpeed * (twoFbSpeed ^ (twoFbSpeed - 2));
 }
 
 void PowerWizard::calcTimer() {

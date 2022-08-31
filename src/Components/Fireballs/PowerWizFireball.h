@@ -15,7 +15,8 @@ class PowerWizFireball : public Fireball {
    public:
     struct Data {
         Number power, duration;
-        int sizeFactor = 1, speed = .65;
+        int sizeFactor = 1;
+        float speed = .65;
     };
 
     typedef TargetSystem::TargetObservable<const PowerWizFireball&>

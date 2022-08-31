@@ -4,6 +4,24 @@
 const AnimationData PowerWizFireball::IMG{
     "res/projectiles/power_fireball_ss.png", 6, 75};
 
+const RenderDataPtr& PowerWizFireball::GetIcon() {
+    static RenderDataPtr ICON;
+    static TimerObservable::SubscriptionPtr ANIM_SUB;
+    if (!ICON) {
+        ICON = std::make_shared<RenderData>();
+        ICON->set(IMG);
+        ANIM_SUB =
+            ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
+                [](Timer& t) {
+                    ICON->nextFrame();
+                    return true;
+                },
+                Timer(IMG.frame_ms));
+    }
+
+    return ICON;
+}
+
 std::shared_ptr<PowerWizFireball::HitObservable>
 PowerWizFireball::GetHitObservable() {
     return ServiceSystem::Get<Service, HitObservable>();
@@ -11,7 +29,7 @@ PowerWizFireball::GetHitObservable() {
 
 PowerWizFireball::PowerWizFireball(SDL_FPoint c, WizardId target,
                                    const Data& data)
-    : Fireball(c, target, IMG, .65),
+    : Fireball(c, target, IMG, data.speed),
       mSizeSum(data.sizeFactor),
       mPower(data.power),
       mDuration(data.duration) {

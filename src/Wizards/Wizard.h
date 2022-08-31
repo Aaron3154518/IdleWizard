@@ -56,6 +56,8 @@ class Wizard : public WizardBase {
 
     Number calcPower();
     Number calcSpeed();
+    Number calcFBSpeed();
+    Number calcFBSpeedEffect();
     void calcTimer();
     Number calcCrit();
     Number calcCritSpread();

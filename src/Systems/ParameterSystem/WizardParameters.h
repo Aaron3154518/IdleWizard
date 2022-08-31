@@ -15,6 +15,7 @@ enum B : param_t {
     BaseCrit,
     BaseCritSpread,
     BaseSpeed,
+    BaseFBSpeed,
 
     PowerWizEffect,
 
@@ -36,6 +37,8 @@ enum N : param_t {
     CritUpCost,
 
     Speed,
+    FBSpeed,
+    FBSpeedEffect,
 
     MultiUp,
     MultiUpCost,
@@ -82,6 +85,7 @@ namespace PowerWizardParams {
 enum B : param_t {
     BasePower = 0,
     BaseSpeed,
+    BaseFBSpeed,
 
     Duration,
 
@@ -95,6 +99,7 @@ enum N : param_t {
     FireRingEffect,
 
     Speed,
+    FBSpeed,
 };
 }  // namespace PowerWizardParams
 namespace TimeWizardParams {
@@ -107,6 +112,7 @@ enum B : param_t {
 
     FreezeUpLvl,
     SpeedUpLvl,
+    FBSpeedUpLvl,
 };
 
 enum N : param_t {
@@ -119,6 +125,9 @@ enum N : param_t {
     FreezeUp,
     FreezeUpCost,
     ClockSpeed,
+
+    FBSpeedUp,
+    FBSpeedCost,
 };
 }  // namespace TimeWizardParams
 

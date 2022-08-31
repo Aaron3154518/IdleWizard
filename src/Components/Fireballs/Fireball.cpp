@@ -2,7 +2,7 @@
 
 // Fireball
 const int Fireball::COLLIDE_ERR = 10;
-const int Fireball::MAX_SPEED = 1000;
+const int Fireball::MAX_SPEED = 150;
 
 const Rect Fireball::IMG_RECT(0, 0, 40, 40);
 

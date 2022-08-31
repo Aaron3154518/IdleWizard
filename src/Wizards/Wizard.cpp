@@ -18,6 +18,7 @@ void Wizard::setDefaults() {
     params[WizardParams::BaseCritSpread]->init(0);
     params[WizardParams::BasePower]->init(1);
     params[WizardParams::BaseSpeed]->init(.5);
+    params[WizardParams::BaseFBSpeed]->init(1);
     params[WizardParams::BaseCrit]->init(1);
     params[WizardParams::PowerWizEffect]->init(1);
 
@@ -68,9 +69,25 @@ void Wizard::setUpgrades() {
     // Power Display
     DisplayPtr dUp = std::make_shared<Display>();
     dUp->setImage(mId);
-    dUp->setDescription({"Power"});
-    dUp->setEffect(params[WizardParams::Power],
-                   Upgrade::Defaults::MultiplicativeEffect);
+    dUp->setEffects({params[WizardParams::Power], params[WizardParams::FBSpeed],
+                     params[WizardParams::FBSpeedEffect]},
+                    {}, []() -> TextUpdateData {
+                        ParameterSystem::Params<WIZARD> params;
+                        std::stringstream ss;
+                        ss << "Power: "
+                           << Upgrade::Defaults::MultiplicativeEffect(
+                                  params[WizardParams::Power].get())
+                                  .text
+                           << "\n{i} Speed: "
+                           << Upgrade::Defaults::MultiplicativeEffect(
+                                  params[WizardParams::FBSpeed].get())
+                                  .text
+                           << ", {b}Power : "
+                           << Upgrade::Defaults::MultiplicativeEffect(
+                                  params[WizardParams::FBSpeedEffect].get())
+                                  .text;
+                        return {ss.str(), {WizardFireball::GetIcon()}};
+                    });
     mPowerDisplay = mUpgrades->subscribe(dUp);
 
     // Target Upgrade
@@ -95,9 +112,10 @@ void Wizard::setUpgrades() {
     up->setDescription({"Increase Wizard base power by 1"});
     up->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
                 params[WizardParams::PowerUpCost],
-                [](const Number& lvl) { return 25 * (1.75 ^ lvl); });
+                [](const Number& lvl) { return 25 * (1.55 ^ lvl); });
     up->setEffect(
-        params[WizardParams::PowerUp], [](const Number& lvl) { return lvl; },
+        params[WizardParams::PowerUp],
+        [](const Number& lvl) { return min(lvl, 5) + 2 * max(lvl - 5, 0); },
         Upgrade::Defaults::AdditiveEffect);
     mPowerUp = mUpgrades->subscribe(up);
 
@@ -155,6 +173,15 @@ void Wizard::setParamTriggers() {
         {params[WizardParams::BaseSpeed],
          timeParams[TimeWizardParams::SpeedEffect]},
         {}, [this]() { return calcSpeed(); }));
+
+    mParamSubs.push_back(params[WizardParams::FBSpeed].subscribeTo(
+        {params[WizardParams::BaseFBSpeed],
+         timeParams[TimeWizardParams::FBSpeedUp]},
+        {}, [this]() { return calcFBSpeed(); }));
+
+    mParamSubs.push_back(params[WizardParams::FBSpeedEffect].subscribeTo(
+        {params[WizardParams::FBSpeed]}, {},
+        [this]() { return calcFBSpeedEffect(); }));
 
     mParamSubs.push_back(
         params[WizardParams::Speed].subscribe([this]() { calcTimer(); }));
@@ -361,6 +388,27 @@ Number Wizard::calcSpeed() {
            timeParams[TimeWizardParams::SpeedEffect].get();
 }
 
+Number Wizard::calcFBSpeed() {
+    ParameterSystem::Params<WIZARD> params;
+    ParameterSystem::Params<TIME_WIZARD> timeParams;
+
+    return params[WizardParams::BaseFBSpeed].get() *
+           timeParams[TimeWizardParams::FBSpeedUp].get();
+}
+
+Number Wizard::calcFBSpeedEffect() {
+    ParameterSystem::Params<WIZARD> params;
+    Number fbSpeed = params[WizardParams::FBSpeed].get();
+
+    if (fbSpeed == 0) {
+        return 1;
+    }
+
+    Number twoFbSpeed = 2 * fbSpeed;
+
+    return fbSpeed * (twoFbSpeed ^ (twoFbSpeed - 2));
+}
+
 void Wizard::calcTimer() {
     ParameterSystem::Params<WIZARD> params;
 
@@ -386,10 +434,12 @@ Number Wizard::calcCritSpread() {
 
 WizardFireball::Data Wizard::newFireballData() {
     ParameterSystem::Params<WIZARD> params;
-    Number power = params[WizardParams::Power].get();
+    Number power = params[WizardParams::Power].get() *
+                   params[WizardParams::FBSpeedEffect].get();
+    float speed = params[WizardParams::FBSpeed].get().toFloat();
 
     if (params[WizardParams::CritUpLvl].get() == 0) {
-        return {power, 1.0};
+        return {power, 1, speed};
     }
 
     float frac = rDist(gen);
@@ -397,7 +447,8 @@ WizardFireball::Data Wizard::newFireballData() {
         frac = std::numeric_limits<float>::min();
     }
     frac = (frac ^ params[WizardParams::CritSpread].get()).toFloat() + .5;
-    return {power * (params[WizardParams::Crit].get() * frac), powf(frac, .25)};
+    return {power * (params[WizardParams::Crit].get() * frac), powf(frac, .25),
+            speed};
 }
 
 void Wizard::setPos(float x, float y) {

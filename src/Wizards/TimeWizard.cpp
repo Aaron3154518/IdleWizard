@@ -15,10 +15,11 @@ void TimeWizard::setDefaults() {
 
     params[TimeWizardParams::SpeedBaseEffect]->init(1.5);
     params[TimeWizardParams::FreezeBaseEffect]->init(1.1);
-    params[TimeWizardParams::FreezeDelay]->init(10000);
+    params[TimeWizardParams::FreezeDelay]->init(100000);
     params[TimeWizardParams::FreezeDuration]->init(5000);
 
     params[TimeWizardParams::SpeedUpLvl]->init(ResetTier::T1);
+    params[TimeWizardParams::FBSpeedUpLvl]->init(ResetTier::T1);
     params[TimeWizardParams::FreezeUpLvl]->init(ResetTier::T1);
 
     ParameterSystem::States states;
@@ -102,11 +103,25 @@ void TimeWizard::setUpgrades() {
         });
     mActiveUp = mUpgrades->subscribe(mActiveToggle);
 
-    // Freeze upgrade
+    // Fireball Speed upgrade
     UpgradePtr up =
-        std::make_shared<Upgrade>(params[TimeWizardParams::FreezeUpLvl], 8);
+        std::make_shared<Upgrade>(params[TimeWizardParams::FBSpeedUpLvl], 6);
+    up->setImage("");
+    up->setDescription(
+        {"Increase fireball speed *1.075\nHigher speed gives more power"});
+    up->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
+                params[TimeWizardParams::FBSpeedCost],
+                [](const Number& lvl) { return 100 * (2.5 ^ lvl); });
+    up->setEffect(
+        params[TimeWizardParams::FBSpeedUp],
+        [](const Number& lvl) { return 1.075 ^ lvl; },
+        Upgrade::Defaults::MultiplicativeEffect);
+    mFBSpeedUp = mUpgrades->subscribe(up);
+
+    // Freeze upgrade
+    up = std::make_shared<Upgrade>(params[TimeWizardParams::FreezeUpLvl], 8);
     up->setImage(FREEZE_UP_IMG);
-    up->setDescription({"Multiply unfreeze boost exponent by 1.2"});
+    up->setDescription({"Multiply unfreeze boost exponent by 1.03"});
     up->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
                 params[TimeWizardParams::FreezeUpCost],
                 [](const Number& lvl) { return 150 * (1.6 ^ lvl); });
@@ -278,7 +293,12 @@ Number TimeWizard::calcSpeedEffect() {
 Number TimeWizard::calcCost() {
     ParameterSystem::Params<TIME_WIZARD> params;
     Number effect = params[TimeWizardParams::SpeedEffect].get();
-    return (effect - 1) / 50;
+    Number result = min(effect - 1, .5) / 50;
+    effect -= 1.5;
+    if (effect > 0) {
+        result += effect / 100;
+    }
+    return result;
 }
 
 Number TimeWizard::calcClockSpeed() {

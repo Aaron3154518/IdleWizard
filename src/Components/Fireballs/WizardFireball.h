@@ -16,7 +16,7 @@ class WizardFireball : public Fireball {
    public:
     struct Data {
         Number power;
-        float sizeFactor;
+        float sizeFactor = 1, speed = 1;
     };
 
     typedef TargetSystem::TargetObservable<const WizardFireball&> HitObservable;
@@ -36,6 +36,8 @@ class WizardFireball : public Fireball {
     void applyTimeEffect(const Number& effect);
 
     const static AnimationData IMG, POW_IMG;
+
+    static const RenderDataPtr& GetIcon();
 
    private:
     void init();

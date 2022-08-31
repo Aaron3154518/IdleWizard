@@ -15,7 +15,7 @@ class PowerWizFireball : public Fireball {
    public:
     struct Data {
         Number power, duration;
-        int sizeFactor;
+        int sizeFactor = 1, speed = .65;
     };
 
     typedef TargetSystem::TargetObservable<const PowerWizFireball&>
@@ -24,6 +24,8 @@ class PowerWizFireball : public Fireball {
     class Service : public ::Service<HitObservable> {};
 
     static std::shared_ptr<HitObservable> GetHitObservable();
+
+    static const RenderDataPtr& GetIcon();
 
    public:
     PowerWizFireball(SDL_FPoint c, WizardId target, const Data& data);

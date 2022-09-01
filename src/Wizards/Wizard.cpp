@@ -65,6 +65,8 @@ void Wizard::setSubscriptions() {
         POWER_BKGRND);
     mT1ResetSub = WizardSystem::GetWizardEventObservable()->subscribe(
         [this]() { onT1Reset(); }, WizardSystem::Event::ResetT1);
+    mTimeWarpSub = WizardSystem::GetWizardEventObservable()->subscribe(
+        [this]() { onTimeWarp(); }, WizardSystem::Event::TimeWarp);
     attachSubToVisibility(mFireballTimerSub);
     attachSubToVisibility(mPowFireballHitSub);
 }
@@ -283,7 +285,7 @@ bool Wizard::onTimer(Timer& timer) {
 }
 
 void Wizard::onPowFireballHit(const PowerWizFireball& fireball) {
-    Number power = fireball.power(), duration = fireball.duration();
+    Number power = fireball.getPower(), duration = fireball.getDuration();
     for (auto it = mPowWizBoosts.begin(), end = mPowWizBoosts.end();
          duration > 0 && it != end; ++it) {
         if (power >= it->first) {  // Replace current
@@ -355,6 +357,13 @@ void Wizard::onTimeFreeze(bool frozen) {
                 .get();
         mFreezeFireball->applyTimeEffect(freezeEffect);
         mFireballs.push_back(std::move(mFreezeFireball));
+    }
+}
+
+void Wizard::onTimeWarp() {
+    for (auto& fireball : mFireballs) {
+        fireball->setSpeed(fireball->getSpeed() * 10);
+        fireball->setPower(fireball->getPower() * 10);
     }
 }
 

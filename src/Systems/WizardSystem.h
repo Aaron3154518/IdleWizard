@@ -45,6 +45,8 @@ enum Event : uint8_t {
     NoReset = 0,
     ResetT1,
     ResetT2,
+
+    TimeWarp,
 };
 
 typedef TargetSystem::TargetObservable<Event> WizardEventObservableBase;

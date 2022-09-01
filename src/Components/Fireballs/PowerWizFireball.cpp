@@ -40,9 +40,13 @@ void PowerWizFireball::init() { Fireball::init(); }
 
 void PowerWizFireball::onDeath() { GetHitObservable()->next(mTargetId, *this); }
 
-Number PowerWizFireball::power() const { return mPower; }
+const Number& PowerWizFireball::getPower() const { return mPower; }
+void PowerWizFireball::setPower(const Number& pow) { mPower = pow; }
 
-Number PowerWizFireball::duration() const { return mDuration; }
+const Number& PowerWizFireball::getDuration() const { return mDuration; }
+void PowerWizFireball::setDuration(const Number& duration) {
+    mDuration = duration;
+}
 
 void PowerWizFireball::addFireball(const Data& data) {
     mFireballFreezeCnt++;

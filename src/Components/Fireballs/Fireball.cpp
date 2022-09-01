@@ -66,6 +66,9 @@ void Fireball::setSize(float size) {
     mPos->rect = mImg.getDest();
 }
 
+float Fireball::getSpeed() const { return mMaxSpeed; }
+void Fireball::setSpeed(float speed) { mMaxSpeed = speed; }
+
 void Fireball::setPos(float x, float y) {
     Rect imgR = mImg.getRect();
     imgR.setPos(x, y, Rect::Align::CENTER);

@@ -106,7 +106,7 @@ void Catalyst::setParamTriggers() {
 void Catalyst::onWizFireballHit(const WizardFireball& fireball) {
     ParameterSystem::Params<CATALYST> params;
     auto magic = params[CatalystParams::Magic];
-    magic.set(max(0, min(magic.get() + fireball.power(),
+    magic.set(max(0, min(magic.get() + fireball.getPower(),
                          params[CatalystParams::Capacity].get())));
 }
 

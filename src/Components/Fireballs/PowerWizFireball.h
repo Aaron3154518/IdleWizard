@@ -31,8 +31,11 @@ class PowerWizFireball : public Fireball {
    public:
     PowerWizFireball(SDL_FPoint c, WizardId target, const Data& data);
 
-    Number power() const;
-    Number duration() const;
+    const Number& getPower() const;
+    void setPower(const Number& pow);
+
+    const Number& getDuration() const;
+    void setDuration(const Number& duration);
 
     void addFireball(const Data& data);
 

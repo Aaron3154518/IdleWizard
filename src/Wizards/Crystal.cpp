@@ -250,12 +250,12 @@ void Crystal::onT1Reset() { mFireRings.clear(); }
 
 void Crystal::onWizFireballHit(const WizardFireball& fireball) {
     auto magic = ParameterSystem::Param<CRYSTAL>(CrystalParams::Magic);
-    magic.set(magic.get() + fireball.power());
-    addMessage("+" + fireball.power().toString());
+    magic.set(magic.get() + fireball.getPower());
+    addMessage("+" + fireball.getPower().toString());
 }
 
 void Crystal::onPowFireballHit(const PowerWizFireball& fireball) {
-    createFireRing(fireball.power());
+    createFireRing(fireball.getPower());
 }
 
 Number Crystal::calcMagicEffect() {

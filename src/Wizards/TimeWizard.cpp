@@ -15,7 +15,7 @@ void TimeWizard::setDefaults() {
 
     params[TimeWizardParams::SpeedBaseEffect]->init(1.5);
     params[TimeWizardParams::FreezeBaseEffect]->init(1.1);
-    params[TimeWizardParams::FreezeDelay]->init(10000);
+    params[TimeWizardParams::FreezeDelay]->init(100000);
     params[TimeWizardParams::FreezeDuration]->init(5000);
 
     params[TimeWizardParams::SpeedUpLvl]->init(Event::ResetT1);
@@ -59,6 +59,11 @@ void TimeWizard::setSubscriptions() {
             IMG);
     mT1ResetSub = WizardSystem::GetWizardEventObservable()->subscribe(
         [this]() { onT1Reset(); }, WizardSystem::Event::ResetT1);
+    mPowFireballHitSub = PowerWizFireball::GetHitObservable()->subscribe(
+        [this](const PowerWizFireball& fireball) {
+            onPowFireballHit(fireball);
+        },
+        mId);
     attachSubToVisibility(mCostTimerSub);
 }
 void TimeWizard::setUpgrades() {
@@ -293,6 +298,11 @@ void TimeWizard::onFreezeChange(bool frozen) {
         }
     }
     updateImg();
+}
+
+void TimeWizard::onPowFireballHit(const PowerWizFireball& fireball) {
+    WizardSystem::GetWizardEventObservable()->next(
+        WizardSystem::Event::TimeWarp);
 }
 
 Number TimeWizard::calcFreezeEffect() {

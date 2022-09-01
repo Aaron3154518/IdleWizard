@@ -1,6 +1,7 @@
 #ifndef TIME_WIZARD_H
 #define TIME_WIZARD_H
 
+#include <Components/Fireballs/PowerWizFireball.h>
 #include <Components/TimeWizClock.h>
 #include <Components/Upgrade.h>
 #include <RenderSystem/AssetManager.h>
@@ -43,6 +44,7 @@ class TimeWizard : public WizardBase {
     void onHide(WizardId id, bool hide);
     void onT1Reset();
     void onFreezeChange(bool frozen);
+    void onPowFireballHit(const PowerWizFireball& fireball);
 
     Number calcFreezeEffect();
     Number calcSpeedEffect();
@@ -56,6 +58,7 @@ class TimeWizard : public WizardBase {
     bool mActive = false;
 
     WizardSystem::WizardEventObservable::IdSubscriptionPtr mT1ResetSub;
+    PowerWizFireball::HitObservable::IdSubscriptionPtr mPowFireballHitSub;
     TimerObservable::SubscriptionPtr mCostTimerSub, mFreezeDelaySub,
         mFreezeTimerSub, mAnimTimerSub;
     UpgradeList::SubscriptionPtr mEffectDisplay, mActiveUp, mFBSpeedUp,

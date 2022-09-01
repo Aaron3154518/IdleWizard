@@ -37,6 +37,9 @@ class Fireball : public Component {
     float getSize() const;
     void setSize(float size);
 
+    float getSpeed() const;
+    void setSpeed(float speed);
+
     void setPos(float x, float y);
 
     WizardId getTargetId() const;

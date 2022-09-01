@@ -62,7 +62,7 @@ class PowerWizard : public WizardBase {
 
     PowerWizFireballPtr mFreezeFireball;
     std::vector<PowerWizFireballPtr> mFireballs;
-    int mWizTargetCnt = 0, mCrysTargetCnt = 0;
+    std::unordered_map<WizardId, int> mTargets;
 };
 
 #endif

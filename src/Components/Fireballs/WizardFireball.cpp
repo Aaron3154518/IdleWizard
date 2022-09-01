@@ -69,7 +69,8 @@ void WizardFireball::onDeath() {
     GetHitObservable()->next(mTargetId, *this);
 }
 
-Number WizardFireball::power() const { return mPower; }
+const Number& WizardFireball::getPower() const { return mPower; }
+void WizardFireball::setPower(const Number& pow) { mPower = pow; }
 
 void WizardFireball::addFireball(const Data& data) {
     mPower += data.power;

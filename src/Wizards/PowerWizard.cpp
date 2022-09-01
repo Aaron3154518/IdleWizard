@@ -25,6 +25,8 @@ void PowerWizard::init() {
     mPos->rect = mImg.getDest();
     WizardSystem::GetWizardImageObservable()->next(mId, mImg);
 
+    mTargets = {{WIZARD, 0}, {CRYSTAL, 0}};
+
     WizardBase::init();
 }
 void PowerWizard::setSubscriptions() {
@@ -130,6 +132,20 @@ void PowerWizard::setParamTriggers() {
         states[State::BoughtPowerWizard].subscribe([this](bool bought) {
             WizardSystem::GetHideObservable()->next(mId, !bought);
         }));
+
+    mParamSubs.push_back(
+        states[State::BoughtTimeWizard].subscribe([this](bool bought) {
+            if (!bought) {
+                mTargets[TIME_WIZARD] = -1;
+            } else {
+                mTargets[TIME_WIZARD] = 0;
+                for (auto& pair : mTargets) {
+                    if (pair.second > 0) {
+                        pair.second = 0;
+                    }
+                }
+            }
+        }));
 }
 
 void PowerWizard::onRender(SDL_Renderer* r) {
@@ -211,21 +227,37 @@ void PowerWizard::shootFireball(SDL_FPoint target) {
 }
 
 WizardId PowerWizard::getTarget() {
-    int sum = mWizTargetCnt + mCrysTargetCnt;
+    const static int CNT = 2;
+
+    int sum = 0;
+    for (auto& pair : mTargets) {
+        if (pair.second > 0) {
+            sum += pair.second;
+        }
+    }
+
     if (sum == 0) {
-        mWizTargetCnt = mCrysTargetCnt = 4;
-        sum = mWizTargetCnt + mCrysTargetCnt;
+        for (auto& pair : mTargets) {
+            if (pair.second >= 0) {
+                pair.second = CNT;
+                sum += pair.second;
+            }
+        }
     }
+
     int num = (int)(rDist(gen) * sum);
-    if (num < mWizTargetCnt) {
-        mWizTargetCnt--;
-        return WIZARD;
+
+    for (auto& pair : mTargets) {
+        if (pair.second > 0) {
+            if (num < pair.second) {
+                pair.second--;
+                return pair.first;
+            }
+            num -= pair.second;
+        }
     }
-    num -= mWizTargetCnt;
-    if (num < mCrysTargetCnt) {
-        mCrysTargetCnt--;
-        return CRYSTAL;
-    }
+
+    return CRYSTAL;
 }
 
 PowerWizFireball::Data PowerWizard::newFireballData(WizardId target) {

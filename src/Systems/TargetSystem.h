@@ -4,22 +4,21 @@
 #include <ServiceSystem/Observable.h>
 #include <Wizards/WizardIds.h>
 
+#include <type_traits>
+
 namespace TargetSystem {
-// Observable for triggering events for a specific wizard
-template <class T, class... Ts>
+// Observable for triggering events for a specific type
+template <class IdT, class... Ts>
 class TargetObservable : public ObservableBase {
    public:
-    typedef std::function<void(const T&, const Ts&...)> IdSubscriptionFunc;
-    typedef std::function<void(WizardId, const T&, const Ts&...)>
-        AllSubscriptionFunc;
+    typedef std::function<void(const Ts&...)> IdSubscriptionFunc;
+    typedef std::function<void(IdT, const Ts&...)> AllSubscriptionFunc;
 
-    class IdObservable
-        : public Observable<void(const T&, const Ts&...), WizardId> {
-        friend class TargetObservable<T, Ts...>;
+    class IdObservable : public Observable<void(const Ts&...), IdT> {
+        friend class TargetObservable<IdT, Ts...>;
     };
-    class AllObservable
-        : public Observable<void(WizardId, const T&, const Ts&...)> {
-        friend class TargetObservable<T, Ts...>;
+    class AllObservable : public Observable<void(IdT, const Ts&...)> {
+        friend class TargetObservable<IdT, Ts...>;
     };
 
     typedef typename IdObservable::SubscriptionPtr IdSubscriptionPtr;
@@ -29,7 +28,7 @@ class TargetObservable : public ObservableBase {
 
     virtual ~TargetObservable() = default;
 
-    IdSubscriptionPtr subscribe(IdSubscriptionFunc func, WizardId id) {
+    IdSubscriptionPtr subscribe(IdSubscriptionFunc func, IdT id) {
         return mIdObservable.subscribe(func, id);
     }
 
@@ -37,14 +36,14 @@ class TargetObservable : public ObservableBase {
         return mAllObservable.subscribe(func);
     }
 
-    void next(WizardId target, const T& t, const Ts&... args) {
+    virtual void next(IdT target, const Ts&... args) {
         for (auto sub : mIdObservable) {
             if (sub->template get<DATA>() == target) {
-                sub->template get<FUNC>()(t, args...);
+                sub->template get<FUNC>()(args...);
             }
         }
         for (auto sub : mAllObservable) {
-            sub->template get<FUNC>()(target, t, args...);
+            sub->template get<FUNC>()(target, args...);
         }
     }
 
@@ -53,35 +52,38 @@ class TargetObservable : public ObservableBase {
     AllObservable mAllObservable;
 };
 
-template <class T>
-class TargetDataObservable : public TargetObservable<T> {
+template <class IdT, class T>
+class TargetDataObservable : public TargetObservable<IdT, T> {
    public:
-    using typename TargetObservable<T>::IdSubscriptionFunc;
-    using typename TargetObservable<T>::AllSubscriptionFunc;
-    using typename TargetObservable<T>::IdSubscriptionPtr;
-    using typename TargetObservable<T>::AllSubscriptionPtr;
+    typedef TargetObservable<IdT, T> Base;
+    using typename Base::AllSubscriptionFunc;
+    using typename Base::AllSubscriptionPtr;
+    using typename Base::IdSubscriptionFunc;
+    using typename Base::IdSubscriptionPtr;
 
-    IdSubscriptionPtr subscribe(IdSubscriptionFunc func, WizardId id) {
+    virtual ~TargetDataObservable() = default;
+
+    IdSubscriptionPtr subscribe(IdSubscriptionFunc func, IdT id) {
         func(mData[id]);
-        return TargetObservable<T>::subscribe(func, id);
+        return Base::subscribe(func, id);
     }
 
     AllSubscriptionPtr subscribeToAll(AllSubscriptionFunc func) {
         for (auto pair : mData) {
             func(pair.first, pair.second);
         }
-        return TargetObservable<T>::subscribeToAll(func);
+        return Base::subscribeToAll(func);
     }
 
-    void next(WizardId target, const T& t) {
+    virtual void next(IdT target, const T& t) {
         mData[target] = t;
-        TargetObservable<T>::next(target, t);
+        Base::next(target, t);
     }
 
-    const T& get(WizardId target) { return mData[target]; }
+    const T& get(IdT target) { return mData[target]; }
 
    private:
-    std::unordered_map<WizardId, T> mData;
+    std::unordered_map<IdT, T> mData;
 };
 }  // namespace TargetSystem
 

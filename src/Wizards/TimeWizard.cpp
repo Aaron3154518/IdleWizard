@@ -9,7 +9,7 @@ const std::string TimeWizard::FREEZE_UP_IMG =
 const std::string TimeWizard::SPEED_UP_IMG = "res/upgrades/speed_upgrade.png";
 
 void TimeWizard::setDefaults() {
-    using WizardSystem::ResetTier;
+    using WizardSystem::Event;
 
     ParameterSystem::Params<TIME_WIZARD> params;
 
@@ -18,14 +18,15 @@ void TimeWizard::setDefaults() {
     params[TimeWizardParams::FreezeDelay]->init(10000);
     params[TimeWizardParams::FreezeDuration]->init(5000);
 
-    params[TimeWizardParams::SpeedUpLvl]->init(ResetTier::T1);
-    params[TimeWizardParams::FBSpeedUpLvl]->init(ResetTier::T1);
-    params[TimeWizardParams::FreezeUpLvl]->init(ResetTier::T1);
-    params[TimeWizardParams::BoostWizSpdUpLvl]->init(ResetTier::T1);
+    params[TimeWizardParams::SpeedUpLvl]->init(Event::ResetT1);
+    params[TimeWizardParams::FBSpeedUpLvl]->init(Event::ResetT1);
+    params[TimeWizardParams::FreezeUpLvl]->init(Event::ResetT1);
+    params[TimeWizardParams::BoostWizSpdUpLvl]->init(Event::ResetT1);
 
     ParameterSystem::States states;
 
-    states[State::TimeWizActive]->init(false, ResetTier::T1);
+    states[State::TimeWizActive]->init(false, Event::ResetT1);
+    states[State::TimeWizFrozen]->init(false, Event::ResetT1);
 }
 
 TimeWizard::TimeWizard() : WizardBase(TIME_WIZARD) {}
@@ -56,6 +57,8 @@ void TimeWizard::setSubscriptions() {
                 return true;
             },
             IMG);
+    mT1ResetSub = WizardSystem::GetWizardEventObservable()->subscribe(
+        [this]() { onT1Reset(); }, WizardSystem::Event::ResetT1);
     attachSubToVisibility(mCostTimerSub);
 }
 void TimeWizard::setUpgrades() {
@@ -203,6 +206,9 @@ void TimeWizard::setParamTriggers() {
         states[State::BoughtTimeWizard].subscribe([this](bool bought) {
             WizardSystem::GetHideObservable()->next(mId, !bought);
         }));
+
+    mParamSubs.push_back(states[State::TimeWizFrozen].subscribe(
+        [this](bool frozen) { onFreezeChange(frozen); }));
 }
 
 bool TimeWizard::onCostTimer(Timer& timer) {
@@ -232,63 +238,60 @@ void TimeWizard::onHide(WizardId id, bool hide) {
     WizardBase::onHide(id, hide);
     if (id == mId) {
         if (hide) {
-            ParameterSystem::Param(State::TimeWizFrozen).set(false);
-            mFreezeDelaySub.reset();
-            mFreezeTimerSub.reset();
             mActiveToggle->setLevel(0);
-        } else {
-            startFreezeCycle();
         }
+        ParameterSystem::Param(State::TimeWizFrozen).set(false);
     }
 }
 
-void TimeWizard::onReset(WizardSystem::ResetTier tier) {
+void TimeWizard::onT1Reset() {
     if (mCostTimerSub) {
         mCostTimerSub->get<TimerObservable::DATA>().reset();
     }
 }
 
-bool TimeWizard::startFreeze(Timer& timer) {
-    ParameterSystem::Param(State::TimeWizFrozen).set(true);
-    mTimeLock = TimeSystem::GetUpdateObservable()->requestLock();
-    mFreezeTimerSub =
-        ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
-            [this](Timer& t) { return endFreeze(t); },
-            [this](Time dt, Timer& timer) { onFreezeTimer(dt, timer); },
-            Timer(ParameterSystem::Param<TIME_WIZARD>(
-                      TimeWizardParams::FreezeDuration)
-                      .get()
-                      .toFloat()));
-    mFreezePb.mColor = CYAN;
-    updateImg();
-    mTClock = ComponentFactory<TimeWizClock>::New(mPos->rect);
-    return false;
-}
-
-void TimeWizard::onFreezeTimer(Time dt, Timer& timer) {
-    mFreezePb.set(1 - timer.getPercent());
-}
-
-bool TimeWizard::endFreeze(Timer& timer) {
-    ParameterSystem::Param(State::TimeWizFrozen).set(false);
-    TimeSystem::GetUpdateObservable()->releaseLock(mTimeLock);
-    mTClock.reset();
-    startFreezeCycle();
-    return false;
-}
-
-void TimeWizard::startFreezeCycle() {
-    mFreezeDelaySub =
-        ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
-            [this](Timer& t) { return startFreeze(t); },
-            [this](Time dt, Timer& timer) {
-                mFreezePb.set(timer.getPercent());
-            },
-            Timer(ParameterSystem::Param<TIME_WIZARD>(
-                      TimeWizardParams::FreezeDelay)
-                      .get()
-                      .toFloat()));
-    mFreezePb.mColor = BLUE;
+void TimeWizard::onFreezeChange(bool frozen) {
+    mFreezeDelaySub.reset();
+    mFreezeTimerSub.reset();
+    if (frozen) {
+        mFreezePb.mColor = CYAN;
+        mTClock = ComponentFactory<TimeWizClock>::New(mPos->rect);
+        mTimeLock = TimeSystem::GetUpdateObservable()->requestLock();
+        if (!mHidden) {
+            mFreezeTimerSub =
+                ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
+                    [this](Timer& t) {
+                        ParameterSystem::Param(State::TimeWizFrozen).set(false);
+                        return false;
+                    },
+                    [this](Time dt, Timer& timer) {
+                        mFreezePb.set(1 - timer.getPercent());
+                    },
+                    Timer(ParameterSystem::Param<TIME_WIZARD>(
+                              TimeWizardParams::FreezeDuration)
+                              .get()
+                              .toFloat()));
+        }
+    } else {
+        mFreezePb.mColor = BLUE;
+        mTClock.reset();
+        TimeSystem::GetUpdateObservable()->releaseLock(mTimeLock);
+        if (!mHidden) {
+            mFreezeDelaySub =
+                ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
+                    [this](Timer& t) {
+                        ParameterSystem::Param(State::TimeWizFrozen).set(true);
+                        return false;
+                    },
+                    [this](Time dt, Timer& timer) {
+                        mFreezePb.set(timer.getPercent());
+                    },
+                    Timer(ParameterSystem::Param<TIME_WIZARD>(
+                              TimeWizardParams::FreezeDelay)
+                              .get()
+                              .toFloat()));
+        }
+    }
     updateImg();
 }
 

@@ -7,13 +7,13 @@ const SDL_Color Crystal::MSG_COLOR{200, 0, 175, 255};
 const AnimationData Crystal::IMG{"res/wizards/crystal_ss.png", 13, 100};
 
 void Crystal::setDefaults() {
-    using WizardSystem::ResetTier;
+    using WizardSystem::Event;
 
     ParameterSystem::Params<CRYSTAL> params;
 
     // Default 0
-    params[CrystalParams::Magic]->init(0, ResetTier::T1);
-    params[CrystalParams::Shards]->init(0, ResetTier::T2);
+    params[CrystalParams::Magic]->init(0, Event::ResetT1);
+    params[CrystalParams::Shards]->init(0, Event::ResetT2);
 
     params[CrystalParams::WizardCntUpCost]->init(Number(2, 3));
     params[CrystalParams::CatalystCost]->init(1);
@@ -21,10 +21,10 @@ void Crystal::setDefaults() {
     ParameterSystem::States states;
 
     states[State::ResetT1]->init(false);
-    states[State::BoughtCatWizCntUp]->init(false, ResetTier::T1);
-    states[State::BoughtPowerWizard]->init(false, ResetTier::T1);
-    states[State::BoughtTimeWizard]->init(false, ResetTier::T1);
-    states[State::BoughtCatalyst]->init(false, ResetTier::T2);
+    states[State::BoughtCatWizCntUp]->init(false, Event::ResetT1);
+    states[State::BoughtPowerWizard]->init(false, Event::ResetT1);
+    states[State::BoughtTimeWizard]->init(false, Event::ResetT1);
+    states[State::BoughtCatalyst]->init(false, Event::ResetT2);
 }
 
 Crystal::Crystal() : WizardBase(CRYSTAL) {}
@@ -66,6 +66,8 @@ void Crystal::setSubscriptions() {
             return true;
         },
         IMG);
+    mT1ResetSub = WizardSystem::GetWizardEventObservable()->subscribe(
+        [this]() { onT1Reset(); }, WizardSystem::Event::ResetT1);
     attachSubToVisibility(mUpdateSub);
     attachSubToVisibility(mWizFireballHitSub);
     attachSubToVisibility(mPowFireballHitSub);
@@ -226,7 +228,7 @@ void Crystal::onClick(Event::MouseButton b, bool clicked) {
         auto param = ParameterSystem::Param<CRYSTAL>(CrystalParams::Magic);
         param.set(param.get() * 3);
         if (param.get() > Number(1, 6)) {
-            // triggerT1Reset();
+            triggerT1Reset();
         }
     }
     addMagic = clicked;
@@ -244,7 +246,7 @@ void Crystal::onHide(WizardId id, bool hide) {
     }
 }
 
-void Crystal::onReset(WizardSystem::ResetTier tier) { mFireRings.clear(); }
+void Crystal::onT1Reset() { mFireRings.clear(); }
 
 void Crystal::onWizFireballHit(const WizardFireball& fireball) {
     auto magic = ParameterSystem::Param<CRYSTAL>(CrystalParams::Magic);
@@ -339,7 +341,8 @@ void Crystal::triggerT1Reset() {
     auto shardGain = ParameterSystem::Param<CRYSTAL>(CrystalParams::ShardGain);
     shards.set(shards.get() + shardGain.get());
 
-    WizardSystem::Reset(WizardSystem::ResetTier::T1);
+    WizardSystem::GetWizardEventObservable()->next(
+        WizardSystem::Event::ResetT1);
 
     auto resetT1 = ParameterSystem::Param(State::ResetT1);
     if (!resetT1.get()) {

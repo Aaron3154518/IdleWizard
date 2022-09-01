@@ -81,6 +81,13 @@ void UpgradeList::draw(TextureBuilder tex, float scroll, SDL_Point offset) {
     }
     if (recompute) {
         computeRects();
+    } else {
+        // Upgrade order may have changed so reassign to rects
+        int i = 0;
+        for (auto sub : *this) {
+            auto map = mIdxMap.at(i++);
+            (map.first ? mFrontRects : mBackRects).at(map.second).second = sub;
+        }
     }
 
     auto drawUpgrade = [this, &tex, offset](Rect r, SubscriptionPtr sub) {
@@ -151,7 +158,8 @@ void UpgradeList::computeRects() {
     float cX = mRect.halfW();
     float cY = mRect.halfH() - w / 4;
 
-    std::vector<float> rectAngles(getNumActive());
+    int num = getNumActive();
+    std::vector<float> rectAngles(num);
     int backLen = 0, frontLen = 0;
 
     for (int i = NUM_STEPS; i >= 0; i--) {
@@ -187,11 +195,15 @@ void UpgradeList::computeRects() {
 
     mBackRects.resize(backLen);
     mFrontRects.resize(frontLen);
+    mIdxMap.resize(backLen + frontLen);
     int i = 0, bIdx = 0, fIdx = 0;
     for (auto sub : *this) {
-        float angle = rectAngles[i++];
-        (angle < M_PI ? mBackRects.at(bIdx++) : mFrontRects.at(fIdx++)) =
+        float angle = rectAngles[i];
+        bool back = angle < M_PI;
+        mIdxMap.at(i) = std::make_pair(!back, back ? bIdx : fIdx);
+        (back ? mBackRects.at(bIdx++) : mFrontRects.at(fIdx++)) =
             std::make_pair(getRect(angle), sub);
+        i++;
     }
 }
 

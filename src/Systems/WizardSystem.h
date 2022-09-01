@@ -26,36 +26,38 @@ bool Hidden(WizardId id);
 std::shared_ptr<HideObservable> GetHideObservable();
 
 // For handling wizard animations/images
-typedef TargetSystem::TargetDataObservable<RenderData> WizardImageObservable;
+typedef TargetSystem::TargetDataObservable<WizardId, RenderData>
+    WizardImageObservable;
 
 const RenderData& GetWizardImage(WizardId id);
 
 std::shared_ptr<WizardImageObservable> GetWizardImageObservable();
 
 // For handling wizard positions
-typedef TargetSystem::TargetDataObservable<SDL_FPoint> WizardPosObservable;
+typedef TargetSystem::TargetDataObservable<WizardId, SDL_FPoint>
+    WizardPosObservable;
 
 SDL_FPoint GetWizardPos(WizardId id);
 
 std::shared_ptr<WizardPosObservable> GetWizardPosObservable();
 
-enum ResetTier : uint8_t {
-    T1 = 0,
-    T2,
-
-    NONE,
+enum Event : uint8_t {
+    NoReset = 0,
+    ResetT1,
+    ResetT2,
 };
 
-typedef ForwardObservable<void(ResetTier)> ResetObservableBase;
-class ResetObservable : public ResetObservableBase {};
+typedef TargetSystem::TargetObservable<Event> WizardEventObservableBase;
+class WizardEventObservable : public WizardEventObservableBase {
+   public:
+    void next(Event e);
+};
 
-void Reset(ResetTier tier);
-
-std::shared_ptr<ResetObservable> GetResetObservable();
+std::shared_ptr<WizardEventObservable> GetWizardEventObservable();
 
 class WizardService
-    : public Service<HideObservable, ResetObservable, WizardImageObservable,
-                     WizardPosObservable> {};
+    : public Service<HideObservable, WizardEventObservable,
+                     WizardImageObservable, WizardPosObservable> {};
 }  // namespace WizardSystem
 
 #endif

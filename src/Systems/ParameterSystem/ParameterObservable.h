@@ -63,38 +63,32 @@ typedef std::shared_ptr<NodeStateObservable> NodeStateObservablePtr;
 
 class BaseValueObservable : public ValueObservable {
    public:
-    BaseValueObservable();
-
     using ValueObservable::set;
 
-    void init(Number defVal);
-    void init(WizardSystem::ResetTier tier);
-    void init(Number defVal, WizardSystem::ResetTier tier);
-
-    Number mDefault = 0;
-    WizardSystem::ResetTier mResetTier = WizardSystem::ResetTier::NONE;
+    void init(const Number& defVal);
+    void init(WizardSystem::Event event);
+    void init(const Number& defVal, WizardSystem::Event event);
 
    private:
-    WizardSystem::ResetObservable::SubscriptionPtr mResetSub;
+    Number mDefault = 0;
+    WizardSystem::Event mResetEvent = WizardSystem::Event::NoReset;
+    WizardSystem::WizardEventObservable::IdSubscriptionPtr mResetSub;
 };
 
 typedef std::shared_ptr<BaseValueObservable> BaseValueObservablePtr;
 
 class BaseStateObservable : public StateObservable {
    public:
-    BaseStateObservable();
-
     using StateObservable::set;
 
     void init(bool defVal);
-    void init(WizardSystem::ResetTier tier);
-    void init(bool defVal, WizardSystem::ResetTier tier);
-
-    bool mDefault = false;
-    WizardSystem::ResetTier mResetTier = WizardSystem::ResetTier::NONE;
+    void init(WizardSystem::Event event);
+    void init(bool defVal, WizardSystem::Event event);
 
    private:
-    WizardSystem::ResetObservable::SubscriptionPtr mResetSub;
+    bool mDefault = false;
+    WizardSystem::Event mResetEvent = WizardSystem::Event::NoReset;
+    WizardSystem::WizardEventObservable::IdSubscriptionPtr mResetSub;
 };
 
 typedef std::shared_ptr<BaseStateObservable> BaseStateObservablePtr;

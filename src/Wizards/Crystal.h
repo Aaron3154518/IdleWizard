@@ -49,7 +49,7 @@ class Crystal : public WizardBase {
     void onUpdate(Time dt);
     void onClick(Event::MouseButton b, bool clicked);
     void onHide(WizardId id, bool hide);
-    void onReset(WizardSystem::ResetTier tier);
+    void onT1Reset();
     void onWizFireballHit(const WizardFireball& fireball);
     void onPowFireballHit(const PowerWizFireball& fireball);
 
@@ -73,6 +73,7 @@ class Crystal : public WizardBase {
     TimeSystem::TimerObservable::SubscriptionPtr mAnimTimerSub;
     WizardFireball::HitObservable::IdSubscriptionPtr mWizFireballHitSub;
     PowerWizFireball::HitObservable::IdSubscriptionPtr mPowFireballHitSub;
+    WizardSystem::WizardEventObservable::IdSubscriptionPtr mT1ResetSub;
     UpgradeList::SubscriptionPtr mMagicEffectDisplay, mWizCntUp, mPowWizBuy,
         mTimeWizBuy, mCatalystBuy;
 

@@ -10,25 +10,21 @@ void ValueObservable::set(const Number& val) {
 }
 
 // BaseValueObservable
-BaseValueObservable::BaseValueObservable() {
-    mResetSub = WizardSystem::GetResetObservable()->subscribe(
-        [this](WizardSystem::ResetTier tier) {
-            if (mResetTier <= tier) {
-                set(mDefault);
-            }
-        });
-}
-
-void BaseValueObservable::init(Number defVal) { init(defVal, mResetTier); }
-
-void BaseValueObservable::init(WizardSystem::ResetTier tier) {
-    mResetTier = tier;
-}
-
-void BaseValueObservable::init(Number defVal, WizardSystem::ResetTier tier) {
+void BaseValueObservable::init(const Number& defVal) {
     mDefault = defVal;
-    mResetTier = tier;
     set(mDefault);
+}
+
+void BaseValueObservable::init(WizardSystem::Event event) {
+    mResetEvent = event;
+    mResetSub = WizardSystem::GetWizardEventObservable()->subscribe(
+        [this]() { set(mDefault); }, mResetEvent);
+}
+
+void BaseValueObservable::init(const Number& defVal,
+                               WizardSystem::Event event) {
+    init(defVal);
+    init(event);
 }
 
 // StateObservable
@@ -40,25 +36,20 @@ void StateObservable::set(bool state) {
 }
 
 // BaseStateObservable
-BaseStateObservable::BaseStateObservable() {
-    mResetSub = WizardSystem::GetResetObservable()->subscribe(
-        [this](WizardSystem::ResetTier tier) {
-            if (mResetTier <= tier) {
-                set(mDefault);
-            }
-        });
-}
-
-void BaseStateObservable::init(bool defVal) { init(defVal, mResetTier); }
-
-void BaseStateObservable::init(WizardSystem::ResetTier tier) {
-    mResetTier = tier;
-}
-
-void BaseStateObservable::init(bool defVal, WizardSystem::ResetTier tier) {
+void BaseStateObservable::init(bool defVal) {
     mDefault = defVal;
-    mResetTier = tier;
     set(mDefault);
+}
+
+void BaseStateObservable::init(WizardSystem::Event event) {
+    mResetEvent = event;
+    mResetSub = WizardSystem::GetWizardEventObservable()->subscribe(
+        [this]() { set(mDefault); }, mResetEvent);
+}
+
+void BaseStateObservable::init(bool defVal, WizardSystem::Event event) {
+    init(defVal);
+    init(event);
 }
 
 }  // namespace ParameterSystem

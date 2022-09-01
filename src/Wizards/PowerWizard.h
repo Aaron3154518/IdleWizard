@@ -36,7 +36,7 @@ class PowerWizard : public WizardBase {
 
     void onRender(SDL_Renderer* r);
     void onHide(WizardId id, bool hide);
-    void onReset(WizardSystem::ResetTier tier);
+    void onT1Reset();
     bool onTimer(Timer& timer);
     void onTimeFreeze(bool frozen);
 
@@ -57,6 +57,7 @@ class PowerWizard : public WizardBase {
 
     TimerObservable::SubscriptionPtr mFireballTimerSub;
     TimeSystem::TimerObservable::SubscriptionPtr mAnimTimerSub;
+    WizardSystem::WizardEventObservable::IdSubscriptionPtr mT1ResetSub;
     UpgradeList::SubscriptionPtr mPowerDisplay, mPowerUp;
 
     PowerWizFireballPtr mFreezeFireball;

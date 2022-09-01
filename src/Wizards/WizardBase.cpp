@@ -25,8 +25,6 @@ void WizardBase::init() {
         []() {}, mPos, mDrag);
     mHideSub = WizardSystem::GetHideObservable()->subscribe(
         [this](WizardId id, bool hide) { onHide(id, hide); });
-    mResetSub = WizardSystem::GetResetObservable()->subscribe(
-        [this](WizardSystem::ResetTier tier) { onReset(tier); });
     attachSubToVisibility(mResizeSub);
     attachSubToVisibility(mRenderSub);
     attachSubToVisibility(mMouseSub);
@@ -76,8 +74,6 @@ void WizardBase::onHide(WizardId id, bool hide) {
         }
     }
 }
-
-void WizardBase::onReset(WizardSystem::ResetTier tier) {}
 
 void WizardBase::setPos(float x, float y) {
     SDL_Point screenDim = RenderSystem::getWindowSize();

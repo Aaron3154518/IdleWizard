@@ -49,6 +49,7 @@ class UpgradeList : public UpgradeListBase {
     double mScroll;
     Rect mRect;
     std::vector<std::pair<Rect, SubscriptionWPtr>> mBackRects, mFrontRects;
+    std::vector<std::pair<bool, int>> mIdxMap;
 };
 typedef std::shared_ptr<UpgradeList> UpgradeListPtr;
 

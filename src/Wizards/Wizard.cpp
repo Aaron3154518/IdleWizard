@@ -11,7 +11,7 @@ const std::string Wizard::CRIT_UP_IMG = "res/upgrades/crit_upgrade.png";
 const std::vector<WizardId> Wizard::TARGETS = {CRYSTAL, CATALYST};
 
 void Wizard::setDefaults() {
-    using WizardSystem::ResetTier;
+    using WizardSystem::Event;
 
     ParameterSystem::Params<WIZARD> params;
 
@@ -20,11 +20,14 @@ void Wizard::setDefaults() {
     params[WizardParams::BaseSpeed]->init(.5);
     params[WizardParams::BaseFBSpeed]->init(1);
     params[WizardParams::BaseCrit]->init(1);
-    params[WizardParams::PowerWizEffect]->init(1);
+    params[WizardParams::PowerWizEffect]->init(1, Event::ResetT1);
 
-    params[WizardParams::CritUpLvl]->init(ResetTier::T1);
-    params[WizardParams::MultiUpLvl]->init(ResetTier::T1);
-    params[WizardParams::PowerUpLvl]->init(ResetTier::T1);
+    params[WizardParams::CritUpLvl]->init(Event::ResetT1);
+    params[WizardParams::MultiUpLvl]->init(Event::ResetT1);
+    params[WizardParams::PowerUpLvl]->init(Event::ResetT1);
+
+    ParameterSystem::States states;
+    states[State::WizBoosted]->init(false, Event::ResetT1);
 }
 
 Wizard::Wizard() : WizardBase(WIZARD) {}
@@ -60,6 +63,8 @@ void Wizard::setSubscriptions() {
             return true;
         },
         POWER_BKGRND);
+    mT1ResetSub = WizardSystem::GetWizardEventObservable()->subscribe(
+        [this]() { onT1Reset(); }, WizardSystem::Event::ResetT1);
     attachSubToVisibility(mFireballTimerSub);
     attachSubToVisibility(mPowFireballHitSub);
 }
@@ -254,7 +259,7 @@ void Wizard::onHide(WizardId id, bool hide) {
     }
 }
 
-void Wizard::onReset(WizardSystem::ResetTier tier) {
+void Wizard::onT1Reset() {
     mFireballs.clear();
     mPowWizBoosts.clear();
 

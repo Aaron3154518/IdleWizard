@@ -19,7 +19,7 @@ class PowerWizFireball : public Fireball {
         float speed = .65;
     };
 
-    typedef TargetSystem::TargetObservable<const PowerWizFireball&>
+    typedef TargetSystem::TargetObservable<WizardId, const PowerWizFireball&>
         HitObservable;
 
     class Service : public ::Service<HitObservable> {};

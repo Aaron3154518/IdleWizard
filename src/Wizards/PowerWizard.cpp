@@ -7,7 +7,7 @@ const std::string PowerWizard::POWER_UP_IMG =
     "res/upgrades/power_fireball_upgrade.png";
 
 void PowerWizard::setDefaults() {
-    using WizardSystem::ResetTier;
+    using WizardSystem::Event;
 
     ParameterSystem::Params<POWER_WIZARD> params;
 
@@ -15,7 +15,7 @@ void PowerWizard::setDefaults() {
     params[PowerWizardParams::BaseSpeed]->init(.25);
     params[PowerWizardParams::BaseFBSpeed]->init(.75);
 
-    params[PowerWizardParams::PowerUpLvl]->init(ResetTier::T1);
+    params[PowerWizardParams::PowerUpLvl]->init(Event::ResetT1);
 }
 
 PowerWizard::PowerWizard() : WizardBase(POWER_WIZARD) {}
@@ -38,6 +38,8 @@ void PowerWizard::setSubscriptions() {
             return true;
         },
         IMG);
+    mT1ResetSub = WizardSystem::GetWizardEventObservable()->subscribe(
+        [this]() { onT1Reset(); }, WizardSystem::Event::ResetT1);
     attachSubToVisibility(mFireballTimerSub);
 }
 void PowerWizard::setUpgrades() {
@@ -160,7 +162,7 @@ void PowerWizard::onHide(WizardId id, bool hide) {
     }
 }
 
-void PowerWizard::onReset(WizardSystem::ResetTier tier) {
+void PowerWizard::onT1Reset() {
     mFireballs.clear();
 
     if (mFireballTimerSub) {

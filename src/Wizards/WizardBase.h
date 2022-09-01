@@ -43,7 +43,6 @@ class WizardBase : public Component {
     virtual void onRender(SDL_Renderer* r);
     virtual void onClick(Event::MouseButton b, bool clicked);
     virtual void onHide(WizardId id, bool hide);
-    virtual void onReset(WizardSystem::ResetTier tier);
 
     virtual void setPos(float x, float y);
 
@@ -61,7 +60,6 @@ class WizardBase : public Component {
     MouseObservable::SubscriptionPtr mMouseSub;
     DragObservable::SubscriptionPtr mDragSub;
     WizardSystem::HideObservable::SubscriptionPtr mHideSub;
-    WizardSystem::ResetObservable::SubscriptionPtr mResetSub;
     std::list<ParameterSystem::ParameterSubscriptionPtr> mParamSubs;
 
     UpgradeListPtr mUpgrades = std::make_shared<UpgradeList>();

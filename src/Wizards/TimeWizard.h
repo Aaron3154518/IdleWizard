@@ -41,11 +41,8 @@ class TimeWizard : public WizardBase {
     bool onCostTimer(Timer& timer);
     void onRender(SDL_Renderer*);
     void onHide(WizardId id, bool hide);
-    void onReset(WizardSystem::ResetTier tier);
-    bool startFreeze(Timer& timer);
-    void onFreezeTimer(Time dt, Timer& timer);
-    bool endFreeze(Timer& timer);
-    void startFreezeCycle();
+    void onT1Reset();
+    void onFreezeChange(bool frozen);
 
     Number calcFreezeEffect();
     Number calcSpeedEffect();
@@ -58,6 +55,7 @@ class TimeWizard : public WizardBase {
 
     bool mActive = false;
 
+    WizardSystem::WizardEventObservable::IdSubscriptionPtr mT1ResetSub;
     TimerObservable::SubscriptionPtr mCostTimerSub, mFreezeDelaySub,
         mFreezeTimerSub, mAnimTimerSub;
     UpgradeList::SubscriptionPtr mEffectDisplay, mActiveUp, mFBSpeedUp,

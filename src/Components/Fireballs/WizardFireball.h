@@ -19,7 +19,8 @@ class WizardFireball : public Fireball {
         float sizeFactor = 1, speed = 1;
     };
 
-    typedef TargetSystem::TargetObservable<const WizardFireball&> HitObservable;
+    typedef TargetSystem::TargetObservable<WizardId, const WizardFireball&>
+        HitObservable;
 
     class Service : public ::Service<HitObservable> {};
 

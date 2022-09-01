@@ -6,7 +6,7 @@ const unsigned int Catalyst::MSPF = 150, Catalyst::NUM_FRAMES = 5;
 const std::string Catalyst::IMG = "res/wizards/catalyst.png";
 
 void Catalyst::setDefaults() {
-    using WizardSystem::ResetTier;
+    using WizardSystem::Event;
 
     ParameterSystem::Params<CATALYST> params;
 
@@ -14,7 +14,7 @@ void Catalyst::setDefaults() {
     params[CatalystParams::Capacity]->init(100);
     params[CatalystParams::BaseRange]->init(1.25);
 
-    params[CatalystParams::RangeUpLvl]->init(ResetTier::T2);
+    params[CatalystParams::RangeUpLvl]->init(Event::ResetT2);
 }
 
 Catalyst::Catalyst() : WizardBase(CATALYST) {

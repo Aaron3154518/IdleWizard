@@ -69,27 +69,29 @@ void Wizard::setUpgrades() {
     // Power Display
     DisplayPtr dUp = std::make_shared<Display>();
     dUp->setImage(mId);
-    dUp->setEffects({params[WizardParams::Power], params[WizardParams::FBSpeed],
-                     params[WizardParams::FBSpeedEffect]},
-                    {}, []() -> TextUpdateData {
-                        ParameterSystem::Params<WIZARD> params;
-                        std::stringstream ss;
-                        std::vector<RenderDataWPtr> imgs;
-                        ss << "Power: "
-                           << Upgrade::Defaults::MultiplicativeEffect(
-                                  params[WizardParams::Power].get())
-                                  .text
-                           << "\n{i} Speed: "
-                           << Upgrade::Defaults::MultiplicativeEffect(
-                                  params[WizardParams::FBSpeed].get())
-                                  .text
-                           << ", {b}Power : "
-                           << Upgrade::Defaults::MultiplicativeEffect(
-                                  params[WizardParams::FBSpeedEffect].get())
-                                  .text;
-                        imgs.push_back(WizardFireball::GetIcon());
-                        return {ss.str(), imgs};
-                    });
+    dUp->setEffects(
+        {params[WizardParams::Power], params[WizardParams::FBSpeed],
+         params[WizardParams::FBSpeedEffect], params[WizardParams::Speed]},
+        {}, []() -> TextUpdateData {
+            ParameterSystem::Params<WIZARD> params;
+            std::stringstream ss;
+            std::vector<RenderDataWPtr> imgs;
+            ss << "Power: "
+               << Upgrade::Defaults::MultiplicativeEffect(
+                      params[WizardParams::Power].get())
+                      .text
+               << "\nFire Rate: " << params[WizardParams::Speed].get()
+               << "/s\n{i} Speed: "
+               << Upgrade::Defaults::MultiplicativeEffect(
+                      params[WizardParams::FBSpeed].get())
+                      .text
+               << ", {b}Power : "
+               << Upgrade::Defaults::MultiplicativeEffect(
+                      params[WizardParams::FBSpeedEffect].get())
+                      .text;
+            imgs.push_back(WizardFireball::GetIcon());
+            return {ss.str(), imgs};
+        });
     mPowerDisplay = mUpgrades->subscribe(dUp);
 
     // Target Upgrade
@@ -174,8 +176,9 @@ void Wizard::setParamTriggers() {
 
     mParamSubs.push_back(params[WizardParams::Speed].subscribeTo(
         {params[WizardParams::BaseSpeed],
-         timeParams[TimeWizardParams::SpeedEffect]},
-        {}, [this]() { return calcSpeed(); }));
+         timeParams[TimeWizardParams::SpeedEffect],
+         timeParams[TimeWizardParams::BoostWizSpdUp]},
+        {states[State::WizBoosted]}, [this]() { return calcSpeed(); }));
 
     mParamSubs.push_back(params[WizardParams::FBSpeed].subscribeTo(
         {params[WizardParams::BaseFBSpeed],
@@ -310,10 +313,15 @@ void Wizard::onPowFireballHit(const PowerWizFireball& fireball) {
         mPowWizBoosts.push_back(std::make_pair(power, duration));
     }
 
-    ParameterSystem::Params<WIZARD> params;
-    params[WizardParams::PowerWizEffect].set(mPowWizBoosts.front().first);
+    ParameterSystem::Param(State::WizBoosted).set(true);
+    ParameterSystem::Param<WIZARD>(WizardParams::PowerWizEffect)
+        .set(mPowWizBoosts.front().first);
     mPowWizTimerSub = TimeSystem::GetTimerObservable()->subscribe(
-        [this](Timer& t) { return onPowWizTimer(t); },
+        [this](Timer& t) {
+            bool boosted = onPowWizTimer(t);
+            ParameterSystem::Param(State::WizBoosted).set(boosted);
+            return boosted;
+        },
         [this](Time dt, Timer& t) { onPowWizTimerUpdate(dt, t); },
         Timer(mPowWizBoosts.front().second.toFloat()));
 }
@@ -388,8 +396,12 @@ Number Wizard::calcSpeed() {
     ParameterSystem::Params<WIZARD> params;
     ParameterSystem::Params<TIME_WIZARD> timeParams;
 
-    return params[WizardParams::BaseSpeed].get() *
-           timeParams[TimeWizardParams::SpeedEffect].get();
+    Number speed = params[WizardParams::BaseSpeed].get() *
+                   timeParams[TimeWizardParams::SpeedEffect].get();
+    if (ParameterSystem::Param(State::WizBoosted).get()) {
+        speed *= timeParams[TimeWizardParams::BoostWizSpdUp].get();
+    }
+    return speed;
 }
 
 Number Wizard::calcFBSpeed() {
@@ -417,7 +429,9 @@ void Wizard::calcTimer() {
     if (div <= 0) {
         div = 1;
     }
+    float prevLen = timer.length;
     timer.length = fmax(1000 / div, 16);
+    timer.timer *= timer.length / prevLen;
 }
 
 Number Wizard::calcCrit() {

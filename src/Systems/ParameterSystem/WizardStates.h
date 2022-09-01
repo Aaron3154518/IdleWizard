@@ -13,6 +13,8 @@ enum B : param_t {
     BoughtTimeWizard,
     BoughtCatalyst,
 
+    WizBoosted,
+
     TimeWizActive,
     TimeWizFrozen,
 };

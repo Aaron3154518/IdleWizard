@@ -114,6 +114,7 @@ enum B : param_t {
     FreezeUpLvl,
     SpeedUpLvl,
     FBSpeedUpLvl,
+    BoostWizSpdUpLvl,
 };
 
 enum N : param_t {
@@ -129,6 +130,9 @@ enum N : param_t {
 
     FBSpeedUp,
     FBSpeedCost,
+
+    BoostWizSpdUp,
+    BoostWizSpdUpCost,
 };
 }  // namespace TimeWizardParams
 

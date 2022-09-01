@@ -61,7 +61,7 @@ class TimeWizard : public WizardBase {
     TimerObservable::SubscriptionPtr mCostTimerSub, mFreezeDelaySub,
         mFreezeTimerSub, mAnimTimerSub;
     UpgradeList::SubscriptionPtr mEffectDisplay, mActiveUp, mFBSpeedUp,
-        mFreezeUp, mSpeedUp;
+        mFreezeUp, mSpeedUp, mBoostWizSpdUp;
 
     TogglePtr mActiveToggle;
     Lock mTimeLock;

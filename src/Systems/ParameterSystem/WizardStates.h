@@ -7,7 +7,8 @@ namespace State {
 enum B : param_t {
     ResetT1 = 0,
 
-    BoughtCatWizCntUp,
+    BoughtCrysWizCntUp,
+    BoughtCrysGlowUp,
 
     BoughtPowerWizard,
     BoughtTimeWizard,

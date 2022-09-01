@@ -49,7 +49,10 @@ enum B : param_t {
     Magic = 0,
     Shards,
 
+    GlowEffect,
+
     WizardCntUpCost,
+    GlowUpCost,
     CatalystCost,
 };
 

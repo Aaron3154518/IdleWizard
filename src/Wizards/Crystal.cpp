@@ -12,16 +12,20 @@ void Crystal::setDefaults() {
     ParameterSystem::Params<CRYSTAL> params;
 
     // Default 0
-    params[CrystalParams::Magic]->init(0, Event::ResetT1);
+    params[CrystalParams::Magic]->init(Number(1, 10), Event::ResetT1);
     params[CrystalParams::Shards]->init(0, Event::ResetT2);
 
+    params[CrystalParams::GlowEffect]->init(4);
+
     params[CrystalParams::WizardCntUpCost]->init(Number(2, 3));
+    params[CrystalParams::GlowUpCost]->init(Number(1, 5));
     params[CrystalParams::CatalystCost]->init(1);
 
     ParameterSystem::States states;
 
     states[State::ResetT1]->init(false);
-    states[State::BoughtCatWizCntUp]->init(false, Event::ResetT1);
+    states[State::BoughtCrysWizCntUp]->init(false, Event::ResetT1);
+    states[State::BoughtCrysGlowUp]->init(false, Event::ResetT1);
     states[State::BoughtPowerWizard]->init(false, Event::ResetT1);
     states[State::BoughtTimeWizard]->init(false, Event::ResetT1);
     states[State::BoughtCatalyst]->init(false, Event::ResetT2);
@@ -86,7 +90,7 @@ void Crystal::setUpgrades() {
 
     // Wizard count upgrade
     BuyablePtr bUp =
-        std::make_shared<Buyable>(states[State::BoughtCatWizCntUp]);
+        std::make_shared<Buyable>(states[State::BoughtCrysWizCntUp]);
     bUp->setImage("");
     bUp->setDescription(
         {"Wizards synergy provides a multiplier based on the number of active "
@@ -96,6 +100,18 @@ void Crystal::setUpgrades() {
     bUp->setEffect(params[CrystalParams::WizardCntEffect],
                    Upgrade::Defaults::MultiplicativeEffect);
     mWizCntUp = mUpgrades->subscribe(bUp);
+
+    // Glow upgrade
+    bUp = std::make_shared<Buyable>(states[State::BoughtCrysGlowUp]);
+    bUp->setImage("");
+    bUp->setDescription(
+        {"After begin struck by the power wizard, the crystal will absorb "
+         "fireball strikes and multiply their power"});
+    bUp->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
+                 params[CrystalParams::GlowUpCost]);
+    bUp->setEffect(params[CrystalParams::GlowEffect],
+                   Upgrade::Defaults::MultiplicativeEffect);
+    mGlowUp = mUpgrades->subscribe(bUp);
 
     // Buy power wizard
     bUp = std::make_shared<Buyable>(states[State::BoughtPowerWizard]);
@@ -146,7 +162,8 @@ void Crystal::setParamTriggers() {
         [this]() { return calcNumWizards(); }));
 
     mParamSubs.push_back(params[CrystalParams::WizardCntEffect].subscribeTo(
-        {params[CrystalParams::NumWizards]}, {states[State::BoughtCatWizCntUp]},
+        {params[CrystalParams::NumWizards]},
+        {states[State::BoughtCrysWizCntUp]},
         [this]() { return calcWizCntEffect(); }));
 
     mParamSubs.push_back(ParameterSystem::subscribe(
@@ -175,6 +192,9 @@ void Crystal::setParamTriggers() {
 
     mParamSubs.push_back(states[State::BoughtFirstT1].subscribe(
         [this](bool val) { mWizCntUp->setActive(val); }));
+
+    mParamSubs.push_back(states[State::BoughtSecondT1].subscribe(
+        [this](bool val) { mGlowUp->setActive(val); }));
 
     mParamSubs.push_back(states[State::ResetT1].subscribe(
         [this](bool val) { mCatalystBuy->setActive(val); }));
@@ -227,7 +247,7 @@ void Crystal::onClick(Event::MouseButton b, bool clicked) {
     if (addMagic && clicked) {
         auto param = ParameterSystem::Param<CRYSTAL>(CrystalParams::Magic);
         param.set(param.get() * 3);
-        if (param.get() > Number(1, 6)) {
+        if (false && param.get() > Number(1, 6)) {
             triggerT1Reset();
         }
     }
@@ -252,10 +272,28 @@ void Crystal::onWizFireballHit(const WizardFireball& fireball) {
     auto magic = ParameterSystem::Param<CRYSTAL>(CrystalParams::Magic);
     magic.set(magic.get() + fireball.getPower());
     addMessage("+" + fireball.getPower().toString());
+    if (ParameterSystem::Param(State::BoughtCrysGlowUp).get()) {
+        mGlowMagic += fireball.getPower();
+    }
 }
 
 void Crystal::onPowFireballHit(const PowerWizFireball& fireball) {
     createFireRing(fireball.getPower());
+    if (ParameterSystem::Param(State::BoughtCrysGlowUp).get()) {
+        mGlowMagic = 0;
+        mGlowTimerSub = TimeSystem::GetTimerObservable()->subscribe(
+            [this](Timer& t) { return onGlowTimer(t); },
+            Timer(fireball.getDuration().toFloat()));
+    }
+}
+
+bool Crystal::onGlowTimer(Timer& t) {
+    ParameterSystem::Params<CRYSTAL> params;
+    Number magic = mGlowMagic * params[CrystalParams::GlowEffect].get();
+    params[CrystalParams::Magic].set(params[CrystalParams::Magic].get() +
+                                     magic);
+    addMessage("+" + magic.toString());
+    return false;
 }
 
 Number Crystal::calcMagicEffect() {
@@ -283,7 +321,7 @@ Number Crystal::calcNumWizards() {
 }
 
 Number Crystal::calcWizCntEffect() {
-    if (!ParameterSystem::Param(State::BoughtCatWizCntUp).get()) {
+    if (!ParameterSystem::Param(State::BoughtCrysWizCntUp).get()) {
         return 1;
     }
 

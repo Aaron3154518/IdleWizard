@@ -272,6 +272,7 @@ PowerWizFireball::Data PowerWizard::newFireballData(WizardId target) {
             data.power = params[PowerWizardParams::Power].get() * speedEffect;
             break;
         case CRYSTAL:
+            data.duration = params[PowerWizardParams::Duration].get() * 2;
             data.power =
                 params[PowerWizardParams::FireRingEffect].get() * speedEffect;
             break;

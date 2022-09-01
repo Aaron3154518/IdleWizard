@@ -58,6 +58,7 @@ class Crystal : public WizardBase {
     Number calcShardGain();
     Number calcNumWizards();
     Number calcWizCntEffect();
+    Number calcGlowEffect();
     void drawMagic();
 
     int getAnimationDelay();

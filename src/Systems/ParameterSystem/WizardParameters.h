@@ -49,8 +49,6 @@ enum B : param_t {
     Magic = 0,
     Shards,
 
-    GlowEffect,
-
     WizardCntUpCost,
     GlowUpCost,
     CatalystCost,
@@ -62,6 +60,8 @@ enum N : param_t {
 
     NumWizards,
     WizardCntEffect,
+    GlowUp,
+    GlowEffect,
 
     T1WizardCost,
 };

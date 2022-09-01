@@ -15,8 +15,6 @@ void Crystal::setDefaults() {
     params[CrystalParams::Magic]->init(Number(1, 10), Event::ResetT1);
     params[CrystalParams::Shards]->init(0, Event::ResetT2);
 
-    params[CrystalParams::GlowEffect]->init(4);
-
     params[CrystalParams::WizardCntUpCost]->init(Number(2, 3));
     params[CrystalParams::GlowUpCost]->init(Number(1, 5));
     params[CrystalParams::CatalystCost]->init(1);
@@ -162,9 +160,13 @@ void Crystal::setParamTriggers() {
         [this]() { return calcNumWizards(); }));
 
     mParamSubs.push_back(params[CrystalParams::WizardCntEffect].subscribeTo(
-        {params[CrystalParams::NumWizards]},
-        {states[State::BoughtCrysWizCntUp]},
+        {params[CrystalParams::NumWizards]}, {states[State::BoughtCrysGlowUp]},
         [this]() { return calcWizCntEffect(); }));
+
+    mParamSubs.push_back(params[CrystalParams::GlowEffect].subscribeTo(
+        {params[CrystalParams::WizardCntEffect]},
+        {states[State::BoughtCrysGlowUp]},
+        [this]() { return calcGlowEffect(); }));
 
     mParamSubs.push_back(ParameterSystem::subscribe(
         {params[CrystalParams::Magic], params[CrystalParams::Shards]}, {},
@@ -193,8 +195,13 @@ void Crystal::setParamTriggers() {
     mParamSubs.push_back(states[State::BoughtFirstT1].subscribe(
         [this](bool val) { mWizCntUp->setActive(val); }));
 
-    mParamSubs.push_back(states[State::BoughtSecondT1].subscribe(
-        [this](bool val) { mGlowUp->setActive(val); }));
+    mParamSubs.push_back(ParameterSystem::subscribe(
+        {}, {states[State::BoughtSecondT1], states[State::BoughtCrysWizCntUp]},
+        [this]() {
+            ParameterSystem::States states;
+            mGlowUp->setActive(states[State::BoughtSecondT1].get() &&
+                               states[State::BoughtCrysWizCntUp].get());
+        }));
 
     mParamSubs.push_back(states[State::ResetT1].subscribe(
         [this](bool val) { mCatalystBuy->setActive(val); }));
@@ -326,6 +333,17 @@ Number Crystal::calcWizCntEffect() {
     }
 
     return ParameterSystem::Param<CRYSTAL>(CrystalParams::NumWizards).get() ^ 2;
+}
+
+Number Crystal::calcGlowEffect() {
+    ParameterSystem::Params<CRYSTAL> params;
+    ParameterSystem::States states;
+
+    if (!states[State::BoughtCrysGlowUp].get()) {
+        return 1;
+    }
+
+    return params[CrystalParams::WizardCntEffect].get() ^ 1.5;
 }
 
 void Crystal::drawMagic() {

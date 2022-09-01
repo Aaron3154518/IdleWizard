@@ -14,7 +14,6 @@ void PowerWizard::setDefaults() {
     params[PowerWizardParams::BasePower]->init(5);
     params[PowerWizardParams::BaseSpeed]->init(.25);
     params[PowerWizardParams::BaseFBSpeed]->init(.75);
-    params[PowerWizardParams::Duration]->init(1000);
 
     params[PowerWizardParams::PowerUpLvl]->init(ResetTier::T1);
 }
@@ -91,6 +90,10 @@ void PowerWizard::setParamTriggers() {
     ParameterSystem::Params<POWER_WIZARD> params;
     ParameterSystem::Params<TIME_WIZARD> timeParams;
     ParameterSystem::States states;
+
+    mParamSubs.push_back(params[PowerWizardParams::Duration].subscribeTo(
+        ParameterSystem::Param<WIZARD>(WizardParams::BaseSpeed),
+        [](const Number& val) { return val == 0 ? 1000 : (1000 / val); }));
 
     mParamSubs.push_back(params[PowerWizardParams::Power].subscribeTo(
         {params[PowerWizardParams::BasePower],
@@ -181,11 +184,6 @@ void PowerWizard::onTimeFreeze(bool frozen) {
 }
 
 void PowerWizard::shootFireball() {
-    ParameterSystem::Params<POWER_WIZARD> params;
-    Number power = params[PowerWizardParams::Power].get();
-    Number fireRing = params[PowerWizardParams::FireRingEffect].get();
-    Number duration = params[PowerWizardParams::Duration].get();
-
     WizardId target = getTarget();
 
     auto data = newFireballData(target);

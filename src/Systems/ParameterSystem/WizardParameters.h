@@ -87,13 +87,13 @@ enum B : param_t {
     BaseSpeed,
     BaseFBSpeed,
 
-    Duration,
-
     PowerUpLvl,
 };
 
 enum N : param_t {
-    Power = 0,
+    Duration = 0,
+
+    Power,
     PowerUp,
     PowerUpCost,
     FireRingEffect,

@@ -46,12 +46,10 @@ Number PowerWizFireball::duration() const { return mDuration; }
 
 void PowerWizFireball::addFireball(const Data& data) {
     mFireballFreezeCnt++;
+    mPower += data.power / mFireballFreezeCnt;
     switch (mTargetId) {
         case WIZARD:
-            mDuration += data.duration / sqrt(mFireballFreezeCnt);
-            break;
-        case CRYSTAL:
-            mPower += data.power / sqrt(mFireballFreezeCnt) / 10;
+            mDuration += data.duration / mFireballFreezeCnt;
             break;
     }
     float prevSizeFactor = fmin(pow(mSizeSum, 1.0 / 3.0), 10);
@@ -61,12 +59,5 @@ void PowerWizFireball::addFireball(const Data& data) {
 }
 
 void PowerWizFireball::applyTimeEffect(const Number& effect) {
-    switch (mTargetId) {
-        case WIZARD:
-            mDuration = ((mDuration / 1000) ^ effect) * 1000;
-            break;
-        case CRYSTAL:
-            mPower ^= effect;
-            break;
-    }
+    mPower ^= effect;
 }

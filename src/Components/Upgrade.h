@@ -25,6 +25,31 @@ class UpgradeBase {
         static TextUpdateData PercentEffect(const Number& effect);
     };
 
+    struct Cost {
+       public:
+        Cost(ParameterSystem::BaseValue money,
+             ParameterSystem::ValueParam cost);
+        Cost(ParameterSystem::BaseValue level, ParameterSystem::BaseValue money,
+             ParameterSystem::NodeValue cost,
+             std::function<Number(const Number&)> costFunc);
+
+        const ParameterSystem::ValueParam& getCostParam() const;
+        const ParameterSystem::BaseValue& getMoneyParam() const;
+        const Number& getCost() const;
+        const Number& getMoney() const;
+        const RenderDataPtr& getMoneyIcon() const;
+        bool canBuy() const;
+        void buy() const;
+
+        ParameterSystem::ParameterSubscriptionPtr subscribe(
+            std::function<void()> func) const;
+
+       private:
+        ParameterSystem::ValueParam mCost;
+        ParameterSystem::BaseValue mMoney;
+        ParameterSystem::ParameterSubscriptionPtr mCostSub;
+    };
+
     enum Status : uint8_t {
         BOUGHT = 0,
         CAN_BUY,
@@ -62,6 +87,7 @@ class UpgradeBase {
 
 typedef std::shared_ptr<UpgradeBase> UpgradeBasePtr;
 
+// Upgrade that receives no interaction
 class Display : public UpgradeBase {
    public:
     virtual ~Display() = default;
@@ -77,12 +103,17 @@ class Display : public UpgradeBase {
         const std::initializer_list<ParameterSystem::StateParam>& stateParams,
         std::function<TextUpdateData()> func);
 
-   private:
+    virtual void updateInfo();
+
+   protected:
+    // Effects
+    TextUpdateData mEffectText;
     ParameterSystem::ParameterSubscriptionPtr mEffectSub;
 };
 
 typedef std::shared_ptr<Display> DisplayPtr;
 
+// Upgrade that loops through a set number of states
 class Toggle : public Display {
    public:
     typedef std::function<void(unsigned int, Toggle&)> LevelFunc;
@@ -103,33 +134,37 @@ class Toggle : public Display {
 
 typedef std::shared_ptr<Toggle> TogglePtr;
 
+// Upgrade that can only be bought once
+class Buyable : public Display {
+   public:
+    Buyable(
+        ParameterSystem::BaseState level,
+        std::function<void(bool)> onLevel = [](bool b) {});
+
+    Status getStatus();
+    void buy();
+
+    void setCost(ParameterSystem::BaseValue money,
+                 ParameterSystem::ValueParam cost);
+    void clearCost();
+
+    void updateInfo();
+
+   private:
+    // Level
+    ParameterSystem::BaseState mLevel;
+    ParameterSystem::ParameterSubscriptionPtr mLevelSub;
+
+    // Cost
+    std::unique_ptr<Cost> mCost;
+    ParameterSystem::ParameterSubscriptionPtr mCostSub;
+};
+
+typedef std::shared_ptr<Buyable> BuyablePtr;
+
+// Flexible upgrade
 class Upgrade : public UpgradeBase {
    public:
-    struct Cost {
-       public:
-        Cost(ParameterSystem::BaseValue money,
-             ParameterSystem::ValueParam cost);
-        Cost(ParameterSystem::BaseValue level, ParameterSystem::BaseValue money,
-             ParameterSystem::NodeValue cost,
-             std::function<Number(const Number&)> costFunc);
-
-        const ParameterSystem::ValueParam& getCostParam() const;
-        const ParameterSystem::BaseValue& getMoneyParam() const;
-        const Number& getCost() const;
-        const Number& getMoney() const;
-        const RenderDataPtr& getMoneyIcon() const;
-        bool canBuy() const;
-        void buy() const;
-
-        ParameterSystem::ParameterSubscriptionPtr subscribe(
-            std::function<void()> func) const;
-
-       private:
-        ParameterSystem::ValueParam mCost;
-        ParameterSystem::BaseValue mMoney;
-        ParameterSystem::ParameterSubscriptionPtr mCostSub;
-    };
-
    public:
     typedef std::function<Number(const Number&)> ValueFunc;
     typedef std::function<bool(const Number&)> StateFunc;

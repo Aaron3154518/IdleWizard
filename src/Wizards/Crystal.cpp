@@ -15,15 +15,16 @@ void Crystal::setDefaults() {
     params[CrystalParams::Magic]->init(0, ResetTier::T1);
     params[CrystalParams::Shards]->init(0, ResetTier::T2);
 
+    params[CrystalParams::WizardCntUpCost]->init(Number(2, 3));
     params[CrystalParams::CatalystCost]->init(1);
-
-    params[CrystalParams::BuyTimeWizLvl]->init(ResetTier::T1);
-    params[CrystalParams::BuyPowerWizLvl]->init(ResetTier::T1);
-    params[CrystalParams::BuyCatalystLvl]->init(ResetTier::T2);
 
     ParameterSystem::States states;
 
     states[State::ResetT1]->init(false);
+    states[State::BoughtCatWizCntUp]->init(false, ResetTier::T1);
+    states[State::BoughtPowerWizard]->init(false, ResetTier::T1);
+    states[State::BoughtTimeWizard]->init(false, ResetTier::T1);
+    states[State::BoughtCatalyst]->init(false, ResetTier::T2);
 }
 
 Crystal::Crystal() : WizardBase(CRYSTAL) {}
@@ -81,42 +82,48 @@ void Crystal::setUpgrades() {
                    Upgrade::Defaults::MultiplicativeEffect);
     mMagicEffectDisplay = mUpgrades->subscribe(dUp);
 
+    // Wizard count upgrade
+    BuyablePtr bUp =
+        std::make_shared<Buyable>(states[State::BoughtCatWizCntUp]);
+    bUp->setImage("");
+    bUp->setDescription(
+        {"Wizards synergy provides a multiplier based on the number of active "
+         "wizards"});
+    bUp->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
+                 params[CrystalParams::WizardCntUpCost]);
+    bUp->setEffect(params[CrystalParams::WizardCntEffect],
+                   Upgrade::Defaults::MultiplicativeEffect);
+    mWizCntUp = mUpgrades->subscribe(bUp);
+
     // Buy power wizard
-    UpgradePtr up =
-        std::make_shared<Upgrade>(params[CrystalParams::BuyPowerWizLvl], 1);
-    up->setImage(WIZ_IMGS.at(POWER_WIZARD));
-    up->setDescription(
+    bUp = std::make_shared<Buyable>(states[State::BoughtPowerWizard]);
+    bUp->setImage(WIZ_IMGS.at(POWER_WIZARD));
+    bUp->setDescription(
         {"Power Wizard empowers the Wizard and overloads the Crystal for "
          "increased Fireball power"});
-    up->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
-                params[CrystalParams::T1WizardCost]);
-    up->setEffect(states[State::BoughtPowerWizard],
-                  [](const Number& lvl) { return lvl == 1; });
-    mPowWizBuy = mUpgrades->subscribe(up);
+    bUp->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
+                 params[CrystalParams::T1WizardCost]);
+    mPowWizBuy = mUpgrades->subscribe(bUp);
 
     // Buy time wizard
-    up = std::make_shared<Upgrade>(params[CrystalParams::BuyTimeWizLvl], 1);
-    up->setImage(WIZ_IMGS.at(TIME_WIZARD));
-    up->setDescription(
+    bUp = std::make_shared<Buyable>(states[State::BoughtTimeWizard]);
+    bUp->setImage(WIZ_IMGS.at(TIME_WIZARD));
+    bUp->setDescription(
         {"Time Wizard boosts Wizard fire rate and freezes time for a "
          "massive power boost"});
-    up->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
-                params[CrystalParams::T1WizardCost]);
-    up->setEffect(states[State::BoughtTimeWizard],
-                  [](const Number& lvl) { return lvl == 1; });
-    mTimeWizBuy = mUpgrades->subscribe(up);
+    bUp->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
+                 params[CrystalParams::T1WizardCost]);
+    mTimeWizBuy = mUpgrades->subscribe(bUp);
 
     // Buy catalyst
-    up = std::make_shared<Upgrade>(params[CrystalParams::BuyCatalystLvl], 1);
-    up->setImage(WIZ_IMGS.at(CATALYST));
-    up->setDescription(
+    bUp = std::make_shared<Buyable>(states[State::BoughtCatalyst]);
+    bUp->setImage(WIZ_IMGS.at(CATALYST));
+    bUp->setDescription(
         {"Catalyst stores magic and boosts fireballs that pass "
          "nearby"});
-    up->setCost(Upgrade::Defaults::CRYSTAL_SHARDS,
-                params[CrystalParams::CatalystCost]);
-    up->setEffect(states[State::BoughtCatalyst],
-                  [](const Number& lvl) { return lvl == 1; });
-    mCatalystBuy = mUpgrades->subscribe(up);
+    bUp->setCost(Upgrade::Defaults::CRYSTAL_SHARDS,
+                 params[CrystalParams::CatalystCost]);
+    mCatalystBuy = mUpgrades->subscribe(bUp);
 }
 void Crystal::setParamTriggers() {
     ParameterSystem::Params<CRYSTAL> params;
@@ -129,6 +136,16 @@ void Crystal::setParamTriggers() {
     mParamSubs.push_back(params[CrystalParams::ShardGain].subscribeTo(
         {params[CrystalParams::Magic]}, {},
         [this]() { return calcShardGain(); }));
+
+    mParamSubs.push_back(params[CrystalParams::NumWizards].subscribeTo(
+        {},
+        {states[State::BoughtPowerWizard], states[State::BoughtTimeWizard],
+         states[State::BoughtCatalyst]},
+        [this]() { return calcNumWizards(); }));
+
+    mParamSubs.push_back(params[CrystalParams::WizardCntEffect].subscribeTo(
+        {params[CrystalParams::NumWizards]}, {states[State::BoughtCatWizCntUp]},
+        [this]() { return calcWizCntEffect(); }));
 
     mParamSubs.push_back(ParameterSystem::subscribe(
         {params[CrystalParams::Magic], params[CrystalParams::Shards]}, {},
@@ -153,6 +170,9 @@ void Crystal::setParamTriggers() {
             return states[State::BoughtPowerWizard].get() &&
                    states[State::BoughtTimeWizard].get();
         }));
+
+    mParamSubs.push_back(states[State::BoughtFirstT1].subscribe(
+        [this](bool val) { mWizCntUp->setActive(val); }));
 
     mParamSubs.push_back(states[State::ResetT1].subscribe(
         [this](bool val) { mCatalystBuy->setActive(val); }));
@@ -248,6 +268,24 @@ Number Crystal::calcShardGain() {
         shards = 0;
     }
     return shards;
+}
+
+Number Crystal::calcNumWizards() {
+    ParameterSystem::States states;
+
+    // Wizard is always unlocked
+    // Convert state variables to ints to get count
+    return 1 + states[State::BoughtPowerWizard].get() +
+           states[State::BoughtTimeWizard].get() +
+           states[State::BoughtCatalyst].get();
+}
+
+Number Crystal::calcWizCntEffect() {
+    if (!ParameterSystem::Param(State::BoughtCatWizCntUp).get()) {
+        return 1;
+    }
+
+    return ParameterSystem::Param<CRYSTAL>(CrystalParams::NumWizards).get() ^ 2;
 }
 
 void Crystal::drawMagic() {

@@ -168,6 +168,7 @@ void Wizard::setParamTriggers() {
         {params[WizardParams::BasePower], params[WizardParams::PowerUp],
          params[WizardParams::Speed], params[WizardParams::PowerWizEffect],
          crystalParams[CrystalParams::MagicEffect],
+         crystalParams[CrystalParams::WizardCntEffect],
          catalystParams[CatalystParams::MagicEffect]},
         {}, [this]() { return calcPower(); }));
 
@@ -376,9 +377,10 @@ Number Wizard::calcPower() {
 
     return (params[WizardParams::BasePower].get() +
             params[WizardParams::PowerUp].get()) *
-           crystalParams[CrystalParams::MagicEffect].get() *
-           catalystParams[CatalystParams::MagicEffect].get() *
            params[WizardParams::PowerWizEffect].get() *
+           crystalParams[CrystalParams::MagicEffect].get() *
+           crystalParams[CrystalParams::WizardCntEffect].get() *
+           catalystParams[CatalystParams::MagicEffect].get() *
            max(1, params[WizardParams::Speed].get() * 16 / 1000);
 }
 

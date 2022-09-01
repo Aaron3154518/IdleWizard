@@ -1,5 +1,37 @@
 #include "Upgrade.h"
 
+// Cost
+UpgradeBase::Cost::Cost(ParameterSystem::BaseValue money,
+                        ParameterSystem::ValueParam cost)
+    : mMoney(money), mCost(cost) {}
+UpgradeBase::Cost::Cost(ParameterSystem::BaseValue level,
+                        ParameterSystem::BaseValue money,
+                        ParameterSystem::NodeValue cost,
+                        std::function<Number(const Number&)> costFunc)
+    : Cost(money, cost) {
+    mCostSub = cost.subscribeTo(level, costFunc);
+}
+
+const ParameterSystem::ValueParam& UpgradeBase::Cost::getCostParam() const {
+    return mCost;
+}
+const ParameterSystem::BaseValue& UpgradeBase::Cost::getMoneyParam() const {
+    return mMoney;
+}
+const Number& UpgradeBase::Cost::getCost() const { return mCost.get(); }
+const Number& UpgradeBase::Cost::getMoney() const { return mMoney.get(); }
+const RenderDataPtr& UpgradeBase::Cost::getMoneyIcon() const {
+    return Money::GetMoneyIcon(mMoney);
+}
+bool UpgradeBase::Cost::canBuy() const { return mCost.get() <= mMoney.get(); }
+void UpgradeBase::Cost::buy() const { mMoney.set(mMoney.get() - mCost.get()); }
+
+ParameterSystem::ParameterSubscriptionPtr UpgradeBase::Cost::subscribe(
+    std::function<void()> func) const {
+    ParameterSystem::ParameterSubscriptionPtr sub = mCost.subscribe(func);
+    return sub;
+}
+
 // UpgradeBase
 const SDL_Color UpgradeBase::DESC_BKGRND{175, 175, 175, 255};
 const FontData UpgradeBase::DESC_FONT{-1, 22, "|"};
@@ -98,9 +130,14 @@ void Display::setEffects(
     const std::initializer_list<ParameterSystem::ValueParam>& valueParams,
     const std::initializer_list<ParameterSystem::StateParam>& stateParams,
     std::function<TextUpdateData()> func) {
-    mEffectSub = ParameterSystem::subscribe(
-        valueParams, stateParams, [this, func]() { setInfo(func()); });
+    mEffectSub =
+        ParameterSystem::subscribe(valueParams, stateParams, [this, func]() {
+            mEffectText = func();
+            updateInfo();
+        });
 }
+
+void Display::updateInfo() { setInfo(mEffectText); }
 
 // Toggle
 Toggle::Toggle(LevelFunc onLevel, unsigned int numStates)
@@ -120,36 +157,59 @@ void Toggle::setLevel(unsigned int lvl) {
     mOnLevel(mLevel, *this);
 }
 
-// Cost
-Upgrade::Cost::Cost(ParameterSystem::BaseValue money,
-                    ParameterSystem::ValueParam cost)
-    : mMoney(money), mCost(cost) {}
-Upgrade::Cost::Cost(ParameterSystem::BaseValue level,
-                    ParameterSystem::BaseValue money,
-                    ParameterSystem::NodeValue cost,
-                    std::function<Number(const Number&)> costFunc)
-    : Cost(money, cost) {
-    mCostSub = cost.subscribeTo(level, costFunc);
+// Buyable
+Buyable::Buyable(ParameterSystem::BaseState level,
+                 std::function<void(bool)> onLevel)
+    : mLevel(level) {
+    mLevelSub = level.subscribe([this, onLevel]() {
+        onLevel(mLevel.get());
+        updateInfo();
+    });
 }
 
-const ParameterSystem::ValueParam& Upgrade::Cost::getCostParam() const {
-    return mCost;
+UpgradeBase::Status Buyable::getStatus() {
+    if (mLevel.get()) {
+        return BOUGHT;
+    }
+    return mCost && !mCost->canBuy() ? CANT_BUY : CAN_BUY;
 }
-const ParameterSystem::BaseValue& Upgrade::Cost::getMoneyParam() const {
-    return mMoney;
-}
-const Number& Upgrade::Cost::getCost() const { return mCost.get(); }
-const Number& Upgrade::Cost::getMoney() const { return mMoney.get(); }
-const RenderDataPtr& Upgrade::Cost::getMoneyIcon() const {
-    return Money::GetMoneyIcon(mMoney);
-}
-bool Upgrade::Cost::canBuy() const { return mCost.get() <= mMoney.get(); }
-void Upgrade::Cost::buy() const { mMoney.set(mMoney.get() - mCost.get()); }
 
-ParameterSystem::ParameterSubscriptionPtr Upgrade::Cost::subscribe(
-    std::function<void()> func) const {
-    ParameterSystem::ParameterSubscriptionPtr sub = mCost.subscribe(func);
-    return sub;
+void Buyable::buy() {
+    if (getStatus() != CAN_BUY) {
+        return;
+    }
+
+    if (mCost) {
+        mCost->buy();
+    }
+    mLevel.set(!mLevel.get());
+}
+
+void Buyable::setCost(ParameterSystem::BaseValue money,
+                      ParameterSystem::ValueParam cost) {
+    mCost = std::make_unique<Cost>(money, cost);
+    mCostSub = mCost->subscribe([this]() { updateInfo(); });
+}
+void Buyable::clearCost() {
+    mCost.reset();
+    mCostSub.reset();
+    updateInfo();
+}
+
+void Buyable::updateInfo() {
+    std::vector<RenderDataWPtr> imgs = mEffectText.imgs;
+    std::stringstream ss;
+    ss << mEffectText.text;
+    if (!mEffectText.text.empty()) {
+        ss << "\n";
+    }
+    if (mLevel.get()) {
+        ss << "Bought";
+    } else if (mCost) {
+        ss << "{i}" << mCost->getCost();
+        imgs.push_back(mCost->getMoneyIcon());
+    }
+    setInfo({ss.str(), imgs});
 }
 
 // Upgrade
@@ -287,7 +347,7 @@ void Upgrade::updateInfo() {
                 ss << "{i}" << mCost->getCost();
             }
         } else {
-            ss << (mMaxLevel > 1 ? "Maxed" : "Bought");
+            ss << "Maxed";
         }
     }
     std::vector<RenderDataWPtr> imgs = mEffectText.imgs;

@@ -6,6 +6,13 @@
 namespace State {
 enum B : param_t {
     ResetT1 = 0,
+
+    BoughtCatWizCntUp,
+
+    BoughtPowerWizard,
+    BoughtTimeWizard,
+    BoughtCatalyst,
+
     TimeWizActive,
     TimeWizFrozen,
 };
@@ -13,9 +20,6 @@ enum B : param_t {
 enum N : param_t {
     BoughtFirstT1 = 0,
     BoughtSecondT1,
-    BoughtPowerWizard,
-    BoughtTimeWizard,
-    BoughtCatalyst,
 };
 }  // namespace State
 

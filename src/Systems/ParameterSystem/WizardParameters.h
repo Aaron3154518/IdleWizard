@@ -49,16 +49,16 @@ enum B : param_t {
     Magic = 0,
     Shards,
 
+    WizardCntUpCost,
     CatalystCost,
-
-    BuyPowerWizLvl,
-    BuyTimeWizLvl,
-    BuyCatalystLvl,
 };
 
 enum N : param_t {
     MagicEffect = 0,
     ShardGain,
+
+    NumWizards,
+    WizardCntEffect,
 
     T1WizardCost,
 };

@@ -55,6 +55,8 @@ class Crystal : public WizardBase {
 
     Number calcMagicEffect();
     Number calcShardGain();
+    Number calcNumWizards();
+    Number calcWizCntEffect();
     void drawMagic();
 
     int getAnimationDelay();
@@ -71,8 +73,8 @@ class Crystal : public WizardBase {
     TimeSystem::TimerObservable::SubscriptionPtr mAnimTimerSub;
     WizardFireball::HitObservable::IdSubscriptionPtr mWizFireballHitSub;
     PowerWizFireball::HitObservable::IdSubscriptionPtr mPowFireballHitSub;
-    UpgradeList::SubscriptionPtr mMagicEffectDisplay, mPowWizBuy, mTimeWizBuy,
-        mCatalystBuy;
+    UpgradeList::SubscriptionPtr mMagicEffectDisplay, mWizCntUp, mPowWizBuy,
+        mTimeWizBuy, mCatalystBuy;
 
     TextData mMsgTData;
     std::vector<Message> mMessages;

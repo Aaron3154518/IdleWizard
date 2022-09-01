@@ -22,6 +22,8 @@ enum B : param_t {
 enum N : param_t {
     BoughtFirstT1 = 0,
     BoughtSecondT1,
+
+    TimeWarpEnabled,
 };
 }  // namespace State
 

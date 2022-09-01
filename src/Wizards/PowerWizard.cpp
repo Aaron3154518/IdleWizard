@@ -134,8 +134,8 @@ void PowerWizard::setParamTriggers() {
         }));
 
     mParamSubs.push_back(
-        states[State::BoughtTimeWizard].subscribe([this](bool bought) {
-            if (!bought) {
+        states[State::TimeWarpEnabled].subscribe([this](bool enabled) {
+            if (!enabled) {
                 mTargets[TIME_WIZARD] = -1;
             } else {
                 mTargets[TIME_WIZARD] = 0;
@@ -267,6 +267,8 @@ PowerWizFireball::Data PowerWizard::newFireballData(WizardId target) {
     PowerWizFireball::Data data;
     switch (target) {
         case WIZARD:
+            data.duration = params[PowerWizardParams::Duration].get();
+        case TIME_WIZARD:
             data.power = params[PowerWizardParams::Power].get() * speedEffect;
             break;
         case CRYSTAL:
@@ -274,7 +276,6 @@ PowerWizFireball::Data PowerWizard::newFireballData(WizardId target) {
                 params[PowerWizardParams::FireRingEffect].get() * speedEffect;
             break;
     };
-    data.duration = params[PowerWizardParams::Duration].get();
     data.sizeFactor = 1;
     data.speed = params[PowerWizardParams::FBSpeed].get().toFloat();
     return data;

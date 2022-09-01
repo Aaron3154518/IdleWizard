@@ -361,9 +361,12 @@ void Wizard::onTimeFreeze(bool frozen) {
 }
 
 void Wizard::onTimeWarp() {
+    Number effect =
+        ParameterSystem::Param<TIME_WIZARD>(TimeWizardParams::TimeWarpEffect)
+            .get();
     for (auto& fireball : mFireballs) {
         fireball->setSpeed(fireball->getSpeed() * 10);
-        fireball->setPower(fireball->getPower() * 10);
+        fireball->setPower(fireball->getPower() * effect);
     }
 }
 

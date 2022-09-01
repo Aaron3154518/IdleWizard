@@ -23,6 +23,7 @@ class UpgradeBase {
         static TextUpdateData AdditiveEffect(const Number& effect);
         static TextUpdateData MultiplicativeEffect(const Number& effect);
         static TextUpdateData PercentEffect(const Number& effect);
+        static TextUpdateData PowerEffect(const Number& effect);
     };
 
     struct Cost {

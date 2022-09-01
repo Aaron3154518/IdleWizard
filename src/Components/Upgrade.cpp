@@ -50,6 +50,9 @@ TextUpdateData Upgrade::Defaults::MultiplicativeEffect(const Number& effect) {
 TextUpdateData Upgrade::Defaults::PercentEffect(const Number& effect) {
     return {(effect * 100).toString() + "%"};
 }
+TextUpdateData Upgrade::Defaults::PowerEffect(const Number& effect) {
+    return {"^" + effect.toString()};
+}
 
 int UpgradeBase::GetDescWidth() { return RenderSystem::getWindowSize().x / 3; }
 

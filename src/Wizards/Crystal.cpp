@@ -38,10 +38,7 @@ void Crystal::init() {
     mPos->rect = mImg.getDest();
     WizardSystem::GetWizardImageObservable()->next(mId, mImg);
 
-    SDL_Point screenDim = RenderSystem::getWindowSize();
-    setPos(screenDim.x / 2, screenDim.y / 2);
-
-    mMagicText->setFont(FONT).setImgs(
+        mMagicText->setFont(FONT).setImgs(
         {Money::GetMoneyIcon(params[CrystalParams::Magic]),
          Money::GetMoneyIcon(params[CrystalParams::Shards])});
     mMagicRender.set(mMagicText)
@@ -50,6 +47,9 @@ void Crystal::init() {
     mMsgTData.setFont(FONT).setColor(MSG_COLOR);
 
     WizardBase::init();
+
+    SDL_Point screenDim = RenderSystem::getWindowSize();
+    setPos(screenDim.x / 2, screenDim.y / 2);
 }
 void Crystal::setSubscriptions() {
     mUpdateSub =

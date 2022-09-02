@@ -11,6 +11,10 @@ WizardBase::WizardBase(WizardId id)
 WizardBase::~WizardBase() {}
 
 void WizardBase::init() {
+    SDL_Point screenDim = RenderSystem::getWindowSize();
+    setPos((rDist(gen) * .5 + .25) * screenDim.x,
+           (rDist(gen) * .5 + .25) * screenDim.y);
+
     mResizeSub =
         ServiceSystem::Get<ResizeService, ResizeObservable>()->subscribe(
             [this](ResizeData data) { onResize(data); });

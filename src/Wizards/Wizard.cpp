@@ -36,9 +36,6 @@ void Wizard::init() {
     mImg.set(IMG).setDest(IMG_RECT);
     mPos->rect = mImg.getDest();
     WizardSystem::GetWizardImageObservable()->next(mId, mImg);
-    SDL_Point screenDim = RenderSystem::getWindowSize();
-    setPos((rDist(gen) * .5 + .25) * screenDim.x,
-           (rDist(gen) * .5 + .25) * screenDim.y);
 
     mPowBkgrnd.set(POWER_BKGRND);
 

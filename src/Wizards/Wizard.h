@@ -46,7 +46,8 @@ class Wizard : public WizardBase {
     void setParamTriggers();
 
     void onRender(SDL_Renderer* r);
-    void onHide(WizardId id, bool hide);
+    void onHide(bool hide);
+    void onTargetHide(WizardId id, bool hide);
     void onT1Reset();
     bool onTimer(Timer& timer);
     void onPowFireballHit(const PowerWizFireball& fireball);
@@ -76,6 +77,7 @@ class Wizard : public WizardBase {
     TimeSystem::TimerObservable::SubscriptionPtr mPowWizTimerSub, mAnimTimerSub,
         mPowBkAnimTimerSub;
     PowerWizFireball::HitObservable::IdSubscriptionPtr mPowFireballHitSub;
+    WizardSystem::HideObservable::AllSubscriptionPtr mTargetHideSub;
     WizardSystem::WizardEventObservable::IdSubscriptionPtr mT1ResetSub,
         mTimeWarpSub;
     UpgradeList::SubscriptionPtr mPowerDisplay, mTargetUp, mPowerUp, mMultiUp,

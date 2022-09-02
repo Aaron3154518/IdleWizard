@@ -33,6 +33,12 @@ void HitObservable::init() {
     mTimerSub = TimeSystem::GetTimerObservable()->subscribe(
         [this](Timer& t) { return onTimer(t); },
         [this](Time dt, Timer& t) { onTimerUpdate(dt, t); }, Timer(1000));
+    mCatHideSub = WizardSystem::GetHideObservable()->subscribe(
+        [this](bool hide) {
+            mTimerSub->setActive(!hide);
+            mZaps.clear();
+        },
+        CATALYST);
 }
 
 void HitObservable::onRender(SDL_Renderer* r) {

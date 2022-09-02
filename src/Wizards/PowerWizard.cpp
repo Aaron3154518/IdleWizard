@@ -42,6 +42,8 @@ void PowerWizard::setSubscriptions() {
         IMG);
     mT1ResetSub = WizardSystem::GetWizardEventObservable()->subscribe(
         [this]() { onT1Reset(); }, WizardSystem::Event::ResetT1);
+    mTargetHideSub = WizardSystem::GetHideObservable()->subscribeToAll(
+        [this](WizardId id, bool hide) { onTargetHide(id, hide); });
     attachSubToVisibility(mFireballTimerSub);
 }
 void PowerWizard::setUpgrades() {
@@ -161,20 +163,17 @@ void PowerWizard::onRender(SDL_Renderer* r) {
     }
 }
 
-void PowerWizard::onHide(WizardId id, bool hide) {
-    WizardBase::onHide(id, hide);
+void PowerWizard::onHide(bool hide) {
+    WizardBase::onHide(hide);
+    mFireballs.clear();
+}
+
+void PowerWizard::onTargetHide(WizardId id, bool hide) {
     if (hide) {
-        switch (id) {
-            case POWER_WIZARD:
-                mFireballs.clear();
-                break;
-            default:
-                std::remove_if(mFireballs.begin(), mFireballs.end(),
-                               [id](const PowerWizFireballPtr& ball) {
-                                   return ball->getTargetId() == id;
-                               });
-                break;
-        }
+        std::remove_if(mFireballs.begin(), mFireballs.end(),
+                       [id](const PowerWizFireballPtr& ball) {
+                           return ball->getTargetId() == id;
+                       });
     }
 }
 

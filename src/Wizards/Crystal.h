@@ -48,7 +48,7 @@ class Crystal : public WizardBase {
     void onRender(SDL_Renderer* r);
     void onUpdate(Time dt);
     void onClick(Event::MouseButton b, bool clicked);
-    void onHide(WizardId id, bool hide);
+    void onHide(bool hide);
     void onT1Reset();
     void onWizFireballHit(const WizardFireball& fireball);
     void onPowFireballHit(const PowerWizFireball& fireball);

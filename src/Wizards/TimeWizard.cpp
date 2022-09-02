@@ -263,14 +263,12 @@ void TimeWizard::onRender(SDL_Renderer* r) {
     tex.draw(mFreezePb);
 }
 
-void TimeWizard::onHide(WizardId id, bool hide) {
-    WizardBase::onHide(id, hide);
-    if (id == mId) {
-        if (hide) {
-            mActiveToggle->setLevel(0);
-        }
-        ParameterSystem::Param(State::TimeWizFrozen).set(false);
+void TimeWizard::onHide(bool hide) {
+    WizardBase::onHide(hide);
+    if (hide) {
+        mActiveToggle->setLevel(0);
     }
+    ParameterSystem::Param(State::TimeWizFrozen).set(false);
 }
 
 void TimeWizard::onT1Reset() {

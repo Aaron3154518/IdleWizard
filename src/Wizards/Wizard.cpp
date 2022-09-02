@@ -64,6 +64,8 @@ void Wizard::setSubscriptions() {
         [this]() { onT1Reset(); }, WizardSystem::Event::ResetT1);
     mTimeWarpSub = WizardSystem::GetWizardEventObservable()->subscribe(
         [this]() { onTimeWarp(); }, WizardSystem::Event::TimeWarp);
+    mTargetHideSub = WizardSystem::GetHideObservable()->subscribeToAll(
+        [this](WizardId id, bool hide) { onTargetHide(id, hide); });
     attachSubToVisibility(mFireballTimerSub);
     attachSubToVisibility(mPowFireballHitSub);
 }
@@ -238,20 +240,17 @@ void Wizard::onRender(SDL_Renderer* r) {
     }
 }
 
-void Wizard::onHide(WizardId id, bool hide) {
-    WizardBase::onHide(id, hide);
+void Wizard::onHide(bool hide) {
+    WizardBase::onHide(hide);
+    mFireballs.clear();
+}
+
+void Wizard::onTargetHide(WizardId id, bool hide) {
     if (hide) {
-        switch (id) {
-            case WIZARD:
-                mFireballs.clear();
-                break;
-            default:
-                std::remove_if(mFireballs.begin(), mFireballs.end(),
-                               [id](const WizardFireballPtr& ball) {
-                                   return ball->getTargetId() == id;
-                               });
-                break;
-        }
+        std::remove_if(mFireballs.begin(), mFireballs.end(),
+                       [id](const WizardFireballPtr& ball) {
+                           return ball->getTargetId() == id;
+                       });
         if (id == mTarget) {
             mTarget = CRYSTAL;
         }

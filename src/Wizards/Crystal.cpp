@@ -38,7 +38,7 @@ void Crystal::init() {
     mPos->rect = mImg.getDest();
     WizardSystem::GetWizardImageObservable()->next(mId, mImg);
 
-        mMagicText->setFont(FONT).setImgs(
+    mMagicText->setFont(FONT).setImgs(
         {Money::GetMoneyIcon(params[CrystalParams::Magic]),
          Money::GetMoneyIcon(params[CrystalParams::Shards])});
     mMagicRender.set(mMagicText)
@@ -262,14 +262,10 @@ void Crystal::onClick(Event::MouseButton b, bool clicked) {
     WizardBase::onClick(b, clicked);
 }
 
-void Crystal::onHide(WizardId id, bool hide) {
-    WizardBase::onHide(id, hide);
+void Crystal::onHide(bool hide) {
+    WizardBase::onHide(hide);
     if (hide) {
-        switch (id) {
-            case CRYSTAL:
-                mFireRings.clear();
-                break;
-        }
+        mFireRings.clear();
     }
 }
 

@@ -41,7 +41,7 @@ class TimeWizard : public WizardBase {
 
     bool onCostTimer(Timer& timer);
     void onRender(SDL_Renderer*);
-    void onHide(WizardId id, bool hide);
+    void onHide(bool hide);
     void onT1Reset();
     void onFreezeChange(bool frozen);
     void onPowFireballHit(const PowerWizFireball& fireball);

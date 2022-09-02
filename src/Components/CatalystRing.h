@@ -63,6 +63,7 @@ class HitObservable : public HitObservableBase, public Component {
 
     RenderObservable::SubscriptionPtr mRenderSub;
     TimeSystem::TimerObservable::SubscriptionPtr mTimerSub;
+    WizardSystem::HideObservable::IdSubscriptionPtr mCatHideSub;
 
     bool mReady = false;
 

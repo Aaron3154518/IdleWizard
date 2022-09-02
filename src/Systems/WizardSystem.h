@@ -10,16 +10,7 @@
 
 namespace WizardSystem {
 // For handling wizard hide/show events
-typedef ForwardObservable<void(WizardId, bool)> HideObservableBase;
-class HideObservable : public HideObservableBase {
-   public:
-    void next(WizardId id, bool hide);
-
-    bool isHidden(WizardId id) const;
-
-   private:
-    std::unordered_map<WizardId, bool> mHidden;
-};
+typedef TargetSystem::TargetDataObservable<WizardId, bool> HideObservable;
 
 bool Hidden(WizardId id);
 

@@ -91,6 +91,31 @@ void PowerWizard::setUpgrades() {
         [](const Number& lvl) { return 1.15 ^ lvl; },
         Upgrade::Defaults::MultiplicativeEffect);
     mPowerUp = mUpgrades->subscribe(up);
+
+    // Time warp upgrade
+    up = std::make_shared<Upgrade>(params[PowerWizardParams::TimeWarpUpLvl], 6);
+    up->setImage("");
+    up->setDescription(
+        {"Unlocks time warp - power wizard boosts time wizard, speeding up all "
+         "wizard fireballs\nSped up fireballs have more magic based on power "
+         "wizard effect"});
+    up->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
+                params[PowerWizardParams::TimeWarpUpCost],
+                [](const Number& lvl) { return Number(8, 3) * (3 ^ lvl); });
+    up->setEffects(
+        {{params[PowerWizardParams::TimeWarpUp],
+          [](const Number& lvl) { return lvl == 0 ? 1 : .8 + lvl / 5; }}},
+        {{states[State::TimeWarpEnabled],
+          [](const Number& lvl) { return lvl > 0; }}},
+        []() -> TextUpdateData {
+            std::stringstream ss;
+            ss << "*{i}^"
+               << ParameterSystem::Param<POWER_WIZARD>(
+                      PowerWizardParams::TimeWarpUp)
+                      .get();
+            return {ss.str(), {PowerWizFireball::GetIcon()}};
+        });
+    mTimeWarpUp = mUpgrades->subscribe(up);
 }
 void PowerWizard::setParamTriggers() {
     ParameterSystem::Params<POWER_WIZARD> params;
@@ -134,6 +159,9 @@ void PowerWizard::setParamTriggers() {
         states[State::BoughtPowerWizard].subscribe([this](bool bought) {
             WizardSystem::GetHideObservable()->next(mId, !bought);
         }));
+
+    mParamSubs.push_back(states[State::BoughtSecondT1].subscribe(
+        [this](bool bought) { mTimeWarpUp->setActive(bought); }));
 
     mParamSubs.push_back(
         states[State::TimeWarpEnabled].subscribe([this](bool enabled) {
@@ -267,8 +295,12 @@ PowerWizFireball::Data PowerWizard::newFireballData(WizardId target) {
     switch (target) {
         case WIZARD:
             data.duration = params[PowerWizardParams::Duration].get();
-        case TIME_WIZARD:
             data.power = params[PowerWizardParams::Power].get() * speedEffect;
+            break;
+        case TIME_WIZARD:
+            data.power =
+                (params[PowerWizardParams::Power].get() * speedEffect) ^
+                params[PowerWizardParams::TimeWarpUp].get();
             break;
         case CRYSTAL:
             data.duration = params[PowerWizardParams::Duration].get() * 2;

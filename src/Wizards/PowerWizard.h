@@ -60,7 +60,7 @@ class PowerWizard : public WizardBase {
     TimeSystem::TimerObservable::SubscriptionPtr mAnimTimerSub;
     WizardSystem::WizardEventObservable::IdSubscriptionPtr mT1ResetSub;
     WizardSystem::HideObservable::AllSubscriptionPtr mTargetHideSub;
-    UpgradeList::SubscriptionPtr mPowerDisplay, mPowerUp;
+    UpgradeList::SubscriptionPtr mPowerDisplay, mPowerUp, mTimeWarpUp;
 
     PowerWizFireballPtr mFreezeFireball;
     std::vector<PowerWizFireballPtr> mFireballs;

@@ -91,6 +91,7 @@ enum B : param_t {
     BaseFBSpeed,
 
     PowerUpLvl,
+    TimeWarpUpLvl,
 };
 
 enum N : param_t {
@@ -104,6 +105,9 @@ enum N : param_t {
     Speed,
     FBSpeed,
     FBSpeedEffect,
+
+    TimeWarpUp,
+    TimeWarpUpCost,
 };
 }  // namespace PowerWizardParams
 namespace TimeWizardParams {
@@ -120,7 +124,6 @@ enum B : param_t {
     SpeedUpLvl,
     FBSpeedUpLvl,
     BoostWizSpdUpLvl,
-    TimeWarpUpLvl,
 };
 
 enum N : param_t {
@@ -139,9 +142,6 @@ enum N : param_t {
 
     BoostWizSpdUp,
     BoostWizSpdUpCost,
-
-    TimeWarpUp,
-    TimeWarpUpCost,
 };
 }  // namespace TimeWizardParams
 

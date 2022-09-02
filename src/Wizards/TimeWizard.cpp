@@ -114,23 +114,9 @@ void TimeWizard::setUpgrades() {
         });
     mActiveUp = mUpgrades->subscribe(mActiveToggle);
 
-    // Fireball Speed upgrade
-    UpgradePtr up =
-        std::make_shared<Upgrade>(params[TimeWizardParams::FBSpeedUpLvl], 6);
-    up->setImage("");
-    up->setDescription(
-        {"Increase fireball speed *1.075\nHigher speed gives more power"});
-    up->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
-                params[TimeWizardParams::FBSpeedCost],
-                [](const Number& lvl) { return 100 * (2.5 ^ lvl); });
-    up->setEffect(
-        params[TimeWizardParams::FBSpeedUp],
-        [](const Number& lvl) { return 1.075 ^ lvl; },
-        Upgrade::Defaults::MultiplicativeEffect);
-    mFBSpeedUp = mUpgrades->subscribe(up);
-
     // Speed upgrade
-    up = std::make_shared<Upgrade>(params[TimeWizardParams::SpeedUpLvl], 10);
+    UpgradePtr up =
+        std::make_shared<Upgrade>(params[TimeWizardParams::SpeedUpLvl], 10);
     up->setImage(SPEED_UP_IMG);
     up->setDescription(
         {"Increase speed boost multiplier by +.05\nThis will also increase "
@@ -144,6 +130,20 @@ void TimeWizard::setUpgrades() {
         Upgrade::Defaults::AdditiveEffect);
     mSpeedUp = mUpgrades->subscribe(up);
 
+    // Fireball Speed upgrade
+    up = std::make_shared<Upgrade>(params[TimeWizardParams::FBSpeedUpLvl], 6);
+    up->setImage("");
+    up->setDescription(
+        {"Increase fireball speed *1.075\nHigher speed gives more power"});
+    up->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
+                params[TimeWizardParams::FBSpeedCost],
+                [](const Number& lvl) { return 100 * (2.5 ^ lvl); });
+    up->setEffect(
+        params[TimeWizardParams::FBSpeedUp],
+        [](const Number& lvl) { return 1.075 ^ lvl; },
+        Upgrade::Defaults::MultiplicativeEffect);
+    mFBSpeedUp = mUpgrades->subscribe(up);
+
     // Freeze upgrade
     up = std::make_shared<Upgrade>(params[TimeWizardParams::FreezeUpLvl], 8);
     up->setImage(FREEZE_UP_IMG);
@@ -156,28 +156,6 @@ void TimeWizard::setUpgrades() {
         [](const Number& lvl) { return 1.03 ^ lvl; },
         Upgrade::Defaults::MultiplicativeEffect);
     mFreezeUp = mUpgrades->subscribe(up);
-
-    // Time warp upgrade
-    up = std::make_shared<Upgrade>(params[TimeWizardParams::TimeWarpUpLvl], 6);
-    up->setImage("");
-    up->setDescription(
-        {"Unlocks time warp - power wizard boosts time wizard, speeding up all "
-         "wizard fireballs\nSped up fireballs have more magic based on power "
-         "wizard effect"});
-    up->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
-                params[TimeWizardParams::TimeWarpUpCost],
-                [](const Number& lvl) { return Number(8, 3) * (3 ^ lvl); });
-    up->setEffects({{params[TimeWizardParams::TimeWarpUp],
-                     [](const Number& lvl) { return .8 + lvl / 5; }}},
-                   {{states[State::TimeWarpEnabled],
-                     [](const Number& lvl) { return lvl > 0; }}},
-                   []() -> TextUpdateData {
-                       return Upgrade::Defaults::PowerEffect(
-                           ParameterSystem::Param<TIME_WIZARD>(
-                               TimeWizardParams::TimeWarpUp)
-                               .get());
-                   });
-    mTimeWarpUp = mUpgrades->subscribe(up);
 
     // Boosted wizard speed upgrade
     up = std::make_shared<Upgrade>(params[TimeWizardParams::BoostWizSpdUpLvl],
@@ -324,8 +302,7 @@ void TimeWizard::onFreezeChange(bool frozen) {
 
 void TimeWizard::onPowFireballHit(const PowerWizFireball& fireball) {
     ParameterSystem::Params<TIME_WIZARD> params;
-    params[TimeWizardParams::TimeWarpEffect].set(
-        fireball.getPower() ^ params[TimeWizardParams::TimeWarpUp].get());
+    params[TimeWizardParams::TimeWarpEffect].set(fireball.getPower());
     WizardSystem::GetWizardEventObservable()->next(
         WizardSystem::Event::TimeWarp);
 }

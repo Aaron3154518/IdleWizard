@@ -39,7 +39,7 @@ class WizardFireball : public Fireball {
 
     const static AnimationData IMG, POW_IMG;
 
-    static const RenderDataPtr& GetIcon();
+    static RenderDataWPtr GetIcon();
 
    private:
     void init();

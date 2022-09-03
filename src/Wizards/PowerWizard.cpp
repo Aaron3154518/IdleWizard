@@ -1,5 +1,8 @@
 #include "PowerWizard.h"
 
+#include "TimeWizard.h"
+#include "Wizard.h"
+
 // PowerWizard
 const AnimationData PowerWizard::IMG{"res/wizards/power_wizard_ss.png", 8, 150};
 
@@ -16,6 +19,24 @@ void PowerWizard::setDefaults() {
     params[PowerWizardParams::BaseFBSpeed]->init(.75);
 
     params[PowerWizardParams::PowerUpLvl]->init(Event::ResetT1);
+}
+
+RenderDataWPtr PowerWizard::GetIcon() {
+    static RenderDataPtr ICON;
+    static TimerObservable::SubscriptionPtr ANIM_SUB;
+    if (!ICON) {
+        ICON = std::make_shared<RenderData>();
+        ICON->set(IMG);
+        ANIM_SUB =
+            ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
+                [](Timer& t) {
+                    ICON->nextFrame();
+                    return true;
+                },
+                Timer(IMG.frame_ms));
+    }
+
+    return ICON;
 }
 
 PowerWizard::PowerWizard() : WizardBase(POWER_WIZARD) {}
@@ -96,9 +117,11 @@ void PowerWizard::setUpgrades() {
     up = std::make_shared<Upgrade>(params[PowerWizardParams::TimeWarpUpLvl], 6);
     up->setImage("");
     up->setDescription(
-        {"Unlocks time warp - power wizard boosts time wizard, speeding up all "
-         "wizard fireballs\nSped up fireballs have more magic based on power "
-         "wizard effect"});
+        {"Unlocks time warp - {i} boosts {i}, speeding up all "
+         "{i} fireballs\nSped up fireballs have more magic based on {i} "
+         "effect",
+         {PowerWizard::GetIcon(), TimeWizard::GetIcon(), Wizard::GetIcon(),
+          PowerWizard::GetIcon()}});
     up->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
                 params[PowerWizardParams::TimeWarpUpCost],
                 [](const Number& lvl) { return Number(8, 3) * (3 ^ lvl); });

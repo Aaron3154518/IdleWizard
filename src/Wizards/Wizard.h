@@ -39,6 +39,8 @@ class Wizard : public WizardBase {
 
     static void setDefaults();
 
+    static RenderDataWPtr GetIcon();
+
    private:
     void init();
     void setSubscriptions();

@@ -30,6 +30,24 @@ void TimeWizard::setDefaults() {
     states[State::TimeWizFrozen]->init(false, Event::ResetT1);
 }
 
+RenderDataWPtr TimeWizard::GetIcon() {
+    static RenderDataPtr ICON;
+    static TimerObservable::SubscriptionPtr ANIM_SUB;
+    if (!ICON) {
+        ICON = std::make_shared<RenderData>();
+        ICON->set(IMG);
+        ANIM_SUB =
+            ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
+                [](Timer& t) {
+                    ICON->nextFrame();
+                    return true;
+                },
+                Timer(IMG.frame_ms));
+    }
+
+    return ICON;
+}
+
 TimeWizard::TimeWizard() : WizardBase(TIME_WIZARD) {}
 
 void TimeWizard::init() {

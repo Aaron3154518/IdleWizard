@@ -4,7 +4,7 @@
 const AnimationData PowerWizFireball::IMG{
     "res/projectiles/power_fireball_ss.png", 6, 75};
 
-const RenderDataPtr& PowerWizFireball::GetIcon() {
+RenderDataWPtr PowerWizFireball::GetIcon() {
     static RenderDataPtr ICON;
     static TimerObservable::SubscriptionPtr ANIM_SUB;
     if (!ICON) {

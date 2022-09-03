@@ -29,6 +29,24 @@ void Crystal::setDefaults() {
     states[State::BoughtCatalyst]->init(false, Event::ResetT2);
 }
 
+RenderDataWPtr Crystal::GetIcon() {
+    static RenderDataPtr ICON;
+    static TimerObservable::SubscriptionPtr ANIM_SUB;
+    if (!ICON) {
+        ICON = std::make_shared<RenderData>();
+        ICON->set(IMG);
+        ANIM_SUB =
+            ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
+                [](Timer& t) {
+                    ICON->nextFrame();
+                    return true;
+                },
+                Timer(IMG.frame_ms));
+    }
+
+    return ICON;
+}
+
 Crystal::Crystal() : WizardBase(CRYSTAL) {}
 
 void Crystal::init() {

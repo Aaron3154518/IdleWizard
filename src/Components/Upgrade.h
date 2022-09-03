@@ -38,7 +38,7 @@ class UpgradeBase {
         const ParameterSystem::BaseValue& getMoneyParam() const;
         const Number& getCost() const;
         const Number& getMoney() const;
-        const RenderDataPtr& getMoneyIcon() const;
+        RenderDataWPtr getMoneyIcon() const;
         bool canBuy() const;
         void buy() const;
 

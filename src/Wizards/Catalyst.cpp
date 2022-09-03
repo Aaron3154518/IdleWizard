@@ -17,6 +17,24 @@ void Catalyst::setDefaults() {
     params[CatalystParams::RangeUpLvl]->init(Event::ResetT2);
 }
 
+RenderDataWPtr Catalyst::GetIcon() {
+    static RenderDataPtr ICON;
+    static TimerObservable::SubscriptionPtr ANIM_SUB;
+    if (!ICON) {
+        ICON = std::make_shared<RenderData>();
+        ICON->set(IMG);
+        /*ANIM_SUB =
+            ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
+                [](Timer& t) {
+                    ICON->nextFrame();
+                    return true;
+                },
+                Timer(IMG.frame_ms));*/
+    }
+
+    return ICON;
+}
+
 Catalyst::Catalyst() : WizardBase(CATALYST) {
     mPos->elevation = Elevation::CATALYST;
 }

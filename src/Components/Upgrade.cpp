@@ -20,7 +20,7 @@ const ParameterSystem::BaseValue& UpgradeBase::Cost::getMoneyParam() const {
 }
 const Number& UpgradeBase::Cost::getCost() const { return mCost.get(); }
 const Number& UpgradeBase::Cost::getMoney() const { return mMoney.get(); }
-const RenderDataPtr& UpgradeBase::Cost::getMoneyIcon() const {
+RenderDataWPtr UpgradeBase::Cost::getMoneyIcon() const {
     return Money::GetMoneyIcon(mMoney);
 }
 bool UpgradeBase::Cost::canBuy() const { return mCost.get() <= mMoney.get(); }

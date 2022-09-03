@@ -1,47 +1,13 @@
 #include "Catalyst.h"
 
 // Catalyst
-const unsigned int Catalyst::MSPF = 150, Catalyst::NUM_FRAMES = 5;
-
-const std::string Catalyst::IMG = "res/wizards/catalyst.png";
-
-void Catalyst::setDefaults() {
-    using WizardSystem::Event;
-
-    ParameterSystem::Params<CATALYST> params;
-
-    params[CatalystParams::Magic]->init(0);
-    params[CatalystParams::Capacity]->init(100);
-    params[CatalystParams::BaseRange]->init(1.25);
-
-    params[CatalystParams::RangeUpLvl]->init(Event::ResetT2);
-}
-
-RenderDataWPtr Catalyst::GetIcon() {
-    static RenderDataPtr ICON;
-    static TimerObservable::SubscriptionPtr ANIM_SUB;
-    if (!ICON) {
-        ICON = std::make_shared<RenderData>();
-        ICON->set(IMG);
-        /*ANIM_SUB =
-            ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
-                [](Timer& t) {
-                    ICON->nextFrame();
-                    return true;
-                },
-                Timer(IMG.frame_ms));*/
-    }
-
-    return ICON;
-}
-
 Catalyst::Catalyst() : WizardBase(CATALYST) {
     mPos->elevation = Elevation::CATALYST;
 }
 
 void Catalyst::init() {
     ParameterSystem::Params<CATALYST> params;
-    mImg.set(IMG).setDest(IMG_RECT);
+    mImg.set(CatalystDefs::IMG).setDest(IMG_RECT);
     mPos->rect = mImg.getDest();
     WizardSystem::GetWizardImageObservable()->next(mId, mImg);
 

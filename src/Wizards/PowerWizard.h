@@ -13,6 +13,9 @@
 #include <Systems/ParameterSystem/WizardParameters.h>
 #include <Systems/WizardSystem.h>
 #include <Utils/AnimationData.h>
+#include <Wizards/Definitions/PowerWizardDefs.h>
+#include <Wizards/Definitions/TimeWizardDefs.h>
+#include <Wizards/Definitions/WizardDefs.h>
 #include <Wizards/WizardBase.h>
 #include <Wizards/WizardIds.h>
 
@@ -22,13 +25,6 @@
 class PowerWizard : public WizardBase {
    public:
     PowerWizard();
-
-    const static AnimationData IMG;
-    const static std::string POWER_UP_IMG;
-
-    static void setDefaults();
-
-    static RenderDataWPtr GetIcon();
 
    private:
     void init();

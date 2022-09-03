@@ -18,6 +18,7 @@
 #include <Systems/TimeSystem.h>
 #include <Systems/WizardSystem.h>
 #include <Utils/AnimationData.h>
+#include <Wizards/Definitions/WizardDefs.h>
 #include <Wizards/WizardBase.h>
 #include <Wizards/WizardIds.h>
 
@@ -29,17 +30,6 @@
 class Wizard : public WizardBase {
    public:
     Wizard();
-
-    const static AnimationData IMG, POWER_BKGRND;
-
-    const static std::string POWER_UP_IMG, SPEED_UP_IMG, MULTI_UP_IMG,
-        CRIT_UP_IMG;
-
-    const static std::vector<WizardId> TARGETS;
-
-    static void setDefaults();
-
-    static RenderDataWPtr GetIcon();
 
    private:
     void init();

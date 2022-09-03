@@ -1,58 +1,12 @@
 #include "Crystal.h"
 
 // Crystal
-const Number Crystal::T1_COST1 = 500, Crystal::T1_COST2 = 5e4;
-const SDL_Color Crystal::MSG_COLOR{200, 0, 175, 255};
-
-const AnimationData Crystal::IMG{"res/wizards/crystal_ss.png", 13, 100};
-
-void Crystal::setDefaults() {
-    using WizardSystem::Event;
-
-    ParameterSystem::Params<CRYSTAL> params;
-
-    // Default 0
-    params[CrystalParams::Magic]->init(Number(1, 10), Event::ResetT1);
-    params[CrystalParams::Shards]->init(0, Event::ResetT2);
-
-    params[CrystalParams::WizardCntUpCost]->init(Number(2, 3));
-    params[CrystalParams::GlowUpCost]->init(Number(1, 5));
-    params[CrystalParams::CatalystCost]->init(1);
-
-    ParameterSystem::States states;
-
-    states[State::ResetT1]->init(false);
-    states[State::BoughtCrysWizCntUp]->init(false, Event::ResetT1);
-    states[State::BoughtCrysGlowUp]->init(false, Event::ResetT1);
-    states[State::BoughtPowerWizard]->init(false, Event::ResetT1);
-    states[State::BoughtTimeWizard]->init(false, Event::ResetT1);
-    states[State::BoughtCatalyst]->init(false, Event::ResetT2);
-}
-
-RenderDataWPtr Crystal::GetIcon() {
-    static RenderDataPtr ICON;
-    static TimerObservable::SubscriptionPtr ANIM_SUB;
-    if (!ICON) {
-        ICON = std::make_shared<RenderData>();
-        ICON->set(IMG);
-        ANIM_SUB =
-            ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
-                [](Timer& t) {
-                    ICON->nextFrame();
-                    return true;
-                },
-                Timer(IMG.frame_ms));
-    }
-
-    return ICON;
-}
-
 Crystal::Crystal() : WizardBase(CRYSTAL) {}
 
 void Crystal::init() {
     ParameterSystem::Params<CRYSTAL> params;
 
-    mImg.set(IMG).setDest(IMG_RECT);
+    mImg.set(CrystalDefs::IMG).setDest(IMG_RECT);
     mPos->rect = mImg.getDest();
     WizardSystem::GetWizardImageObservable()->next(mId, mImg);
 
@@ -62,7 +16,7 @@ void Crystal::init() {
     mMagicRender.set(mMagicText)
         .setFit(RenderData::FitMode::Texture)
         .setFitAlign(Rect::Align::CENTER, Rect::Align::TOP_LEFT);
-    mMsgTData.setFont(FONT).setColor(MSG_COLOR);
+    mMsgTData.setFont(FONT).setColor(CrystalDefs::MSG_COLOR);
 
     WizardBase::init();
 
@@ -81,11 +35,11 @@ void Crystal::setSubscriptions() {
         [this](Timer& t) {
             mImg.nextFrame();
             WizardSystem::GetWizardImageObservable()->next(mId, mImg);
-            t.length =
-                mImg.getFrame() == 0 ? getAnimationDelay() : IMG.frame_ms;
+            t.length = mImg.getFrame() == 0 ? getAnimationDelay()
+                                            : CrystalDefs::IMG.frame_ms;
             return true;
         },
-        IMG);
+        CrystalDefs::IMG);
     mT1ResetSub = WizardSystem::GetWizardEventObservable()->subscribe(
         [this]() { onT1Reset(); }, WizardSystem::Event::ResetT1);
     attachSubToVisibility(mUpdateSub);
@@ -191,8 +145,9 @@ void Crystal::setParamTriggers() {
         [this]() { drawMagic(); }));
 
     mParamSubs.push_back(params[CrystalParams::T1WizardCost].subscribeTo(
-        states[State::BoughtFirstT1],
-        [this](bool val) { return val ? T1_COST2 : T1_COST1; }));
+        states[State::BoughtFirstT1], [this](bool val) {
+            return val ? CrystalDefs::T1_COST2 : CrystalDefs::T1_COST1;
+        }));
 
     mParamSubs.push_back(states[State::BoughtFirstT1].subscribeTo(
         {}, {states[State::BoughtPowerWizard], states[State::BoughtTimeWizard]},

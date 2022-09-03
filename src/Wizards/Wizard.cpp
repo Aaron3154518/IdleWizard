@@ -1,61 +1,14 @@
 #include "Wizard.h"
 
 // Wizard
-const AnimationData Wizard::IMG{"res/wizards/wizard_ss.png", 5, 150},
-    Wizard::POWER_BKGRND{"res/wizards/power_effect_bkgrnd_ss.png", 6, 100};
-
-const std::string Wizard::POWER_UP_IMG = "res/upgrades/fireball_upgrade.png";
-const std::string Wizard::MULTI_UP_IMG = "res/upgrades/multi_upgrade.png";
-const std::string Wizard::CRIT_UP_IMG = "res/upgrades/crit_upgrade.png";
-
-const std::vector<WizardId> Wizard::TARGETS = {CRYSTAL, CATALYST};
-
-void Wizard::setDefaults() {
-    using WizardSystem::Event;
-
-    ParameterSystem::Params<WIZARD> params;
-
-    params[WizardParams::BaseCritSpread]->init(0);
-    params[WizardParams::BasePower]->init(1);
-    params[WizardParams::BaseSpeed]->init(.5);
-    params[WizardParams::BaseFBSpeed]->init(1);
-    params[WizardParams::BaseCrit]->init(1);
-    params[WizardParams::PowerWizEffect]->init(1, Event::ResetT1);
-
-    params[WizardParams::CritUpLvl]->init(Event::ResetT1);
-    params[WizardParams::MultiUpLvl]->init(Event::ResetT1);
-    params[WizardParams::PowerUpLvl]->init(Event::ResetT1);
-
-    ParameterSystem::States states;
-    states[State::WizBoosted]->init(false, Event::ResetT1);
-}
-
-RenderDataWPtr Wizard::GetIcon() {
-    static RenderDataPtr ICON;
-    static TimerObservable::SubscriptionPtr ANIM_SUB;
-    if (!ICON) {
-        ICON = std::make_shared<RenderData>();
-        ICON->set(IMG);
-        ANIM_SUB =
-            ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
-                [](Timer& t) {
-                    ICON->nextFrame();
-                    return true;
-                },
-                Timer(IMG.frame_ms));
-    }
-
-    return ICON;
-}
-
 Wizard::Wizard() : WizardBase(WIZARD) {}
 
 void Wizard::init() {
-    mImg.set(IMG).setDest(IMG_RECT);
+    mImg.set(WizardDefs::IMG).setDest(IMG_RECT);
     mPos->rect = mImg.getDest();
     WizardSystem::GetWizardImageObservable()->next(mId, mImg);
 
-    mPowBkgrnd.set(POWER_BKGRND);
+    mPowBkgrnd.set(WizardDefs::POWER_BKGRND);
 
     WizardBase::init();
 }
@@ -71,13 +24,13 @@ void Wizard::setSubscriptions() {
             WizardSystem::GetWizardImageObservable()->next(mId, mImg);
             return true;
         },
-        IMG);
+        WizardDefs::IMG);
     mPowBkAnimTimerSub = TimeSystem::GetTimerObservable()->subscribe(
         [this](Timer& t) {
             mPowBkgrnd.nextFrame();
             return true;
         },
-        POWER_BKGRND);
+        WizardDefs::POWER_BKGRND);
     mT1ResetSub = WizardSystem::GetWizardEventObservable()->subscribe(
         [this]() { onT1Reset(); }, WizardSystem::Event::ResetT1);
     mTimeWarpSub = WizardSystem::GetWizardEventObservable()->subscribe(
@@ -121,7 +74,7 @@ void Wizard::setUpgrades() {
     // Target Upgrade
     TogglePtr tUp = std::make_shared<Toggle>(
         [this](unsigned int lvl, Toggle& tUp) {
-            mTarget = TARGETS.at(lvl);
+            mTarget = WizardDefs::TARGETS.at(lvl);
             if (mTarget == CRYSTAL || !WizardSystem::Hidden(mTarget)) {
                 tUp.setImage(WIZ_IMGS.at(mTarget));
                 tUp.setInfo({"Target: " + WIZ_NAMES.at(mTarget)});
@@ -129,14 +82,14 @@ void Wizard::setUpgrades() {
                 tUp.setLevel(lvl + 1);
             }
         },
-        TARGETS.size());
+        WizardDefs::TARGETS.size());
     tUp->setDescription({"Change the Wizard's target"});
     mTargetUp = mUpgrades->subscribe(tUp);
 
     // Power Upgrade
     UpgradePtr up = std::make_shared<Upgrade>(
         params[WizardParams::PowerUpLvl], params[WizardParams::PowerUpMaxLvl]);
-    up->setImage(POWER_UP_IMG);
+    up->setImage(WizardDefs::POWER_UP_IMG);
     up->setDescription({"Increase Wizard base power by 1"});
     up->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
                 params[WizardParams::PowerUpCost],
@@ -149,7 +102,7 @@ void Wizard::setUpgrades() {
 
     // Crit Upgrade
     up = std::make_shared<Upgrade>(params[WizardParams::CritUpLvl], 10);
-    up->setImage(CRIT_UP_IMG);
+    up->setImage(WizardDefs::CRIT_UP_IMG);
     up->setDescription(
         {"Multiplies critical hit amount *1.1 and increases chance for "
          "higher crits"});
@@ -172,7 +125,7 @@ void Wizard::setUpgrades() {
 
     // Multi Upgrade
     up = std::make_shared<Upgrade>(params[WizardParams::MultiUpLvl], 20);
-    up->setImage(MULTI_UP_IMG);
+    up->setImage(WizardDefs::MULTI_UP_IMG);
     up->setDescription({"Increase double fireball chance by +5%"});
     up->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
                 params[WizardParams::MultiUpCost],

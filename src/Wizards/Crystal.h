@@ -14,6 +14,8 @@
 #include <Systems/ParameterSystem/ParameterAccess.h>
 #include <Systems/ParameterSystem/WizardParameters.h>
 #include <Utils/AnimationData.h>
+#include <Wizards/Definitions/CrystalDefs.h>
+#include <Wizards/Message.h>
 #include <Wizards/Money.h>
 #include <Wizards/WizardBase.h>
 #include <Wizards/WizardIds.h>
@@ -24,22 +26,6 @@
 class Crystal : public WizardBase {
    public:
     Crystal();
-
-    const static Number T1_COST1, T1_COST2;
-    const static SDL_Color MSG_COLOR;
-
-    const static AnimationData IMG;
-
-    struct Message {
-        RenderData mRData;
-        int mTimer;
-        bool mMoving;
-        SDL_FPoint mTrajectory;
-    };
-
-    static void setDefaults();
-
-    static RenderDataWPtr GetIcon();
 
    private:
     void init();

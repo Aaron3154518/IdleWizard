@@ -1,48 +1,10 @@
 #include "PowerWizard.h"
 
-#include "TimeWizard.h"
-#include "Wizard.h"
-
 // PowerWizard
-const AnimationData PowerWizard::IMG{"res/wizards/power_wizard_ss.png", 8, 150};
-
-const std::string PowerWizard::POWER_UP_IMG =
-    "res/upgrades/power_fireball_upgrade.png";
-
-void PowerWizard::setDefaults() {
-    using WizardSystem::Event;
-
-    ParameterSystem::Params<POWER_WIZARD> params;
-
-    params[PowerWizardParams::BasePower]->init(5);
-    params[PowerWizardParams::BaseSpeed]->init(.25);
-    params[PowerWizardParams::BaseFBSpeed]->init(.75);
-
-    params[PowerWizardParams::PowerUpLvl]->init(Event::ResetT1);
-}
-
-RenderDataWPtr PowerWizard::GetIcon() {
-    static RenderDataPtr ICON;
-    static TimerObservable::SubscriptionPtr ANIM_SUB;
-    if (!ICON) {
-        ICON = std::make_shared<RenderData>();
-        ICON->set(IMG);
-        ANIM_SUB =
-            ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
-                [](Timer& t) {
-                    ICON->nextFrame();
-                    return true;
-                },
-                Timer(IMG.frame_ms));
-    }
-
-    return ICON;
-}
-
 PowerWizard::PowerWizard() : WizardBase(POWER_WIZARD) {}
 
 void PowerWizard::init() {
-    mImg.set(IMG).setDest(IMG_RECT);
+    mImg.set(PowerWizardDefs::IMG).setDest(IMG_RECT);
     mPos->rect = mImg.getDest();
     WizardSystem::GetWizardImageObservable()->next(mId, mImg);
 
@@ -60,7 +22,7 @@ void PowerWizard::setSubscriptions() {
             WizardSystem::GetWizardImageObservable()->next(mId, mImg);
             return true;
         },
-        IMG);
+        PowerWizardDefs::IMG);
     mT1ResetSub = WizardSystem::GetWizardEventObservable()->subscribe(
         [this]() { onT1Reset(); }, WizardSystem::Event::ResetT1);
     mTargetHideSub = WizardSystem::GetHideObservable()->subscribeToAll(
@@ -102,7 +64,7 @@ void PowerWizard::setUpgrades() {
     // Power upgrade
     UpgradePtr up =
         std::make_shared<Upgrade>(params[PowerWizardParams::PowerUpLvl], 15);
-    up->setImage(POWER_UP_IMG);
+    up->setImage(PowerWizardDefs::POWER_UP_IMG);
     up->setDescription({"Increase power effect by *1.15"});
     up->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
                 params[PowerWizardParams::PowerUpCost],
@@ -120,8 +82,8 @@ void PowerWizard::setUpgrades() {
         {"Unlocks time warp - {i} boosts {i}, speeding up all "
          "{i} fireballs\nSped up fireballs have more magic based on {i} "
          "effect",
-         {PowerWizard::GetIcon(), TimeWizard::GetIcon(), Wizard::GetIcon(),
-          PowerWizard::GetIcon()}});
+         {PowerWizardDefs::GetIcon(), TimeWizardDefs::GetIcon(),
+          WizardDefs::GetIcon(), PowerWizardDefs::GetIcon()}});
     up->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
                 params[PowerWizardParams::TimeWarpUpCost],
                 [](const Number& lvl) { return Number(8, 3) * (3 ^ lvl); });

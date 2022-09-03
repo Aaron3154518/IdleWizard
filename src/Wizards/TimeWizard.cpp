@@ -1,53 +1,6 @@
 #include "TimeWizard.h"
 
 // TimeWizard
-const AnimationData TimeWizard::IMG{"res/wizards/time_wizard_ss.png", 8, 100},
-    TimeWizard::FREEZE_IMG{"res/wizards/time_wizard_frozen_ss.png", 9, 100};
-
-const std::string TimeWizard::FREEZE_UP_IMG =
-    "res/upgrades/time_freeze_upgrade.png";
-const std::string TimeWizard::SPEED_UP_IMG = "res/upgrades/speed_upgrade.png";
-
-void TimeWizard::setDefaults() {
-    using WizardSystem::Event;
-
-    ParameterSystem::Params<TIME_WIZARD> params;
-
-    params[TimeWizardParams::SpeedBaseEffect]->init(1.5);
-    params[TimeWizardParams::FreezeBaseEffect]->init(1.1);
-    params[TimeWizardParams::FreezeDelay]->init(100000);
-    params[TimeWizardParams::FreezeDuration]->init(5000);
-    params[TimeWizardParams::TimeWarpEffect]->init(1, Event::ResetT1);
-
-    params[TimeWizardParams::SpeedUpLvl]->init(Event::ResetT1);
-    params[TimeWizardParams::FBSpeedUpLvl]->init(Event::ResetT1);
-    params[TimeWizardParams::FreezeUpLvl]->init(Event::ResetT1);
-    params[TimeWizardParams::BoostWizSpdUpLvl]->init(Event::ResetT1);
-
-    ParameterSystem::States states;
-
-    states[State::TimeWizActive]->init(false, Event::ResetT1);
-    states[State::TimeWizFrozen]->init(false, Event::ResetT1);
-}
-
-RenderDataWPtr TimeWizard::GetIcon() {
-    static RenderDataPtr ICON;
-    static TimerObservable::SubscriptionPtr ANIM_SUB;
-    if (!ICON) {
-        ICON = std::make_shared<RenderData>();
-        ICON->set(IMG);
-        ANIM_SUB =
-            ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
-                [](Timer& t) {
-                    ICON->nextFrame();
-                    return true;
-                },
-                Timer(IMG.frame_ms));
-    }
-
-    return ICON;
-}
-
 TimeWizard::TimeWizard() : WizardBase(TIME_WIZARD) {}
 
 void TimeWizard::init() {
@@ -70,12 +23,12 @@ void TimeWizard::setSubscriptions() {
                 WizardSystem::GetWizardImageObservable()->next(mId, mImg);
                 if (ParameterSystem::Param(State::TimeWizFrozen).get()) {
                     t.length = mImg.getFrame() != 0
-                                   ? FREEZE_IMG.frame_ms
+                                   ? TimeWizardDefs::FREEZE_IMG.frame_ms
                                    : (int)(rDist(gen) * 500) + 1000;
                 }
                 return true;
             },
-            IMG);
+            TimeWizardDefs::IMG);
     mT1ResetSub = WizardSystem::GetWizardEventObservable()->subscribe(
         [this]() { onT1Reset(); }, WizardSystem::Event::ResetT1);
     mPowFireballHitSub = PowerWizFireball::GetHitObservable()->subscribe(
@@ -135,7 +88,7 @@ void TimeWizard::setUpgrades() {
     // Speed upgrade
     UpgradePtr up =
         std::make_shared<Upgrade>(params[TimeWizardParams::SpeedUpLvl], 10);
-    up->setImage(SPEED_UP_IMG);
+    up->setImage(TimeWizardDefs::SPEED_UP_IMG);
     up->setDescription(
         {"Increase speed boost multiplier by +.05\nThis will also increase "
          "the magic cost!"});
@@ -164,7 +117,7 @@ void TimeWizard::setUpgrades() {
 
     // Freeze upgrade
     up = std::make_shared<Upgrade>(params[TimeWizardParams::FreezeUpLvl], 8);
-    up->setImage(FREEZE_UP_IMG);
+    up->setImage(TimeWizardDefs::FREEZE_UP_IMG);
     up->setDescription({"Multiply unfreeze boost exponent by 1.03"});
     up->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
                 params[TimeWizardParams::FreezeUpCost],
@@ -218,7 +171,7 @@ void TimeWizard::setParamTriggers() {
     mParamSubs.push_back(params[TimeWizardParams::SpeedEffect].subscribe(
         [this](const Number& val) {
             mImgAnimData.frame_ms =
-                (unsigned int)(IMG.frame_ms / val.toFloat());
+                (unsigned int)(TimeWizardDefs::IMG.frame_ms / val.toFloat());
             if (mAnimTimerSub) {
                 mAnimTimerSub->get<TimerObservable::DATA>() = mImgAnimData;
             }
@@ -365,10 +318,10 @@ void TimeWizard::updateImg() {
     Rect imgR = mImg.getRect();
     imgR.setPos(mPos->rect.cX(), mPos->rect.cY(), Rect::Align::CENTER);
     bool frozen = ParameterSystem::Param(State::TimeWizFrozen).get();
-    mImg.set(frozen ? FREEZE_IMG : mImgAnimData);
+    mImg.set(frozen ? TimeWizardDefs::FREEZE_IMG : mImgAnimData);
     if (mAnimTimerSub) {
         mAnimTimerSub->get<TimerObservable::DATA>() =
-            frozen ? FREEZE_IMG : mImgAnimData;
+            frozen ? TimeWizardDefs::FREEZE_IMG : mImgAnimData;
     }
     mPos->rect = mImg.setDest(imgR).getDest();
     WizardSystem::GetWizardImageObservable()->next(mId, mImg);

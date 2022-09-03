@@ -18,6 +18,7 @@
 #include <Systems/TimeSystem.h>
 #include <Systems/WizardSystem.h>
 #include <Utils/AnimationData.h>
+#include <Wizards/Definitions/TimeWizardDefs.h>
 #include <Wizards/WizardBase.h>
 #include <Wizards/WizardIds.h>
 
@@ -26,14 +27,6 @@
 class TimeWizard : public WizardBase {
    public:
     TimeWizard();
-
-    const static AnimationData IMG, FREEZE_IMG;
-
-    const static std::string FREEZE_UP_IMG, SPEED_UP_IMG;
-
-    static void setDefaults();
-
-    static RenderDataWPtr GetIcon();
 
    private:
     void init();
@@ -73,7 +66,7 @@ class TimeWizard : public WizardBase {
 
     std::unique_ptr<TimeWizClock> mTClock;
 
-    AnimationData mImgAnimData = IMG;
+    AnimationData mImgAnimData = TimeWizardDefs::IMG;
 };
 
 #endif

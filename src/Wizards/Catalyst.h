@@ -12,6 +12,7 @@
 #include <Systems/ParameterSystem/ParameterAccess.h>
 #include <Systems/ParameterSystem/WizardParameters.h>
 #include <Systems/WizardSystem.h>
+#include <Wizards/Definitions/CatalystDefs.h>
 #include <Wizards/Money.h>
 #include <Wizards/WizardBase.h>
 #include <Wizards/WizardIds.h>
@@ -21,13 +22,6 @@
 class Catalyst : public WizardBase {
    public:
     Catalyst();
-
-    const static unsigned int MSPF, NUM_FRAMES;
-    const static std::string IMG;
-
-    static void setDefaults();
-
-    static RenderDataWPtr GetIcon();
 
    private:
     void init();

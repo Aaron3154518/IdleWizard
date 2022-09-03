@@ -2,6 +2,7 @@
 #define POWER_WIZARD_H
 
 #include <Components/Fireballs/PowerWizFireball.h>
+#include <Components/Fireballs/WizardFireball.h>
 #include <Components/Upgrade.h>
 #include <RenderSystem/AssetManager.h>
 #include <RenderSystem/RenderTypes.h>

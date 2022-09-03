@@ -65,7 +65,8 @@ void PowerWizard::setUpgrades() {
     UpgradePtr up =
         std::make_shared<Upgrade>(params[PowerWizardParams::PowerUpLvl], 15);
     up->setImage(PowerWizardDefs::POWER_UP_IMG);
-    up->setDescription({"Increase power effect by *1.15"});
+    up->setDescription(
+        {"Increase {i} power by *1.15", {PowerWizFireball::GetIcon()}});
     up->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
                 params[PowerWizardParams::PowerUpCost],
                 [](const Number& lvl) { return 125 * (1.5 ^ lvl); });
@@ -80,10 +81,10 @@ void PowerWizard::setUpgrades() {
     up->setImage(PowerWizardDefs::TIME_WARP_UP_IMG);
     up->setDescription(
         {"Unlocks time warp - {i} boosts {i}, speeding up all "
-         "{i} fireballs\nSped up fireballs have more magic based on {i} "
+         "{i}\nSped up fireballs gain power based on {i} "
          "effect",
          {PowerWizardDefs::GetIcon(), TimeWizardDefs::GetIcon(),
-          WizardDefs::GetIcon(), PowerWizFireball::GetIcon()}});
+          WizardFireball::GetIcon(), PowerWizFireball::GetIcon()}});
     up->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
                 params[PowerWizardParams::TimeWarpUpCost],
                 [](const Number& lvl) { return Number(8, 3) * (3 ^ lvl); });

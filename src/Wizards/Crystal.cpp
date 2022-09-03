@@ -67,7 +67,9 @@ void Crystal::setUpgrades() {
     // Power Display
     DisplayPtr dUp = std::make_shared<Display>();
     dUp->setImage(mId);
-    dUp->setDescription({"Multiplier based on crystal damage"});
+    dUp->setDescription(
+        {"Multiplier based on {i}",
+         {Money::GetMoneyIcon(Upgrade::Defaults::CRYSTAL_MAGIC)}});
     dUp->setEffect(params[CrystalParams::MagicEffect],
                    Upgrade::Defaults::MultiplicativeEffect);
     mMagicEffectDisplay = mUpgrades->subscribe(dUp);
@@ -89,8 +91,10 @@ void Crystal::setUpgrades() {
     bUp = std::make_shared<Buyable>(states[State::BoughtCrysGlowUp]);
     bUp->setImage(CrystalDefs::CRYS_GLOW_UP_IMG);
     bUp->setDescription(
-        {"After begin struck by the power wizard, the crystal will absorb "
-         "fireball strikes and multiply their power"});
+        {"After begin struck by {i}, {i} will absorb {i}\nWhen the effect "
+         "expires, their power will be multiplied",
+         {PowerWizardDefs::GetIcon(), CrystalDefs::GetIcon(),
+          WizardFireball::GetIcon()}});
     bUp->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
                  params[CrystalParams::GlowUpCost]);
     bUp->setEffect(params[CrystalParams::GlowEffect],
@@ -267,13 +271,15 @@ void Crystal::onHide(bool hide) {
 void Crystal::onT1Reset() { mFireRings.clear(); }
 
 void Crystal::onWizFireballHit(const WizardFireball& fireball) {
-    auto magic = ParameterSystem::Param<CRYSTAL>(CrystalParams::Magic);
-    magic.set(magic.get() + fireball.getPower());
-    addMessage("+" + fireball.getPower().toString(), CrystalDefs::MSG_COLOR);
     if (ParameterSystem::Param(State::CrysGlowActive).get()) {
         mGlowMagic += fireball.getPower();
         mGlowAnimTimerSub->get<TimerObservableBase::DATA>().timer = 0;
         mGlowAnimTimerSub->setActive(true);
+    } else {
+        auto magic = ParameterSystem::Param<CRYSTAL>(CrystalParams::Magic);
+        magic.set(magic.get() + fireball.getPower());
+        addMessage("+" + fireball.getPower().toString(),
+                   CrystalDefs::MSG_COLOR);
     }
 }
 
@@ -281,7 +287,6 @@ void Crystal::onPowFireballHit(const PowerWizFireball& fireball) {
     createFireRing(fireball.getPower());
     ParameterSystem::States states;
     if (states[State::BoughtCrysGlowUp].get()) {
-        mGlowMagic = 0;
         mGlowTimerSub = TimeSystem::GetTimerObservable()->subscribe(
             [this](Timer& t) { return onGlowTimer(t); },
             Timer(fireball.getDuration().toFloat()));
@@ -296,6 +301,7 @@ bool Crystal::onGlowTimer(Timer& t) {
     params[CrystalParams::Magic].set(params[CrystalParams::Magic].get() +
                                      magic);
     addMessage("+" + magic.toString(), CrystalDefs::GLOW_MSG_COLOR);
+    mGlowMagic = 0;
     states[State::CrysGlowActive].set(false);
     return false;
 }

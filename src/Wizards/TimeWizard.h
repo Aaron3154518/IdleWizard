@@ -2,6 +2,7 @@
 #define TIME_WIZARD_H
 
 #include <Components/Fireballs/PowerWizFireball.h>
+#include <Components/Fireballs/WizardFireball.h>
 #include <Components/TimeWizClock.h>
 #include <Components/Upgrade.h>
 #include <RenderSystem/AssetManager.h>
@@ -18,7 +19,9 @@
 #include <Systems/TimeSystem.h>
 #include <Systems/WizardSystem.h>
 #include <Utils/AnimationData.h>
+#include <Wizards/Definitions/PowerWizardDefs.h>
 #include <Wizards/Definitions/TimeWizardDefs.h>
+#include <Wizards/Definitions/WizardDefs.h>
 #include <Wizards/WizardBase.h>
 #include <Wizards/WizardIds.h>
 

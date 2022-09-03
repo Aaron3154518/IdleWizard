@@ -83,14 +83,14 @@ void Wizard::setUpgrades() {
             }
         },
         WizardDefs::TARGETS.size());
-    tUp->setDescription({"Change the Wizard's target"});
+    tUp->setDescription({"Change the target"});
     mTargetUp = mUpgrades->subscribe(tUp);
 
     // Power Upgrade
     UpgradePtr up = std::make_shared<Upgrade>(
         params[WizardParams::PowerUpLvl], params[WizardParams::PowerUpMaxLvl]);
     up->setImage(WizardDefs::POWER_UP_IMG);
-    up->setDescription({"Increase Wizard base power by 1"});
+    up->setDescription({"Increase base power by 1"});
     up->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
                 params[WizardParams::PowerUpCost],
                 [](const Number& lvl) { return 25 * (1.55 ^ lvl); });
@@ -126,7 +126,8 @@ void Wizard::setUpgrades() {
     // Multi Upgrade
     up = std::make_shared<Upgrade>(params[WizardParams::MultiUpLvl], 20);
     up->setImage(WizardDefs::MULTI_UP_IMG);
-    up->setDescription({"Increase double fireball chance by +5%"});
+    up->setDescription(
+        {"Increase double {i} chance by +5%", {WizardFireball::GetIcon()}});
     up->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
                 params[WizardParams::MultiUpCost],
                 [](const Number& lvl) { return 175 * (1.3 ^ lvl); });

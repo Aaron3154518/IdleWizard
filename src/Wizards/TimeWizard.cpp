@@ -71,7 +71,9 @@ void TimeWizard::setUpgrades() {
         2);
     mActiveToggle->setImage(WIZ_IMGS.at(mId));
     mActiveToggle->setDescription(
-        {"Consume magic for a fire rate multiplier to all Wizards"});
+        {"Consume {i} for a fire rate multiplier to {i}, {i}",
+         {Money::GetMoneyIcon(Upgrade::Defaults::CRYSTAL_MAGIC),
+          WizardDefs::GetIcon(), PowerWizardDefs::GetIcon()}});
     mActiveToggle->setEffects(
         {params[TimeWizardParams::SpeedCost],
          params[TimeWizardParams::SpeedEffect]},
@@ -91,7 +93,8 @@ void TimeWizard::setUpgrades() {
     up->setImage(TimeWizardDefs::SPEED_UP_IMG);
     up->setDescription(
         {"Increase speed boost multiplier by +.05\nThis will also increase "
-         "the magic cost!"});
+         "the {i} cost!",
+         {Money::GetMoneyIcon(Upgrade::Defaults::CRYSTAL_MAGIC)}});
     up->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
                 params[TimeWizardParams::SpeedUpCost],
                 [](const Number& lvl) { return 250 ^ (lvl / 12 + 1); });
@@ -105,7 +108,8 @@ void TimeWizard::setUpgrades() {
     up = std::make_shared<Upgrade>(params[TimeWizardParams::FBSpeedUpLvl], 6);
     up->setImage(TimeWizardDefs::FB_SPEED_UP_IMG);
     up->setDescription(
-        {"Increase fireball speed *1.075\nHigher speed gives more power"});
+        {"Increase {i} speed *1.075\nHigher speed gives more power",
+         {WizardFireball::GetIcon()}});
     up->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
                 params[TimeWizardParams::FBSpeedCost],
                 [](const Number& lvl) { return 100 * (2.5 ^ lvl); });
@@ -133,8 +137,8 @@ void TimeWizard::setUpgrades() {
                                    8);
     up->setImage(TimeWizardDefs::POW_SPEED_UP_IMG);
     up->setDescription(
-        {"Multiplies wizard fire rate by *1.1/level while boosted by power "
-         "wizard"});
+        {"Multiplies {i} fire rate by *1.1/level while boosted by {i}",
+         {WizardDefs::GetIcon(), PowerWizardDefs::GetIcon()}});
     up->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
                 params[TimeWizardParams::BoostWizSpdUpCost],
                 [](const Number& lvl) { return Number(1, 3) * (2.1 ^ lvl); });

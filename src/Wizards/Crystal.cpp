@@ -87,7 +87,7 @@ void Crystal::setUpgrades() {
 
     // Glow upgrade
     bUp = std::make_shared<Buyable>(states[State::BoughtCrysGlowUp]);
-    bUp->setImage("");
+    bUp->setImage(CrystalDefs::CRYS_GLOW_UP_IMG);
     bUp->setDescription(
         {"After begin struck by the power wizard, the crystal will absorb "
          "fireball strikes and multiply their power"});

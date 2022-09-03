@@ -103,7 +103,7 @@ void TimeWizard::setUpgrades() {
 
     // Fireball Speed upgrade
     up = std::make_shared<Upgrade>(params[TimeWizardParams::FBSpeedUpLvl], 6);
-    up->setImage("");
+    up->setImage(TimeWizardDefs::FB_SPEED_UP_IMG);
     up->setDescription(
         {"Increase fireball speed *1.075\nHigher speed gives more power"});
     up->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,

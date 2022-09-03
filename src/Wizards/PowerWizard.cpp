@@ -77,13 +77,13 @@ void PowerWizard::setUpgrades() {
 
     // Time warp upgrade
     up = std::make_shared<Upgrade>(params[PowerWizardParams::TimeWarpUpLvl], 6);
-    up->setImage("");
+    up->setImage(PowerWizardDefs::TIME_WARP_UP_IMG);
     up->setDescription(
         {"Unlocks time warp - {i} boosts {i}, speeding up all "
          "{i} fireballs\nSped up fireballs have more magic based on {i} "
          "effect",
          {PowerWizardDefs::GetIcon(), TimeWizardDefs::GetIcon(),
-          WizardDefs::GetIcon(), PowerWizardDefs::GetIcon()}});
+          WizardDefs::GetIcon(), PowerWizFireball::GetIcon()}});
     up->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
                 params[PowerWizardParams::TimeWarpUpCost],
                 [](const Number& lvl) { return Number(8, 3) * (3 ^ lvl); });

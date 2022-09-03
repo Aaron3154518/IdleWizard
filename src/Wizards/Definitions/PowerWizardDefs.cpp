@@ -3,7 +3,8 @@
 namespace PowerWizardDefs {
 const AnimationData IMG{"res/wizards/power_wizard_ss.png", 8, 150};
 
-const std::string POWER_UP_IMG = "res/upgrades/power_fireball_upgrade.png";
+const std::string POWER_UP_IMG = "res/upgrades/power_fireball_upgrade.png",
+                  TIME_WARP_UP_IMG = "res/upgrades/time_warp_upgrade.png";
 
 void setDefaults() {
     using WizardSystem::Event;

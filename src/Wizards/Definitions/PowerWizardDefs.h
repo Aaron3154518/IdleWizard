@@ -12,7 +12,7 @@
 
 namespace PowerWizardDefs {
 extern const AnimationData IMG;
-extern const std::string POWER_UP_IMG;
+extern const std::string POWER_UP_IMG, TIME_WARP_UP_IMG;
 
 void setDefaults();
 

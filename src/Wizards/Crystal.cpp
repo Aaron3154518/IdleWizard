@@ -323,7 +323,7 @@ void Crystal::drawMagic() {
     if (ParameterSystem::Param(State::ResetT1).get()) {
         ss << "\n{i}" << params[CrystalParams::Shards].get();
     }
-    mMagicText->setText(ss.str(), mPos->rect.W());
+    mMagicText->setText(ss.str(), mImg.getRect().W());
 }
 
 int Crystal::getAnimationDelay() {

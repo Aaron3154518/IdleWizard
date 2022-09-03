@@ -60,7 +60,8 @@ class Crystal : public WizardBase {
     void setPos(float x, float y);
 
     UpdateObservable::SubscriptionPtr mUpdateSub;
-    TimeSystem::TimerObservable::SubscriptionPtr mAnimTimerSub, mGlowTimerSub;
+    TimeSystem::TimerObservable::SubscriptionPtr mAnimTimerSub, mGlowTimerSub,
+        mGlowAnimTimerSub;
     WizardFireball::HitObservable::IdSubscriptionPtr mWizFireballHitSub;
     PowerWizFireball::HitObservable::IdSubscriptionPtr mPowFireballHitSub;
     WizardSystem::WizardEventObservable::IdSubscriptionPtr mT1ResetSub;
@@ -74,7 +75,7 @@ class Crystal : public WizardBase {
     std::vector<std::unique_ptr<FireRing>> mFireRings;
 
     TextDataPtr mMagicText = std::make_shared<TextData>();
-    RenderData mMagicRender;
+    RenderData mMagicRender, mGlowBkgrnd;
 };
 
 #endif

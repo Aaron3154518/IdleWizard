@@ -6,7 +6,8 @@ const SDL_Color MSG_COLOR{200, 0, 175, 255};
 
 const std::string WIZ_CNT_UP_IMG = "res/upgrades/wizard_count_upgrade.png";
 
-const AnimationData IMG{"res/wizards/crystal_ss.png", 13, 100};
+const AnimationData IMG{"res/wizards/crystal_ss.png", 13, 100},
+    GLOW_EFFECT_IMG{"res/wizards/crystal_glow_effect_ss.png", 4, 150};
 
 void setDefaults() {
     using WizardSystem::Event;

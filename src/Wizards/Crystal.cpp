@@ -9,6 +9,11 @@ void Crystal::init() {
     mImg.set(CrystalDefs::IMG).setDest(IMG_RECT);
     mPos->rect = mImg.getDest();
     WizardSystem::GetWizardImageObservable()->next(mId, mImg);
+    mGlowBkgrnd.set(CrystalDefs::GLOW_EFFECT_IMG);
+    SDL_Point imgDim = mImg.getTextureDim(),
+              glowDim = mGlowBkgrnd.getTextureDim();
+    mGlowBkgrnd.setDest(Rect(0, 0, mPos->rect.w() * glowDim.x / imgDim.x,
+                             mPos->rect.h() * glowDim.y / imgDim.y));
 
     mMagicText->setFont(FONT).setImgs(
         {Money::GetMoneyIcon(params[CrystalParams::Magic]),
@@ -40,6 +45,15 @@ void Crystal::setSubscriptions() {
             return true;
         },
         CrystalDefs::IMG);
+    mGlowAnimTimerSub = TimeSystem::GetTimerObservable()->subscribe(
+        [this](Timer& t) {
+            mGlowBkgrnd.nextFrame();
+            if (mGlowBkgrnd.getFrame() == 0) {
+                mGlowAnimTimerSub->setActive(false);
+            }
+            return true;
+        },
+        CrystalDefs::GLOW_EFFECT_IMG);
     mT1ResetSub = WizardSystem::GetWizardEventObservable()->subscribe(
         [this]() { onT1Reset(); }, WizardSystem::Event::ResetT1);
     attachSubToVisibility(mUpdateSub);
@@ -203,9 +217,16 @@ void Crystal::onUpdate(Time dt) {
 }
 
 void Crystal::onRender(SDL_Renderer* r) {
-    WizardBase::onRender(r);
-
     TextureBuilder tex;
+
+    if (ParameterSystem::Param(State::CrysGlowActive).get()) {
+        Rect glowRect = mGlowBkgrnd.getRect();
+        glowRect.setPos(mPos->rect.cX(), mPos->rect.cY(), Rect::Align::CENTER);
+        mGlowBkgrnd.setDest(glowRect);
+        tex.draw(mGlowBkgrnd);
+    }
+
+    WizardBase::onRender(r);
 
     tex.draw(mMagicRender);
 
@@ -249,27 +270,33 @@ void Crystal::onWizFireballHit(const WizardFireball& fireball) {
     auto magic = ParameterSystem::Param<CRYSTAL>(CrystalParams::Magic);
     magic.set(magic.get() + fireball.getPower());
     addMessage("+" + fireball.getPower().toString());
-    if (ParameterSystem::Param(State::BoughtCrysGlowUp).get()) {
+    if (ParameterSystem::Param(State::CrysGlowActive).get()) {
         mGlowMagic += fireball.getPower();
+        mGlowAnimTimerSub->get<TimerObservableBase::DATA>().timer = 0;
+        mGlowAnimTimerSub->setActive(true);
     }
 }
 
 void Crystal::onPowFireballHit(const PowerWizFireball& fireball) {
     createFireRing(fireball.getPower());
-    if (ParameterSystem::Param(State::BoughtCrysGlowUp).get()) {
+    ParameterSystem::States states;
+    if (states[State::BoughtCrysGlowUp].get()) {
         mGlowMagic = 0;
         mGlowTimerSub = TimeSystem::GetTimerObservable()->subscribe(
             [this](Timer& t) { return onGlowTimer(t); },
             Timer(fireball.getDuration().toFloat()));
+        states[State::CrysGlowActive].set(true);
     }
 }
 
 bool Crystal::onGlowTimer(Timer& t) {
     ParameterSystem::Params<CRYSTAL> params;
+    ParameterSystem::States states;
     Number magic = mGlowMagic * params[CrystalParams::GlowEffect].get();
     params[CrystalParams::Magic].set(params[CrystalParams::Magic].get() +
                                      magic);
     addMessage("+" + magic.toString());
+    states[State::CrysGlowActive].set(false);
     return false;
 }
 

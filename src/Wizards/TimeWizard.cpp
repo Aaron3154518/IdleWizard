@@ -131,7 +131,7 @@ void TimeWizard::setUpgrades() {
     // Boosted wizard speed upgrade
     up = std::make_shared<Upgrade>(params[TimeWizardParams::BoostWizSpdUpLvl],
                                    8);
-    up->setImage("");
+    up->setImage(TimeWizardDefs::POW_SPEED_UP_IMG);
     up->setDescription(
         {"Multiplies wizard fire rate by *1.1/level while boosted by power "
          "wizard"});

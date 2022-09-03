@@ -6,7 +6,8 @@ const AnimationData IMG{"res/wizards/time_wizard_ss.png", 8, 100},
 
 const std::string FREEZE_UP_IMG = "res/upgrades/time_freeze_upgrade.png",
                   SPEED_UP_IMG = "res/upgrades/speed_upgrade.png",
-                  FB_SPEED_UP_IMG = "res/upgrades/fireball_speed_upgrade.png";
+                  FB_SPEED_UP_IMG = "res/upgrades/fireball_speed_upgrade.png",
+                  POW_SPEED_UP_IMG = "res/upgrades/power_speed_upgrade.png";
 
 void setDefaults() {
     using WizardSystem::Event;

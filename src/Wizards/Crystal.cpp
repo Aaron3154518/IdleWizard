@@ -21,7 +21,7 @@ void Crystal::init() {
     mMagicRender.set(mMagicText)
         .setFit(RenderData::FitMode::Texture)
         .setFitAlign(Rect::Align::CENTER, Rect::Align::TOP_LEFT);
-    mMsgTData.setFont(FONT).setColor(CrystalDefs::MSG_COLOR);
+    mMsgTData.setFont(FONT);
 
     WizardBase::init();
 
@@ -269,7 +269,7 @@ void Crystal::onT1Reset() { mFireRings.clear(); }
 void Crystal::onWizFireballHit(const WizardFireball& fireball) {
     auto magic = ParameterSystem::Param<CRYSTAL>(CrystalParams::Magic);
     magic.set(magic.get() + fireball.getPower());
-    addMessage("+" + fireball.getPower().toString());
+    addMessage("+" + fireball.getPower().toString(), CrystalDefs::MSG_COLOR);
     if (ParameterSystem::Param(State::CrysGlowActive).get()) {
         mGlowMagic += fireball.getPower();
         mGlowAnimTimerSub->get<TimerObservableBase::DATA>().timer = 0;
@@ -295,7 +295,7 @@ bool Crystal::onGlowTimer(Timer& t) {
     Number magic = mGlowMagic * params[CrystalParams::GlowEffect].get();
     params[CrystalParams::Magic].set(params[CrystalParams::Magic].get() +
                                      magic);
-    addMessage("+" + magic.toString());
+    addMessage("+" + magic.toString(), CrystalDefs::GLOW_MSG_COLOR);
     states[State::CrysGlowActive].set(false);
     return false;
 }
@@ -364,8 +364,8 @@ std::unique_ptr<FireRing>& Crystal::createFireRing(const Number& val) {
     return mFireRings.back();
 }
 
-void Crystal::addMessage(const std::string& msg) {
-    mMsgTData.setText(msg);
+void Crystal::addMessage(const std::string& msg, SDL_Color color) {
+    mMsgTData.setText(msg).setColor(color);
 
     float dx = (rDist(gen) - .5) * mPos->rect.halfW(),
           dy = (rDist(gen) - .5) * mPos->rect.halfH();

@@ -2,7 +2,7 @@
 
 namespace CrystalDefs {
 const Number T1_COST1 = 500, T1_COST2 = 5e4;
-const SDL_Color MSG_COLOR{200, 0, 175, 255};
+const SDL_Color MSG_COLOR{200, 0, 175, 255}, GLOW_MSG_COLOR{175, 100, 200, 255};
 
 const std::string WIZ_CNT_UP_IMG = "res/upgrades/wizard_count_upgrade.png",
                   CRYS_GLOW_UP_IMG = "res/upgrades/crystal_glow_upgrade.png";

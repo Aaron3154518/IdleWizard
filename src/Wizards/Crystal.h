@@ -53,7 +53,7 @@ class Crystal : public WizardBase {
 
     std::unique_ptr<FireRing>& createFireRing(const Number& val);
 
-    void addMessage(const std::string& msg);
+    void addMessage(const std::string& msg, SDL_Color color);
 
     void triggerT1Reset();
 

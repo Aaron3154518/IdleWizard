@@ -61,7 +61,7 @@ void Crystal::setUpgrades() {
     // Wizard count upgrade
     BuyablePtr bUp =
         std::make_shared<Buyable>(states[State::BoughtCrysWizCntUp]);
-    bUp->setImage("");
+    bUp->setImage(CrystalDefs::WIZ_CNT_UP_IMG);
     bUp->setDescription(
         {"Wizards synergy provides a multiplier based on the number of active "
          "wizards"});
@@ -132,7 +132,8 @@ void Crystal::setParamTriggers() {
         [this]() { return calcNumWizards(); }));
 
     mParamSubs.push_back(params[CrystalParams::WizardCntEffect].subscribeTo(
-        {params[CrystalParams::NumWizards]}, {states[State::BoughtCrysGlowUp]},
+        {params[CrystalParams::NumWizards]},
+        {states[State::BoughtCrysWizCntUp]},
         [this]() { return calcWizCntEffect(); }));
 
     mParamSubs.push_back(params[CrystalParams::GlowEffect].subscribeTo(

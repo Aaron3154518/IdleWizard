@@ -16,6 +16,7 @@ void setDefaults() {
     params[PowerWizardParams::BaseFBSpeed]->init(.75);
 
     params[PowerWizardParams::PowerUpLvl]->init(Event::ResetT1);
+    params[PowerWizardParams::TimeWarpUpLvl]->init(Event::ResetT1);
 }
 
 RenderDataWPtr GetIcon() {

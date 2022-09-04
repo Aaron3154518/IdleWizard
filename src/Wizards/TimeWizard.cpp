@@ -66,10 +66,12 @@ void TimeWizard::setUpgrades() {
     // Active toggle
     mActiveToggle = std::make_shared<Toggle>(
         [this](unsigned int state, Toggle& tUp) {
-            ParameterSystem::Param(State::TimeWizActive).set(state == 1);
+            auto active = ParameterSystem::Param(State::TimeWizActive);
+            active.set(state == 1);
+            tUp.setImage(active.get() ? TimeWizardDefs::ACTIVE_UP_IMG
+                                      : WIZ_IMGS.at(mId));
         },
         2);
-    mActiveToggle->setImage(WIZ_IMGS.at(mId));
     mActiveToggle->setDescription(
         {"Consume {i} for a fire rate multiplier to {i}, {i}",
          {Money::GetMoneyIcon(UpgradeDefaults::CRYSTAL_MAGIC),

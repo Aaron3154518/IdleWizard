@@ -189,6 +189,12 @@ void Wizard::setParamTriggers() {
 
     mParamSubs.push_back(states[State::BoughtTimeWizard].subscribe(
         [this](bool val) { mMultiUp->setActive(val); }));
+
+    mParamSubs.push_back(ParameterSystem::subscribe(
+        {}, {states[State::BoughtCatalyst]}, [this]() {
+            ParameterSystem::States states;
+            mTargetUp->setActive(states[State::BoughtCatalyst].get());
+        }));
 }
 
 void Wizard::onRender(SDL_Renderer* r) {

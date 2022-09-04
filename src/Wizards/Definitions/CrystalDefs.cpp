@@ -16,7 +16,7 @@ void setDefaults() {
     ParameterSystem::Params<CRYSTAL> params;
 
     // Default 0
-    params[CrystalParams::Magic]->init(Number(1, 10), Event::ResetT1);
+    params[CrystalParams::Magic]->init(0, Event::ResetT1);
     params[CrystalParams::Shards]->init(0, Event::ResetT2);
 
     params[CrystalParams::WizardCntUpCost]->init(Number(2, 3));

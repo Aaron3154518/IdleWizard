@@ -297,6 +297,8 @@ void Crystal::onHide(bool hide) {
 void Crystal::onT1Reset() {
     mFireRings.clear();
     mGlowTimerSub.reset();
+    mGlowFinishing = false;
+    mGlowFinishTimerSub.reset();
     mGlowAnimTimerSub.reset();
 }
 

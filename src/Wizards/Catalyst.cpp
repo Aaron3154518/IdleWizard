@@ -41,7 +41,7 @@ void Catalyst::setUpgrades() {
 
             std::stringstream ss;
             ss << "Multiplier: "
-               << Upgrade::Defaults::MultiplicativeEffect(
+               << UpgradeDefaults::MultiplicativeEffect(
                       params[CatalystParams::MagicEffect].get())
                       .text
                << "\nRange: " << params[CatalystParams::Range].get();
@@ -53,10 +53,10 @@ void Catalyst::setUpgrades() {
         std::make_shared<Upgrade>(params[CatalystParams::RangeUpLvl], 5);
     up->setImage("");
     up->setDescription({"Increase range of fireball boost"});
-    up->setCost(Upgrade::Defaults::CRYSTAL_SHARDS,
+    up->setCost(UpgradeDefaults::CRYSTAL_SHARDS,
                 params[CatalystParams::RangeUpCost]);
     up->setEffects(params[CatalystParams::RangeUp],
-                   Upgrade::Defaults::MultiplicativeEffect);
+                   UpgradeDefaults::MultiplicativeEffect);
     mParamSubs.push_back(params[CatalystParams::RangeUpCost].subscribeTo(
         up->level(), [](const Number& lvl) { return 5 * (2 ^ lvl); }));
     mParamSubs.push_back(params[CatalystParams::RangeUp].subscribeTo(

@@ -45,15 +45,15 @@ void PowerWizard::setUpgrades() {
             std::stringstream ss;
             std::vector<RenderDataWPtr> imgs;
             ss << "Power: "
-               << Upgrade::Defaults::MultiplicativeEffect(
+               << UpgradeDefaults::MultiplicativeEffect(
                       params[PowerWizardParams::Power].get())
                       .text
                << "\n{i} Speed: "
-               << Upgrade::Defaults::MultiplicativeEffect(
+               << UpgradeDefaults::MultiplicativeEffect(
                       params[PowerWizardParams::FBSpeed].get())
                       .text
                << ", {b}Power : "
-               << Upgrade::Defaults::MultiplicativeEffect(
+               << UpgradeDefaults::MultiplicativeEffect(
                       params[PowerWizardParams::FBSpeedEffect].get())
                       .text;
             imgs.push_back(PowerWizFireball::GetIcon());
@@ -67,12 +67,13 @@ void PowerWizard::setUpgrades() {
     up->setImage(PowerWizardDefs::POWER_UP_IMG);
     up->setDescription(
         {"Increase {i} power by *1.15", {PowerWizFireball::GetIcon()}});
-    up->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
+    up->setCost(UpgradeDefaults::CRYSTAL_MAGIC,
                 params[PowerWizardParams::PowerUpCost]);
     up->setEffects(params[PowerWizardParams::PowerUp],
-                   Upgrade::Defaults::MultiplicativeEffect);
-    mParamSubs.push_back(params[PowerWizardParams::PowerUpCost].subscribeTo(
-        up->level(), [](const Number& lvl) { return 175 * (1.6 ^ lvl); }));
+                   UpgradeDefaults::MultiplicativeEffect);
+    mParamSubs.push_back(UpgradeDefaults::subscribeT1UpCost(
+        up->level(), params[PowerWizardParams::PowerUpCost],
+        [](const Number& lvl) { return 175 * (1.6 ^ lvl); }));
     mParamSubs.push_back(params[PowerWizardParams::PowerUp].subscribeTo(
         up->level(), [](const Number& lvl) { return 1.15 ^ lvl; }));
     mPowerUp = mUpgrades->subscribe(up);
@@ -86,7 +87,7 @@ void PowerWizard::setUpgrades() {
          "effect",
          {PowerWizardDefs::GetIcon(), TimeWizardDefs::GetIcon(),
           WizardFireball::GetIcon(), PowerWizFireball::GetIcon()}});
-    up->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
+    up->setCost(UpgradeDefaults::CRYSTAL_MAGIC,
                 params[PowerWizardParams::TimeWarpUpCost]);
     up->setEffects({params[PowerWizardParams::TimeWarpUp]},
                    {states[State::TimeWarpEnabled]}, []() -> TextUpdateData {

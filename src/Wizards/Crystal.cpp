@@ -72,9 +72,9 @@ void Crystal::setUpgrades() {
     dUp->setImage(mId);
     dUp->setDescription(
         {"Multiplier based on {i}",
-         {Money::GetMoneyIcon(Upgrade::Defaults::CRYSTAL_MAGIC)}});
+         {Money::GetMoneyIcon(UpgradeDefaults::CRYSTAL_MAGIC)}});
     dUp->setEffects(params[CrystalParams::MagicEffect],
-                    Upgrade::Defaults::MultiplicativeEffect);
+                    UpgradeDefaults::MultiplicativeEffect);
     mMagicEffectDisplay = mUpgrades->subscribe(dUp);
 
     // Wizard count upgrade
@@ -84,10 +84,10 @@ void Crystal::setUpgrades() {
     bUp->setDescription(
         {"Wizards synergy provides a multiplier based on the number of active "
          "wizards"});
-    bUp->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
+    bUp->setCost(UpgradeDefaults::CRYSTAL_MAGIC,
                  params[CrystalParams::WizardCntUpCost]);
     bUp->setEffects(params[CrystalParams::WizardCntEffect],
-                    Upgrade::Defaults::MultiplicativeEffect);
+                    UpgradeDefaults::MultiplicativeEffect);
     mWizCntUp = mUpgrades->subscribe(bUp);
 
     // Glow upgrade
@@ -98,10 +98,10 @@ void Crystal::setUpgrades() {
          "expires, their power will be multiplied",
          {PowerWizardDefs::GetIcon(), CrystalDefs::GetIcon(),
           WizardFireball::GetIcon()}});
-    bUp->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
+    bUp->setCost(UpgradeDefaults::CRYSTAL_MAGIC,
                  params[CrystalParams::GlowUpCost]);
     bUp->setEffects(params[CrystalParams::GlowEffect],
-                    Upgrade::Defaults::MultiplicativeEffect);
+                    UpgradeDefaults::MultiplicativeEffect);
     mGlowUp = mUpgrades->subscribe(bUp);
 
     // Buy power wizard
@@ -112,7 +112,7 @@ void Crystal::setUpgrades() {
          "power",
          {WizardDefs::GetIcon(), CrystalDefs::GetIcon(),
           WizardFireball::GetIcon()}});
-    bUp->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
+    bUp->setCost(UpgradeDefaults::CRYSTAL_MAGIC,
                  params[CrystalParams::T1WizardCost]);
     mPowWizBuy = mUpgrades->subscribe(bUp);
 
@@ -123,7 +123,7 @@ void Crystal::setUpgrades() {
         {"Time Wizard boosts {i} fire rate and freezes time for a "
          "massive power boost",
          {WizardDefs::GetIcon()}});
-    bUp->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
+    bUp->setCost(UpgradeDefaults::CRYSTAL_MAGIC,
                  params[CrystalParams::T1WizardCost]);
     mTimeWizBuy = mUpgrades->subscribe(bUp);
 
@@ -133,7 +133,7 @@ void Crystal::setUpgrades() {
     bUp->setDescription(
         {"Catalyst stores magic and boosts {i} that pass nearby",
          {WizardFireball::GetIcon()}});
-    bUp->setCost(Upgrade::Defaults::CRYSTAL_SHARDS,
+    bUp->setCost(UpgradeDefaults::CRYSTAL_SHARDS,
                  params[CrystalParams::CatalystCost]);
     mCatalystBuy = mUpgrades->subscribe(bUp);
 }
@@ -192,6 +192,10 @@ void Crystal::setParamTriggers() {
 
     mParamSubs.push_back(states[State::BoughtFirstT1].subscribe(
         [this](bool val) { mWizCntUp->setActive(val); }));
+
+    mParamSubs.push_back(params[CrystalParams::T1CostMult].subscribeTo(
+        states[State::BoughtSecondT1],
+        [](bool val) { return val ? Number(1, 3) : 1; }));
 
     mParamSubs.push_back(ParameterSystem::subscribe(
         {}, {states[State::BoughtSecondT1], states[State::BoughtCrysWizCntUp]},

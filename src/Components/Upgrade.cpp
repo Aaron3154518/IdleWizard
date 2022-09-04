@@ -24,27 +24,40 @@ ParameterSystem::ParameterSubscriptionPtr UpgradeCost::subscribe(
     return mCost.subscribe(func);
 }
 
+// UpgradeDefaults
+namespace UpgradeDefaults {
+const ParameterSystem::BaseValue CRYSTAL_MAGIC =
+    ParameterSystem::Param<CRYSTAL>(CrystalParams::Magic);
+const ParameterSystem::BaseValue CRYSTAL_SHARDS =
+    ParameterSystem::Param<CRYSTAL>(CrystalParams::Shards);
+
+TextUpdateData AdditiveEffect(const Number& effect) {
+    return {"+" + effect.toString()};
+}
+TextUpdateData MultiplicativeEffect(const Number& effect) {
+    return {effect.toString() + "x"};
+}
+TextUpdateData PercentEffect(const Number& effect) {
+    return {(effect * 100).toString() + "%"};
+}
+TextUpdateData PowerEffect(const Number& effect) {
+    return {"^" + effect.toString()};
+}
+
+ParameterSystem::ParameterSubscriptionPtr subscribeT1UpCost(
+    ParameterSystem::BaseValue lvlParam, ParameterSystem::NodeValue costParam,
+    std::function<Number(const Number&)> costFunc) {
+    auto costMult = ParameterSystem::Param<CRYSTAL>(CrystalParams::T1CostMult);
+    return costParam.subscribeTo(
+        {lvlParam, costMult}, {}, [costFunc, lvlParam, costMult]() {
+            return costFunc(lvlParam.get()) * costMult.get();
+        });
+}
+}  // namespace UpgradeDefaults
+
 // UpgradeBase
 const SDL_Color UpgradeBase::DESC_BKGRND{175, 175, 175, 255};
 const FontData UpgradeBase::DESC_FONT{-1, 22, "|"};
-
-const ParameterSystem::BaseValue UpgradeBase::Defaults::CRYSTAL_MAGIC =
-    ParameterSystem::Param<CRYSTAL>(CrystalParams::Magic);
-const ParameterSystem::BaseValue UpgradeBase::Defaults::CRYSTAL_SHARDS =
-    ParameterSystem::Param<CRYSTAL>(CrystalParams::Shards);
-
-TextUpdateData Upgrade::Defaults::AdditiveEffect(const Number& effect) {
-    return {"+" + effect.toString()};
-}
-TextUpdateData Upgrade::Defaults::MultiplicativeEffect(const Number& effect) {
-    return {effect.toString() + "x"};
-}
-TextUpdateData Upgrade::Defaults::PercentEffect(const Number& effect) {
-    return {(effect * 100).toString() + "%"};
-}
-TextUpdateData Upgrade::Defaults::PowerEffect(const Number& effect) {
-    return {"^" + effect.toString()};
-}
 
 int UpgradeBase::GetDescWidth() { return RenderSystem::getWindowSize().x / 3; }
 

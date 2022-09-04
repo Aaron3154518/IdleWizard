@@ -6,12 +6,12 @@ FractureButton::FractureButton()
     setImage("res/wizards/catalyst.png");
     setDescription({"Blast {i} with all your strength\nDestroys your wizards",
                     {CrystalDefs::GetIcon()}});
-    setEffects(
-        ParameterSystem::Param<CRYSTAL>(CrystalParams::ShardGain),
-        [](const Number& gain) -> TextUpdateData {
-            return {"+{i}" + gain.toString(),
-                    {Money::GetMoneyIcon(Upgrade::Defaults::CRYSTAL_SHARDS)}};
-        });
+    setEffects(ParameterSystem::Param<CRYSTAL>(CrystalParams::ShardGain),
+               [](const Number& gain) -> TextUpdateData {
+                   return {
+                       "+{i}" + gain.toString(),
+                       {Money::GetMoneyIcon(UpgradeDefaults::CRYSTAL_SHARDS)}};
+               });
 }
 
 void FractureButton::init() {

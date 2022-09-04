@@ -64,6 +64,7 @@ enum N : param_t {
     GlowUp,
     GlowEffect,
 
+    T1CostMult,
     T1WizardCost,
 };
 }  // namespace CrystalParams

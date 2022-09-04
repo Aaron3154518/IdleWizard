@@ -37,17 +37,21 @@ struct UpgradeCost {
     ParameterSystem::BaseValue mMoney;
 };
 
+namespace UpgradeDefaults {
+extern const ParameterSystem::BaseValue CRYSTAL_MAGIC, CRYSTAL_SHARDS;
+
+TextUpdateData AdditiveEffect(const Number& effect);
+TextUpdateData MultiplicativeEffect(const Number& effect);
+TextUpdateData PercentEffect(const Number& effect);
+TextUpdateData PowerEffect(const Number& effect);
+
+ParameterSystem::ParameterSubscriptionPtr subscribeT1UpCost(
+    ParameterSystem::BaseValue lvlParam, ParameterSystem::NodeValue costParam,
+    std::function<Number(const Number&)> costFunc);
+}  // namespace UpgradeDefaults
+
 class UpgradeBase {
    public:
-    struct Defaults {
-        const static ParameterSystem::BaseValue CRYSTAL_MAGIC, CRYSTAL_SHARDS;
-
-        static TextUpdateData AdditiveEffect(const Number& effect);
-        static TextUpdateData MultiplicativeEffect(const Number& effect);
-        static TextUpdateData PercentEffect(const Number& effect);
-        static TextUpdateData PowerEffect(const Number& effect);
-    };
-
     enum Status : uint8_t {
         BOUGHT = 0,
         CAN_BUY,

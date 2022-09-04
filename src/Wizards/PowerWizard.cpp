@@ -69,7 +69,7 @@ void PowerWizard::setUpgrades() {
         {"Increase {i} power by *1.15", {PowerWizFireball::GetIcon()}});
     up->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
                 params[PowerWizardParams::PowerUpCost],
-                [](const Number& lvl) { return 125 * (1.5 ^ lvl); });
+                [](const Number& lvl) { return 175 * (1.6 ^ lvl); });
     up->setEffect(
         params[PowerWizardParams::PowerUp],
         [](const Number& lvl) { return 1.15 ^ lvl; },

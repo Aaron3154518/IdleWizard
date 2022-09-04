@@ -108,7 +108,7 @@ void Wizard::setUpgrades() {
          "higher crits"});
     up->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
                 params[WizardParams::CritUpCost],
-                [](const Number& lvl) { return 100 * (1.5 ^ lvl); });
+                [](const Number& lvl) { return 200 * (1.5 ^ lvl); });
     up->setEffects({{params[WizardParams::CritUp],
                      [](const Number& lvl) { return (1.1 ^ lvl) - 1; }},
                     {params[WizardParams::CritSpreadUp],

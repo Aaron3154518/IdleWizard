@@ -1,7 +1,7 @@
 #include "CrystalDefs.h"
 
 namespace CrystalDefs {
-const Number T1_COST1 = 500, T1_COST2 = 5e4;
+const Number T1_COST1 = 500, T1_COST2 = 1e6;
 const SDL_Color MSG_COLOR{200, 0, 175, 255}, GLOW_MSG_COLOR{175, 100, 200, 255};
 
 const std::string WIZ_CNT_UP_IMG = "res/upgrades/wizard_count_upgrade.png",
@@ -19,7 +19,7 @@ void setDefaults() {
     params[CrystalParams::Magic]->init(0, Event::ResetT1);
     params[CrystalParams::Shards]->init(0, Event::ResetT2);
 
-    params[CrystalParams::WizardCntUpCost]->init(Number(2, 3));
+    params[CrystalParams::WizardCntUpCost]->init(Number(1, 4));
     params[CrystalParams::GlowUpCost]->init(Number(1, 5));
     params[CrystalParams::CatalystCost]->init(1);
 

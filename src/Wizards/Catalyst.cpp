@@ -54,12 +54,13 @@ void Catalyst::setUpgrades() {
     up->setImage("");
     up->setDescription({"Increase range of fireball boost"});
     up->setCost(Upgrade::Defaults::CRYSTAL_SHARDS,
-                params[CatalystParams::RangeUpCost],
-                [](const Number& lvl) { return 5 * (2 ^ lvl); });
-    up->setEffect(
-        params[CatalystParams::RangeUp],
-        [](const Number& lvl) { return 1.1 ^ lvl; },
-        Upgrade::Defaults::MultiplicativeEffect);
+                params[CatalystParams::RangeUpCost]);
+    up->setEffects(params[CatalystParams::RangeUp],
+                   Upgrade::Defaults::MultiplicativeEffect);
+    mParamSubs.push_back(params[CatalystParams::RangeUpCost].subscribeTo(
+        up->level(), [](const Number& lvl) { return 5 * (2 ^ lvl); }));
+    mParamSubs.push_back(params[CatalystParams::RangeUp].subscribeTo(
+        up->level(), [](const Number& lvl) { return 1.1 ^ lvl; }));
     mRangeUp = mUpgrades->subscribe(up);
 }
 void Catalyst::setParamTriggers() {

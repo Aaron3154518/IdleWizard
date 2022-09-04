@@ -68,12 +68,13 @@ void PowerWizard::setUpgrades() {
     up->setDescription(
         {"Increase {i} power by *1.15", {PowerWizFireball::GetIcon()}});
     up->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
-                params[PowerWizardParams::PowerUpCost],
-                [](const Number& lvl) { return 175 * (1.6 ^ lvl); });
-    up->setEffect(
-        params[PowerWizardParams::PowerUp],
-        [](const Number& lvl) { return 1.15 ^ lvl; },
-        Upgrade::Defaults::MultiplicativeEffect);
+                params[PowerWizardParams::PowerUpCost]);
+    up->setEffects(params[PowerWizardParams::PowerUp],
+                   Upgrade::Defaults::MultiplicativeEffect);
+    mParamSubs.push_back(params[PowerWizardParams::PowerUpCost].subscribeTo(
+        up->level(), [](const Number& lvl) { return 175 * (1.6 ^ lvl); }));
+    mParamSubs.push_back(params[PowerWizardParams::PowerUp].subscribeTo(
+        up->level(), [](const Number& lvl) { return 1.15 ^ lvl; }));
     mPowerUp = mUpgrades->subscribe(up);
 
     // Time warp upgrade
@@ -86,21 +87,24 @@ void PowerWizard::setUpgrades() {
          {PowerWizardDefs::GetIcon(), TimeWizardDefs::GetIcon(),
           WizardFireball::GetIcon(), PowerWizFireball::GetIcon()}});
     up->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
-                params[PowerWizardParams::TimeWarpUpCost],
-                [](const Number& lvl) { return Number(1, 8) * (3 ^ lvl); });
-    up->setEffects(
-        {{params[PowerWizardParams::TimeWarpUp],
-          [](const Number& lvl) { return lvl == 0 ? 1 : .8 + lvl / 5; }}},
-        {{states[State::TimeWarpEnabled],
-          [](const Number& lvl) { return lvl > 0; }}},
-        []() -> TextUpdateData {
-            std::stringstream ss;
-            ss << "*{i}^"
-               << ParameterSystem::Param<POWER_WIZARD>(
-                      PowerWizardParams::TimeWarpUp)
-                      .get();
-            return {ss.str(), {PowerWizFireball::GetIcon()}};
-        });
+                params[PowerWizardParams::TimeWarpUpCost]);
+    up->setEffects({params[PowerWizardParams::TimeWarpUp]},
+                   {states[State::TimeWarpEnabled]}, []() -> TextUpdateData {
+                       std::stringstream ss;
+                       ss << "*{i}^"
+                          << ParameterSystem::Param<POWER_WIZARD>(
+                                 PowerWizardParams::TimeWarpUp)
+                                 .get();
+                       return {ss.str(), {PowerWizFireball::GetIcon()}};
+                   });
+    mParamSubs.push_back(params[PowerWizardParams::TimeWarpUpCost].subscribeTo(
+        up->level(),
+        [](const Number& lvl) { return Number(1, 8) * (3 ^ lvl); }));
+    mParamSubs.push_back(params[PowerWizardParams::TimeWarpUp].subscribeTo(
+        up->level(),
+        [](const Number& lvl) { return lvl == 0 ? 1 : .8 + lvl / 5; }));
+    mParamSubs.push_back(states[State::TimeWarpEnabled].subscribeTo(
+        up->level(), [](const Number& lvl) { return lvl > 0; }));
     mTimeWarpUp = mUpgrades->subscribe(up);
 }
 void PowerWizard::setParamTriggers() {

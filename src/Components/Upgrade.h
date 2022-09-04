@@ -6,6 +6,7 @@
 #include <Systems/WizardSystem.h>
 #include <Wizards/Money.h>
 
+#include <array>
 #include <initializer_list>
 #include <list>
 #include <memory>
@@ -13,6 +14,27 @@
 struct TextUpdateData {
     std::string text = "";
     std::vector<RenderDataWPtr> imgs;
+};
+
+struct UpgradeCost {
+   public:
+    UpgradeCost(ParameterSystem::BaseValue money,
+                ParameterSystem::ValueParam cost);
+
+    const ParameterSystem::ValueParam& getCostParam() const;
+    const ParameterSystem::BaseValue& getMoneyParam() const;
+    const Number& getCost() const;
+    const Number& getMoney() const;
+    RenderDataWPtr getMoneyIcon() const;
+    bool canBuy() const;
+    void buy() const;
+
+    ParameterSystem::ParameterSubscriptionPtr subscribe(
+        std::function<void()> func) const;
+
+   private:
+    ParameterSystem::ValueParam mCost;
+    ParameterSystem::BaseValue mMoney;
 };
 
 class UpgradeBase {
@@ -24,31 +46,6 @@ class UpgradeBase {
         static TextUpdateData MultiplicativeEffect(const Number& effect);
         static TextUpdateData PercentEffect(const Number& effect);
         static TextUpdateData PowerEffect(const Number& effect);
-    };
-
-    struct Cost {
-       public:
-        Cost(ParameterSystem::BaseValue money,
-             ParameterSystem::ValueParam cost);
-        Cost(ParameterSystem::BaseValue level, ParameterSystem::BaseValue money,
-             ParameterSystem::NodeValue cost,
-             std::function<Number(const Number&)> costFunc);
-
-        const ParameterSystem::ValueParam& getCostParam() const;
-        const ParameterSystem::BaseValue& getMoneyParam() const;
-        const Number& getCost() const;
-        const Number& getMoney() const;
-        RenderDataWPtr getMoneyIcon() const;
-        bool canBuy() const;
-        void buy() const;
-
-        ParameterSystem::ParameterSubscriptionPtr subscribe(
-            std::function<void()> func) const;
-
-       private:
-        ParameterSystem::ValueParam mCost;
-        ParameterSystem::BaseValue mMoney;
-        ParameterSystem::ParameterSubscriptionPtr mCostSub;
     };
 
     enum Status : uint8_t {
@@ -75,14 +72,46 @@ class UpgradeBase {
     const static SDL_Color DESC_BKGRND;
     const static FontData DESC_FONT;
 
-   protected:
-    static int GetDescWidth();
+    // Cost
+    void setCost(ParameterSystem::BaseValue money,
+                 ParameterSystem::ValueParam cost);
+    virtual TextUpdateData getCostText() const;
 
-    TextDataPtr mDescText = std::make_shared<TextData>(),
-                mInfoText = std::make_shared<TextData>();
+    // Effects
+    void setEffects(ParameterSystem::ValueParam param,
+                    std::function<TextUpdateData(const Number&)> func);
+    void setEffects(ParameterSystem::StateParam param,
+                    std::function<TextUpdateData(bool)> func);
+    void setEffects(
+        const std::initializer_list<ParameterSystem::ValueParam>& values,
+        const std::initializer_list<ParameterSystem::StateParam>& states,
+        std::function<TextUpdateData()> func);
+
+   protected:
+    enum DescType : uint8_t {
+        Desc = 0,
+        Info,
+        Effect,
+        Cost,
+
+        size
+    };
+
+    void updateDesc(DescType type, const TextUpdateData& text);
+
+    std::unique_ptr<UpgradeCost> mCost;
+    ParameterSystem::ParameterSubscriptionPtr mCostSub, mEffectSub;
 
    private:
-    RenderData mImg, mDesc, mInfo;
+    static int GetDescWidth();
+
+    RenderData mImg;
+    struct DescText {
+        TextDataPtr text;
+        RenderData texture;
+    };
+    std::array<DescText, DescType::size> mDescText;
+
     WizardSystem::WizardImageObservable::IdSubscriptionPtr mWizImgSub;
 };
 
@@ -95,30 +124,17 @@ class Display : public UpgradeBase {
 
     virtual Status getStatus();
 
-    void setEffect(ParameterSystem::ValueParam param,
-                   std::function<TextUpdateData(const Number&)> func);
-    void setEffect(ParameterSystem::StateParam param,
-                   std::function<TextUpdateData(bool)> func);
-    void setEffects(
-        const std::initializer_list<ParameterSystem::ValueParam>& valueParams,
-        const std::initializer_list<ParameterSystem::StateParam>& stateParams,
-        std::function<TextUpdateData()> func);
-
-    virtual void updateInfo();
-
    protected:
-    // Effects
-    TextUpdateData mEffectText;
-    ParameterSystem::ParameterSubscriptionPtr mEffectSub;
+    using UpgradeBase::setCost;
 };
 
 typedef std::shared_ptr<Display> DisplayPtr;
 
 // Upgrade that loops through a set number of states
 class Toggle : public Display {
-   public:
     typedef std::function<void(unsigned int, Toggle&)> LevelFunc;
 
+   public:
     Toggle(LevelFunc onLevel, unsigned int numStates = 1);
 
     Status getStatus();
@@ -138,84 +154,49 @@ typedef std::shared_ptr<Toggle> TogglePtr;
 // Upgrade that can only be bought once
 class Buyable : public Display {
    public:
-    Buyable(
-        ParameterSystem::BaseState level,
-        std::function<void(bool)> onLevel = [](bool b) {});
+    Buyable(ParameterSystem::BaseState level);
 
     Status getStatus();
     void buy();
 
-    void setCost(ParameterSystem::BaseValue money,
-                 ParameterSystem::ValueParam cost);
-    void clearCost();
+    virtual TextUpdateData getCostText() const;
 
-    void updateInfo();
+    ParameterSystem::BaseState level() const;
+
+    using UpgradeBase::setCost;
 
    private:
     // Level
     ParameterSystem::BaseState mLevel;
-    ParameterSystem::ParameterSubscriptionPtr mLevelSub;
-
-    // Cost
-    std::unique_ptr<Cost> mCost;
-    ParameterSystem::ParameterSubscriptionPtr mCostSub;
 };
 
 typedef std::shared_ptr<Buyable> BuyablePtr;
 
 // Flexible upgrade
-class Upgrade : public UpgradeBase {
+class Upgrade : public Display {
    public:
    public:
     typedef std::function<Number(const Number&)> ValueFunc;
     typedef std::function<bool(const Number&)> StateFunc;
 
-    Upgrade(
-        ParameterSystem::BaseValue level, unsigned int maxLevel,
-        std::function<void(const Number&)> onLevel = [](const Number&) {});
-    Upgrade(
-        ParameterSystem::BaseValue level, ParameterSystem::ValueParam maxLevel,
-        std::function<void(const Number&)> onLevel = [](const Number&) {});
+    Upgrade(ParameterSystem::BaseValue level, unsigned int maxLevel);
+    Upgrade(ParameterSystem::BaseValue level,
+            ParameterSystem::ValueParam maxLevel);
 
     Status getStatus();
     void buy();
 
-    void setCost(ParameterSystem::BaseValue money,
-                 ParameterSystem::ValueParam cost);
-    void setCost(ParameterSystem::BaseValue money,
-                 ParameterSystem::NodeValue cost,
-                 std::function<Number(const Number&)> costFunc);
-    void clearCost();
+    virtual TextUpdateData getCostText() const;
 
-    void setEffect(
-        ParameterSystem::NodeValue param, ValueFunc func,
-        std::function<TextUpdateData(const Number&)> effectFunc = nullptr);
-    void setEffect(ParameterSystem::NodeState param, StateFunc func,
-                   std::function<TextUpdateData(bool)> effectFunc = nullptr);
-    void setEffects(
-        std::initializer_list<std::pair<ParameterSystem::NodeValue, ValueFunc>>
-            values,
-        std::initializer_list<std::pair<ParameterSystem::NodeState, StateFunc>>
-            states,
-        std::function<TextUpdateData()> func = nullptr);
-    void clearEffects();
+    ParameterSystem::BaseValue level() const;
 
-    void updateInfo();
+    using UpgradeBase::setCost;
 
    private:
     // Level
     ParameterSystem::BaseValue mLevel;
     unsigned int mMaxLevel;
-    ParameterSystem::ParameterSubscriptionPtr mLevelSub, mMaxLevelSub;
-
-    // Cost
-    std::unique_ptr<Cost> mCost;
-    ParameterSystem::ParameterSubscriptionPtr mCostSub;
-
-    // Effects
-    TextUpdateData mEffectText;
-    std::list<ParameterSystem::ParameterSubscriptionPtr> mEffectLevelSubs;
-    ParameterSystem::ParameterSubscriptionPtr mEffectSub;
+    ParameterSystem::ParameterSubscriptionPtr mMaxLevelSub;
 };
 
 typedef std::shared_ptr<Upgrade> UpgradePtr;

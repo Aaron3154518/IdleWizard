@@ -92,12 +92,14 @@ void Wizard::setUpgrades() {
     up->setImage(WizardDefs::POWER_UP_IMG);
     up->setDescription({"Increase base power by 1"});
     up->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
-                params[WizardParams::PowerUpCost],
-                [](const Number& lvl) { return 25 * (1.55 ^ lvl); });
-    up->setEffect(
-        params[WizardParams::PowerUp],
-        [](const Number& lvl) { return min(lvl, 5) + 2 * max(lvl - 5, 0); },
-        Upgrade::Defaults::AdditiveEffect);
+                params[WizardParams::PowerUpCost]);
+    up->setEffects(params[WizardParams::PowerUp],
+                   Upgrade::Defaults::AdditiveEffect);
+    mParamSubs.push_back(params[WizardParams::PowerUpCost].subscribeTo(
+        up->level(), [](const Number& lvl) { return 25 * (1.55 ^ lvl); }));
+    mParamSubs.push_back(params[WizardParams::PowerUp].subscribeTo(
+        up->level(),
+        [](const Number& lvl) { return min(lvl, 5) + 2 * max(lvl - 5, 0); }));
     mPowerUp = mUpgrades->subscribe(up);
 
     // Crit Upgrade
@@ -107,20 +109,22 @@ void Wizard::setUpgrades() {
         {"Multiplies critical hit amount *1.1 and increases chance for "
          "higher crits"});
     up->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
-                params[WizardParams::CritUpCost],
-                [](const Number& lvl) { return 200 * (1.5 ^ lvl); });
-    up->setEffects({{params[WizardParams::CritUp],
-                     [](const Number& lvl) { return (1.1 ^ lvl) - 1; }},
-                    {params[WizardParams::CritSpreadUp],
-                     [](const Number& lvl) { return .95 ^ lvl; }}},
-                   {}, []() -> TextUpdateData {
-                       ParameterSystem::Params<WIZARD> params;
-                       std::stringstream ss;
-                       ss << "Crit: +" << params[WizardParams::CritUp].get()
-                          << " | Spread: *"
-                          << params[WizardParams::CritSpreadUp].get();
-                       return {ss.str()};
-                   });
+                params[WizardParams::CritUpCost]);
+    up->setEffects(
+        {params[WizardParams::CritUp], params[WizardParams::CritSpreadUp]}, {},
+        []() -> TextUpdateData {
+            ParameterSystem::Params<WIZARD> params;
+            std::stringstream ss;
+            ss << "Crit: +" << params[WizardParams::CritUp].get()
+               << " | Spread: *" << params[WizardParams::CritSpreadUp].get();
+            return {ss.str()};
+        });
+    mParamSubs.push_back(params[WizardParams::CritUpCost].subscribeTo(
+        up->level(), [](const Number& lvl) { return 200 * (1.5 ^ lvl); }));
+    mParamSubs.push_back(params[WizardParams::CritUp].subscribeTo(
+        up->level(), [](const Number& lvl) { return (1.1 ^ lvl) - 1; }));
+    mParamSubs.push_back(params[WizardParams::CritSpreadUp].subscribeTo(
+        up->level(), [](const Number& lvl) { return .95 ^ lvl; }));
     mCritUp = mUpgrades->subscribe(up);
 
     // Multi Upgrade
@@ -129,12 +133,13 @@ void Wizard::setUpgrades() {
     up->setDescription(
         {"Increase double {i} chance by +5%", {WizardFireball::GetIcon()}});
     up->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
-                params[WizardParams::MultiUpCost],
-                [](const Number& lvl) { return 175 * (1.3 ^ lvl); });
-    up->setEffect(
-        params[WizardParams::MultiUp],
-        [](const Number& lvl) { return .05 * lvl; },
-        Upgrade::Defaults::PercentEffect);
+                params[WizardParams::MultiUpCost]);
+    up->setEffects(params[WizardParams::MultiUp],
+                   Upgrade::Defaults::PercentEffect);
+    mParamSubs.push_back(params[WizardParams::MultiUpCost].subscribeTo(
+        up->level(), [](const Number& lvl) { return 175 * (1.3 ^ lvl); }));
+    mParamSubs.push_back(params[WizardParams::MultiUp].subscribeTo(
+        up->level(), [](const Number& lvl) { return .05 * lvl; }));
     mMultiUp = mUpgrades->subscribe(up);
 }
 void Wizard::setParamTriggers() {

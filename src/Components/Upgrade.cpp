@@ -1,35 +1,27 @@
 #include "Upgrade.h"
 
 // Cost
-UpgradeBase::Cost::Cost(ParameterSystem::BaseValue money,
-                        ParameterSystem::ValueParam cost)
+UpgradeCost::UpgradeCost(ParameterSystem::BaseValue money,
+                         ParameterSystem::ValueParam cost)
     : mMoney(money), mCost(cost) {}
-UpgradeBase::Cost::Cost(ParameterSystem::BaseValue level,
-                        ParameterSystem::BaseValue money,
-                        ParameterSystem::NodeValue cost,
-                        std::function<Number(const Number&)> costFunc)
-    : Cost(money, cost) {
-    mCostSub = cost.subscribeTo(level, costFunc);
-}
 
-const ParameterSystem::ValueParam& UpgradeBase::Cost::getCostParam() const {
+const ParameterSystem::ValueParam& UpgradeCost::getCostParam() const {
     return mCost;
 }
-const ParameterSystem::BaseValue& UpgradeBase::Cost::getMoneyParam() const {
+const ParameterSystem::BaseValue& UpgradeCost::getMoneyParam() const {
     return mMoney;
 }
-const Number& UpgradeBase::Cost::getCost() const { return mCost.get(); }
-const Number& UpgradeBase::Cost::getMoney() const { return mMoney.get(); }
-RenderDataWPtr UpgradeBase::Cost::getMoneyIcon() const {
+const Number& UpgradeCost::getCost() const { return mCost.get(); }
+const Number& UpgradeCost::getMoney() const { return mMoney.get(); }
+RenderDataWPtr UpgradeCost::getMoneyIcon() const {
     return Money::GetMoneyIcon(mMoney);
 }
-bool UpgradeBase::Cost::canBuy() const { return mCost.get() <= mMoney.get(); }
-void UpgradeBase::Cost::buy() const { mMoney.set(mMoney.get() - mCost.get()); }
+bool UpgradeCost::canBuy() const { return mCost.get() <= mMoney.get(); }
+void UpgradeCost::buy() const { mMoney.set(mMoney.get() - mCost.get()); }
 
-ParameterSystem::ParameterSubscriptionPtr UpgradeBase::Cost::subscribe(
+ParameterSystem::ParameterSubscriptionPtr UpgradeCost::subscribe(
     std::function<void()> func) const {
-    ParameterSystem::ParameterSubscriptionPtr sub = mCost.subscribe(func);
-    return sub;
+    return mCost.subscribe(func);
 }
 
 // UpgradeBase
@@ -57,15 +49,12 @@ TextUpdateData Upgrade::Defaults::PowerEffect(const Number& effect) {
 int UpgradeBase::GetDescWidth() { return RenderSystem::getWindowSize().x / 3; }
 
 UpgradeBase::UpgradeBase() {
-    mDescText->setFont(DESC_FONT);
-    mDesc.set(mDescText)
-        .setFit(RenderData::FitMode::Texture)
-        .setFitAlign(Rect::CENTER, Rect::TOP_LEFT);
-
-    mInfoText->setFont(DESC_FONT);
-    mInfo.set(mInfoText)
-        .setFit(RenderData::FitMode::Texture)
-        .setFitAlign(Rect::CENTER, Rect::TOP_LEFT);
+    for (auto& text : mDescText) {
+        text = {std::make_shared<TextData>()};
+        text.text->setFont(DESC_FONT);
+        text.texture.setFit(RenderData::FitMode::Texture)
+            .setFitAlign(Rect::CENTER, Rect::TOP_LEFT);
+    }
 }
 
 UpgradeBase::Status UpgradeBase::getStatus() { return NOT_BUYABLE; }
@@ -83,11 +72,11 @@ void UpgradeBase::setImage(const std::string& file) {
 }
 
 void UpgradeBase::setDescription(const TextUpdateData& data) {
-    mDescText->setText(data.text, GetDescWidth()).setImgs(data.imgs);
+    updateDesc(DescType::Desc, data);
 }
 
 void UpgradeBase::setInfo(const TextUpdateData& data) {
-    mInfoText->setText(data.text, GetDescWidth()).setImgs(data.imgs);
+    updateDesc(DescType::Info, data);
 }
 
 void UpgradeBase::drawIcon(TextureBuilder& tex, const Rect& r) {
@@ -95,52 +84,72 @@ void UpgradeBase::drawIcon(TextureBuilder& tex, const Rect& r) {
 }
 
 void UpgradeBase::drawDescription(TextureBuilder tex, SDL_FPoint offset) {
-    RectShape rd = RectShape(DESC_BKGRND);
-
-    mDesc.setDest(Rect(offset.x, offset.y, 0, 0));
-    mInfo.setDest(Rect(0, 0, 0, 0));
-    float w = mInfo.getDest().w();
-    w = std::max(w, mDesc.getDest().w());
-    mInfo.setDest(Rect(mDesc.getDest().cX(), mDesc.getDest().y2(), 0, 0));
-
-    Rect rdRect(0, offset.y, w, mInfo.getDest().y2() - offset.y);
-    rdRect.setPosX(offset.x, Rect::CENTER);
-    if (!rdRect.empty()) {
-        tex.draw(rd.set(rdRect));
+    float w = 0, h = 0;
+    for (auto& desc : mDescText) {
+        desc.texture.set(desc.text).setDest(Rect(offset.x, offset.y + h, 0, 0));
+        SDL_Point dim = desc.texture.getTextureDim();
+        if (w < dim.x) {
+            w = dim.x;
+        }
+        h += dim.y;
     }
 
-    tex.draw(mInfo);
-    tex.draw(mDesc);
-
-    if (!rdRect.empty()) {
-        rd.mColor = BLACK;
-        tex.draw(rd.set(rd.get().r2, 1));
+    if (w == 0 || h == 0) {
+        return;
     }
+
+    Rect r(offset.x - w / 2, offset.y, w, h);
+    RectShape rd = RectShape(DESC_BKGRND).set(r);
+    tex.draw(rd);
+
+    for (auto& desc : mDescText) {
+        tex.draw(desc.texture);
+    }
+
+    rd.mColor = BLACK;
+    rd.set(r, 1);
+    tex.draw(rd);
+}
+
+void UpgradeBase::updateDesc(DescType type, const TextUpdateData& text) {
+    mDescText[type].text->setText(text.text, GetDescWidth()).setImgs(text.imgs);
+}
+
+// Cost
+void UpgradeBase::setCost(ParameterSystem::BaseValue money,
+                          ParameterSystem::ValueParam cost) {
+    mCost = std::make_unique<UpgradeCost>(money, cost);
+    mCostSub = mCost->subscribe(
+        [this]() { updateDesc(DescType::Cost, getCostText()); });
+}
+
+TextUpdateData UpgradeBase::getCostText() const { return {}; }
+
+// Effect
+void UpgradeBase::setEffects(
+    ParameterSystem::ValueParam param,
+    std::function<TextUpdateData(const Number&)> func) {
+    mEffectSub = param.subscribe([this, param, func](const Number& val) {
+        updateDesc(DescType::Effect, func(val));
+    });
+}
+void UpgradeBase::setEffects(ParameterSystem::StateParam param,
+                             std::function<TextUpdateData(bool)> func) {
+    mEffectSub = param.subscribe([this, param, func](bool val) {
+        updateDesc(DescType::Effect, func(val));
+    });
+}
+void UpgradeBase::setEffects(
+    const std::initializer_list<ParameterSystem::ValueParam>& values,
+    const std::initializer_list<ParameterSystem::StateParam>& states,
+    std::function<TextUpdateData()> func) {
+    mEffectSub = ParameterSystem::subscribe(values, states, [this, func]() {
+        updateDesc(DescType::Effect, func());
+    });
 }
 
 // Display
 UpgradeBase::Status Display::getStatus() { return NOT_BUYABLE; }
-
-void Display::setEffect(ParameterSystem::ValueParam param,
-                        std::function<TextUpdateData(const Number&)> func) {
-    setEffects({param}, {}, [param, func]() { return func(param.get()); });
-}
-void Display::setEffect(ParameterSystem::StateParam param,
-                        std::function<TextUpdateData(bool)> func) {
-    setEffects({}, {param}, [param, func]() { return func(param.get()); });
-}
-void Display::setEffects(
-    const std::initializer_list<ParameterSystem::ValueParam>& valueParams,
-    const std::initializer_list<ParameterSystem::StateParam>& stateParams,
-    std::function<TextUpdateData()> func) {
-    mEffectSub =
-        ParameterSystem::subscribe(valueParams, stateParams, [this, func]() {
-            mEffectText = func();
-            updateInfo();
-        });
-}
-
-void Display::updateInfo() { setInfo(mEffectText); }
 
 // Toggle
 Toggle::Toggle(LevelFunc onLevel, unsigned int numStates)
@@ -161,14 +170,7 @@ void Toggle::setLevel(unsigned int lvl) {
 }
 
 // Buyable
-Buyable::Buyable(ParameterSystem::BaseState level,
-                 std::function<void(bool)> onLevel)
-    : mLevel(level) {
-    mLevelSub = level.subscribe([this, onLevel]() {
-        onLevel(mLevel.get());
-        updateInfo();
-    });
-}
+Buyable::Buyable(ParameterSystem::BaseState level) : mLevel(level) {}
 
 UpgradeBase::Status Buyable::getStatus() {
     if (mLevel.get()) {
@@ -188,49 +190,29 @@ void Buyable::buy() {
     mLevel.set(!mLevel.get());
 }
 
-void Buyable::setCost(ParameterSystem::BaseValue money,
-                      ParameterSystem::ValueParam cost) {
-    mCost = std::make_unique<Cost>(money, cost);
-    mCostSub = mCost->subscribe([this]() { updateInfo(); });
-}
-void Buyable::clearCost() {
-    mCost.reset();
-    mCostSub.reset();
-    updateInfo();
-}
-
-void Buyable::updateInfo() {
-    std::vector<RenderDataWPtr> imgs = mEffectText.imgs;
+TextUpdateData Buyable::getCostText() const {
+    std::vector<RenderDataWPtr> imgs;
     std::stringstream ss;
-    ss << mEffectText.text;
-    if (!mEffectText.text.empty()) {
-        ss << "\n";
-    }
     if (mLevel.get()) {
         ss << "Bought";
     } else if (mCost) {
         ss << "{i}" << mCost->getCost();
         imgs.push_back(mCost->getMoneyIcon());
     }
-    setInfo({ss.str(), imgs});
+    return {ss.str(), imgs};
 }
 
+ParameterSystem::BaseState Buyable::level() const { return mLevel; }
+
 // Upgrade
-Upgrade::Upgrade(ParameterSystem::BaseValue level, unsigned int maxLevel,
-                 std::function<void(const Number&)> onLevel)
-    : mLevel(level), mMaxLevel(maxLevel) {
-    mLevelSub = level.subscribe([this, onLevel]() {
-        onLevel(mLevel.get());
-        updateInfo();
-    });
-}
+Upgrade::Upgrade(ParameterSystem::BaseValue level, unsigned int maxLevel)
+    : mLevel(level), mMaxLevel(maxLevel) {}
 Upgrade::Upgrade(ParameterSystem::BaseValue level,
-                 ParameterSystem::ValueParam maxLevel,
-                 std::function<void(const Number&)> onLevel)
-    : Upgrade(level, std::max(0, maxLevel.get().toInt()), onLevel) {
+                 ParameterSystem::ValueParam maxLevel)
+    : Upgrade(level, std::max(0, maxLevel.get().toInt())) {
     mMaxLevelSub = maxLevel.subscribe([this](const Number& lvl) {
         mMaxLevel = std::max(0, lvl.toInt());
-        updateInfo();
+        updateDesc(DescType::Cost, getCostText());
     });
 }
 
@@ -243,6 +225,7 @@ Upgrade::Status Upgrade::getStatus() {
     }
     return mCost && !mCost->canBuy() ? CANT_BUY : CAN_BUY;
 }
+
 void Upgrade::buy() {
     if (getStatus() != CAN_BUY) {
         return;
@@ -254,108 +237,24 @@ void Upgrade::buy() {
     mLevel.set(mLevel.get() + 1);
 }
 
-void Upgrade::setCost(ParameterSystem::BaseValue money,
-                      ParameterSystem::ValueParam cost) {
-    mCost = std::make_unique<Cost>(money, cost);
-    mCostSub = mCost->subscribe([this]() { updateInfo(); });
-}
-void Upgrade::setCost(ParameterSystem::BaseValue money,
-                      ParameterSystem::NodeValue cost,
-                      std::function<Number(const Number&)> costFunc) {
-    mCost = std::make_unique<Cost>(mLevel, money, cost, costFunc);
-    mCostSub = mCost->subscribe([this]() { updateInfo(); });
-}
-void Upgrade::clearCost() {
-    mCost.reset();
-    mCostSub.reset();
-    updateInfo();
-}
-
-void Upgrade::setEffect(
-    ParameterSystem::NodeValue param, ValueFunc func,
-    std::function<TextUpdateData(const Number&)> effectFunc) {
-    if (effectFunc) {
-        setEffects({{param, func}}, {},
-                   [param, effectFunc]() { return effectFunc(param.get()); });
-    } else {
-        setEffects({{param, func}}, {});
-    }
-}
-void Upgrade::setEffect(ParameterSystem::NodeState param, StateFunc func,
-                        std::function<TextUpdateData(bool)> effectFunc) {
-    if (effectFunc) {
-        setEffects({}, {{param, func}},
-                   [param, effectFunc]() { return effectFunc(param.get()); });
-    } else {
-        setEffects({}, {{param, func}});
-    }
-}
-void Upgrade::setEffects(
-    std::initializer_list<std::pair<ParameterSystem::NodeValue, ValueFunc>>
-        values,
-    std::initializer_list<std::pair<ParameterSystem::NodeState, StateFunc>>
-        states,
-    std::function<TextUpdateData()> func) {
-    mEffectLevelSubs.clear();
-    mEffectSub.reset();
-    for (auto param : values) {
-        mEffectLevelSubs.push_back(
-            param.first.subscribeTo(mLevel, param.second));
-        if (func) {
-            if (!mEffectSub) {
-                mEffectSub = param.first.subscribe([this, func]() {
-                    mEffectText = func();
-                    updateInfo();
-                });
-            } else {
-                param.first->subscribe(mEffectSub);
-            }
-        }
-    }
-    for (auto param : states) {
-        mEffectLevelSubs.push_back(
-            param.first.subscribeTo(mLevel, param.second));
-        if (func) {
-            if (!mEffectSub) {
-                mEffectSub = param.first.subscribe([this, func]() {
-                    mEffectText = func();
-                    updateInfo();
-                });
-            } else {
-                param.first->subscribe(mEffectSub);
-            }
-        }
-    }
-}
-void Upgrade::clearEffects() {
-    mEffectLevelSubs.clear();
-    mEffectSub.reset();
-    mEffectText = {};
-    updateInfo();
-}
-
-void Upgrade::updateInfo() {
+TextUpdateData Upgrade::getCostText() const {
+    std::vector<RenderDataWPtr> imgs;
     std::stringstream ss;
-    ss << mEffectText.text;
     if (mMaxLevel > 0) {
         Number lvl = mLevel.get();
-        if (!mEffectText.text.empty()) {
-            ss << "\n";
-        }
         if (mMaxLevel > 1) {
             ss << lvl << "/" << mMaxLevel << ": ";
         }
         if (lvl < mMaxLevel) {
             if (mCost) {
+                imgs.push_back(mCost->getMoneyIcon());
                 ss << "{i}" << mCost->getCost();
             }
         } else {
             ss << "Maxed";
         }
     }
-    std::vector<RenderDataWPtr> imgs = mEffectText.imgs;
-    if (mCost) {
-        imgs.push_back(mCost->getMoneyIcon());
-    }
-    setInfo({ss.str(), imgs});
+    return {ss.str(), imgs};
 }
+
+ParameterSystem::BaseValue Upgrade::level() const { return mLevel; }

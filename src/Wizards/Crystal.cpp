@@ -73,8 +73,8 @@ void Crystal::setUpgrades() {
     dUp->setDescription(
         {"Multiplier based on {i}",
          {Money::GetMoneyIcon(Upgrade::Defaults::CRYSTAL_MAGIC)}});
-    dUp->setEffect(params[CrystalParams::MagicEffect],
-                   Upgrade::Defaults::MultiplicativeEffect);
+    dUp->setEffects(params[CrystalParams::MagicEffect],
+                    Upgrade::Defaults::MultiplicativeEffect);
     mMagicEffectDisplay = mUpgrades->subscribe(dUp);
 
     // Wizard count upgrade
@@ -86,8 +86,8 @@ void Crystal::setUpgrades() {
          "wizards"});
     bUp->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
                  params[CrystalParams::WizardCntUpCost]);
-    bUp->setEffect(params[CrystalParams::WizardCntEffect],
-                   Upgrade::Defaults::MultiplicativeEffect);
+    bUp->setEffects(params[CrystalParams::WizardCntEffect],
+                    Upgrade::Defaults::MultiplicativeEffect);
     mWizCntUp = mUpgrades->subscribe(bUp);
 
     // Glow upgrade
@@ -100,8 +100,8 @@ void Crystal::setUpgrades() {
           WizardFireball::GetIcon()}});
     bUp->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
                  params[CrystalParams::GlowUpCost]);
-    bUp->setEffect(params[CrystalParams::GlowEffect],
-                   Upgrade::Defaults::MultiplicativeEffect);
+    bUp->setEffects(params[CrystalParams::GlowEffect],
+                    Upgrade::Defaults::MultiplicativeEffect);
     mGlowUp = mUpgrades->subscribe(bUp);
 
     // Buy power wizard

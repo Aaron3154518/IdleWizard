@@ -22,6 +22,7 @@
 
 #include <cmath>
 #include <functional>
+#include <unordered_set>
 #include <vector>
 
 // For managing multiple upgrades
@@ -39,8 +40,7 @@ class UpgradeList : public UpgradeListBase {
 
     void draw(TextureBuilder tex, float scroll, SDL_Point offset = {0, 0});
 
-    // Static functions
-    static UpgradeBasePtr Get(SubscriptionPtr sub);
+    std::unordered_set<void*> getActive() const;
 
    private:
     void computeRects();

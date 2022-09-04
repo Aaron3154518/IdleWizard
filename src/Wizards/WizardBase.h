@@ -20,6 +20,7 @@
 
 #include <memory>
 #include <random>
+#include <unordered_set>
 
 class WizardBase : public Component {
    public:
@@ -27,8 +28,8 @@ class WizardBase : public Component {
 
     const WizardId mId;
 
+    const static AnimationData STAR_IMG;
     const static Rect IMG_RECT;
-    const static std::string IMGS[];
     const static FontData FONT;
 
    protected:
@@ -42,16 +43,19 @@ class WizardBase : public Component {
     virtual void onResize(ResizeData data);
     virtual void onRender(SDL_Renderer* r);
     virtual void onClick(Event::MouseButton b, bool clicked);
+    bool onStarTimer(Timer& t);
     virtual void onHide(bool hide);
 
     virtual void setPos(float x, float y);
 
+    void showStar();
+
     void attachSubToVisibility(SubscriptionBaseWPtr wSub);
     void detachSubFromVisibility(SubscriptionBasePtr ub);
 
-    bool mHidden = false;
+    bool mHidden = false, mShowStar = true;
 
-    RenderData mImg;
+    RenderData mImg, mStar;
 
     UIComponentPtr mPos;
     DragComponentPtr mDrag;
@@ -59,10 +63,13 @@ class WizardBase : public Component {
     RenderObservable::SubscriptionPtr mRenderSub;
     MouseObservable::SubscriptionPtr mMouseSub;
     DragObservable::SubscriptionPtr mDragSub;
+    TimerObservable::SubscriptionPtr mStarTimerSub;
+    TimeSystem::TimerObservable::SubscriptionPtr mStarAnimSub;
     WizardSystem::HideObservable::IdSubscriptionPtr mHideSub;
     std::list<ParameterSystem::ParameterSubscriptionPtr> mParamSubs;
 
     UpgradeListPtr mUpgrades = std::make_shared<UpgradeList>();
+    std::unordered_set<void*> mActiveUps;
 
     std::mt19937 gen = std::mt19937(rand());
     std::uniform_real_distribution<float> rDist;

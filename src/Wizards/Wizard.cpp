@@ -188,8 +188,12 @@ void Wizard::setParamTriggers() {
         [this](bool val) { onTimeFreeze(val); }));
 
     mParamSubs.push_back(params[WizardParams::PowerUpMaxLvl].subscribeTo(
-        states[State::BoughtFirstT1],
-        [this](bool val) { return val ? 10 : 5; }));
+        states[State::BoughtFirstT1], [this](bool val) {
+            if (val) {
+                showStar();
+            }
+            return val ? 10 : 5;
+        }));
 
     mParamSubs.push_back(states[State::BoughtPowerWizard].subscribe(
         [this](bool val) { mCritUp->setActive(val); }));

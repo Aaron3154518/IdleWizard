@@ -3,6 +3,7 @@
 // WizardBase
 const Rect WizardBase::IMG_RECT(0, 0, 100, 100);
 const FontData WizardBase::FONT{-1, IMG_RECT.H() / 4, "|"};
+const AnimationData WizardBase::STAR_IMG{"res/wizards/star_ss.png", 6, 125};
 
 WizardBase::WizardBase(WizardId id)
     : mId(id),
@@ -14,6 +15,8 @@ void WizardBase::init() {
     SDL_Point screenDim = RenderSystem::getWindowSize();
     setPos((rDist(gen) * .5 + .25) * screenDim.x,
            (rDist(gen) * .5 + .25) * screenDim.y);
+
+    mStar.set(STAR_IMG);
 
     mResizeSub =
         ServiceSystem::Get<ResizeService, ResizeObservable>()->subscribe(
@@ -27,6 +30,15 @@ void WizardBase::init() {
     mDragSub = ServiceSystem::Get<DragService, DragObservable>()->subscribe(
         []() {}, [this](int x, int y, float dx, float dy) { setPos(x, y); },
         []() {}, mPos, mDrag);
+    mStarTimerSub =
+        ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
+            [this](Timer& t) { return onStarTimer(t); }, Timer(150));
+    mStarAnimSub = TimeSystem::GetTimerObservable()->subscribe(
+        [this](Timer& t) {
+            mStar.nextFrame();
+            return true;
+        },
+        STAR_IMG.frame_ms);
     mHideSub = WizardSystem::GetHideObservable()->subscribe(
         [this](bool hide) { onHide(hide); }, mId);
     attachSubToVisibility(mResizeSub);
@@ -57,13 +69,37 @@ void WizardBase::onRender(SDL_Renderer* r) {
     }
 
     tex.draw(mImg);
+
+    if (mShowStar) {
+        float w = fmaxf(mPos->rect.w(), mPos->rect.h()) / 3;
+        mStar.setDest(Rect(mPos->rect.x(), mPos->rect.y(), w, w));
+        tex.draw(mStar);
+    }
 }
 
 void WizardBase::onClick(Event::MouseButton b, bool clicked) {
     if (clicked) {
+        mShowStar = false;
         ServiceSystem::Get<UpgradeService, UpgradeListObservable>()->next(
             mUpgrades);
     }
+}
+
+bool WizardBase::onStarTimer(Timer& t) {
+    if (mShowStar) {
+        mActiveUps = mUpgrades->getActive();
+    } else {
+        auto active = mUpgrades->getActive();
+        for (auto upSub : active) {
+            auto it = mActiveUps.find(upSub);
+            if (it == mActiveUps.end()) {
+                showStar();
+                break;
+            }
+        }
+        mActiveUps = active;
+    }
+    return true;
 }
 
 void WizardBase::onHide(bool hide) {
@@ -74,6 +110,10 @@ void WizardBase::onHide(bool hide) {
         if (sub) {
             sub->setActive(!hide);
         }
+    }
+
+    if (!mHidden) {
+        showStar();
     }
 }
 
@@ -86,6 +126,8 @@ void WizardBase::setPos(float x, float y) {
     mPos->rect = mImg.getDest();
     WizardSystem::GetWizardPosObservable()->next(mId, mPos->rect);
 }
+
+void WizardBase::showStar() { mShowStar = true; }
 
 void WizardBase::attachSubToVisibility(SubscriptionBaseWPtr wSub) {
     mVisibilitySubs.push_back(wSub);

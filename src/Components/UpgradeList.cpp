@@ -207,8 +207,12 @@ void UpgradeList::computeRects() {
     }
 }
 
-UpgradeBasePtr UpgradeList::Get(SubscriptionPtr sub) {
-    return sub->get<UpgradeList::DATA>();
+std::unordered_set<void*> UpgradeList::getActive() const {
+    std::unordered_set<void*> set;
+    for (auto sub : *this) {
+        set.insert(sub.get());
+    }
+    return set;
 }
 
 // UpgradeScroller

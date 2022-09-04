@@ -30,7 +30,7 @@ int main(int argc, char* argv[]) {
     {  // Configure starting conditions
         enum Start { None = 0, FirstT1, SecondT1, Fracture };
         Start start = Start::Fracture;
-        WizardId wiz1 = POWER_WIZARD;
+        WizardId wiz1 = CATALYST;
 
         ParameterSystem::States states;
         ParameterSystem::Params<WIZARD> wParams;
@@ -59,6 +59,12 @@ int main(int argc, char* argv[]) {
                 twParams[TimeWizardParams::SpeedUpUpLvl].set(8);
                 twParams[TimeWizardParams::FBSpeedUpLvl].set(6);
                 twParams[TimeWizardParams::FreezeUpLvl].set(8);
+
+                switch (wiz1) {
+                    case CATALYST:
+                        states[State::BoughtCatalyst].set(true);
+                        break;
+                }
                 break;
             case Start::SecondT1:
                 states[State::BoughtPowerWizard].set(true);

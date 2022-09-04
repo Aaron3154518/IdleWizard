@@ -328,7 +328,7 @@ Number Crystal::calcMagicEffect() {
 
 Number Crystal::calcShardGain() {
     ParameterSystem::Params<CRYSTAL> params;
-    Number shards = (params[CrystalParams::Magic].get() + 1).logTen();
+    Number shards = (params[CrystalParams::Magic].get() + 1).logTen() - 14;
     if (shards < 1) {
         shards = 0;
     }

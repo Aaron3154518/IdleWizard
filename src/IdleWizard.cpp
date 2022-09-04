@@ -29,8 +29,8 @@ int main(int argc, char* argv[]) {
 
     {  // Configure starting conditions
         enum Start { None = 0, FirstT1, SecondT1, Fracture };
-        Start start = Start::None;
-        WizardId wiz1 = TIME_WIZARD;
+        Start start = Start::SecondT1;
+        WizardId wiz1 = POWER_WIZARD;
 
         ParameterSystem::States states;
         ParameterSystem::Params<WIZARD> wParams;

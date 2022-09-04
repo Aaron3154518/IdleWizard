@@ -14,6 +14,11 @@ void Crystal::init() {
               glowDim = mGlowBkgrnd.getTextureDim();
     mGlowBkgrnd.setDest(Rect(0, 0, mPos->rect.w() * glowDim.x / imgDim.x,
                              mPos->rect.h() * glowDim.y / imgDim.y));
+    mGlowFinishBkgrnd.set(CrystalDefs::GLOW_FINISH_IMG);
+    imgDim = mImg.getTextureDim();
+    glowDim = mGlowFinishBkgrnd.getTextureDim();
+    mGlowFinishBkgrnd.setDest(Rect(0, 0, mPos->rect.w() * glowDim.x / imgDim.x,
+                                   mPos->rect.h() * glowDim.y / imgDim.y));
 
     mMagicText->setFont(FONT).setImgs(
         {Money::GetMoneyIcon(params[CrystalParams::Magic]),
@@ -241,6 +246,12 @@ void Crystal::onUpdate(Time dt) {
 void Crystal::onRender(SDL_Renderer* r) {
     TextureBuilder tex;
 
+    if (mGlowFinishing) {
+        Rect glowRect = mGlowFinishBkgrnd.getRect();
+        glowRect.setPos(mPos->rect.cX(), mPos->rect.cY(), Rect::Align::CENTER);
+        mGlowFinishBkgrnd.setDest(glowRect);
+        tex.draw(mGlowFinishBkgrnd);
+    }
     if (ParameterSystem::Param(State::CrysGlowActive).get()) {
         Rect glowRect = mGlowBkgrnd.getRect();
         glowRect.setPos(mPos->rect.cX(), mPos->rect.cY(), Rect::Align::CENTER);
@@ -317,12 +328,32 @@ bool Crystal::onGlowTimer(Timer& t) {
     ParameterSystem::Params<CRYSTAL> params;
     ParameterSystem::States states;
     Number magic = mGlowMagic * params[CrystalParams::GlowEffect].get();
-    params[CrystalParams::Magic].set(params[CrystalParams::Magic].get() +
-                                     magic);
-    addMessage("+" + magic.toString(), CrystalDefs::GLOW_MSG_COLOR);
     mGlowMagic = 0;
     states[State::CrysGlowActive].set(false);
+
+    if (mGlowFinishing) {
+        mGlowFinishTimerSub->get<TimerObservable::ON_TRIGGER>()(
+            mGlowFinishTimerSub->get<TimerObservable::DATA>());
+    }
+
+    mGlowFinishing = true;
+    mGlowFinishTimerSub = TimeSystem::GetTimerObservable()->subscribe(
+        [this, magic](Timer& t) { return onGlowFinishTimer(t, magic); },
+        Timer(CrystalDefs::GLOW_FINISH_IMG.frame_ms));
     return false;
+}
+
+bool Crystal::onGlowFinishTimer(Timer& t, const Number& magic) {
+    mGlowFinishBkgrnd.nextFrame();
+    if (mGlowFinishBkgrnd.getFrame() == 0) {
+        ParameterSystem::Params<CRYSTAL> params;
+        params[CrystalParams::Magic].set(params[CrystalParams::Magic].get() +
+                                         magic);
+        addMessage("+" + magic.toString(), CrystalDefs::GLOW_MSG_COLOR);
+        mGlowFinishing = false;
+        return false;
+    }
+    return true;
 }
 
 Number Crystal::calcMagicEffect() {

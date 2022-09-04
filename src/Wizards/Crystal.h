@@ -44,6 +44,7 @@ class Crystal : public WizardBase {
     void onWizFireballHit(const WizardFireball& fireball);
     void onPowFireballHit(const PowerWizFireball& fireball);
     bool onGlowTimer(Timer& t);
+    bool onGlowFinishTimer(Timer& t, const Number& magic);
 
     Number calcMagicEffect();
     Number calcShardGain();
@@ -62,7 +63,7 @@ class Crystal : public WizardBase {
 
     UpdateObservable::SubscriptionPtr mUpdateSub;
     TimeSystem::TimerObservable::SubscriptionPtr mAnimTimerSub, mGlowTimerSub,
-        mGlowAnimTimerSub;
+        mGlowFinishTimerSub, mGlowAnimTimerSub;
     WizardFireball::HitObservable::IdSubscriptionPtr mWizFireballHitSub;
     PowerWizFireball::HitObservable::IdSubscriptionPtr mPowFireballHitSub;
     WizardSystem::WizardEventObservable::IdSubscriptionPtr mT1ResetSub;
@@ -72,12 +73,13 @@ class Crystal : public WizardBase {
     TextData mMsgTData;
     std::vector<Message> mMessages;
 
+    bool mGlowFinishing = false;
     Number mGlowMagic;
     std::vector<std::unique_ptr<FireRing>> mFireRings;
     std::unique_ptr<FractureButton> mFractureBtn;
 
     TextDataPtr mMagicText = std::make_shared<TextData>();
-    RenderData mMagicRender, mGlowBkgrnd;
+    RenderData mMagicRender, mGlowBkgrnd, mGlowFinishBkgrnd;
 };
 
 #endif

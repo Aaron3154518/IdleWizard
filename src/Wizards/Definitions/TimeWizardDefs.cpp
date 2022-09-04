@@ -23,7 +23,7 @@ void setDefaults() {
     params[TimeWizardParams::SpeedUpLvl]->init(Event::ResetT1);
     params[TimeWizardParams::FBSpeedUpLvl]->init(Event::ResetT1);
     params[TimeWizardParams::FreezeUpLvl]->init(Event::ResetT1);
-    params[TimeWizardParams::BoostWizSpdUpLvl]->init(Event::ResetT1);
+    params[TimeWizardParams::SpeedUpUpLvl]->init(Event::ResetT1);
 
     ParameterSystem::States states;
 

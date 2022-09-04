@@ -154,8 +154,7 @@ void Wizard::setParamTriggers() {
 
     mParamSubs.push_back(params[WizardParams::Speed].subscribeTo(
         {params[WizardParams::BaseSpeed],
-         timeParams[TimeWizardParams::SpeedEffect],
-         timeParams[TimeWizardParams::BoostWizSpdUp]},
+         timeParams[TimeWizardParams::SpeedEffect]},
         {states[State::WizBoosted]}, [this]() { return calcSpeed(); }));
 
     mParamSubs.push_back(params[WizardParams::FBSpeed].subscribeTo(
@@ -383,9 +382,6 @@ Number Wizard::calcSpeed() {
 
     Number speed = params[WizardParams::BaseSpeed].get() *
                    timeParams[TimeWizardParams::SpeedEffect].get();
-    if (ParameterSystem::Param(State::WizBoosted).get()) {
-        speed *= timeParams[TimeWizardParams::BoostWizSpdUp].get();
-    }
     return speed;
 }
 

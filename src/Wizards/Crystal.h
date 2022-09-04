@@ -16,6 +16,7 @@
 #include <Utils/AnimationData.h>
 #include <Wizards/Definitions/CrystalDefs.h>
 #include <Wizards/Definitions/PowerWizardDefs.h>
+#include <Wizards/Definitions/WizardDefs.h>
 #include <Wizards/Message.h>
 #include <Wizards/Money.h>
 #include <Wizards/WizardBase.h>

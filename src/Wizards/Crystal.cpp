@@ -105,8 +105,10 @@ void Crystal::setUpgrades() {
     bUp = std::make_shared<Buyable>(states[State::BoughtPowerWizard]);
     bUp->setImage(WIZ_IMGS.at(POWER_WIZARD));
     bUp->setDescription(
-        {"Power Wizard empowers the Wizard and overloads the Crystal for "
-         "increased Fireball power"});
+        {"Power Wizard empowers {i} and overloads {i} for increased {i} "
+         "power",
+         {WizardDefs::GetIcon(), CrystalDefs::GetIcon(),
+          WizardFireball::GetIcon()}});
     bUp->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
                  params[CrystalParams::T1WizardCost]);
     mPowWizBuy = mUpgrades->subscribe(bUp);
@@ -115,8 +117,9 @@ void Crystal::setUpgrades() {
     bUp = std::make_shared<Buyable>(states[State::BoughtTimeWizard]);
     bUp->setImage(WIZ_IMGS.at(TIME_WIZARD));
     bUp->setDescription(
-        {"Time Wizard boosts Wizard fire rate and freezes time for a "
-         "massive power boost"});
+        {"Time Wizard boosts {i} fire rate and freezes time for a "
+         "massive power boost",
+         {WizardDefs::GetIcon()}});
     bUp->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
                  params[CrystalParams::T1WizardCost]);
     mTimeWizBuy = mUpgrades->subscribe(bUp);
@@ -125,8 +128,8 @@ void Crystal::setUpgrades() {
     bUp = std::make_shared<Buyable>(states[State::BoughtCatalyst]);
     bUp->setImage(WIZ_IMGS.at(CATALYST));
     bUp->setDescription(
-        {"Catalyst stores magic and boosts fireballs that pass "
-         "nearby"});
+        {"Catalyst stores magic and boosts {i} that pass nearby",
+         {WizardFireball::GetIcon()}});
     bUp->setCost(Upgrade::Defaults::CRYSTAL_SHARDS,
                  params[CrystalParams::CatalystCost]);
     mCatalystBuy = mUpgrades->subscribe(bUp);

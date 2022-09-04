@@ -18,7 +18,7 @@ std::shared_ptr<WizardImageObservable> GetWizardImageObservable() {
 }
 
 // WizardPosObservable
-SDL_FPoint GetWizardPos(WizardId id) {
+const Rect& GetWizardPos(WizardId id) {
     return GetWizardPosObservable()->get(id);
 }
 

@@ -22,10 +22,12 @@ void setDefaults() {
     params[CrystalParams::WizardCntUpCost]->init(Number(1, 4));
     params[CrystalParams::GlowUpCost]->init(Number(1, 11));
     params[CrystalParams::CatalystCost]->init(1);
+    params[CrystalParams::T1ResetCost]->init(Number(1, 15));
 
     ParameterSystem::States states;
 
     states[State::ResetT1]->init(false);
+    states[State::CrysGlowActive]->init(false, Event::ResetT1);
     states[State::BoughtCrysWizCntUp]->init(false, Event::ResetT1);
     states[State::BoughtCrysGlowUp]->init(false, Event::ResetT1);
     states[State::BoughtPowerWizard]->init(false, Event::ResetT1);

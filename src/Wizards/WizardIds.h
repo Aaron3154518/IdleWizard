@@ -39,7 +39,8 @@ enum : uint8_t {
     CATALYST_ZAP,
     PROJECTILES,
     WIZARDS,
-    OVERLAYS
+    OVERLAYS,
+    WIZARD_OVERLAYS,
 };
 }
 

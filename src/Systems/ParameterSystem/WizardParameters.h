@@ -52,6 +52,7 @@ enum B : param_t {
     WizardCntUpCost,
     GlowUpCost,
     CatalystCost,
+    T1ResetCost,
 };
 
 enum N : param_t {

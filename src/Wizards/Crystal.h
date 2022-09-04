@@ -4,6 +4,7 @@
 #include <Components/FireRing.h>
 #include <Components/Fireballs/PowerWizFireball.h>
 #include <Components/Fireballs/WizardFireball.h>
+#include <Components/FractureButton.h>
 #include <Components/Upgrade.h>
 #include <RenderSystem/AssetManager.h>
 #include <RenderSystem/RenderTypes.h>
@@ -57,8 +58,6 @@ class Crystal : public WizardBase {
 
     void addMessage(const std::string& msg, SDL_Color color);
 
-    void triggerT1Reset();
-
     void setPos(float x, float y);
 
     UpdateObservable::SubscriptionPtr mUpdateSub;
@@ -75,6 +74,7 @@ class Crystal : public WizardBase {
 
     Number mGlowMagic;
     std::vector<std::unique_ptr<FireRing>> mFireRings;
+    std::unique_ptr<FractureButton> mFractureBtn;
 
     TextDataPtr mMagicText = std::make_shared<TextData>();
     RenderData mMagicRender, mGlowBkgrnd;

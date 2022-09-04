@@ -84,8 +84,7 @@ void WizardBase::setPos(float x, float y) {
     imgR.fitWithin(Rect(0, 0, screenDim.x, screenDim.y));
     mImg.setDest(imgR);
     mPos->rect = mImg.getDest();
-    WizardSystem::GetWizardPosObservable()->next(
-        mId, {mPos->rect.cX(), mPos->rect.cY()});
+    WizardSystem::GetWizardPosObservable()->next(mId, mPos->rect);
 }
 
 void WizardBase::attachSubToVisibility(SubscriptionBaseWPtr wSub) {

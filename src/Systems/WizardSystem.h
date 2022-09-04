@@ -25,10 +25,9 @@ const RenderData& GetWizardImage(WizardId id);
 std::shared_ptr<WizardImageObservable> GetWizardImageObservable();
 
 // For handling wizard positions
-typedef TargetSystem::TargetDataObservable<WizardId, SDL_FPoint>
-    WizardPosObservable;
+typedef TargetSystem::TargetDataObservable<WizardId, Rect> WizardPosObservable;
 
-SDL_FPoint GetWizardPos(WizardId id);
+const Rect& GetWizardPos(WizardId id);
 
 std::shared_ptr<WizardPosObservable> GetWizardPosObservable();
 

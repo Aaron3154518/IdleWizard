@@ -33,7 +33,8 @@ void Fireball::init() {
         ServiceSystem::Get<RenderService, RenderObservable>()->subscribe(
             [this](SDL_Renderer* r) { onRender(r); }, mPos);
     mTargetSub = WizardSystem::GetWizardPosObservable()->subscribe(
-        [this](SDL_FPoint p) { mTargetPos = p; }, mTargetId);
+        [this](const Rect& r) { mTargetPos = r.getPos(Rect::Align::CENTER); },
+        mTargetId);
     if (mImgAnim.num_frames > 1) {
         mAnimTimerSub =
             ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(

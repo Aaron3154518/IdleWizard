@@ -23,6 +23,9 @@ void Crystal::init() {
         .setFitAlign(Rect::Align::CENTER, Rect::Align::TOP_LEFT);
     mMsgTData.setFont(FONT);
 
+    mFractureBtn = ComponentFactory<FractureButton>::New();
+    mFractureBtn->setHidden(true);
+
     WizardBase::init();
 
     SDL_Point screenDim = RenderSystem::getWindowSize();
@@ -200,6 +203,14 @@ void Crystal::setParamTriggers() {
 
     mParamSubs.push_back(states[State::ResetT1].subscribe(
         [this](bool val) { mCatalystBuy->setActive(val); }));
+
+    mParamSubs.push_back(ParameterSystem::subscribe(
+        {params[CrystalParams::Magic], params[CrystalParams::T1ResetCost]}, {},
+        [this]() {
+            ParameterSystem::Params<CRYSTAL> params;
+            mFractureBtn->setHidden(params[CrystalParams::Magic].get() <
+                                    params[CrystalParams::T1ResetCost].get());
+        }));
 }
 
 void Crystal::onUpdate(Time dt) {
@@ -256,9 +267,6 @@ void Crystal::onClick(Event::MouseButton b, bool clicked) {
     if (addMagic && clicked) {
         auto param = ParameterSystem::Param<CRYSTAL>(CrystalParams::Magic);
         param.set(param.get() * 3);
-        if (false && param.get() > Number(1, 6)) {
-            triggerT1Reset();
-        }
     }
     addMagic = clicked;
     WizardBase::onClick(b, clicked);
@@ -271,7 +279,11 @@ void Crystal::onHide(bool hide) {
     }
 }
 
-void Crystal::onT1Reset() { mFireRings.clear(); }
+void Crystal::onT1Reset() {
+    mFireRings.clear();
+    mGlowTimerSub.reset();
+    mGlowAnimTimerSub.reset();
+}
 
 void Crystal::onWizFireballHit(const WizardFireball& fireball) {
     if (ParameterSystem::Param(State::CrysGlowActive).get()) {
@@ -396,20 +408,6 @@ void Crystal::addMessage(const std::string& msg, SDL_Color color) {
 
     mMessages.push_back(
         Message{rData, (int)(rDist(gen) * 250) + 250, true, trajectory});
-}
-
-void Crystal::triggerT1Reset() {
-    auto shards = ParameterSystem::Param<CRYSTAL>(CrystalParams::Shards);
-    auto shardGain = ParameterSystem::Param<CRYSTAL>(CrystalParams::ShardGain);
-    shards.set(shards.get() + shardGain.get());
-
-    WizardSystem::GetWizardEventObservable()->next(
-        WizardSystem::Event::ResetT1);
-
-    auto resetT1 = ParameterSystem::Param(State::ResetT1);
-    if (!resetT1.get()) {
-        resetT1.set(true);
-    }
 }
 
 void Crystal::setPos(float x, float y) {

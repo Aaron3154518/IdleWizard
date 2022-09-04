@@ -19,18 +19,20 @@ class FractureButton : public Component, private Display {
    public:
     FractureButton();
 
+    bool isHidden() const;
     void setHidden(bool hidden);
+
+    void onRender(SDL_Renderer* r);
 
    private:
     void init();
 
-    void onRender(SDL_Renderer* r);
     void onClick(Event::MouseButton b, bool clicked);
     void onMouseEnter();
     void onMouseLeave();
     void onCrystalPos(const Rect& r);
 
-    RenderObservable::SubscriptionPtr mRenderSub, mDescRenderSub;
+    RenderObservable::SubscriptionPtr mDescRenderSub;
     MouseObservable::SubscriptionPtr mMouseSub;
     HoverObservable::SubscriptionPtr mHoverSub;
     WizardSystem::WizardPosObservable::IdSubscriptionPtr mCrysPosSub;

@@ -275,6 +275,10 @@ void Crystal::onRender(SDL_Renderer* r) {
             }
         }
     }
+
+    if (!mFractureBtn->isHidden()) {
+        mFractureBtn->onRender(r);
+    }
 }
 
 bool addMagic = false;
@@ -448,6 +452,7 @@ void Crystal::addMessage(const std::string& msg, SDL_Color color) {
 }
 
 void Crystal::setPos(float x, float y) {
+    std::cerr << x << " " << y << std::endl;
     WizardBase::setPos(x, y);
 
     mMagicRender.setDest(

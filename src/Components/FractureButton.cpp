@@ -3,7 +3,7 @@
 // FractureButton
 FractureButton::FractureButton()
     : mPos(std::make_shared<UIComponent>(Rect(), Elevation::WIZARDS)) {
-    setImage("res/wizards/catalyst.png");
+    setImage(CrystalDefs::FRACTURE_IMG);
     setDescription({"Blast {i} with all your strength\nDestroys your wizards",
                     {CrystalDefs::GetIcon()}});
     setEffects(ParameterSystem::Param<CRYSTAL>(CrystalParams::ShardGain),
@@ -15,9 +15,6 @@ FractureButton::FractureButton()
 }
 
 void FractureButton::init() {
-    mRenderSub =
-        ServiceSystem::Get<RenderService, RenderObservable>()->subscribe(
-            [this](SDL_Renderer* r) { onRender(r); }, mPos);
     mMouseSub = ServiceSystem::Get<MouseService, MouseObservable>()->subscribe(
         [this](Event::MouseButton b, bool clicked) { onClick(b, clicked); },
         mPos);
@@ -69,4 +66,5 @@ void FractureButton::onCrystalPos(const Rect& r) {
                       Rect::Align::BOT_RIGHT);
 }
 
+bool FractureButton::isHidden() const { return !mPos->visible; }
 void FractureButton::setHidden(bool hidden) { mPos->visible = !hidden; }

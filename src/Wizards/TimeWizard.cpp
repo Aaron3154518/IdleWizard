@@ -112,7 +112,7 @@ void TimeWizard::setUpgrades() {
          "speed boost cost percent by *0.9"});
     up->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
                 params[TimeWizardParams::SpeedUpUpCost],
-                [](const Number& lvl) { return Number(1, 3) * (2.1 ^ lvl); });
+                [](const Number& lvl) { return Number(1, 7) * (2.1 ^ lvl); });
     up->setEffects({{params[TimeWizardParams::SpeedUpUp],
                      [](const Number& lvl) { return 1.1 ^ lvl; }},
                     {params[TimeWizardParams::SpeedUpCostUp],

@@ -87,7 +87,7 @@ void PowerWizard::setUpgrades() {
           WizardFireball::GetIcon(), PowerWizFireball::GetIcon()}});
     up->setCost(Upgrade::Defaults::CRYSTAL_MAGIC,
                 params[PowerWizardParams::TimeWarpUpCost],
-                [](const Number& lvl) { return Number(8, 3) * (3 ^ lvl); });
+                [](const Number& lvl) { return Number(1, 8) * (3 ^ lvl); });
     up->setEffects(
         {{params[PowerWizardParams::TimeWarpUp],
           [](const Number& lvl) { return lvl == 0 ? 1 : .8 + lvl / 5; }}},

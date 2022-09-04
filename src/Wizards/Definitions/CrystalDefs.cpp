@@ -20,7 +20,7 @@ void setDefaults() {
     params[CrystalParams::Shards]->init(0, Event::ResetT2);
 
     params[CrystalParams::WizardCntUpCost]->init(Number(1, 4));
-    params[CrystalParams::GlowUpCost]->init(Number(1, 5));
+    params[CrystalParams::GlowUpCost]->init(Number(1, 11));
     params[CrystalParams::CatalystCost]->init(1);
 
     ParameterSystem::States states;

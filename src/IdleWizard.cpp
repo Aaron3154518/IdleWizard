@@ -12,8 +12,6 @@
 
 #include <memory>
 
-enum Start { None = 0, FirstT1, SecondT1 };
-
 int main(int argc, char* argv[]) {
     RenderSystem::Options options;
     options.width = options.height = 750;
@@ -30,12 +28,44 @@ int main(int argc, char* argv[]) {
     TimeWizardDefs::setDefaults();
 
     {  // Configure starting conditions
-        Start start = Start::FirstT1;
+        enum Start { None = 0, FirstT1, SecondT1 };
+        Start start = Start::SecondT1;
+        WizardId wiz1 = POWER_WIZARD;
+
+        ParameterSystem::States states;
+        ParameterSystem::Params<WIZARD> wParams;
+        ParameterSystem::Params<POWER_WIZARD> pwParams;
+        ParameterSystem::Params<TIME_WIZARD> twParams;
+        ParameterSystem::Params<CRYSTAL> cryParams;
         switch (start) {
             case Start::SecondT1:
+                states[State::BoughtPowerWizard].set(true);
+                states[State::BoughtTimeWizard].set(true);
+                states[State::BoughtCrysWizCntUp].set(true);
+                wParams[WizardParams::PowerUpLvl].set(10);
+                switch (wiz1) {
+                    case POWER_WIZARD:
+                        wParams[WizardParams::CritUpLvl].set(10);
+                        pwParams[PowerWizardParams::PowerUpLvl].set(15);
+                        break;
+                    case TIME_WIZARD:
+                        wParams[WizardParams::MultiUpLvl].set(20);
+                        twParams[TimeWizardParams::SpeedUpLvl].set(10);
+                        twParams[TimeWizardParams::FBSpeedUpLvl].set(6);
+                        twParams[TimeWizardParams::FreezeUpLvl].set(8);
+                        break;
+                }
+                break;
             case Start::FirstT1:
-                ParameterSystem::Param<CRYSTAL>(CrystalParams::Magic).set(500);
-                ParameterSystem::Param<WIZARD>(WizardParams::PowerUpLvl).set(5);
+                wParams[WizardParams::PowerUpLvl].set(5);
+                switch (wiz1) {
+                    case POWER_WIZARD:
+                        states[State::BoughtPowerWizard].set(true);
+                        break;
+                    case TIME_WIZARD:
+                        states[State::BoughtTimeWizard].set(true);
+                        break;
+                }
                 break;
         };
     }

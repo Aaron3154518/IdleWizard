@@ -18,7 +18,7 @@
 #include <random>
 
 namespace CatalystRing {
-typedef Observable<void(const Number&), UIComponentPtr> HitObservableBase;
+typedef Observable<void(const Number&), UIComponentPtr, int> HitObservableBase;
 class HitObservable : public HitObservableBase, public Component {
     friend class Catalyst;
 
@@ -41,9 +41,12 @@ class HitObservable : public HitObservableBase, public Component {
         TimeSystem::TimerObservable::SubscriptionPtr mTimerSub;
     };
 
-    enum : uint8_t { FUNC = 0, DATA };
+    enum : uint8_t { FUNC = 0, DATA, ZAP_CNT };
 
     HitObservable();
+
+    SubscriptionPtr subscribe(std::function<void(const Number&)> func,
+                              UIComponentPtr pos);
 
     void setPos(const CircleData& circle);
 

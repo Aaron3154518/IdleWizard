@@ -24,6 +24,11 @@ HitObservable::HitObservable()
     mPos->mouse = false;
 }
 
+HitObservable::SubscriptionPtr HitObservable::subscribe(
+    std::function<void(const Number&)> func, UIComponentPtr pos) {
+    return HitObservableBase::subscribe(func, pos, 0);
+}
+
 void HitObservable::setPos(const CircleData& circle) { mCircle = circle; }
 
 void HitObservable::init() {
@@ -66,6 +71,7 @@ void HitObservable::onTimerUpdate(Time dt, Timer& timer) {
             auto sub = inRange.at(idx).lock();
             if (sub) {
                 ParameterSystem::Params<CATALYST> params;
+                sub->get<ZAP_CNT>()++;
                 sub->get<FUNC>()(params[CatalystParams::MagicEffect].get());
                 Rect fBallRect = sub->get<DATA>()->rect;
                 mZaps.push_back(std::move(ComponentFactory<Zap>::New(
@@ -79,6 +85,10 @@ void HitObservable::onTimerUpdate(Time dt, Timer& timer) {
 std::vector<HitObservable::SubscriptionWPtr> HitObservable::getInRange() {
     std::vector<SubscriptionWPtr> inRange;
     for (auto sub : *this) {
+        if (sub->get<ZAP_CNT>() >= 1) {
+            continue;
+        }
+
         auto& pos = sub->get<DATA>();
         float dx = mCircle.c.x - pos->rect.cX(),
               dy = mCircle.c.y - pos->rect.cY();

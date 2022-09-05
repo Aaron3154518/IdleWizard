@@ -4,6 +4,8 @@
 Crystal::Crystal() : WizardBase(CRYSTAL) {}
 
 void Crystal::init() {
+    mMessages = ComponentFactory<MessageHandler>::New(FONT);
+
     ParameterSystem::Params<CRYSTAL> params;
 
     mImg.set(CrystalDefs::IMG).setDest(IMG_RECT);
@@ -26,7 +28,6 @@ void Crystal::init() {
     mMagicRender.set(mMagicText)
         .setFit(RenderData::FitMode::Texture)
         .setFitAlign(Rect::Align::CENTER, Rect::Align::TOP_LEFT);
-    mMsgTData.setFont(FONT);
 
     mFractureBtn = ComponentFactory<FractureButton>::New();
     mFractureBtn->setHidden(true);
@@ -37,9 +38,6 @@ void Crystal::init() {
     setPos(screenDim.x / 2, screenDim.y / 2);
 }
 void Crystal::setSubscriptions() {
-    mUpdateSub =
-        ServiceSystem::Get<UpdateService, UpdateObservable>()->subscribe(
-            [this](Time dt) { onUpdate(dt); });
     mWizFireballHitSub = WizardFireball::GetHitObservable()->subscribe(
         [this](const WizardFireball& f) { onWizFireballHit(f); }, mId);
     mPowFireballHitSub = PowerWizFireball::GetHitObservable()->subscribe(
@@ -64,7 +62,6 @@ void Crystal::setSubscriptions() {
         CrystalDefs::GLOW_EFFECT_IMG);
     mT1ResetSub = WizardSystem::GetWizardEventObservable()->subscribe(
         [this]() { onT1Reset(); }, WizardSystem::Event::ResetT1);
-    attachSubToVisibility(mUpdateSub);
     attachSubToVisibility(mWizFireballHitSub);
     attachSubToVisibility(mPowFireballHitSub);
 }
@@ -222,27 +219,6 @@ void Crystal::setParamTriggers() {
         }));
 }
 
-void Crystal::onUpdate(Time dt) {
-    for (auto it = mMessages.begin(), end = mMessages.end(); it != end; ++it) {
-        it->mTimer -= dt.ms();
-        if (it->mTimer <= 0) {
-            if (it->mMoving) {
-                it->mTimer = rDist(gen) * 1000 + 750;
-                it->mMoving = false;
-            } else {
-                it = mMessages.erase(it);
-                if (it == end) {
-                    break;
-                }
-            }
-        } else if (it->mMoving) {
-            Rect msgR = it->mRData.getRect();
-            msgR.move(it->mTrajectory.x * dt.s(), it->mTrajectory.y * dt.s());
-            it->mRData.setDest(msgR);
-        }
-    }
-}
-
 void Crystal::onRender(SDL_Renderer* r) {
     TextureBuilder tex;
 
@@ -263,9 +239,7 @@ void Crystal::onRender(SDL_Renderer* r) {
 
     tex.draw(mMagicRender);
 
-    for (auto msg : mMessages) {
-        tex.draw(msg.mRData);
-    }
+    mMessages->draw(tex);
 
     for (auto it = mFireRings.begin(); it != mFireRings.end(); ++it) {
         if ((*it)->dead()) {
@@ -314,8 +288,8 @@ void Crystal::onWizFireballHit(const WizardFireball& fireball) {
     } else {
         auto magic = ParameterSystem::Param<CRYSTAL>(CrystalParams::Magic);
         magic.set(magic.get() + fireball.getPower());
-        addMessage("+" + fireball.getPower().toString(),
-                   CrystalDefs::MSG_COLOR);
+        mMessages->addMessage(mPos->rect, "+" + fireball.getPower().toString(),
+                              CrystalDefs::MSG_COLOR);
     }
 }
 
@@ -355,7 +329,8 @@ bool Crystal::onGlowFinishTimer(Timer& t, const Number& magic) {
         ParameterSystem::Params<CRYSTAL> params;
         params[CrystalParams::Magic].set(params[CrystalParams::Magic].get() +
                                          magic);
-        addMessage("+" + magic.toString(), CrystalDefs::GLOW_MSG_COLOR);
+        mMessages->addMessage(mPos->rect, "+" + magic.toString(),
+                              CrystalDefs::GLOW_MSG_COLOR);
         mGlowFinishing = false;
         return false;
     }
@@ -424,31 +399,6 @@ std::unique_ptr<FireRing>& Crystal::createFireRing(const Number& val) {
     mFireRings.push_back(std::move(ComponentFactory<FireRing>::New(
         SDL_Point{mPos->rect.CX(), mPos->rect.CY()}, val)));
     return mFireRings.back();
-}
-
-void Crystal::addMessage(const std::string& msg, SDL_Color color) {
-    mMsgTData.setText(msg).setColor(color);
-
-    float dx = (rDist(gen) - .5) * mPos->rect.halfW(),
-          dy = (rDist(gen) - .5) * mPos->rect.halfH();
-    RenderData rData =
-        RenderData()
-            .set(mMsgTData)
-            .setFit(RenderData::FitMode::Texture)
-            .setDest(Rect(mPos->rect.cX() + dx, mPos->rect.cY() + dy, 0, 0));
-
-    SDL_FPoint trajectory{copysignf(rDist(gen), dx), copysignf(rDist(gen), dy)};
-    if (trajectory.x == 0 && trajectory.y == 0) {
-        trajectory.y = 1;
-    }
-    float mag = sqrt(trajectory.x * trajectory.x + trajectory.y * trajectory.y);
-    float maxSpeed =
-        sqrt(mPos->rect.w() * mPos->rect.w() + mPos->rect.h() * mPos->rect.h());
-    trajectory.x *= maxSpeed / mag;
-    trajectory.y *= maxSpeed / mag;
-
-    mMessages.push_back(
-        Message{rData, (int)(rDist(gen) * 250) + 250, true, trajectory});
 }
 
 void Crystal::setPos(float x, float y) {

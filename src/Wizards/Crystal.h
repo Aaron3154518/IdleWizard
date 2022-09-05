@@ -37,7 +37,6 @@ class Crystal : public WizardBase {
     void setParamTriggers();
 
     void onRender(SDL_Renderer* r);
-    void onUpdate(Time dt);
     void onClick(Event::MouseButton b, bool clicked);
     void onHide(bool hide);
     void onT1Reset();
@@ -57,11 +56,8 @@ class Crystal : public WizardBase {
 
     std::unique_ptr<FireRing>& createFireRing(const Number& val);
 
-    void addMessage(const std::string& msg, SDL_Color color);
-
     void setPos(float x, float y);
 
-    UpdateObservable::SubscriptionPtr mUpdateSub;
     TimeSystem::TimerObservable::SubscriptionPtr mAnimTimerSub, mGlowTimerSub,
         mGlowFinishTimerSub, mGlowAnimTimerSub;
     WizardFireball::HitObservable::IdSubscriptionPtr mWizFireballHitSub;
@@ -70,8 +66,7 @@ class Crystal : public WizardBase {
     UpgradeList::SubscriptionPtr mMagicEffectDisplay, mWizCntUp, mGlowUp,
         mPowWizBuy, mTimeWizBuy, mCatalystBuy;
 
-    TextData mMsgTData;
-    std::vector<Message> mMessages;
+    std::unique_ptr<MessageHandler> mMessages;
 
     bool mGlowFinishing = false;
     Number mGlowMagic;

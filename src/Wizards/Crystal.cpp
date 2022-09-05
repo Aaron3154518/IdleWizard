@@ -83,64 +83,64 @@ void Crystal::setUpgrades() {
     mMagicEffectDisplay = mUpgrades->subscribe(dUp);
 
     // Wizard count upgrade
-    UnlockablePtr bUp =
+    UnlockablePtr uUp =
         std::make_shared<Unlockable>(states[State::BoughtCrysWizCntUp]);
-    bUp->setImage(CrystalDefs::WIZ_CNT_UP_IMG);
-    bUp->setDescription(
+    uUp->setImage(CrystalDefs::WIZ_CNT_UP_IMG);
+    uUp->setDescription(
         {"Wizards synergy provides a multiplier based on the number of active "
          "wizards"});
-    bUp->setCost(UpgradeDefaults::CRYSTAL_MAGIC,
+    uUp->setCost(UpgradeDefaults::CRYSTAL_MAGIC,
                  params[CrystalParams::WizardCntUpCost]);
-    bUp->setEffects(params[CrystalParams::WizardCntEffect],
+    uUp->setEffects(params[CrystalParams::WizardCntEffect],
                     UpgradeDefaults::MultiplicativeEffect);
-    mWizCntUp = mUpgrades->subscribe(bUp);
+    mWizCntUp = mUpgrades->subscribe(uUp);
 
     // Glow upgrade
-    bUp = std::make_shared<Unlockable>(states[State::BoughtCrysGlowUp]);
-    bUp->setImage(CrystalDefs::CRYS_GLOW_UP_IMG);
-    bUp->setDescription(
+    uUp = std::make_shared<Unlockable>(states[State::BoughtCrysGlowUp]);
+    uUp->setImage(CrystalDefs::CRYS_GLOW_UP_IMG);
+    uUp->setDescription(
         {"After begin struck by {i}, {i} will absorb {i}\nWhen the effect "
          "expires, their power will be multiplied",
          {PowerWizardDefs::GetIcon(), CrystalDefs::GetIcon(),
           WizardFireball::GetIcon()}});
-    bUp->setCost(UpgradeDefaults::CRYSTAL_MAGIC,
+    uUp->setCost(UpgradeDefaults::CRYSTAL_MAGIC,
                  params[CrystalParams::GlowUpCost]);
-    bUp->setEffects(params[CrystalParams::GlowEffect],
+    uUp->setEffects(params[CrystalParams::GlowEffect],
                     UpgradeDefaults::MultiplicativeEffect);
-    mGlowUp = mUpgrades->subscribe(bUp);
+    mGlowUp = mUpgrades->subscribe(uUp);
 
     // Buy power wizard
-    bUp = std::make_shared<Unlockable>(states[State::BoughtPowerWizard]);
-    bUp->setImage(WIZ_IMGS.at(POWER_WIZARD));
-    bUp->setDescription(
+    uUp = std::make_shared<Unlockable>(states[State::BoughtPowerWizard]);
+    uUp->setImage(WIZ_IMGS.at(POWER_WIZARD));
+    uUp->setDescription(
         {"Power Wizard empowers {i} and overloads {i} for increased {i} "
          "power",
          {WizardDefs::GetIcon(), CrystalDefs::GetIcon(),
           WizardFireball::GetIcon()}});
-    bUp->setCost(UpgradeDefaults::CRYSTAL_MAGIC,
+    uUp->setCost(UpgradeDefaults::CRYSTAL_MAGIC,
                  params[CrystalParams::T1WizardCost]);
-    mPowWizBuy = mUpgrades->subscribe(bUp);
+    mPowWizBuy = mUpgrades->subscribe(uUp);
 
     // Buy time wizard
-    bUp = std::make_shared<Unlockable>(states[State::BoughtTimeWizard]);
-    bUp->setImage(WIZ_IMGS.at(TIME_WIZARD));
-    bUp->setDescription(
+    uUp = std::make_shared<Unlockable>(states[State::BoughtTimeWizard]);
+    uUp->setImage(WIZ_IMGS.at(TIME_WIZARD));
+    uUp->setDescription(
         {"Time Wizard boosts {i} fire rate and freezes time for a "
          "massive power boost",
          {WizardDefs::GetIcon()}});
-    bUp->setCost(UpgradeDefaults::CRYSTAL_MAGIC,
+    uUp->setCost(UpgradeDefaults::CRYSTAL_MAGIC,
                  params[CrystalParams::T1WizardCost]);
-    mTimeWizBuy = mUpgrades->subscribe(bUp);
+    mTimeWizBuy = mUpgrades->subscribe(uUp);
 
     // Buy catalyst
-    bUp = std::make_shared<Unlockable>(states[State::BoughtCatalyst]);
-    bUp->setImage(WIZ_IMGS.at(CATALYST));
-    bUp->setDescription(
+    uUp = std::make_shared<Unlockable>(states[State::BoughtCatalyst]);
+    uUp->setImage(WIZ_IMGS.at(CATALYST));
+    uUp->setDescription(
         {"Catalyst stores magic and boosts {i} that pass nearby",
          {WizardFireball::GetIcon()}});
-    bUp->setCost(UpgradeDefaults::CRYSTAL_SHARDS,
+    uUp->setCost(UpgradeDefaults::CRYSTAL_SHARDS,
                  params[CrystalParams::CatalystCost]);
-    mCatalystBuy = mUpgrades->subscribe(bUp);
+    mCatalystBuy = mUpgrades->subscribe(uUp);
 }
 void Crystal::setParamTriggers() {
     ParameterSystem::Params<CRYSTAL> params;

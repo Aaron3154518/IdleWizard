@@ -6,6 +6,8 @@ Catalyst::Catalyst() : WizardBase(CATALYST) {
 }
 
 void Catalyst::init() {
+    mMessages = ComponentFactory<MessageHandler>::New(FONT);
+
     ParameterSystem::Params<CATALYST> params;
     mImg.set(CatalystDefs::IMG).setDest(IMG_RECT);
     mPos->rect = mImg.getDest();
@@ -91,8 +93,10 @@ void Catalyst::setParamTriggers() {
 void Catalyst::onWizFireballHit(const WizardFireball& fireball) {
     ParameterSystem::Params<CATALYST> params;
     auto magic = params[CatalystParams::Magic];
-    magic.set(max(0, min(magic.get() + fireball.getPower(),
-                         params[CatalystParams::Capacity].get())));
+    Number gain = fireball.getPower().logTenCopy();
+    magic.set(max(
+        0, min(magic.get() + gain, params[CatalystParams::Capacity].get())));
+    mMessages->addMessage(mPos->rect, "+" + gain.toString(), RED);
 }
 
 void Catalyst::onRender(SDL_Renderer* r) {
@@ -101,6 +105,8 @@ void Catalyst::onRender(SDL_Renderer* r) {
     TextureBuilder tex;
 
     tex.draw(mRange);
+
+    mMessages->draw(tex);
 
     tex.draw(mMagicRender);
 }

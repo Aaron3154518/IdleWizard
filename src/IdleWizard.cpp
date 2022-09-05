@@ -29,8 +29,8 @@ int main(int argc, char* argv[]) {
 
     {  // Configure starting conditions
         enum Start { None = 0, FirstT1, SecondT1, Fracture };
-        Start start = Start::Fracture;
-        WizardId wiz1 = POWER_WIZARD;
+        Start start = Start::None;
+        WizardId t1Wiz = CATALYST, t2Wiz = CATALYST;
 
         ParameterSystem::States states;
         ParameterSystem::Params<WIZARD> wParams;
@@ -59,19 +59,13 @@ int main(int argc, char* argv[]) {
                 twParams[TimeWizardParams::SpeedUpUpLvl].set(8);
                 twParams[TimeWizardParams::FBSpeedUpLvl].set(6);
                 twParams[TimeWizardParams::FreezeUpLvl].set(8);
-
-                switch (wiz1) {
-                    case CATALYST:
-                        states[State::BoughtCatalyst].set(true);
-                        break;
-                }
                 break;
             case Start::SecondT1:
                 states[State::BoughtPowerWizard].set(true);
                 states[State::BoughtTimeWizard].set(true);
                 states[State::BoughtCrysWizCntUp].set(true);
                 wParams[WizardParams::PowerUpLvl].set(10);
-                switch (wiz1) {
+                switch (t1Wiz) {
                     case POWER_WIZARD:
                         wParams[WizardParams::CritUpLvl].set(10);
                         pwParams[PowerWizardParams::PowerUpLvl].set(15);
@@ -86,7 +80,7 @@ int main(int argc, char* argv[]) {
                 break;
             case Start::FirstT1:
                 wParams[WizardParams::PowerUpLvl].set(5);
-                switch (wiz1) {
+                switch (t1Wiz) {
                     case POWER_WIZARD:
                         states[State::BoughtPowerWizard].set(true);
                         break;
@@ -96,6 +90,12 @@ int main(int argc, char* argv[]) {
                 }
                 break;
         };
+
+        switch (t2Wiz) {
+            case CATALYST:
+                states[State::BoughtCatalyst].set(true);
+                break;
+        }
     }
 
     // Create Components

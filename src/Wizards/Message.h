@@ -7,6 +7,7 @@
 #include <ServiceSystem/Component.h>
 #include <ServiceSystem/CoreServices/UpdateService.h>
 
+#include <memory>
 #include <random>
 #include <vector>
 
@@ -38,5 +39,7 @@ class MessageHandler : public Component {
 
     UpdateObservable::SubscriptionPtr mUpdateSub;
 };
+
+typedef std::unique_ptr<MessageHandler> MessageHandlerPtr;
 
 #endif

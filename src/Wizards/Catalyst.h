@@ -13,6 +13,7 @@
 #include <Systems/ParameterSystem/WizardParameters.h>
 #include <Systems/WizardSystem.h>
 #include <Wizards/Definitions/CatalystDefs.h>
+#include <Wizards/Message.h>
 #include <Wizards/Money.h>
 #include <Wizards/WizardBase.h>
 #include <Wizards/WizardIds.h>
@@ -42,6 +43,8 @@ class Catalyst : public WizardBase {
     TimeSystem::TimerObservable::SubscriptionPtr mAnimTimerSub;
     WizardFireball::HitObservable::IdSubscriptionPtr mWizFireballSub;
     UpgradeList::SubscriptionPtr mMagicEffectDisplay, mRangeUp;
+
+    MessageHandlerPtr mMessages;
 
     CircleShape mRange;
     TextDataPtr mMagicText = std::make_shared<TextData>();

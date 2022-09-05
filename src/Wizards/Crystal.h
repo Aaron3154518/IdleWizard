@@ -66,7 +66,7 @@ class Crystal : public WizardBase {
     UpgradeList::SubscriptionPtr mMagicEffectDisplay, mWizCntUp, mGlowUp,
         mPowWizBuy, mTimeWizBuy, mCatalystBuy;
 
-    std::unique_ptr<MessageHandler> mMessages;
+    MessageHandlerPtr mMessages;
 
     bool mGlowFinishing = false;
     Number mGlowMagic;

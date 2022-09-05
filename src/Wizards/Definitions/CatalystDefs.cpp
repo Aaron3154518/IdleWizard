@@ -15,6 +15,7 @@ void setDefaults() {
     params[CatalystParams::BaseRange]->init(1.25);
 
     params[CatalystParams::RangeUpLvl]->init(Event::ResetT2);
+    params[CatalystParams::ZapCntUpLvl]->init(Event::ResetT2);
 }
 
 RenderDataWPtr GetIcon() {

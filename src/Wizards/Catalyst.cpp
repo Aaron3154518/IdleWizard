@@ -52,7 +52,20 @@ void Catalyst::setUpgrades() {
     mMagicEffectDisplay = mUpgrades->subscribe(dUp);
 
     UpgradePtr up =
-        std::make_shared<Upgrade>(params[CatalystParams::RangeUpLvl], 5);
+        std::make_shared<Upgrade>(params[CatalystParams::ZapCntUpLvl], 3);
+    up->setImage("");
+    up->setDescription({"Increases the number of times each {i} can be zapped",
+                        {WizardFireball::GetIcon()}});
+    up->setCost(UpgradeDefaults::CRYSTAL_MAGIC,
+                params[CatalystParams::ZapCntUpCost]);
+    up->setEffects(params[CatalystParams::ZapCnt], UpgradeDefaults::NoEffect);
+    mParamSubs.push_back(params[CatalystParams::ZapCntUpCost].subscribeTo(
+        up->level(), [](const Number& lvl) { return 10 ^ (10 * (lvl + 1)); }));
+    mParamSubs.push_back(params[CatalystParams::ZapCnt].subscribeTo(
+        up->level(), [](const Number& lvl) { return 1 + lvl; }));
+    mZapCntUp = mUpgrades->subscribe(up);
+
+    up = std::make_shared<Upgrade>(params[CatalystParams::RangeUpLvl], 5);
     up->setImage("");
     up->setDescription({"Increase range of fireball boost"});
     up->setCost(UpgradeDefaults::CRYSTAL_SHARDS,

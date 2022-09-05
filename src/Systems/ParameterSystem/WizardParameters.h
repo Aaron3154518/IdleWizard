@@ -76,14 +76,18 @@ enum B : param_t {
     BaseRange,
 
     RangeUpLvl,
+    ZapCntUpLvl,
 };
 
 enum N : param_t {
     MagicEffect = 0,
-    Range,
 
+    Range,
     RangeUpCost,
     RangeUp,
+
+    ZapCnt,
+    ZapCntUpCost,
 };
 }  // namespace CatalystParams
 namespace PowerWizardParams {

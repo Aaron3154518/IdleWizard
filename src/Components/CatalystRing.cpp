@@ -84,8 +84,10 @@ void HitObservable::onTimerUpdate(Time dt, Timer& timer) {
 
 std::vector<HitObservable::SubscriptionWPtr> HitObservable::getInRange() {
     std::vector<SubscriptionWPtr> inRange;
+    int zapCnt =
+        ParameterSystem::Param<CATALYST>(CatalystParams::ZapCnt).get().toInt();
     for (auto sub : *this) {
-        if (sub->get<ZAP_CNT>() >= 1) {
+        if (sub->get<ZAP_CNT>() >= zapCnt) {
             continue;
         }
 

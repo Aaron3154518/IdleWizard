@@ -40,6 +40,7 @@ struct UpgradeCost {
 namespace UpgradeDefaults {
 extern const ParameterSystem::BaseValue CRYSTAL_MAGIC, CRYSTAL_SHARDS;
 
+TextUpdateData NoEffect(const Number& effect);
 TextUpdateData AdditiveEffect(const Number& effect);
 TextUpdateData MultiplicativeEffect(const Number& effect);
 TextUpdateData PercentEffect(const Number& effect);

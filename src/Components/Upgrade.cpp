@@ -31,6 +31,7 @@ const ParameterSystem::BaseValue CRYSTAL_MAGIC =
 const ParameterSystem::BaseValue CRYSTAL_SHARDS =
     ParameterSystem::Param<CRYSTAL>(CrystalParams::Shards);
 
+TextUpdateData NoEffect(const Number& effect) { return {effect.toString()}; }
 TextUpdateData AdditiveEffect(const Number& effect) {
     return {"+" + effect.toString()};
 }

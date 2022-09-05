@@ -77,7 +77,7 @@ void Wizard::setUpgrades() {
             mTarget = WizardDefs::TARGETS.at(lvl);
             if (mTarget == CRYSTAL || !WizardSystem::Hidden(mTarget)) {
                 tUp.setImage(WIZ_IMGS.at(mTarget));
-                tUp.setInfo({"Target: " + WIZ_NAMES.at(mTarget)});
+                tUp.setEffect({"Target: " + WIZ_NAMES.at(mTarget)});
             } else {
                 tUp.setLevel(lvl + 1);
             }

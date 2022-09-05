@@ -68,7 +68,7 @@ class UpgradeBase {
     void setImage(WizardId id);
     void setImage(const std::string& file);
     void setDescription(const TextUpdateData& data);
-    void setInfo(const TextUpdateData& data);
+    void setEffect(const TextUpdateData& data);
 
     void drawIcon(TextureBuilder& tex, const Rect& r);
     void drawDescription(TextureBuilder tex, SDL_FPoint offset = {0, 0});
@@ -94,7 +94,6 @@ class UpgradeBase {
    protected:
     enum DescType : uint8_t {
         Desc = 0,
-        Info,
         Effect,
         Cost,
 

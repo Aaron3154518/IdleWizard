@@ -88,8 +88,8 @@ void UpgradeBase::setDescription(const TextUpdateData& data) {
     updateDesc(DescType::Desc, data);
 }
 
-void UpgradeBase::setInfo(const TextUpdateData& data) {
-    updateDesc(DescType::Info, data);
+void UpgradeBase::setEffect(const TextUpdateData& data) {
+    updateDesc(DescType::Effect, data);
 }
 
 void UpgradeBase::drawIcon(TextureBuilder& tex, const Rect& r) {

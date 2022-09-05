@@ -32,6 +32,7 @@ void Catalyst::setSubscriptions() {
 }
 void Catalyst::setUpgrades() {
     ParameterSystem::Params<CATALYST> params;
+    ParameterSystem::States states;
 
     // Power Display
     DisplayPtr dUp = std::make_shared<Display>();
@@ -77,6 +78,27 @@ void Catalyst::setUpgrades() {
     mParamSubs.push_back(params[CatalystParams::RangeUp].subscribeTo(
         up->level(), [](const Number& lvl) { return 1.1 ^ lvl; }));
     mRangeUp = mUpgrades->subscribe(up);
+
+    UnlockablePtr uUp =
+        std::make_shared<Unlockable>(states[State::BoughtCatShardMult]);
+    uUp->setImage("");
+    uUp->setDescription(
+        {"{i} effect boosts {i} gain",
+         {CatalystDefs::GetIcon(),
+          Money::GetMoneyIcon(UpgradeDefaults::CRYSTAL_SHARDS)}});
+    uUp->setCost(UpgradeDefaults::CRYSTAL_SHARDS,
+                 params[CatalystParams::ShardGainUpCost]);
+    uUp->setEffects(params[CatalystParams::ShardGainUp],
+                    UpgradeDefaults::MultiplicativeEffect);
+    mParamSubs.push_back(params[CatalystParams::ShardGainUp].subscribeTo(
+        {params[CatalystParams::MagicEffect]}, {uUp->level()}, []() -> Number {
+            if (!ParameterSystem::Param(State::BoughtCatShardMult).get()) {
+                return 1;
+            }
+            return ParameterSystem::Param<CATALYST>(CatalystParams::MagicEffect)
+                .get();
+        }));
+    mShardUp = mUpgrades->subscribe(uUp);
 }
 void Catalyst::setParamTriggers() {
     ParameterSystem::Params<CATALYST> params;

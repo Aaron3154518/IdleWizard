@@ -29,7 +29,7 @@ int main(int argc, char* argv[]) {
 
     {  // Configure starting conditions
         enum Start { None = 0, FirstT1, SecondT1, Fracture };
-        Start start = Start::None;
+        Start start = Start::Fracture;
         WizardId t1Wiz = CATALYST, t2Wiz = CATALYST;
 
         ParameterSystem::States states;
@@ -94,6 +94,7 @@ int main(int argc, char* argv[]) {
         switch (t2Wiz) {
             case CATALYST:
                 states[State::BoughtCatalyst].set(true);
+                cryParams[CrystalParams::Shards].set(100);
                 break;
         }
     }

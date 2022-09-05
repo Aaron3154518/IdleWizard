@@ -77,6 +77,8 @@ enum B : param_t {
 
     RangeUpLvl,
     ZapCntUpLvl,
+
+    ShardGainUpCost,
 };
 
 enum N : param_t {
@@ -88,6 +90,8 @@ enum N : param_t {
 
     ZapCnt,
     ZapCntUpCost,
+
+    ShardGainUp,
 };
 }  // namespace CatalystParams
 namespace PowerWizardParams {

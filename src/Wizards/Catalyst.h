@@ -42,7 +42,8 @@ class Catalyst : public WizardBase {
 
     TimeSystem::TimerObservable::SubscriptionPtr mAnimTimerSub;
     WizardFireball::HitObservable::IdSubscriptionPtr mWizFireballSub;
-    UpgradeList::SubscriptionPtr mMagicEffectDisplay, mRangeUp, mZapCntUp;
+    UpgradeList::SubscriptionPtr mMagicEffectDisplay, mRangeUp, mZapCntUp,
+        mShardUp;
 
     MessageHandlerPtr mMessages;
 

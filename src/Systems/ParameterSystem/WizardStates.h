@@ -10,6 +10,8 @@ enum B : param_t {
     BoughtCrysWizCntUp,
     BoughtCrysGlowUp,
 
+    BoughtCatShardMult,
+
     BoughtPowerWizard,
     BoughtTimeWizard,
     BoughtCatalyst,

@@ -14,8 +14,14 @@ void setDefaults() {
     params[CatalystParams::Capacity]->init(100);
     params[CatalystParams::BaseRange]->init(1.25);
 
+    params[CatalystParams::ShardGainUpCost]->init(2);
+
     params[CatalystParams::RangeUpLvl]->init(Event::ResetT2);
     params[CatalystParams::ZapCntUpLvl]->init(Event::ResetT2);
+
+    ParameterSystem::States states;
+
+    states[State::BoughtCatShardMult]->init(false, Event::ResetT2);
 }
 
 RenderDataWPtr GetIcon() {

@@ -141,6 +141,7 @@ void Crystal::setUpgrades() {
 }
 void Crystal::setParamTriggers() {
     ParameterSystem::Params<CRYSTAL> params;
+    ParameterSystem::Params<CATALYST> catParams;
     ParameterSystem::States states;
 
     mParamSubs.push_back(params[CrystalParams::MagicEffect].subscribeTo(
@@ -148,8 +149,8 @@ void Crystal::setParamTriggers() {
         [this]() { return calcMagicEffect(); }));
 
     mParamSubs.push_back(params[CrystalParams::ShardGain].subscribeTo(
-        {params[CrystalParams::Magic]}, {},
-        [this]() { return calcShardGain(); }));
+        {params[CrystalParams::Magic], catParams[CatalystParams::ShardGainUp]},
+        {}, [this]() { return calcShardGain(); }));
 
     mParamSubs.push_back(params[CrystalParams::NumWizards].subscribeTo(
         {},
@@ -344,7 +345,9 @@ Number Crystal::calcMagicEffect() {
 
 Number Crystal::calcShardGain() {
     ParameterSystem::Params<CRYSTAL> params;
-    Number shards = (params[CrystalParams::Magic].get() + 1).logTen() - 14;
+    ParameterSystem::Params<CATALYST> catParams;
+    Number shards = ((params[CrystalParams::Magic].get() + 1).logTen() - 14) *
+                    catParams[CatalystParams::ShardGainUp].get();
     if (shards < 1) {
         shards = 0;
     }

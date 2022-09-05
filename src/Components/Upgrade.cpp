@@ -182,17 +182,17 @@ void Toggle::setLevel(unsigned int lvl) {
     mOnLevel(mLevel, *this);
 }
 
-// Buyable
-Buyable::Buyable(ParameterSystem::BaseState level) : mLevel(level) {}
+// Unlockable
+Unlockable::Unlockable(ParameterSystem::BaseState level) : mLevel(level) {}
 
-UpgradeBase::Status Buyable::getStatus() {
+UpgradeBase::Status Unlockable::getStatus() {
     if (mLevel.get()) {
         return BOUGHT;
     }
     return mCost && !mCost->canBuy() ? CANT_BUY : CAN_BUY;
 }
 
-void Buyable::buy() {
+void Unlockable::buy() {
     if (getStatus() != CAN_BUY) {
         return;
     }
@@ -203,7 +203,7 @@ void Buyable::buy() {
     mLevel.set(!mLevel.get());
 }
 
-TextUpdateData Buyable::getCostText() const {
+TextUpdateData Unlockable::getCostText() const {
     std::vector<RenderDataWPtr> imgs;
     std::stringstream ss;
     if (mLevel.get()) {
@@ -215,7 +215,7 @@ TextUpdateData Buyable::getCostText() const {
     return {ss.str(), imgs};
 }
 
-ParameterSystem::BaseState Buyable::level() const { return mLevel; }
+ParameterSystem::BaseState Unlockable::level() const { return mLevel; }
 
 // Upgrade
 Upgrade::Upgrade(ParameterSystem::BaseValue level, unsigned int maxLevel)

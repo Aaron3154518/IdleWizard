@@ -156,9 +156,9 @@ class Toggle : public Display {
 typedef std::shared_ptr<Toggle> TogglePtr;
 
 // Upgrade that can only be bought once
-class Buyable : public Display {
+class Unlockable : public Display {
    public:
-    Buyable(ParameterSystem::BaseState level);
+    Unlockable(ParameterSystem::BaseState level);
 
     Status getStatus();
     void buy();
@@ -174,7 +174,7 @@ class Buyable : public Display {
     ParameterSystem::BaseState mLevel;
 };
 
-typedef std::shared_ptr<Buyable> BuyablePtr;
+typedef std::shared_ptr<Unlockable> UnlockablePtr;
 
 // Flexible upgrade
 class Upgrade : public Display {

@@ -83,8 +83,8 @@ void Crystal::setUpgrades() {
     mMagicEffectDisplay = mUpgrades->subscribe(dUp);
 
     // Wizard count upgrade
-    BuyablePtr bUp =
-        std::make_shared<Buyable>(states[State::BoughtCrysWizCntUp]);
+    UnlockablePtr bUp =
+        std::make_shared<Unlockable>(states[State::BoughtCrysWizCntUp]);
     bUp->setImage(CrystalDefs::WIZ_CNT_UP_IMG);
     bUp->setDescription(
         {"Wizards synergy provides a multiplier based on the number of active "
@@ -96,7 +96,7 @@ void Crystal::setUpgrades() {
     mWizCntUp = mUpgrades->subscribe(bUp);
 
     // Glow upgrade
-    bUp = std::make_shared<Buyable>(states[State::BoughtCrysGlowUp]);
+    bUp = std::make_shared<Unlockable>(states[State::BoughtCrysGlowUp]);
     bUp->setImage(CrystalDefs::CRYS_GLOW_UP_IMG);
     bUp->setDescription(
         {"After begin struck by {i}, {i} will absorb {i}\nWhen the effect "
@@ -110,7 +110,7 @@ void Crystal::setUpgrades() {
     mGlowUp = mUpgrades->subscribe(bUp);
 
     // Buy power wizard
-    bUp = std::make_shared<Buyable>(states[State::BoughtPowerWizard]);
+    bUp = std::make_shared<Unlockable>(states[State::BoughtPowerWizard]);
     bUp->setImage(WIZ_IMGS.at(POWER_WIZARD));
     bUp->setDescription(
         {"Power Wizard empowers {i} and overloads {i} for increased {i} "
@@ -122,7 +122,7 @@ void Crystal::setUpgrades() {
     mPowWizBuy = mUpgrades->subscribe(bUp);
 
     // Buy time wizard
-    bUp = std::make_shared<Buyable>(states[State::BoughtTimeWizard]);
+    bUp = std::make_shared<Unlockable>(states[State::BoughtTimeWizard]);
     bUp->setImage(WIZ_IMGS.at(TIME_WIZARD));
     bUp->setDescription(
         {"Time Wizard boosts {i} fire rate and freezes time for a "
@@ -133,7 +133,7 @@ void Crystal::setUpgrades() {
     mTimeWizBuy = mUpgrades->subscribe(bUp);
 
     // Buy catalyst
-    bUp = std::make_shared<Buyable>(states[State::BoughtCatalyst]);
+    bUp = std::make_shared<Unlockable>(states[State::BoughtCatalyst]);
     bUp->setImage(WIZ_IMGS.at(CATALYST));
     bUp->setDescription(
         {"Catalyst stores magic and boosts {i} that pass nearby",
@@ -452,7 +452,6 @@ void Crystal::addMessage(const std::string& msg, SDL_Color color) {
 }
 
 void Crystal::setPos(float x, float y) {
-    std::cerr << x << " " << y << std::endl;
     WizardBase::setPos(x, y);
 
     mMagicRender.setDest(

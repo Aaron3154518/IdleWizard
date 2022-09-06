@@ -233,6 +233,17 @@ Number UpgradeList::buyAll(ParameterSystem::BaseValue money, Number max) {
             }
         }
     }
+
+    return costSum;
+}
+void UpgradeList::buyAllFree(ParameterSystem::BaseValue money) {
+    for (auto sub : *this) {
+        auto& up = sub->get<DATA>();
+        const auto& upCost = up->getCost();
+        if (upCost && upCost->getMoneyParam() == money) {
+            up->maxFree();
+        }
+    }
 }
 
 // WizardUpgradesObservable

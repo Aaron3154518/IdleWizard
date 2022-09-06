@@ -48,7 +48,7 @@ int main(int argc, char* argv[]) {
 
     {  // Configure starting conditions
         enum Start { None = 0, FirstT1, SecondT1, Fracture };
-        Start start = Start::None;
+        Start start = Start::SecondT1;
         WizardId t1Wiz = POWER_WIZARD, t2Wiz = CATALYST;
 
         ParameterSystem::States states;
@@ -56,29 +56,18 @@ int main(int argc, char* argv[]) {
         ParameterSystem::Params<POWER_WIZARD> pwParams;
         ParameterSystem::Params<TIME_WIZARD> twParams;
         ParameterSystem::Params<CRYSTAL> cryParams;
-        // Set magic
-        switch (start) {
-            case Start::Fracture:
-                cryParams[CrystalParams::Magic].set(
-                    cryParams[CrystalParams::T1ResetCost].get());
-                break;
-            case Start::SecondT1:
-                cryParams[CrystalParams::Magic].set(Number(1, 6));
-                break;
-            case Start::FirstT1:
-                cryParams[CrystalParams::Magic].set(Number(1, 3));
-                break;
-        };
-
         // Buy upgrades
         switch (start) {
             case Start::Fracture:
                 states[State::BoughtPowerWizard].set(true);
                 states[State::BoughtTimeWizard].set(true);
 
+                cryParams[CrystalParams::Magic].set(
+                    cryParams[CrystalParams::T1ResetCost].get());
+
                 for (WizardId id :
                      {CRYSTAL, WIZARD, POWER_WIZARD, TIME_WIZARD}) {
-                    GetWizardUpgrades(id)->buyAll(
+                    GetWizardUpgrades(id)->buyAllFree(
                         UpgradeDefaults::CRYSTAL_MAGIC);
                 }
                 break;
@@ -87,18 +76,18 @@ int main(int argc, char* argv[]) {
                     case POWER_WIZARD:
                         states[State::BoughtTimeWizard].set(true);
                         GetWizardUpgrades(TIME_WIZARD)
-                            ->buyAll(UpgradeDefaults::CRYSTAL_MAGIC);
+                            ->buyAllFree(UpgradeDefaults::CRYSTAL_MAGIC);
                         break;
                     case TIME_WIZARD:
                         states[State::BoughtPowerWizard].set(true);
                         GetWizardUpgrades(POWER_WIZARD)
-                            ->buyAll(UpgradeDefaults::CRYSTAL_MAGIC);
+                            ->buyAllFree(UpgradeDefaults::CRYSTAL_MAGIC);
                         break;
                 }
-                GetWizardUpgrades(CRYSTAL)->buyAll(
+                GetWizardUpgrades(CRYSTAL)->buyAllFree(
                     UpgradeDefaults::CRYSTAL_MAGIC);
             case Start::FirstT1:
-                GetWizardUpgrades(WIZARD)->buyAll(
+                GetWizardUpgrades(WIZARD)->buyAllFree(
                     UpgradeDefaults::CRYSTAL_MAGIC);
                 switch (t1Wiz) {
                     case POWER_WIZARD:

@@ -65,6 +65,7 @@ class UpgradeBase {
 
     virtual Status getStatus();
     virtual void buy();
+    virtual void maxFree();
 
     void setImage(WizardId id);
     void setImage(const std::string& file);
@@ -163,8 +164,9 @@ class Unlockable : public Display {
 
     Status getStatus();
     void buy();
+    void maxFree();
 
-    virtual TextUpdateData getCostText() const;
+    TextUpdateData getCostText() const;
 
     ParameterSystem::BaseState level() const;
 
@@ -173,6 +175,7 @@ class Unlockable : public Display {
    private:
     // Level
     ParameterSystem::BaseState mLevel;
+    ParameterSystem::ParameterSubscriptionPtr mLevelSub;
 };
 
 typedef std::shared_ptr<Unlockable> UnlockablePtr;
@@ -189,8 +192,9 @@ class Upgrade : public Display {
 
     Status getStatus();
     void buy();
+    void maxFree();
 
-    virtual TextUpdateData getCostText() const;
+    TextUpdateData getCostText() const;
 
     ParameterSystem::BaseValue level() const;
 
@@ -200,7 +204,7 @@ class Upgrade : public Display {
     // Level
     ParameterSystem::BaseValue mLevel;
     unsigned int mMaxLevel;
-    ParameterSystem::ParameterSubscriptionPtr mMaxLevelSub;
+    ParameterSystem::ParameterSubscriptionPtr mLevelSub, mMaxLevelSub;
 };
 
 typedef std::shared_ptr<Upgrade> UpgradePtr;

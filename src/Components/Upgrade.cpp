@@ -75,6 +75,8 @@ UpgradeBase::Status UpgradeBase::getStatus() { return NOT_BUYABLE; }
 
 void UpgradeBase::buy() {}
 
+void UpgradeBase::maxFree() {}
+
 void UpgradeBase::setImage(WizardId id) {
     mWizImgSub = WizardSystem::GetWizardImageObservable()->subscribe(
         [this](const RenderData& data) { mImg = data; }, id);
@@ -187,7 +189,10 @@ void Toggle::setLevel(unsigned int lvl) {
 }
 
 // Unlockable
-Unlockable::Unlockable(ParameterSystem::BaseState level) : mLevel(level) {}
+Unlockable::Unlockable(ParameterSystem::BaseState level) : mLevel(level) {
+    mLevelSub = mLevel.subscribe(
+        [this](bool val) { updateDesc(DescType::Cost, getCostText()); });
+}
 
 UpgradeBase::Status Unlockable::getStatus() {
     if (mLevel.get()) {
@@ -207,6 +212,8 @@ void Unlockable::buy() {
     mLevel.set(!mLevel.get());
 }
 
+void Unlockable::maxFree() { mLevel.set(true); }
+
 TextUpdateData Unlockable::getCostText() const {
     std::vector<RenderDataWPtr> imgs;
     std::stringstream ss;
@@ -223,7 +230,11 @@ ParameterSystem::BaseState Unlockable::level() const { return mLevel; }
 
 // Upgrade
 Upgrade::Upgrade(ParameterSystem::BaseValue level, unsigned int maxLevel)
-    : mLevel(level), mMaxLevel(maxLevel) {}
+    : mLevel(level), mMaxLevel(maxLevel) {
+    mLevelSub = mLevel.subscribe([this](const Number& val) {
+        updateDesc(DescType::Cost, getCostText());
+    });
+}
 Upgrade::Upgrade(ParameterSystem::BaseValue level,
                  ParameterSystem::ValueParam maxLevel)
     : Upgrade(level, std::max(0, maxLevel.get().toInt())) {
@@ -253,6 +264,8 @@ void Upgrade::buy() {
     }
     mLevel.set(mLevel.get() + 1);
 }
+
+void Upgrade::maxFree() { mLevel.set(mMaxLevel); }
 
 TextUpdateData Upgrade::getCostText() const {
     std::vector<RenderDataWPtr> imgs;

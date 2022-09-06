@@ -1,6 +1,8 @@
 #include "RobotWizardDefs.h"
 
 namespace RobotWizardDefs {
+const std::vector<WizardId> TARGETS{WIZARD, TIME_WIZARD, POWER_WIZARD, CRYSTAL};
+
 const AnimationData IMG{"res/wizards/robot_ss.png", 6, 100};
 
 void setDefaults() {

@@ -215,8 +215,9 @@ std::unordered_set<void*> UpgradeList::getActive() const {
     return set;
 }
 
-void UpgradeList::buyAll(ParameterSystem::BaseValue money, Number max) {
+Number UpgradeList::buyAll(ParameterSystem::BaseValue money, Number max) {
     bool noMax = max < 0;
+    Number costSum = 0;
 
     for (auto sub : *this) {
         auto& up = sub->get<DATA>();
@@ -227,6 +228,7 @@ void UpgradeList::buyAll(ParameterSystem::BaseValue money, Number max) {
                 if (!noMax) {
                     max -= upCost->getCost();
                 }
+                costSum += upCost->getCost();
                 up->buy();
             }
         }

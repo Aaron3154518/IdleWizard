@@ -11,6 +11,8 @@
 #include <vector>
 
 namespace RobotWizardDefs {
+extern const std::vector<WizardId> TARGETS;
+
 extern const AnimationData IMG;
 
 void setDefaults();

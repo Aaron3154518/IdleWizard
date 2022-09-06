@@ -19,6 +19,8 @@ void RobotWizard::setSubscriptions() {
                 return true;
             },
             RobotWizardDefs::IMG);
+    mUpTimerSub = TimeSystem::GetTimerObservable()->subscribe(
+        [this](Timer& t) { return onUpTimer(t); }, Timer(2000));
 }
 void RobotWizard::setUpgrades() {
     ParameterSystem::Params<POISON_WIZARD> params;
@@ -35,3 +37,16 @@ void RobotWizard::setParamTriggers() {
 }
 
 void RobotWizard::onRender(SDL_Renderer* r) { WizardBase::onRender(r); }
+bool RobotWizard::onUpTimer(Timer& t) {
+    WizardId target = RobotWizardDefs::TARGETS.at(mTargetIdx);
+    auto catMagic = ParameterSystem::Param<CATALYST>(CatalystParams::Magic);
+    auto cryMagic = ParameterSystem::Param<CRYSTAL>(CrystalParams::Magic);
+    Number maxSpend = catMagic.get() / 10;
+    cryMagic.set(cryMagic.get() + maxSpend);
+    Number spent = GetWizardUpgrades(target)->buyAll(
+        UpgradeDefaults::CRYSTAL_MAGIC, catMagic.get() / 10);
+    catMagic.set(catMagic.get() - spent);
+    cryMagic.set(cryMagic.get() - maxSpend + spent);
+    mTargetIdx = (mTargetIdx + 1) % RobotWizardDefs::TARGETS.size();
+    return true;
+}

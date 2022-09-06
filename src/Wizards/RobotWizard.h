@@ -28,8 +28,12 @@ class RobotWizard : public WizardBase {
     void setParamTriggers();
 
     void onRender(SDL_Renderer* r);
+    bool onUpTimer(Timer& t);
+
+    int mTargetIdx = 0;
 
     TimerObservable::SubscriptionPtr mAnimTimerSub;
+    TimeSystem::TimerObservable::SubscriptionPtr mUpTimerSub;
     UpgradeList::SubscriptionPtr mTODO;
 };
 

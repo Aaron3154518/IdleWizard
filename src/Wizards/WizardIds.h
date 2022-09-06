@@ -10,6 +10,8 @@ enum WizardId : uint8_t {
     WIZARD,
     POWER_WIZARD,
     TIME_WIZARD,
+    POISON_WIZARD,
+    ROBOT_WIZARD,
 
     size
 };
@@ -18,6 +20,7 @@ template <class T>
 using WizardMap = std::unordered_map<WizardId, T>;
 
 const std::string WIZ_DIR = "res/wizards/";
+// TODO: new
 const WizardMap<std::string> WIZ_IMGS = {
     {CRYSTAL, WIZ_DIR + "crystal.png"},
     {CATALYST, WIZ_DIR + "catalyst.png"},
@@ -29,7 +32,9 @@ const WizardMap<std::string> WIZ_NAMES = {{CRYSTAL, "Crystal"},
                                           {CATALYST, "Catalyst"},
                                           {WIZARD, "Wizard"},
                                           {POWER_WIZARD, "Power Wizard"},
-                                          {TIME_WIZARD, "Time Wizard"}};
+                                          {TIME_WIZARD, "Time Wizard"},
+                                          {POISON_WIZARD, "Poison Wizard"},
+                                          {ROBOT_WIZARD, "Robot Wizard"}};
 
 namespace Elevation {
 enum : uint8_t {

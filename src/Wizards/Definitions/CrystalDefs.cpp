@@ -35,6 +35,8 @@ void setDefaults() {
     states[State::BoughtPowerWizard]->init(false, Event::ResetT1);
     states[State::BoughtTimeWizard]->init(false, Event::ResetT1);
     states[State::BoughtCatalyst]->init(false, Event::ResetT2);
+    states[State::BoughtPoisonWizard]->init(true, Event::ResetT2);
+    states[State::BoughtRobotWizard]->init(true, Event::ResetT2);
 }
 
 RenderDataWPtr GetIcon() {

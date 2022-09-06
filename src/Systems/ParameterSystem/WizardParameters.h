@@ -154,6 +154,16 @@ enum N : param_t {
     FBSpeedCost,
 };
 }  // namespace TimeWizardParams
+namespace PoisonWizardParams {
+enum B : param_t {};
+
+enum N : param_t {};
+}  // namespace PoisonWizardParams
+namespace RobotWizardParams {
+enum B : param_t {};
+
+enum N : param_t {};
+}  // namespace RobotWizardParams
 
 // Templates for matching wizards to param enums
 template <WizardId, class, class>
@@ -191,7 +201,9 @@ using WizardTypeMap = WizardTypeMapImpl<
     Pack<CRYSTAL, CrystalParams::B, CrystalParams::N>,
     Pack<CATALYST, CatalystParams::B, CatalystParams::N>,
     Pack<POWER_WIZARD, PowerWizardParams::B, PowerWizardParams::N>,
-    Pack<TIME_WIZARD, TimeWizardParams::B, TimeWizardParams::N>>;
+    Pack<TIME_WIZARD, TimeWizardParams::B, TimeWizardParams::N>,
+    Pack<POISON_WIZARD, PoisonWizardParams::B, PoisonWizardParams::N>,
+    Pack<ROBOT_WIZARD, RobotWizardParams::B, RobotWizardParams::N>>;
 
 template <WizardId id>
 using WizardBaseType = typename WizardTypeMap<id>::BaseType;

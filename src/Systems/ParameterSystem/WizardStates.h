@@ -15,6 +15,8 @@ enum B : param_t {
     BoughtPowerWizard,
     BoughtTimeWizard,
     BoughtCatalyst,
+    BoughtPoisonWizard,
+    BoughtRobotWizard,
 
     WizBoosted,
 

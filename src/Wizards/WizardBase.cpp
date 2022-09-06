@@ -7,14 +7,15 @@ const AnimationData WizardBase::STAR_IMG{"res/wizards/star_ss.png", 6, 125};
 
 WizardBase::WizardBase(WizardId id)
     : mId(id),
+      mShowStar(false),
       mPos(std::make_shared<UIComponent>(Rect(), Elevation::WIZARDS)),
       mDrag(std::make_shared<DragComponent>(250)) {}
 WizardBase::~WizardBase() {}
 
 void WizardBase::init() {
     SDL_Point screenDim = RenderSystem::getWindowSize();
-    setPos((rDist(gen) * .5 + .25) * screenDim.x,
-           (rDist(gen) * .5 + .25) * screenDim.y);
+    setPos((rDist(gen) * 3 + 2) * screenDim.x / 6,
+           (rDist(gen) * 3 + 2) * screenDim.y / 6);
 
     mStar.set(STAR_IMG);
 
@@ -113,7 +114,7 @@ void WizardBase::onHide(bool hide) {
     }
 
     if (!mHidden) {
-        showStar();
+        mActiveUps.clear();
     }
 }
 

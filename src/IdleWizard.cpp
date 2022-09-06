@@ -5,7 +5,9 @@
 #include <Systems/WizardSystem.h>
 #include <Wizards/Catalyst.h>
 #include <Wizards/Crystal.h>
+#include <Wizards/PoisonWizard.h>
 #include <Wizards/PowerWizard.h>
+#include <Wizards/RobotWizard.h>
 #include <Wizards/TimeWizard.h>
 #include <Wizards/Wizard.h>
 #include <Wizards/WizardBase.h>
@@ -14,7 +16,7 @@
 
 int main(int argc, char* argv[]) {
     RenderSystem::Options options;
-    options.width = options.height = 750;
+    options.width = options.height = 1000;
     options.title = "Idle Wizard";
     options.defaultTexture = "res/default.png";
 
@@ -26,6 +28,8 @@ int main(int argc, char* argv[]) {
     CatalystDefs::setDefaults();
     PowerWizardDefs::setDefaults();
     TimeWizardDefs::setDefaults();
+    PowerWizardDefs::setDefaults();
+    RobotWizardDefs::setDefaults();
 
     {  // Configure starting conditions
         enum Start { None = 0, FirstT1, SecondT1, Fracture };
@@ -109,6 +113,10 @@ int main(int argc, char* argv[]) {
         ComponentFactory<PowerWizard>::New();
     std::unique_ptr<TimeWizard> timeWizard =
         ComponentFactory<TimeWizard>::New();
+    std::unique_ptr<PoisonWizard> poisonWizard =
+        ComponentFactory<PoisonWizard>::New();
+    std::unique_ptr<RobotWizard> robotWizard =
+        ComponentFactory<RobotWizard>::New();
 
     GameSystem::Run();
 

@@ -53,7 +53,7 @@ class WizardBase : public Component {
     void attachSubToVisibility(SubscriptionBaseWPtr wSub);
     void detachSubFromVisibility(SubscriptionBasePtr ub);
 
-    bool mHidden = false, mShowStar = true;
+    bool mHidden = false, mShowStar = false;
 
     RenderData mImg, mStar;
 

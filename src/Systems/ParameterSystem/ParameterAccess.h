@@ -21,6 +21,7 @@ struct ValueParam {
     virtual ~ValueParam() = default;
 
     ValueParam& operator=(const ValueParam& other);
+    bool operator==(const ValueParam& other) const;
 
     ValueObservablePtr operator->() const;
 
@@ -48,6 +49,7 @@ struct StateParam {
     virtual ~StateParam() = default;
 
     StateParam& operator=(const StateParam& other);
+    bool operator==(const StateParam& other) const;
 
     StateObservablePtr operator->() const;
 

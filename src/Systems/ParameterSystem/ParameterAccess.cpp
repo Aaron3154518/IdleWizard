@@ -7,9 +7,13 @@ ValueParam::ValueParam(WizardId id, param_t key, bool isBase)
     : mId(id), mKey(key), mIsBase(isBase) {}
 ValueParam::ValueParam(const ValueParam& other)
     : ValueParam(other.mId, other.mKey, other.mIsBase) {}
+
 ValueParam& ValueParam::operator=(const ValueParam& other) {
     *this = ValueParam(other);
     return *this;
+}
+bool ValueParam::operator==(const ValueParam& other) const {
+    return mId == other.mId && mKey == other.mKey;
 }
 
 ValueObservablePtr ValueParam::operator->() const {
@@ -46,9 +50,13 @@ ParameterSubscriptionPtr ValueParam::subscribe(
 StateParam::StateParam(param_t key, bool isBase) : mKey(key), mIsBase(isBase) {}
 StateParam::StateParam(const StateParam& other)
     : StateParam(other.mKey, other.mIsBase) {}
+
 StateParam& StateParam::operator=(const StateParam& other) {
     *this = StateParam(other);
     return *this;
+}
+bool StateParam::operator==(const StateParam& other) const {
+    return mKey == other.mKey;
 }
 
 StateObservablePtr StateParam::operator->() const {

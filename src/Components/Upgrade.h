@@ -78,6 +78,7 @@ class UpgradeBase {
     const static FontData DESC_FONT;
 
     // Cost
+    const std::unique_ptr<UpgradeCost>& getCost() const;
     void setCost(ParameterSystem::BaseValue money,
                  ParameterSystem::ValueParam cost);
     virtual TextUpdateData getCostText() const;
@@ -178,7 +179,6 @@ typedef std::shared_ptr<Unlockable> UnlockablePtr;
 
 // Flexible upgrade
 class Upgrade : public Display {
-   public:
    public:
     typedef std::function<Number(const Number&)> ValueFunc;
     typedef std::function<bool(const Number&)> StateFunc;

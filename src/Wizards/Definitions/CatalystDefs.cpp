@@ -10,8 +10,8 @@ void setDefaults() {
 
     ParameterSystem::Params<CATALYST> params;
 
-    params[CatalystParams::Magic]->init(0);
-    params[CatalystParams::Capacity]->init(100);
+    params[CatalystParams::Magic]->init(Number(1, 10));
+    params[CatalystParams::Capacity]->init(Number(1, 10));
     params[CatalystParams::BaseRange]->init(1.25);
 
     params[CatalystParams::ShardGainUpCost]->init(2);

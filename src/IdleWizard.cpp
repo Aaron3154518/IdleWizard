@@ -31,59 +31,75 @@ int main(int argc, char* argv[]) {
     PowerWizardDefs::setDefaults();
     RobotWizardDefs::setDefaults();
 
+    // Create Components
+    std::unique_ptr<UpgradeScroller> upgradeScroller =
+        ComponentFactory<UpgradeScroller>::New();
+    std::unique_ptr<Wizard> wizard = ComponentFactory<Wizard>::New();
+    std::unique_ptr<Crystal> catalyst = ComponentFactory<Crystal>::New();
+    std::unique_ptr<Catalyst> crystal = ComponentFactory<Catalyst>::New();
+    std::unique_ptr<PowerWizard> powerWizard =
+        ComponentFactory<PowerWizard>::New();
+    std::unique_ptr<TimeWizard> timeWizard =
+        ComponentFactory<TimeWizard>::New();
+    std::unique_ptr<PoisonWizard> poisonWizard =
+        ComponentFactory<PoisonWizard>::New();
+    std::unique_ptr<RobotWizard> robotWizard =
+        ComponentFactory<RobotWizard>::New();
+
     {  // Configure starting conditions
         enum Start { None = 0, FirstT1, SecondT1, Fracture };
-        Start start = Start::Fracture;
-        WizardId t1Wiz = CATALYST, t2Wiz = CATALYST;
+        Start start = Start::SecondT1;
+        WizardId t1Wiz = POWER_WIZARD, t2Wiz = CATALYST;
 
         ParameterSystem::States states;
         ParameterSystem::Params<WIZARD> wParams;
         ParameterSystem::Params<POWER_WIZARD> pwParams;
         ParameterSystem::Params<TIME_WIZARD> twParams;
         ParameterSystem::Params<CRYSTAL> cryParams;
+        // Set magic
+        switch (start) {
+            case Start::Fracture:
+                cryParams[CrystalParams::Magic].set(
+                    cryParams[CrystalParams::T1ResetCost].get());
+                break;
+            case Start::SecondT1:
+                cryParams[CrystalParams::Magic].set(Number(1, 6));
+                break;
+            case Start::FirstT1:
+                cryParams[CrystalParams::Magic].set(Number(1, 3));
+                break;
+        };
+
+        // Buy upgrades
         switch (start) {
             case Start::Fracture:
                 states[State::BoughtPowerWizard].set(true);
                 states[State::BoughtTimeWizard].set(true);
 
-                states[State::BoughtCrysWizCntUp].set(true);
-                states[State::BoughtCrysGlowUp].set(true);
-
-                cryParams[CrystalParams::Magic].set(
-                    cryParams[CrystalParams::T1ResetCost].get());
-
-                wParams[WizardParams::PowerUpLvl].set(10);
-                wParams[WizardParams::CritUpLvl].set(10);
-                wParams[WizardParams::MultiUpLvl].set(20);
-
-                pwParams[PowerWizardParams::PowerUpLvl].set(15);
-                pwParams[PowerWizardParams::TimeWarpUpLvl].set(6);
-
-                twParams[TimeWizardParams::SpeedUpLvl].set(10);
-                twParams[TimeWizardParams::SpeedUpUpLvl].set(8);
-                twParams[TimeWizardParams::FBSpeedUpLvl].set(6);
-                twParams[TimeWizardParams::FreezeUpLvl].set(8);
-                break;
-            case Start::SecondT1:
-                states[State::BoughtPowerWizard].set(true);
-                states[State::BoughtTimeWizard].set(true);
-                states[State::BoughtCrysWizCntUp].set(true);
-                wParams[WizardParams::PowerUpLvl].set(10);
-                switch (t1Wiz) {
-                    case POWER_WIZARD:
-                        wParams[WizardParams::CritUpLvl].set(10);
-                        pwParams[PowerWizardParams::PowerUpLvl].set(15);
-                        break;
-                    case TIME_WIZARD:
-                        wParams[WizardParams::MultiUpLvl].set(20);
-                        twParams[TimeWizardParams::SpeedUpLvl].set(10);
-                        twParams[TimeWizardParams::FBSpeedUpLvl].set(6);
-                        twParams[TimeWizardParams::FreezeUpLvl].set(8);
-                        break;
+                for (WizardId id :
+                     {CRYSTAL, WIZARD, POWER_WIZARD, TIME_WIZARD}) {
+                    GetWizardUpgrades(id)->buyAll(
+                        UpgradeDefaults::CRYSTAL_MAGIC);
                 }
                 break;
+            case Start::SecondT1:
+                switch (t1Wiz) {
+                    case POWER_WIZARD:
+                        states[State::BoughtTimeWizard].set(true);
+                        GetWizardUpgrades(TIME_WIZARD)
+                            ->buyAll(UpgradeDefaults::CRYSTAL_MAGIC);
+                        break;
+                    case TIME_WIZARD:
+                        states[State::BoughtPowerWizard].set(true);
+                        GetWizardUpgrades(POWER_WIZARD)
+                            ->buyAll(UpgradeDefaults::CRYSTAL_MAGIC);
+                        break;
+                }
+                GetWizardUpgrades(CRYSTAL)->buyAll(
+                    UpgradeDefaults::CRYSTAL_MAGIC);
             case Start::FirstT1:
-                wParams[WizardParams::PowerUpLvl].set(5);
+                GetWizardUpgrades(WIZARD)->buyAll(
+                    UpgradeDefaults::CRYSTAL_MAGIC);
                 switch (t1Wiz) {
                     case POWER_WIZARD:
                         states[State::BoughtPowerWizard].set(true);
@@ -102,21 +118,6 @@ int main(int argc, char* argv[]) {
                 break;
         }
     }
-
-    // Create Components
-    std::unique_ptr<UpgradeScroller> upgradeScroller =
-        ComponentFactory<UpgradeScroller>::New();
-    std::unique_ptr<Wizard> wizard = ComponentFactory<Wizard>::New();
-    std::unique_ptr<Crystal> catalyst = ComponentFactory<Crystal>::New();
-    std::unique_ptr<Catalyst> crystal = ComponentFactory<Catalyst>::New();
-    std::unique_ptr<PowerWizard> powerWizard =
-        ComponentFactory<PowerWizard>::New();
-    std::unique_ptr<TimeWizard> timeWizard =
-        ComponentFactory<TimeWizard>::New();
-    std::unique_ptr<PoisonWizard> poisonWizard =
-        ComponentFactory<PoisonWizard>::New();
-    std::unique_ptr<RobotWizard> robotWizard =
-        ComponentFactory<RobotWizard>::New();
 
     GameSystem::Run();
 

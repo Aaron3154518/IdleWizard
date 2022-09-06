@@ -215,6 +215,33 @@ std::unordered_set<void*> UpgradeList::getActive() const {
     return set;
 }
 
+void UpgradeList::buyAll(ParameterSystem::BaseValue money, Number max) {
+    bool noMax = max < 0;
+
+    for (auto sub : *this) {
+        auto& up = sub->get<DATA>();
+        const auto& upCost = up->getCost();
+        if (upCost && upCost->getMoneyParam() == money) {
+            while (up->getStatus() == Upgrade::CAN_BUY &&
+                   (noMax || upCost->getCost() <= max)) {
+                if (!noMax) {
+                    max -= upCost->getCost();
+                }
+                up->buy();
+            }
+        }
+    }
+}
+
+// WizardUpgradesObservable
+const UpgradeListPtr& GetWizardUpgrades(WizardId id) {
+    return GetWizardUpgradesObservable()->get(id);
+}
+
+std::shared_ptr<WizardUpgradesObservable> GetWizardUpgradesObservable() {
+    return ServiceSystem::Get<UpgradeService, WizardUpgradesObservable>();
+}
+
 // UpgradeScroller
 const SDL_Color UpgradeScroller::BKGRND = GRAY;
 const Rect UpgradeScroller::RECT(0, 0, 100, 100);

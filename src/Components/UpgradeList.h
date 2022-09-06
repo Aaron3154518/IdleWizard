@@ -42,6 +42,8 @@ class UpgradeList : public UpgradeListBase {
 
     std::unordered_set<void*> getActive() const;
 
+    void buyAll(ParameterSystem::BaseValue money, Number max = -1);
+
    private:
     void computeRects();
 
@@ -53,10 +55,18 @@ class UpgradeList : public UpgradeListBase {
 };
 typedef std::shared_ptr<UpgradeList> UpgradeListPtr;
 
+// For handling wizard upgrades
+typedef TargetSystem::TargetDataObservable<WizardId, UpgradeListPtr>
+    WizardUpgradesObservable;
+
+const UpgradeListPtr& GetWizardUpgrades(WizardId id);
+
+std::shared_ptr<WizardUpgradesObservable> GetWizardUpgradesObservable();
+
 // For setting current UpgradeObservable
 class UpgradeListObservable : public ForwardObservable<void(UpgradeListPtr)> {};
 
-class UpgradeService : public Service<UpgradeListObservable> {};
+class UpgradeService : public Service<UpgradeListObservable, WizardUpgradesObservable> {};
 
 // For displaying current UpgradeObservable
 class UpgradeScroller : public Component {

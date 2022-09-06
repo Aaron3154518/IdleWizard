@@ -130,6 +130,9 @@ void UpgradeBase::updateDesc(DescType type, const TextUpdateData& text) {
 }
 
 // Cost
+const std::unique_ptr<UpgradeCost>& UpgradeBase::getCost() const {
+    return mCost;
+}
 void UpgradeBase::setCost(ParameterSystem::BaseValue money,
                           ParameterSystem::ValueParam cost) {
     mCost = std::make_unique<UpgradeCost>(money, cost);

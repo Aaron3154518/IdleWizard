@@ -50,6 +50,8 @@ void WizardBase::init() {
     setSubscriptions();
     setUpgrades();
     setParamTriggers();
+
+    GetWizardUpgradesObservable()->next(mId, mUpgrades);
 }
 
 void WizardBase::setSubscriptions() {}

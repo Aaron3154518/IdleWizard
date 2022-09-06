@@ -19,8 +19,10 @@ void RobotWizard::setSubscriptions() {
                 return true;
             },
             RobotWizardDefs::IMG);
-    mUpTimerSub = TimeSystem::GetTimerObservable()->subscribe(
-        [this](Timer& t) { return onUpTimer(t); }, Timer(2000));
+    mMoveUpdateSub = TimeSystem::GetUpdateObservable()->subscribe(
+        [this](Time dt) { onUpdate(dt); });
+    // mUpTimerSub = TimeSystem::GetTimerObservable()->subscribe(
+    //[this](Timer& t) { return onUpTimer(t); }, Timer(2000));
 }
 void RobotWizard::setUpgrades() {
     ParameterSystem::Params<POISON_WIZARD> params;
@@ -36,6 +38,20 @@ void RobotWizard::setParamTriggers() {
                              }));
 }
 
+void RobotWizard::onUpdate(Time dt) {
+    Rect pos =
+        WizardSystem::GetWizardPos(RobotWizardDefs::TARGETS.at(mTargetIdx));
+    float dx = pos.cX() - mPos->rect.cX(), dy = pos.cY() - mPos->rect.cY();
+    float mag = sqrtf(dx * dx + dy * dy);
+
+    if (mag <= 10) {
+        Timer t;
+        onUpTimer(t);
+    } else {
+        float frac = 100 * dt.s() / mag;
+        setPos(mPos->rect.cX() + dx * frac, mPos->rect.cY() + dy * frac);
+    }
+}
 void RobotWizard::onRender(SDL_Renderer* r) { WizardBase::onRender(r); }
 bool RobotWizard::onUpTimer(Timer& t) {
     WizardId target = RobotWizardDefs::TARGETS.at(mTargetIdx);
@@ -44,6 +60,9 @@ bool RobotWizard::onUpTimer(Timer& t) {
     Number spent = GetWizardUpgrades(target)->buyAll(
         UpgradeDefaults::CRYSTAL_MAGIC, catMagic.get() / 10);
     catMagic.set(catMagic.get() - spent);
-    mTargetIdx = (mTargetIdx + 1) % RobotWizardDefs::TARGETS.size();
+    do {
+        mTargetIdx = (mTargetIdx + 1) % RobotWizardDefs::TARGETS.size();
+    } while (RobotWizardDefs::TARGETS.at(mTargetIdx) != CRYSTAL &&
+             WizardSystem::Hidden(RobotWizardDefs::TARGETS.at(mTargetIdx)));
     return true;
 }

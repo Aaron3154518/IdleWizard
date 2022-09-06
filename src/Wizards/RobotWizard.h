@@ -27,12 +27,14 @@ class RobotWizard : public WizardBase {
     void setUpgrades();
     void setParamTriggers();
 
+    void onUpdate(Time dt);
     void onRender(SDL_Renderer* r);
     bool onUpTimer(Timer& t);
 
     int mTargetIdx = 0;
 
     TimerObservable::SubscriptionPtr mAnimTimerSub;
+    TimeSystem::UpdateObservable::SubscriptionPtr mMoveUpdateSub;
     TimeSystem::TimerObservable::SubscriptionPtr mUpTimerSub;
     UpgradeList::SubscriptionPtr mTODO;
 };

@@ -48,7 +48,7 @@ int main(int argc, char* argv[]) {
 
     {  // Configure starting conditions
         enum Start { None = 0, FirstT1, SecondT1, Fracture };
-        Start start = Start::SecondT1;
+        Start start = Start::None;
         WizardId t1Wiz = POWER_WIZARD, t2Wiz = CATALYST;
 
         ParameterSystem::States states;

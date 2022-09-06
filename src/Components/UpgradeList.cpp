@@ -98,7 +98,7 @@ void UpgradeList::draw(TextureBuilder tex, float scroll, SDL_Point offset) {
             tex.draw(rd.set(r, 3));
         } else {
             auto up = sub->get<DATA>();
-            switch (up->getStatus()) {
+            switch (up->status()) {
                 case Upgrade::Status::BOUGHT:
                     rd.mColor = BLUE;
                     break;
@@ -217,31 +217,28 @@ std::unordered_set<void*> UpgradeList::getActive() const {
 
 Number UpgradeList::buyAll(ParameterSystem::BaseValue money, Number max) {
     bool noMax = max < 0;
-    Number costSum = 0;
+    Number cost = 0;
 
     for (auto sub : *this) {
         auto& up = sub->get<DATA>();
         const auto& upCost = up->getCost();
         if (upCost && upCost->getMoneyParam() == money) {
-            while (up->getStatus() == Upgrade::CAN_BUY &&
-                   (noMax || upCost->getCost() <= max)) {
-                if (!noMax) {
-                    max -= upCost->getCost();
-                }
-                costSum += upCost->getCost();
-                up->buy();
+            while (up->status(true) != Upgrade::Status::BOUGHT &&
+                   (noMax || cost + upCost->getCost() <= max)) {
+                cost += upCost->getCost();
+                up->buy(true);
             }
         }
     }
 
-    return costSum;
+    return cost;
 }
 void UpgradeList::buyAllFree(ParameterSystem::BaseValue money) {
     for (auto sub : *this) {
         auto& up = sub->get<DATA>();
         const auto& upCost = up->getCost();
         if (upCost && upCost->getMoneyParam() == money) {
-            up->maxFree();
+            up->max(true);
         }
     }
 }

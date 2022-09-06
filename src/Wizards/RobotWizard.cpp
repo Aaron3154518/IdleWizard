@@ -40,14 +40,10 @@ void RobotWizard::onRender(SDL_Renderer* r) { WizardBase::onRender(r); }
 bool RobotWizard::onUpTimer(Timer& t) {
     WizardId target = RobotWizardDefs::TARGETS.at(mTargetIdx);
     auto catMagic = ParameterSystem::Param<CATALYST>(CatalystParams::Magic);
-    auto cryMagic = ParameterSystem::Param<CRYSTAL>(CrystalParams::Magic);
     Number maxSpend = catMagic.get() / 10 + 1;
-    Number magic = cryMagic.get();
-    cryMagic.set(maxSpend);
     Number spent = GetWizardUpgrades(target)->buyAll(
         UpgradeDefaults::CRYSTAL_MAGIC, catMagic.get() / 10);
     catMagic.set(catMagic.get() - spent);
-    cryMagic.set(magic);
     mTargetIdx = (mTargetIdx + 1) % RobotWizardDefs::TARGETS.size();
     return true;
 }

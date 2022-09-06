@@ -71,11 +71,45 @@ UpgradeBase::UpgradeBase() {
     }
 }
 
-UpgradeBase::Status UpgradeBase::getStatus() { return NOT_BUYABLE; }
+UpgradeBase::Status UpgradeBase::status(bool free) {
+    Status uStatus = _status();
 
-void UpgradeBase::buy() {}
+    if (uStatus == Status::CAN_BUY && !free && mCost && !mCost->canBuy()) {
+        return Status::CANT_BUY;
+    }
 
-void UpgradeBase::maxFree() {}
+    return uStatus;
+}
+
+UpgradeBase::Status UpgradeBase::_status() { return Status::NOT_BUYABLE; }
+
+void UpgradeBase::buy(bool free) {
+    if (!free) {
+        if (status() != Status::CAN_BUY) {
+            return;
+        }
+
+        if (mCost) {
+            mCost->buy();
+        }
+    }
+
+    _buy();
+}
+
+void UpgradeBase::_buy() {}
+
+void UpgradeBase::max(bool free) {
+    if (free) {
+        _max();
+    } else {
+        while (status() == Status::CAN_BUY) {
+            buy();
+        }
+    }
+}
+
+void UpgradeBase::_max() {}
 
 void UpgradeBase::setImage(WizardId id) {
     mWizImgSub = WizardSystem::GetWizardImageObservable()->subscribe(
@@ -168,7 +202,7 @@ void UpgradeBase::setEffects(
 }
 
 // Display
-UpgradeBase::Status Display::getStatus() { return NOT_BUYABLE; }
+UpgradeBase::Status Display::_status() { return NOT_BUYABLE; }
 
 // Toggle
 Toggle::Toggle(LevelFunc onLevel, unsigned int numStates)
@@ -176,9 +210,9 @@ Toggle::Toggle(LevelFunc onLevel, unsigned int numStates)
     setLevel(0);
 }
 
-UpgradeBase::Status Toggle::getStatus() { return CAN_BUY; }
+UpgradeBase::Status Toggle::_status() { return CAN_BUY; }
 
-void Toggle::buy() {
+void Toggle::_buy() {
     mLevel = mNumStates == 0 ? 0 : (mLevel + 1) % mNumStates;
     mOnLevel(mLevel, *this);
 }
@@ -194,25 +228,16 @@ Unlockable::Unlockable(ParameterSystem::BaseState level) : mLevel(level) {
         [this](bool val) { updateDesc(DescType::Cost, getCostText()); });
 }
 
-UpgradeBase::Status Unlockable::getStatus() {
+UpgradeBase::Status Unlockable::_status() {
     if (mLevel.get()) {
         return BOUGHT;
     }
-    return mCost && !mCost->canBuy() ? CANT_BUY : CAN_BUY;
+    return CAN_BUY;
 }
 
-void Unlockable::buy() {
-    if (getStatus() != CAN_BUY) {
-        return;
-    }
+void Unlockable::_buy() { mLevel.set(!mLevel.get()); }
 
-    if (mCost) {
-        mCost->buy();
-    }
-    mLevel.set(!mLevel.get());
-}
-
-void Unlockable::maxFree() { mLevel.set(true); }
+void Unlockable::_max() { mLevel.set(true); }
 
 TextUpdateData Unlockable::getCostText() const {
     std::vector<RenderDataWPtr> imgs;
@@ -244,28 +269,19 @@ Upgrade::Upgrade(ParameterSystem::BaseValue level,
     });
 }
 
-Upgrade::Status Upgrade::getStatus() {
+Upgrade::Status Upgrade::_status() {
     if (mMaxLevel == 0) {
         return NOT_BUYABLE;
     }
     if (mLevel.get() >= mMaxLevel) {
         return BOUGHT;
     }
-    return mCost && !mCost->canBuy() ? CANT_BUY : CAN_BUY;
+    return CAN_BUY;
 }
 
-void Upgrade::buy() {
-    if (getStatus() != CAN_BUY) {
-        return;
-    }
+void Upgrade::_buy() { mLevel.set(mLevel.get() + 1); }
 
-    if (mCost) {
-        mCost->buy();
-    }
-    mLevel.set(mLevel.get() + 1);
-}
-
-void Upgrade::maxFree() { mLevel.set(mMaxLevel); }
+void Upgrade::_max() { mLevel.set(mMaxLevel); }
 
 TextUpdateData Upgrade::getCostText() const {
     std::vector<RenderDataWPtr> imgs;

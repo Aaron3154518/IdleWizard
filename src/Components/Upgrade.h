@@ -63,9 +63,9 @@ class UpgradeBase {
     UpgradeBase();
     virtual ~UpgradeBase() = default;
 
-    virtual Status getStatus();
-    virtual void buy();
-    virtual void maxFree();
+    Status status(bool free = false);
+    void buy(bool free = false);
+    void max(bool free = false);
 
     void setImage(WizardId id);
     void setImage(const std::string& file);
@@ -95,6 +95,10 @@ class UpgradeBase {
         std::function<TextUpdateData()> func);
 
    protected:
+    virtual Status _status();
+    virtual void _buy();
+    virtual void _max();
+
     enum DescType : uint8_t {
         Desc = 0,
         Effect,
@@ -128,9 +132,9 @@ class Display : public UpgradeBase {
    public:
     virtual ~Display() = default;
 
-    virtual Status getStatus();
-
    protected:
+    virtual Status _status();
+
     using UpgradeBase::setCost;
 };
 
@@ -143,13 +147,13 @@ class Toggle : public Display {
    public:
     Toggle(LevelFunc onLevel, unsigned int numStates = 1);
 
-    Status getStatus();
-
-    void buy();
+    void _buy();
 
     void setLevel(unsigned int lvl);
 
    private:
+    Status _status();
+
     unsigned int mLevel = 0;
     unsigned int mNumStates;
     LevelFunc mOnLevel;
@@ -162,10 +166,6 @@ class Unlockable : public Display {
    public:
     Unlockable(ParameterSystem::BaseState level);
 
-    Status getStatus();
-    void buy();
-    void maxFree();
-
     TextUpdateData getCostText() const;
 
     ParameterSystem::BaseState level() const;
@@ -173,6 +173,10 @@ class Unlockable : public Display {
     using UpgradeBase::setCost;
 
    private:
+    Status _status();
+    void _buy();
+    void _max();
+
     // Level
     ParameterSystem::BaseState mLevel;
     ParameterSystem::ParameterSubscriptionPtr mLevelSub;
@@ -190,10 +194,6 @@ class Upgrade : public Display {
     Upgrade(ParameterSystem::BaseValue level,
             ParameterSystem::ValueParam maxLevel);
 
-    Status getStatus();
-    void buy();
-    void maxFree();
-
     TextUpdateData getCostText() const;
 
     ParameterSystem::BaseValue level() const;
@@ -201,6 +201,10 @@ class Upgrade : public Display {
     using UpgradeBase::setCost;
 
    private:
+    Status _status();
+    void _buy();
+    void _max();
+
     // Level
     ParameterSystem::BaseValue mLevel;
     unsigned int mMaxLevel;

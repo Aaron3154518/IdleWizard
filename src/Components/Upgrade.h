@@ -13,7 +13,7 @@
 
 struct TextUpdateData {
     std::string text = "";
-    std::vector<RenderDataWPtr> imgs;
+    std::vector<RenderDataCWPtr> imgs;
 };
 
 struct UpgradeCost {
@@ -25,7 +25,7 @@ struct UpgradeCost {
     const ParameterSystem::BaseValue& getMoneyParam() const;
     const Number& getCost() const;
     const Number& getMoney() const;
-    RenderDataWPtr getMoneyIcon() const;
+    RenderDataCWPtr getMoneyIcon() const;
     bool canBuy() const;
     void buy() const;
 

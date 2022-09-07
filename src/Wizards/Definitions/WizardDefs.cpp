@@ -30,7 +30,7 @@ void setDefaults() {
     states[State::WizBoosted]->init(false, Event::ResetT1);
 }
 
-RenderDataWPtr GetIcon() {
+RenderDataCWPtr GetIcon() {
     static RenderDataPtr ICON;
     static TimerObservable::SubscriptionPtr ANIM_SUB;
     if (!ICON) {

@@ -16,7 +16,7 @@ extern const std::string IMG;
 
 void setDefaults();
 
-RenderDataWPtr GetIcon();
+RenderDataCWPtr GetIcon();
 }  // namespace CatalystDefs
 
 #endif

@@ -24,6 +24,9 @@ enum B : param_t {
 
     TimeWizActive,
     TimeWizFrozen,
+
+    ShootRobot,
+
 };
 
 enum N : param_t {

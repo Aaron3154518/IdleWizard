@@ -1,7 +1,7 @@
 #include "Money.h"
 
 namespace Money {
-RenderDataWPtr GetMoneyIcon(const ParameterSystem::ValueParam& param) {
+RenderDataCWPtr GetMoneyIcon(const ParameterSystem::ValueParam& param) {
     static RenderDataPtr DEFAULT, CRYSTAL_MAGIC, CRYSTAL_SHARDS, CATALYST_MAGIC;
     static TimerObservable::SubscriptionPtr CRYS_MAG_SUB, CRYS_SHARD_SUB,
         CAT_MAG_SUB;

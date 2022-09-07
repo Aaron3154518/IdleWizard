@@ -11,7 +11,7 @@ void setDefaults() {
     ParameterSystem::States states;
 }
 
-RenderDataWPtr GetIcon() {
+RenderDataCWPtr GetIcon() {
     static RenderDataPtr ICON;
     static TimerObservable::SubscriptionPtr ANIM_SUB;
     if (!ICON) {

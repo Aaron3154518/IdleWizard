@@ -8,7 +8,7 @@
 #include <Wizards/WizardIds.h>
 
 namespace Money {
-RenderDataWPtr GetMoneyIcon(const ParameterSystem::ValueParam& param);
+RenderDataCWPtr GetMoneyIcon(const ParameterSystem::ValueParam& param);
 }
 
 #endif

@@ -4,7 +4,7 @@
 const AnimationData PowerWizFireball::IMG{
     "res/projectiles/power_fireball_ss.png", 6, 75};
 
-RenderDataWPtr PowerWizFireball::GetIcon() {
+RenderDataCWPtr PowerWizFireball::GetIcon() {
     static RenderDataPtr ICON;
     static TimerObservable::SubscriptionPtr ANIM_SUB;
     if (!ICON) {
@@ -36,9 +36,27 @@ PowerWizFireball::PowerWizFireball(SDL_FPoint c, WizardId target,
     setSize(data.sizeFactor);
 }
 
-void PowerWizFireball::init() { Fireball::init(); }
+void PowerWizFireball::init() {
+    Fireball::init();
 
-void PowerWizFireball::onDeath() { GetHitObservable()->next(mTargetId, *this); }
+    mRobotBoughtSub =
+        ParameterSystem::Param(State::ShootRobot).subscribe([this](bool robot) {
+            mTargetSub = WizardSystem::GetWizardPosObservable()->subscribe(
+                [this](const Rect& r) {
+                    mTargetPos = r.getPos(Rect::Align::CENTER);
+                },
+                robot ? ROBOT_WIZARD : mTargetId);
+        });
+}
+
+void PowerWizFireball::onDeath() {
+    GetHitObservable()->next(
+        mTargetSub->get<WizardSystem::WizardPosObservable::ID>(), *this);
+}
+
+PowerWizFireball::Data PowerWizFireball::getData() const {
+    return {mPower, mDuration, mSize, mMaxSpeed};
+}
 
 const Number& PowerWizFireball::getPower() const { return mPower; }
 void PowerWizFireball::setPower(const Number& pow) { mPower = pow; }

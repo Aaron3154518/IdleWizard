@@ -39,7 +39,7 @@ void setDefaults() {
     states[State::BoughtRobotWizard]->init(true, Event::ResetT2);
 }
 
-RenderDataWPtr GetIcon() {
+RenderDataCWPtr GetIcon() {
     static RenderDataPtr ICON;
     static TimerObservable::SubscriptionPtr ANIM_SUB;
     if (!ICON) {

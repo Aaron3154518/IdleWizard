@@ -6,6 +6,7 @@
 #include <ServiceSystem/Observable.h>
 #include <ServiceSystem/Service.h>
 #include <ServiceSystem/ServiceSystem.h>
+#include <Systems/ParameterSystem/ParameterAccess.h>
 #include <Systems/TargetSystem.h>
 #include <Utils/Number.h>
 
@@ -15,8 +16,7 @@ class PowerWizFireball : public Fireball {
    public:
     struct Data {
         Number power, duration;
-        int sizeFactor = 1;
-        float speed = .65;
+        float sizeFactor = 1, speed = .65;
     };
 
     typedef TargetSystem::TargetObservable<WizardId, const PowerWizFireball&>
@@ -26,10 +26,12 @@ class PowerWizFireball : public Fireball {
 
     static std::shared_ptr<HitObservable> GetHitObservable();
 
-    static RenderDataWPtr GetIcon();
+    static RenderDataCWPtr GetIcon();
 
    public:
     PowerWizFireball(SDL_FPoint c, WizardId target, const Data& data);
+
+    Data getData() const;
 
     const Number& getPower() const;
     void setPower(const Number& pow);
@@ -52,6 +54,8 @@ class PowerWizFireball : public Fireball {
 
     int mFireballFreezeCnt = 1, mSizeSum = 0;
     Number mPower = 0, mDuration = 0;
+
+    ParameterSystem::ParameterSubscriptionPtr mRobotBoughtSub;
 };
 
 typedef std::unique_ptr<PowerWizFireball> PowerWizFireballPtr;

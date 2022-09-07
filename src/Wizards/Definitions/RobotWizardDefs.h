@@ -17,7 +17,7 @@ extern const AnimationData IMG;
 
 void setDefaults();
 
-RenderDataWPtr GetIcon();
+RenderDataCWPtr GetIcon();
 }  // namespace RobotWizardDefs
 
 #endif

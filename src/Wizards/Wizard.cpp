@@ -52,7 +52,7 @@ void Wizard::setUpgrades() {
         {}, []() -> TextUpdateData {
             ParameterSystem::Params<WIZARD> params;
             std::stringstream ss;
-            std::vector<RenderDataWPtr> imgs;
+            std::vector<RenderDataCWPtr> imgs;
             ss << "Power: "
                << UpgradeDefaults::MultiplicativeEffect(
                       params[WizardParams::Power].get())

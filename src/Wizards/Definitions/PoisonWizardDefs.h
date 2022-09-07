@@ -15,7 +15,7 @@ extern const AnimationData IMG;
 
 void setDefaults();
 
-RenderDataWPtr GetIcon();
+RenderDataCWPtr GetIcon();
 }  // namespace PoisonWizardDefs
 
 #endif

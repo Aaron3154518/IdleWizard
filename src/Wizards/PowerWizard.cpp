@@ -43,7 +43,7 @@ void PowerWizard::setUpgrades() {
         {}, []() -> TextUpdateData {
             ParameterSystem::Params<POWER_WIZARD> params;
             std::stringstream ss;
-            std::vector<RenderDataWPtr> imgs;
+            std::vector<RenderDataCWPtr> imgs;
             ss << "Power: "
                << UpgradeDefaults::MultiplicativeEffect(
                       params[PowerWizardParams::Power].get())
@@ -221,8 +221,8 @@ void PowerWizard::onTimeFreeze(bool frozen) {
 
 void PowerWizard::shootFireball() {
     WizardId target = getTarget();
-
     auto data = newFireballData(target);
+
     if (!ParameterSystem::Param(State::TimeWizFrozen).get()) {
         mFireballs.push_back(std::move(ComponentFactory<PowerWizFireball>::New(
             SDL_FPoint{mPos->rect.cX(), mPos->rect.cY()}, target, data)));

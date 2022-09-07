@@ -1,7 +1,7 @@
 #include "RobotWizard.h"
 
 // RobotWizard
-RobotWizard::RobotWizard() : WizardBase(POISON_WIZARD) {}
+RobotWizard::RobotWizard() : WizardBase(ROBOT_WIZARD) {}
 
 void RobotWizard::init() {
     mImg.set(RobotWizardDefs::IMG).setDest(IMG_RECT);
@@ -19,6 +19,8 @@ void RobotWizard::setSubscriptions() {
                 return true;
             },
             RobotWizardDefs::IMG);
+    mPowFireballHitSub = PowerWizFireball::GetHitObservable()->subscribe(
+        [this](const PowerWizFireball& f) { onPowFireballHit(f); }, mId);
     mMoveUpdateSub = TimeSystem::GetUpdateObservable()->subscribe(
         [this](Time dt) { onUpdate(dt); });
     // mUpTimerSub = TimeSystem::GetTimerObservable()->subscribe(
@@ -29,13 +31,13 @@ void RobotWizard::setUpgrades() {
     ParameterSystem::States states;
 }
 void RobotWizard::setParamTriggers() {
-    ParameterSystem::Params<POISON_WIZARD> params;
+    ParameterSystem::Params<ROBOT_WIZARD> params;
+    ParameterSystem::States states;
 
-    mParamSubs.push_back(ParameterSystem::Param(State::BoughtRobotWizard)
-                             .subscribe([this](bool bought) {
-                                 WizardSystem::GetHideObservable()->next(
-                                     mId, !bought);
-                             }));
+    mParamSubs.push_back(
+        states[State::BoughtRobotWizard].subscribe([this](bool bought) {
+            WizardSystem::GetHideObservable()->next(mId, !bought);
+        }));
 }
 
 void RobotWizard::onUpdate(Time dt) {
@@ -52,7 +54,35 @@ void RobotWizard::onUpdate(Time dt) {
         setPos(mPos->rect.cX() + dx * frac, mPos->rect.cY() + dy * frac);
     }
 }
-void RobotWizard::onRender(SDL_Renderer* r) { WizardBase::onRender(r); }
+void RobotWizard::onRender(SDL_Renderer* r) {
+    WizardBase::onRender(r);
+
+    TextureBuilder tex;
+
+    RenderDataCPtr ptr = PowerWizFireball::GetIcon().lock();
+    if (ptr) {
+        float w = IMG_RECT.minDim() / 3;
+        Rect imgR(0, 0, w, w);
+        RenderData img = RenderData(*ptr);
+        for (auto pair : mPowFireballs) {
+            switch (pair.first) {
+                case WIZARD:
+                    imgR.setPos(mPos->rect.x(), mPos->rect.y2(),
+                                Rect::Align::CENTER);
+                    break;
+                case CRYSTAL:
+                    imgR.setPos(mPos->rect.cX(), mPos->rect.y2(),
+                                Rect::Align::CENTER, Rect::Align::TOP_LEFT);
+                    break;
+                case TIME_WIZARD:
+                    imgR.setPos(mPos->rect.x2(), mPos->rect.y2(),
+                                Rect::Align::CENTER);
+                    break;
+            }
+            tex.draw(img.setDest(imgR));
+        }
+    }
+}
 bool RobotWizard::onUpTimer(Timer& t) {
     WizardId target = RobotWizardDefs::TARGETS.at(mTargetIdx);
     auto catMagic = ParameterSystem::Param<CATALYST>(CatalystParams::Magic);
@@ -65,4 +95,13 @@ bool RobotWizard::onUpTimer(Timer& t) {
     } while (RobotWizardDefs::TARGETS.at(mTargetIdx) != CRYSTAL &&
              WizardSystem::Hidden(RobotWizardDefs::TARGETS.at(mTargetIdx)));
     return true;
+}
+void RobotWizard::onPowFireballHit(const PowerWizFireball& fireball) {
+    WizardId target = fireball.getTargetId();
+
+    auto it = mPowFireballs.find(target);
+    if (it == mPowFireballs.end() || fireball.getPower() > it->second.power ||
+        fireball.getDuration() > it->second.duration) {
+        mPowFireballs[target] = fireball.getData();
+    }
 }

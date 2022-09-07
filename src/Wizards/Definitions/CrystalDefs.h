@@ -19,7 +19,7 @@ extern const AnimationData IMG, GLOW_EFFECT_IMG, GLOW_FINISH_IMG;
 
 void setDefaults();
 
-RenderDataWPtr GetIcon();
+RenderDataCWPtr GetIcon();
 }  // namespace CrystalDefs
 
 #endif

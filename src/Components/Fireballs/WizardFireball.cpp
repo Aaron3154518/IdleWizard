@@ -5,7 +5,7 @@ const AnimationData WizardFireball::IMG{"res/projectiles/fireball_ss.png", 6,
                                         75},
     WizardFireball::POW_IMG{"res/projectiles/fireball_buffed_ss.png", 6, 75};
 
-RenderDataWPtr WizardFireball::GetIcon() {
+RenderDataCWPtr WizardFireball::GetIcon() {
     static RenderDataPtr ICON;
     static TimerObservable::SubscriptionPtr ANIM_SUB;
     if (!ICON) {

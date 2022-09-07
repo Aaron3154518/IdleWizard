@@ -19,7 +19,7 @@ void setDefaults() {
     params[PowerWizardParams::TimeWarpUpLvl]->init(Event::ResetT1);
 }
 
-RenderDataWPtr GetIcon() {
+RenderDataCWPtr GetIcon() {
     static RenderDataPtr ICON;
     static TimerObservable::SubscriptionPtr ANIM_SUB;
     if (!ICON) {

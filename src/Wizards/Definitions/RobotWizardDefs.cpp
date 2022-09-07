@@ -1,7 +1,7 @@
 #include "RobotWizardDefs.h"
 
 namespace RobotWizardDefs {
-const std::vector<WizardId> TARGETS{WIZARD, TIME_WIZARD, POWER_WIZARD, CRYSTAL};
+const std::vector<WizardId> TARGETS{CRYSTAL, WIZARD, POWER_WIZARD, TIME_WIZARD};
 
 const AnimationData IMG{"res/wizards/robot_ss.png", 6, 100};
 
@@ -11,9 +11,11 @@ void setDefaults() {
     ParameterSystem::Params<CRYSTAL> params;
 
     ParameterSystem::States states;
+
+    states[State::ShootRobot]->init(true);
 }
 
-RenderDataWPtr GetIcon() {
+RenderDataCWPtr GetIcon() {
     static RenderDataPtr ICON;
     static TimerObservable::SubscriptionPtr ANIM_SUB;
     if (!ICON) {

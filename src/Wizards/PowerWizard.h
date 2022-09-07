@@ -49,8 +49,8 @@ class PowerWizard : public WizardBase {
 
     void shootFireball();
     void shootFireball(SDL_FPoint target);
-    WizardId getTarget();
 
+    WizardId getTarget();
     PowerWizFireball::Data newFireballData(WizardId target);
 
     void setPos(float x, float y);

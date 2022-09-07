@@ -13,7 +13,7 @@ const ParameterSystem::BaseValue& UpgradeCost::getMoneyParam() const {
 }
 const Number& UpgradeCost::getCost() const { return mCost.get(); }
 const Number& UpgradeCost::getMoney() const { return mMoney.get(); }
-RenderDataWPtr UpgradeCost::getMoneyIcon() const {
+RenderDataCWPtr UpgradeCost::getMoneyIcon() const {
     return Money::GetMoneyIcon(mMoney);
 }
 bool UpgradeCost::canBuy() const { return mCost.get() <= mMoney.get(); }
@@ -240,7 +240,7 @@ void Unlockable::_buy() { mLevel.set(!mLevel.get()); }
 void Unlockable::_max() { mLevel.set(true); }
 
 TextUpdateData Unlockable::getCostText() const {
-    std::vector<RenderDataWPtr> imgs;
+    std::vector<RenderDataCWPtr> imgs;
     std::stringstream ss;
     if (mLevel.get()) {
         ss << "Bought";
@@ -284,7 +284,7 @@ void Upgrade::_buy() { mLevel.set(mLevel.get() + 1); }
 void Upgrade::_max() { mLevel.set(mMaxLevel); }
 
 TextUpdateData Upgrade::getCostText() const {
-    std::vector<RenderDataWPtr> imgs;
+    std::vector<RenderDataCWPtr> imgs;
     std::stringstream ss;
     if (mMaxLevel > 0) {
         Number lvl = mLevel.get();

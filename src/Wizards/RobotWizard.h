@@ -1,6 +1,7 @@
 #ifndef ROBOT_WIZARD_H
 #define ROBOT_WIZARD_H
 
+#include <Components/Fireballs/PowerWizFireball.h>
 #include <Components/Upgrade.h>
 #include <RenderSystem/AssetManager.h>
 #include <RenderSystem/RenderTypes.h>
@@ -16,6 +17,7 @@
 #include <Wizards/WizardIds.h>
 
 #include <memory>
+#include <unordered_map>
 
 class RobotWizard : public WizardBase {
    public:
@@ -30,10 +32,14 @@ class RobotWizard : public WizardBase {
     void onUpdate(Time dt);
     void onRender(SDL_Renderer* r);
     bool onUpTimer(Timer& t);
+    void onPowFireballHit(const PowerWizFireball& fireball);
 
     int mTargetIdx = 0;
 
+    std::unordered_map<WizardId, PowerWizFireball::Data> mPowFireballs;
+
     TimerObservable::SubscriptionPtr mAnimTimerSub;
+    PowerWizFireball::HitObservable::IdSubscriptionPtr mPowFireballHitSub;
     TimeSystem::UpdateObservable::SubscriptionPtr mMoveUpdateSub;
     TimeSystem::TimerObservable::SubscriptionPtr mUpTimerSub;
     UpgradeList::SubscriptionPtr mTODO;

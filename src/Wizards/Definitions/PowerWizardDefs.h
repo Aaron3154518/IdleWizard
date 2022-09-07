@@ -16,7 +16,7 @@ extern const std::string POWER_UP_IMG, TIME_WARP_UP_IMG;
 
 void setDefaults();
 
-RenderDataWPtr GetIcon();
+RenderDataCWPtr GetIcon();
 }  // namespace PowerWizardDefs
 
 #endif

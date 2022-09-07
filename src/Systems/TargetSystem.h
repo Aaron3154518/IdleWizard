@@ -24,7 +24,7 @@ class TargetObservable : public ObservableBase {
     typedef typename IdObservable::SubscriptionPtr IdSubscriptionPtr;
     typedef typename AllObservable::SubscriptionPtr AllSubscriptionPtr;
 
-    enum : size_t { FUNC = 0, DATA };
+    enum : size_t { FUNC = 0, ID };
 
     virtual ~TargetObservable() = default;
 
@@ -38,7 +38,7 @@ class TargetObservable : public ObservableBase {
 
     virtual void next(IdT target, const Ts&... args) {
         for (auto sub : mIdObservable) {
-            if (sub->template get<DATA>() == target) {
+            if (sub->template get<ID>() == target) {
                 sub->template get<FUNC>()(args...);
             }
         }

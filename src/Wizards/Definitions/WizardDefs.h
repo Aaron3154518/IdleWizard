@@ -19,7 +19,7 @@ extern const std::vector<WizardId> TARGETS;
 
 void setDefaults();
 
-RenderDataWPtr GetIcon();
+RenderDataCWPtr GetIcon();
 }  // namespace WizardDefs
 
 #endif

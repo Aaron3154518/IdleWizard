@@ -63,23 +63,36 @@ void RobotWizard::onRender(SDL_Renderer* r) {
     if (ptr) {
         float w = IMG_RECT.minDim() / 3;
         Rect imgR(0, 0, w, w);
-        RenderData img = RenderData(*ptr);
-        for (auto pair : mPowFireballs) {
-            switch (pair.first) {
+        RenderDataCPtr wImgPtr;
+        RenderData wImg;
+        RenderData fImg = RenderData(*ptr);
+        for (WizardId id : {WIZARD, CRYSTAL, TIME_WIZARD}) {
+            switch (id) {
                 case WIZARD:
                     imgR.setPos(mPos->rect.x(), mPos->rect.y2(),
                                 Rect::Align::CENTER);
+                    wImgPtr = WizardDefs::GetIcon().lock();
                     break;
                 case CRYSTAL:
                     imgR.setPos(mPos->rect.cX(), mPos->rect.y2(),
                                 Rect::Align::CENTER, Rect::Align::TOP_LEFT);
+                    wImgPtr = CrystalDefs::GetIcon().lock();
                     break;
                 case TIME_WIZARD:
                     imgR.setPos(mPos->rect.x2(), mPos->rect.y2(),
                                 Rect::Align::CENTER);
+                    wImgPtr = TimeWizardDefs::GetIcon().lock();
                     break;
             }
-            tex.draw(img.setDest(imgR));
+
+            if (mPowFireballs.find(id) == mPowFireballs.end()) {
+                if (wImgPtr) {
+                    wImg = RenderData(*wImgPtr);
+                    tex.draw(wImg.setDest(imgR));
+                }
+            } else {
+                tex.draw(fImg.setDest(imgR));
+            }
         }
     }
 }

@@ -11,7 +11,10 @@
 #include <Systems/ParameterSystem/ParameterAccess.h>
 #include <Systems/ParameterSystem/WizardParameters.h>
 #include <Systems/WizardSystem.h>
+#include <Wizards/Definitions/CrystalDefs.h>
 #include <Wizards/Definitions/RobotWizardDefs.h>
+#include <Wizards/Definitions/TimeWizardDefs.h>
+#include <Wizards/Definitions/WizardDefs.h>
 #include <Wizards/Money.h>
 #include <Wizards/WizardBase.h>
 #include <Wizards/WizardIds.h>

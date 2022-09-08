@@ -13,7 +13,7 @@
 namespace RobotWizardDefs {
 extern const std::vector<WizardId> TARGETS;
 
-extern const AnimationData IMG;
+extern const AnimationData IMG, PORTAL_TOP, PORTAL_BOT;
 
 void setDefaults();
 

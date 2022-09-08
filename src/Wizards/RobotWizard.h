@@ -42,8 +42,11 @@ class RobotWizard : public WizardBase {
     int mTargetIdx = 0;
 
     std::queue<WizardId> mTpQueue;
-    bool mTeleporting = false;
-    RenderData mTpImg;
+    bool mPortals = false;
+    RenderData mTpImg, mPortalTopImg, mPortalBotImg;
+    UIComponentPtr mPortalTopPos, mPortalBotPos;
+    TimerObservable::SubscriptionPtr mPortalTimerSub;
+    RenderObservable::SubscriptionPtr mPortalTopRenderSub, mPortalBotRenderSub;
 
     std::unordered_map<WizardId, PowerWizFireball::Data> mStoredFireballs;
     std::vector<PowerWizFireballPtr> mFireballs;

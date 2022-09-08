@@ -9,6 +9,8 @@ void RobotWizard::init() {
     WizardSystem::GetWizardImageObservable()->next(mId, mImg);
 
     WizardBase::init();
+
+    mDragSub.reset();
 }
 void RobotWizard::setSubscriptions() {
     mAnimTimerSub =

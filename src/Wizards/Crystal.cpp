@@ -382,11 +382,15 @@ Number Crystal::calcShardGain() {
 Number Crystal::calcNumWizards() {
     ParameterSystem::States states;
 
-    // Wizard is always unlocked
-    // Convert state variables to ints to get count
-    return 1 + states[State::BoughtPowerWizard].get() +
-           states[State::BoughtTimeWizard].get() +
-           states[State::BoughtCatalyst].get();
+    // Start with wizard
+    int cnt = 1;
+    for (auto state : {State::BoughtPowerWizard, State::BoughtTimeWizard,
+                       State::BoughtCatalyst, State::BoughtPoisonWizard,
+                       State::BoughtRobotWizard}) {
+        cnt += states[state].get();
+    }
+
+    return cnt;
 }
 
 Number Crystal::calcWizCntEffect() {

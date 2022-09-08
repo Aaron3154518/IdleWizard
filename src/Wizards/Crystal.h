@@ -64,7 +64,7 @@ class Crystal : public WizardBase {
     PowerWizFireball::HitObservable::IdSubscriptionPtr mPowFireballHitSub;
     WizardSystem::WizardEventObservable::IdSubscriptionPtr mT1ResetSub;
     UpgradeList::SubscriptionPtr mMagicEffectDisplay, mWizCntUp, mGlowUp,
-        mPowWizBuy, mTimeWizBuy, mCatalystBuy;
+        mPowWizBuy, mTimeWizBuy, mCatalystBuy, mPoisWizBuy, mRobotBuy;
 
     MessageHandlerPtr mMessages;
 

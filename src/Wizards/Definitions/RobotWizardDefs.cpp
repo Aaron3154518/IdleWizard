@@ -11,8 +11,6 @@ void setDefaults() {
     ParameterSystem::Params<CRYSTAL> params;
 
     ParameterSystem::States states;
-
-    states[State::ShootRobot]->init(true);
 }
 
 RenderDataCWPtr GetIcon() {

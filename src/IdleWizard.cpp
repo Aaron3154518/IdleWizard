@@ -47,8 +47,8 @@ int main(int argc, char* argv[]) {
         ComponentFactory<RobotWizard>::New();
 
     {  // Configure starting conditions
-        enum Start { None = 0, FirstT1, SecondT1, Fracture };
-        Start start = Start::None;
+        enum Start { None = 0, FirstT1, SecondT1, Fracture, T2 };
+        Start start = Start::T2;
         WizardId t1Wiz = POWER_WIZARD, t2Wiz = CATALYST;
 
         ParameterSystem::States states;
@@ -58,6 +58,14 @@ int main(int argc, char* argv[]) {
         ParameterSystem::Params<CRYSTAL> cryParams;
         // Buy upgrades
         switch (start) {
+            case Start::T2:
+                states[State::ResetT1].set(true);
+
+                GetWizardUpgrades(CRYSTAL)->buyAllFree(
+                    UpgradeDefaults::CRYSTAL_SHARDS);
+                GetWizardUpgrades(CRYSTAL)->buyAllFree(
+                    UpgradeDefaults::CRYSTAL_SHARDS);
+                cryParams[CrystalParams::Shards].set(2000);
             case Start::Fracture:
                 states[State::BoughtPowerWizard].set(true);
                 states[State::BoughtTimeWizard].set(true);
@@ -99,13 +107,6 @@ int main(int argc, char* argv[]) {
                 }
                 break;
         };
-
-        switch (t2Wiz) {
-            case CATALYST:
-                states[State::BoughtCatalyst].set(true);
-                cryParams[CrystalParams::Shards].set(100);
-                break;
-        }
     }
 
     GameSystem::Run();

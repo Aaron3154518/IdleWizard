@@ -138,6 +138,26 @@ void Crystal::setUpgrades() {
     uUp->setCost(UpgradeDefaults::CRYSTAL_SHARDS,
                  params[CrystalParams::CatalystCost]);
     mCatalystBuy = mUpgrades->subscribe(uUp);
+
+    // Buy poison wizard
+    uUp = std::make_shared<Unlockable>(states[State::BoughtPoisonWizard]);
+    uUp->setImage(WIZ_IMGS.at(POISON_WIZARD));
+    uUp->setDescription(
+        {"Poison wizard increases {i} effects and enables magic-over-time "
+         "gains",
+         {CrystalDefs::GetIcon()}});
+    uUp->setCost(UpgradeDefaults::CRYSTAL_SHARDS,
+                 params[CrystalParams::PoisonWizCost]);
+    mPoisWizBuy = mUpgrades->subscribe(uUp);
+
+    // Buy robot
+    uUp = std::make_shared<Unlockable>(states[State::BoughtRobotWizard]);
+    uUp->setImage(WIZ_IMGS.at(ROBOT_WIZARD));
+    uUp->setDescription({"Robot automates upgrade purchases and {i} synergies",
+                         {PowerWizFireball::GetIcon()}});
+    uUp->setCost(UpgradeDefaults::CRYSTAL_SHARDS,
+                 params[CrystalParams::RobotCost]);
+    mRobotBuy = mUpgrades->subscribe(uUp);
 }
 void Crystal::setParamTriggers() {
     ParameterSystem::Params<CRYSTAL> params;
@@ -208,8 +228,13 @@ void Crystal::setParamTriggers() {
                                states[State::BoughtCrysWizCntUp].get());
         }));
 
-    mParamSubs.push_back(states[State::ResetT1].subscribe(
-        [this](bool val) { mCatalystBuy->setActive(val); }));
+    mParamSubs.push_back(states[State::ResetT1].subscribe([this](bool val) {
+        mCatalystBuy->setActive(val);
+        mPoisWizBuy->setActive(val);
+    }));
+
+    mParamSubs.push_back(states[State::BoughtCatalyst].subscribe(
+        [this](bool bought) { mRobotBuy->setActive(bought); }));
 
     mParamSubs.push_back(ParameterSystem::subscribe(
         {params[CrystalParams::Magic], params[CrystalParams::T1ResetCost]}, {},

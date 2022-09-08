@@ -24,6 +24,8 @@ void setDefaults() {
     params[CrystalParams::WizardCntUpCost]->init(Number(1, 4));
     params[CrystalParams::GlowUpCost]->init(Number(1, 11));
     params[CrystalParams::CatalystCost]->init(1);
+    params[CrystalParams::PoisonWizCost]->init(100);
+    params[CrystalParams::RobotCost]->init(1000);
     params[CrystalParams::T1ResetCost]->init(Number(1, 15));
 
     ParameterSystem::States states;
@@ -35,8 +37,8 @@ void setDefaults() {
     states[State::BoughtPowerWizard]->init(false, Event::ResetT1);
     states[State::BoughtTimeWizard]->init(false, Event::ResetT1);
     states[State::BoughtCatalyst]->init(false, Event::ResetT2);
-    states[State::BoughtPoisonWizard]->init(true, Event::ResetT2);
-    states[State::BoughtRobotWizard]->init(true, Event::ResetT2);
+    states[State::BoughtPoisonWizard]->init(false, Event::ResetT2);
+    states[State::BoughtRobotWizard]->init(false, Event::ResetT2);
 }
 
 RenderDataCWPtr GetIcon() {

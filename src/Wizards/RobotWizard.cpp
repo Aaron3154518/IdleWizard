@@ -30,6 +30,10 @@ void RobotWizard::setSubscriptions() {
         [this](Time dt) { onMoveUpdate(dt); });
     // mUpTimerSub = TimeSystem::GetTimerObservable()->subscribe(
     //[this](Timer& t) { return onUpTimer(t); }, Timer(2000));
+
+    attachSubToVisibility(mPowFireballHitSub);
+    attachSubToVisibility(mTpUpdateSub);
+    attachSubToVisibility(mMoveUpdateSub);
 }
 void RobotWizard::setUpgrades() {
     ParameterSystem::Params<POISON_WIZARD> params;
@@ -52,6 +56,12 @@ void RobotWizard::setParamTriggers() {
                 mTpQueue.push(CRYSTAL);
                 mTpQueue.push(TIME_WIZARD);
             }
+        }));
+
+    mParamSubs.push_back(states[State::ShootRobot].subscribeTo(
+        {}, {states[State::BoughtRobotWizard]}, []() {
+            ParameterSystem::States states;
+            return states[State::BoughtRobotWizard].get();
         }));
 }
 

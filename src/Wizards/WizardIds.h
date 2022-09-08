@@ -26,7 +26,9 @@ const WizardMap<std::string> WIZ_IMGS = {
     {CATALYST, WIZ_DIR + "catalyst.png"},
     {WIZARD, WIZ_DIR + "wizard.png"},
     {POWER_WIZARD, WIZ_DIR + "power_wizard.png"},
-    {TIME_WIZARD, WIZ_DIR + "time_wizard.png"}};
+    {TIME_WIZARD, WIZ_DIR + "time_wizard.png"},
+    {POISON_WIZARD, WIZ_DIR + "poison_wizard.png"},
+    {ROBOT_WIZARD, WIZ_DIR + "robot_wizard.png"}};
 
 const WizardMap<std::string> WIZ_NAMES = {{CRYSTAL, "Crystal"},
                                           {CATALYST, "Catalyst"},

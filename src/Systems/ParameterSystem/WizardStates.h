@@ -24,9 +24,6 @@ enum B : param_t {
 
     TimeWizActive,
     TimeWizFrozen,
-
-    ShootRobot,
-
 };
 
 enum N : param_t {
@@ -34,6 +31,8 @@ enum N : param_t {
     BoughtSecondT1,
 
     TimeWarpEnabled,
+
+    ShootRobot,
 };
 }  // namespace State
 

@@ -55,7 +55,7 @@ void PowerWizFireball::onDeath() {
 }
 
 PowerWizFireball::Data PowerWizFireball::getData() const {
-    return {mPower, mDuration, mSize, mMaxSpeed};
+    return {mPower, mDuration, mSize, mMaxSpeed / MAX_SPEED};
 }
 
 const Number& PowerWizFireball::getPower() const { return mPower; }

@@ -357,14 +357,12 @@ void Wizard::onTimeWarp() {
 void Wizard::shootFireball() {
     auto data = newFireballData();
     if (!ParameterSystem::Param(State::TimeWizFrozen).get()) {
-        mFireballs.push_back(std::move(ComponentFactory<WizardFireball>::New(
-            SDL_FPoint{mPos->rect.cX(), mPos->rect.cY()}, mTarget, data,
-            !mPowWizBoosts.empty())));
+        mFireballs.push_back(ComponentFactory<WizardFireball>::New(
+            SDL_FPoint{mPos->rect.cX(), mPos->rect.cY()}, mTarget, data));
     } else {
         if (!mFreezeFireball) {
-            mFreezeFireball = std::move(ComponentFactory<WizardFireball>::New(
-                SDL_FPoint{mPos->rect.cX(), mPos->rect.cY()}, mTarget, data,
-                !mPowWizBoosts.empty()));
+            mFreezeFireball = ComponentFactory<WizardFireball>::New(
+                SDL_FPoint{mPos->rect.cX(), mPos->rect.cY()}, mTarget, data);
         } else {
             mFreezeFireball->addFireball(data);
         }
@@ -460,7 +458,7 @@ WizardFireball::Data Wizard::newFireballData() {
     }
     frac = (frac ^ params[WizardParams::CritSpread].get()).toFloat() + .5;
     return {power * (params[WizardParams::Crit].get() * frac), powf(frac, .25),
-            speed};
+            speed, !mPowWizBoosts.empty()};
 }
 
 void Wizard::setPos(float x, float y) {

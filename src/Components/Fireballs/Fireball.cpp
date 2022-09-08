@@ -60,7 +60,7 @@ void Fireball::launch(SDL_FPoint target) {
 
 float Fireball::getSize() const { return mSize; }
 void Fireball::setSize(float size) {
-    mSize = fmin(fmax(size, 0), 50);
+    mSize = fminf(fmaxf(size, 0), 50);
     Rect imgR = mImg.getRect();
     imgR.setDim(IMG_RECT.w() * size, IMG_RECT.h() * size, Rect::Align::CENTER);
     mImg.setDest(imgR);

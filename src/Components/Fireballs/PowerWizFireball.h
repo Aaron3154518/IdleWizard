@@ -53,9 +53,10 @@ class PowerWizFireball : public Fireball {
 
     void onDeath();
 
-    WizardId mSrc = POWER_WIZARD;
-    int mFireballFreezeCnt = 1, mSizeSum = 0;
-    Number mPower = 0, mDuration = 0;
+    WizardId mSrc;
+    int mFireballFreezeCnt = 1;
+    float mSizeSum;
+    Number mPower, mDuration;
 
     ParameterSystem::ParameterSubscriptionPtr mRobotBoughtSub;
 };

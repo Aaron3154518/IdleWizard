@@ -17,6 +17,7 @@ class WizardFireball : public Fireball {
     struct Data {
         Number power;
         float sizeFactor = 1, speed = 1;
+        bool boosted = false;
     };
 
     typedef TargetSystem::TargetObservable<WizardId, const WizardFireball&>
@@ -27,8 +28,7 @@ class WizardFireball : public Fireball {
     static std::shared_ptr<HitObservable> GetHitObservable();
 
    public:
-    WizardFireball(SDL_FPoint c, WizardId target, const Data& data,
-                   bool powerWizBoosted = false);
+    WizardFireball(SDL_FPoint c, WizardId target, const Data& data);
 
     const Number& getPower() const;
     void setPower(const Number& pow);
@@ -51,8 +51,8 @@ class WizardFireball : public Fireball {
 
     bool mHitFireRing = false, mPowerWizBoosted = false;
 
-    int mSizeSum = 0;
-    Number mPower = 0;
+    float mSizeSum;
+    Number mPower;
 
     FireRing::HitObservable::SubscriptionPtr mFireRingSub;
     CatalystRing::HitObservable::SubscriptionPtr mCatalystHitSub;

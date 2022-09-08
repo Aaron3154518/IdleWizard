@@ -28,12 +28,11 @@ WizardFireball::GetHitObservable() {
     return ServiceSystem::Get<Service, HitObservable>();
 }
 
-WizardFireball::WizardFireball(SDL_FPoint c, WizardId target, const Data& data,
-                               bool powerWizBoosted)
-    : Fireball(c, target, powerWizBoosted ? POW_IMG : IMG, data.speed),
+WizardFireball::WizardFireball(SDL_FPoint c, WizardId target, const Data& data)
+    : Fireball(c, target, data.boosted ? POW_IMG : IMG, data.speed),
       mSizeSum(data.sizeFactor),
       mPower(data.power),
-      mPowerWizBoosted(powerWizBoosted) {
+      mPowerWizBoosted(data.boosted) {
     setSize(data.sizeFactor);
 }
 
@@ -74,10 +73,15 @@ void WizardFireball::setPower(const Number& pow) { mPower = pow; }
 
 void WizardFireball::addFireball(const Data& data) {
     mPower += data.power;
-    float prevSizeFactor = fmin(pow(mSizeSum, 1.0 / 3.0), 10);
+    float prevSizeFactor = fminf(powf(mSizeSum, 1.f / 3.f), 10);
     mSizeSum += data.sizeFactor;
-    float sizeFactor = fmin(pow(mSizeSum, 1.0 / 3.0), 10);
+    float sizeFactor = fminf(powf(mSizeSum, 1.f / 3.f), 10);
     setSize(mSize * sizeFactor / prevSizeFactor);
+
+    if (data.boosted && !mPowerWizBoosted) {
+        mPowerWizBoosted = true;
+        mImg.set(POW_IMG);
+    }
 }
 
 void WizardFireball::applyTimeEffect(const Number& effect) { mPower ^= effect; }

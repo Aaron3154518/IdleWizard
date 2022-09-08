@@ -25,6 +25,22 @@
 
 class RobotWizard : public WizardBase {
    public:
+    struct Portals {
+       public:
+        Portals();
+
+        void start(const Rect& r);
+
+       private:
+        void setActive(bool active);
+
+        RenderData mPortalTopImg, mPortalBotImg;
+        TimerObservable::SubscriptionPtr mPortalTimerSub;
+        UIComponentPtr mPortalTopPos, mPortalBotPos;
+        RenderObservable::SubscriptionPtr mPortalTopRenderSub,
+            mPortalBotRenderSub;
+    };
+
     RobotWizard();
 
    private:
@@ -42,11 +58,8 @@ class RobotWizard : public WizardBase {
     int mTargetIdx = 0;
 
     std::queue<WizardId> mTpQueue;
-    bool mPortals = false;
-    RenderData mTpImg, mPortalTopImg, mPortalBotImg;
-    UIComponentPtr mPortalTopPos, mPortalBotPos;
-    TimerObservable::SubscriptionPtr mPortalTimerSub;
-    RenderObservable::SubscriptionPtr mPortalTopRenderSub, mPortalBotRenderSub;
+    RenderData mTpImg;
+    std::unordered_map<WizardId, Portals> mPortals;
 
     std::unordered_map<WizardId, PowerWizFireball::Data> mStoredFireballs;
     std::vector<PowerWizFireballPtr> mFireballs;

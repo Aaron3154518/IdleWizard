@@ -1,22 +1,58 @@
 #include "RobotWizard.h"
 
-// RobotWizard
-RobotWizard::RobotWizard()
-    : WizardBase(ROBOT_WIZARD),
-      mPortalTopPos(
+// Portals
+RobotWizard::Portals::Portals()
+    : mPortalTopPos(
           std::make_shared<UIComponent>(Rect(), Elevation::PORTAL_TOP)),
       mPortalBotPos(
           std::make_shared<UIComponent>(Rect(), Elevation::PORTAL_BOT)) {
+    mPortalTopImg.set(RobotWizardDefs::PORTAL_TOP);
+    mPortalBotImg.set(RobotWizardDefs::PORTAL_BOT);
+
+    mPortalTimerSub =
+        ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
+            [this](Timer& t) {
+                mPortalBotImg.nextFrame();
+                mPortalTopImg.nextFrame();
+                if (mPortalBotImg.getFrame() == 0) {
+                    setActive(false);
+                }
+                return true;
+            },
+            RobotWizardDefs::PORTAL_TOP.frame_ms);
+
     mPortalTopPos->mouse = mPortalBotPos->mouse = false;
+    mPortalTopRenderSub =
+        ServiceSystem::Get<RenderService, RenderObservable>()->subscribe(
+            [this](SDL_Renderer* r) { TextureBuilder().draw(mPortalTopImg); },
+            mPortalTopPos);
+    mPortalBotRenderSub =
+        ServiceSystem::Get<RenderService, RenderObservable>()->subscribe(
+            [this](SDL_Renderer* r) { TextureBuilder().draw(mPortalBotImg); },
+            mPortalBotPos);
+
+    setActive(false);
 }
+
+void RobotWizard::Portals::start(const Rect& r) {
+    mPortalTopImg.setFrame(0).setDest(r);
+    mPortalBotImg.setFrame(0).setDest(r);
+    setActive(true);
+}
+
+void RobotWizard::Portals::setActive(bool active) {
+    mPortalTopRenderSub->setActive(active);
+    mPortalBotRenderSub->setActive(active);
+    mPortalTimerSub->setActive(active);
+}
+
+// RobotWizard
+RobotWizard::RobotWizard() : WizardBase(ROBOT_WIZARD) {}
 
 void RobotWizard::init() {
     mImg.set(RobotWizardDefs::IMG).setDest(IMG_RECT);
     mPos->rect = mImg.getDest();
     WizardSystem::GetWizardImageObservable()->next(mId, mImg);
-
-    mPortalTopImg.set(RobotWizardDefs::PORTAL_TOP);
-    mPortalBotImg.set(RobotWizardDefs::PORTAL_BOT);
 
     WizardBase::init();
 
@@ -38,33 +74,6 @@ void RobotWizard::setSubscriptions() {
             [this](Time dt) { onTpUpdate(dt); });
     mMoveUpdateSub = TimeSystem::GetUpdateObservable()->subscribe(
         [this](Time dt) { onMoveUpdate(dt); });
-
-    // Portal stuff
-    mPortalTimerSub =
-        ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
-            [this](Timer& t) {
-                mPortalBotImg.nextFrame();
-                mPortalTopImg.nextFrame();
-                if (mPortalBotImg.getFrame() == 0) {
-                    mPortalTimerSub->setActive(false);
-                    mPortalTopRenderSub->setActive(false);
-                    mPortalBotRenderSub->setActive(false);
-                }
-                return true;
-            },
-            RobotWizardDefs::PORTAL_TOP.frame_ms);
-    mPortalTopRenderSub =
-        ServiceSystem::Get<RenderService, RenderObservable>()->subscribe(
-            [this](SDL_Renderer* r) { TextureBuilder().draw(mPortalTopImg); },
-            mPortalTopPos);
-    mPortalBotRenderSub =
-        ServiceSystem::Get<RenderService, RenderObservable>()->subscribe(
-            [this](SDL_Renderer* r) { TextureBuilder().draw(mPortalBotImg); },
-            mPortalBotPos);
-    mPortalTimerSub->setActive(false);
-    mPortalTopRenderSub->setActive(false);
-    mPortalBotRenderSub->setActive(false);
-
     // mUpTimerSub = TimeSystem::GetTimerObservable()->subscribe(
     //[this](Timer& t) { return onUpTimer(t); }, Timer(2000));
 
@@ -115,8 +124,8 @@ void RobotWizard::onTpUpdate(Time dt) {
         if (!mTpQueue.empty()) {
             Rect pos = WizardSystem::GetWizardPos(it->first);
             SDL_FPoint p{
-                pos.cX() + (mPos->rect.w() * (rDist(gen) * .5f + .5f)),
-                pos.cY() + (mPos->rect.h() * (rDist(gen) * .5f + .5f))};
+                pos.cX() - (mPos->rect.w() * (rDist(gen) * .5f + .5f)),
+                pos.cY() + (mPos->rect.h() * (rDist(gen) * 1.f - .5f))};
             mFireballs.push_back(ComponentFactory<PowerWizFireball>::New(
                 p, it->first, it->second));
             mTpQueue.pop();
@@ -126,11 +135,7 @@ void RobotWizard::onTpUpdate(Time dt) {
             float w = mPos->rect.minDim();
             Rect r(0, 0, w, w);
             r.setPos(p.x, p.y, Rect::Align::CENTER);
-            mPortalTopImg.setFrame(0).setDest(r);
-            mPortalBotImg.setFrame(0).setDest(r);
-            mPortalTimerSub->setActive(true);
-            mPortalTopRenderSub->setActive(true);
-            mPortalBotRenderSub->setActive(true);
+            mPortals[it->first].start(r);
         }
     }
 

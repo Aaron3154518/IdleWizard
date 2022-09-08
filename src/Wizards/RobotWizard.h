@@ -20,6 +20,7 @@
 #include <Wizards/WizardIds.h>
 
 #include <memory>
+#include <queue>
 #include <unordered_map>
 
 class RobotWizard : public WizardBase {
@@ -32,15 +33,22 @@ class RobotWizard : public WizardBase {
     void setUpgrades();
     void setParamTriggers();
 
-    void onUpdate(Time dt);
+    void onTpUpdate(Time dt);
+    void onMoveUpdate(Time dt);
     void onRender(SDL_Renderer* r);
     bool onUpTimer(Timer& t);
     void onPowFireballHit(const PowerWizFireball& fireball);
 
     int mTargetIdx = 0;
 
-    std::unordered_map<WizardId, PowerWizFireball::Data> mPowFireballs;
+    std::queue<WizardId> mTpQueue;
+    bool mTeleporting = false;
+    RenderData mTpImg;
 
+    std::unordered_map<WizardId, PowerWizFireball::Data> mStoredFireballs;
+    std::vector<PowerWizFireballPtr> mFireballs;
+
+    UpdateObservable::SubscriptionPtr mTpUpdateSub;
     TimerObservable::SubscriptionPtr mAnimTimerSub;
     PowerWizFireball::HitObservable::IdSubscriptionPtr mPowFireballHitSub;
     TimeSystem::UpdateObservable::SubscriptionPtr mMoveUpdateSub;

@@ -21,8 +21,11 @@ void RobotWizard::setSubscriptions() {
             RobotWizardDefs::IMG);
     mPowFireballHitSub = PowerWizFireball::GetHitObservable()->subscribe(
         [this](const PowerWizFireball& f) { onPowFireballHit(f); }, mId);
+    mTpUpdateSub =
+        ServiceSystem::Get<UpdateService, UpdateObservable>()->subscribe(
+            [this](Time dt) { onTpUpdate(dt); });
     mMoveUpdateSub = TimeSystem::GetUpdateObservable()->subscribe(
-        [this](Time dt) { onUpdate(dt); });
+        [this](Time dt) { onMoveUpdate(dt); });
     // mUpTimerSub = TimeSystem::GetTimerObservable()->subscribe(
     //[this](Timer& t) { return onUpTimer(t); }, Timer(2000));
 }
@@ -38,20 +41,63 @@ void RobotWizard::setParamTriggers() {
         states[State::BoughtRobotWizard].subscribe([this](bool bought) {
             WizardSystem::GetHideObservable()->next(mId, !bought);
         }));
+
+    mParamSubs.push_back(
+        states[State::TimeWizFrozen].subscribe([this](bool frozen) {
+            if (frozen) {
+                mTpQueue.push(WIZARD);
+            } else {
+                mTpQueue.push(CRYSTAL);
+                mTpQueue.push(TIME_WIZARD);
+            }
+        }));
 }
 
-void RobotWizard::onUpdate(Time dt) {
-    Rect pos =
-        WizardSystem::GetWizardPos(RobotWizardDefs::TARGETS.at(mTargetIdx));
-    float dx = pos.cX() - mPos->rect.cX(), dy = pos.cY() - mPos->rect.cY();
-    float mag = sqrtf(dx * dx + dy * dy);
+void RobotWizard::onTpUpdate(Time dt) {
+    if (!mTpQueue.empty()) {
+        auto it = mStoredFireballs.find(mTpQueue.front());
+        while (it == mStoredFireballs.end()) {
+            mTpQueue.pop();
+            if (mTpQueue.empty()) {
+                break;
+            }
+            it = mStoredFireballs.find(mTpQueue.front());
+        }
+        if (!mTpQueue.empty()) {
+            Rect pos = WizardSystem::GetWizardPos(it->first);
+            setPos(pos.cX() + (mPos->rect.w() * (rDist(gen) * .5 + .25)),
+                   pos.cY() + (mPos->rect.h() * (rDist(gen) * .5 + .25)));
+            mFireballs.push_back(ComponentFactory<PowerWizFireball>::New(
+                SDL_FPoint{mPos->rect.cX(), mPos->rect.cY()}, it->first,
+                it->second));
+            mTpQueue.pop();
+            mStoredFireballs.erase(it);
+        }
+    }
 
-    if (mag <= 10) {
-        Timer t;
-        onUpTimer(t);
-    } else {
-        float frac = 100 * dt.s() / mag;
-        setPos(mPos->rect.cX() + dx * frac, mPos->rect.cY() + dy * frac);
+    for (auto it = mFireballs.begin(); it != mFireballs.end(); ++it) {
+        if ((*it)->dead()) {
+            it = mFireballs.erase(it);
+            if (it == mFireballs.end()) {
+                break;
+            }
+        }
+    }
+}
+void RobotWizard::onMoveUpdate(Time dt) {
+    if (mTpQueue.empty()) {
+        Rect pos =
+            WizardSystem::GetWizardPos(RobotWizardDefs::TARGETS.at(mTargetIdx));
+        float dx = pos.cX() - mPos->rect.cX(), dy = pos.cY() - mPos->rect.cY();
+        float mag = sqrtf(dx * dx + dy * dy);
+
+        if (mag <= 10) {
+            Timer t;
+            onUpTimer(t);
+        } else {
+            float frac = 100 * dt.s() / mag;
+            setPos(mPos->rect.cX() + dx * frac, mPos->rect.cY() + dy * frac);
+        }
     }
 }
 void RobotWizard::onRender(SDL_Renderer* r) {
@@ -85,7 +131,7 @@ void RobotWizard::onRender(SDL_Renderer* r) {
                     break;
             }
 
-            if (mPowFireballs.find(id) == mPowFireballs.end()) {
+            if (mStoredFireballs.find(id) == mStoredFireballs.end()) {
                 if (wImgPtr) {
                     wImg = RenderData(*wImgPtr);
                     tex.draw(wImg.setDest(imgR));
@@ -112,9 +158,11 @@ bool RobotWizard::onUpTimer(Timer& t) {
 void RobotWizard::onPowFireballHit(const PowerWizFireball& fireball) {
     WizardId target = fireball.getTargetId();
 
-    auto it = mPowFireballs.find(target);
-    if (it == mPowFireballs.end() || fireball.getPower() > it->second.power ||
+    auto it = mStoredFireballs.find(target);
+    if (it == mStoredFireballs.end() ||
+        fireball.getPower() > it->second.power ||
         fireball.getDuration() > it->second.duration) {
-        mPowFireballs[target] = fireball.getData();
+        mStoredFireballs[target] = fireball.getData();
+        std::cerr << mStoredFireballs[target].speed << std::endl;
     }
 }

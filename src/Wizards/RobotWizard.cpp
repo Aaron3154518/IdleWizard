@@ -69,16 +69,12 @@ void RobotWizard::setSubscriptions() {
             RobotWizardDefs::IMG);
     mPowFireballHitSub = PowerWizFireball::GetHitObservable()->subscribe(
         [this](const PowerWizFireball& f) { onPowFireballHit(f); }, mId);
-    mTpUpdateSub =
-        ServiceSystem::Get<UpdateService, UpdateObservable>()->subscribe(
-            [this](Time dt) { onTpUpdate(dt); });
     mMoveUpdateSub = TimeSystem::GetUpdateObservable()->subscribe(
         [this](Time dt) { onMoveUpdate(dt); });
     // mUpTimerSub = TimeSystem::GetTimerObservable()->subscribe(
     //[this](Timer& t) { return onUpTimer(t); }, Timer(2000));
 
     attachSubToVisibility(mPowFireballHitSub);
-    attachSubToVisibility(mTpUpdateSub);
     attachSubToVisibility(mMoveUpdateSub);
 }
 void RobotWizard::setUpgrades() {
@@ -96,11 +92,35 @@ void RobotWizard::setParamTriggers() {
 
     mParamSubs.push_back(
         states[State::TimeWizFrozen].subscribe([this](bool frozen) {
+            if (!ParameterSystem::Param(State::BoughtRobotWizard).get()) {
+                return;
+            }
+
+            std::vector<WizardId> targets;
             if (frozen) {
-                mTpQueue.push(WIZARD);
+                targets = {WIZARD};
             } else {
-                mTpQueue.push(CRYSTAL);
-                mTpQueue.push(TIME_WIZARD);
+                targets = {CRYSTAL, TIME_WIZARD};
+            }
+
+            for (auto target : targets) {
+                auto it = mStoredFireballs.find(target);
+                if (it == mStoredFireballs.end()) {
+                    continue;
+                }
+                Rect pos = WizardSystem::GetWizardPos(it->first);
+                SDL_FPoint p{
+                    pos.cX() - (mPos->rect.w() * (rDist(gen) * .5f + .5f)),
+                    pos.cY() + (mPos->rect.h() * (rDist(gen) * 1.f - .5f))};
+                mFireballs.push_back(ComponentFactory<PowerWizFireball>::New(
+                    p, target, it->second));
+                mStoredFireballs.erase(it);
+
+                // Setup portals
+                float w = mPos->rect.minDim();
+                Rect r(0, 0, w, w);
+                r.setPos(p.x, p.y, Rect::Align::CENTER);
+                mPortals[it->first].start(r);
             }
         }));
 
@@ -111,57 +131,18 @@ void RobotWizard::setParamTriggers() {
         }));
 }
 
-void RobotWizard::onTpUpdate(Time dt) {
-    if (!mTpQueue.empty()) {
-        auto it = mStoredFireballs.find(mTpQueue.front());
-        while (it == mStoredFireballs.end()) {
-            mTpQueue.pop();
-            if (mTpQueue.empty()) {
-                break;
-            }
-            it = mStoredFireballs.find(mTpQueue.front());
-        }
-        if (!mTpQueue.empty()) {
-            Rect pos = WizardSystem::GetWizardPos(it->first);
-            SDL_FPoint p{
-                pos.cX() - (mPos->rect.w() * (rDist(gen) * .5f + .5f)),
-                pos.cY() + (mPos->rect.h() * (rDist(gen) * 1.f - .5f))};
-            mFireballs.push_back(ComponentFactory<PowerWizFireball>::New(
-                p, it->first, it->second));
-            mTpQueue.pop();
-            mStoredFireballs.erase(it);
-
-            // Setup portals
-            float w = mPos->rect.minDim();
-            Rect r(0, 0, w, w);
-            r.setPos(p.x, p.y, Rect::Align::CENTER);
-            mPortals[it->first].start(r);
-        }
-    }
-
-    for (auto it = mFireballs.begin(); it != mFireballs.end(); ++it) {
-        if ((*it)->dead()) {
-            it = mFireballs.erase(it);
-            if (it == mFireballs.end()) {
-                break;
-            }
-        }
-    }
-}
 void RobotWizard::onMoveUpdate(Time dt) {
-    if (mTpQueue.empty()) {
-        Rect pos =
-            WizardSystem::GetWizardPos(RobotWizardDefs::TARGETS.at(mTargetIdx));
-        float dx = pos.cX() - mPos->rect.cX(), dy = pos.cY() - mPos->rect.cY();
-        float mag = sqrtf(dx * dx + dy * dy);
+    Rect pos =
+        WizardSystem::GetWizardPos(RobotWizardDefs::TARGETS.at(mTargetIdx));
+    float dx = pos.cX() - mPos->rect.cX(), dy = pos.cY() - mPos->rect.cY();
+    float mag = sqrtf(dx * dx + dy * dy);
 
-        if (mag <= 10) {
-            Timer t;
-            onUpTimer(t);
-        } else {
-            float frac = 100 * dt.s() / mag;
-            setPos(mPos->rect.cX() + dx * frac, mPos->rect.cY() + dy * frac);
-        }
+    if (mag <= 10) {
+        Timer t;
+        onUpTimer(t);
+    } else {
+        float frac = 100 * dt.s() / mag;
+        setPos(mPos->rect.cX() + dx * frac, mPos->rect.cY() + dy * frac);
     }
 }
 void RobotWizard::onRender(SDL_Renderer* r) {
@@ -202,6 +183,15 @@ void RobotWizard::onRender(SDL_Renderer* r) {
                 }
             } else {
                 tex.draw(fImg.setDest(imgR));
+            }
+        }
+    }
+
+    for (auto it = mFireballs.begin(); it != mFireballs.end(); ++it) {
+        if ((*it)->dead()) {
+            it = mFireballs.erase(it);
+            if (it == mFireballs.end()) {
+                break;
             }
         }
     }

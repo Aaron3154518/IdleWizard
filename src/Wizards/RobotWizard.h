@@ -49,7 +49,6 @@ class RobotWizard : public WizardBase {
     void setUpgrades();
     void setParamTriggers();
 
-    void onTpUpdate(Time dt);
     void onMoveUpdate(Time dt);
     void onRender(SDL_Renderer* r);
     bool onUpTimer(Timer& t);
@@ -57,14 +56,12 @@ class RobotWizard : public WizardBase {
 
     int mTargetIdx = 0;
 
-    std::queue<WizardId> mTpQueue;
     RenderData mTpImg;
     std::unordered_map<WizardId, Portals> mPortals;
 
     std::unordered_map<WizardId, PowerWizFireball::Data> mStoredFireballs;
     std::vector<PowerWizFireballPtr> mFireballs;
 
-    UpdateObservable::SubscriptionPtr mTpUpdateSub;
     TimerObservable::SubscriptionPtr mAnimTimerSub;
     PowerWizFireball::HitObservable::IdSubscriptionPtr mPowFireballHitSub;
     TimeSystem::UpdateObservable::SubscriptionPtr mMoveUpdateSub;

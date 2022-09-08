@@ -30,6 +30,7 @@ PowerWizFireball::GetHitObservable() {
 PowerWizFireball::PowerWizFireball(SDL_FPoint c, WizardId target,
                                    const Data& data)
     : Fireball(c, target, IMG, data.speed),
+      mSrc(data.src),
       mSizeSum(data.sizeFactor),
       mPower(data.power),
       mDuration(data.duration) {
@@ -39,14 +40,24 @@ PowerWizFireball::PowerWizFireball(SDL_FPoint c, WizardId target,
 void PowerWizFireball::init() {
     Fireball::init();
 
-    mRobotBoughtSub =
-        ParameterSystem::Param(State::ShootRobot).subscribe([this](bool robot) {
-            mTargetSub = WizardSystem::GetWizardPosObservable()->subscribe(
-                [this](const Rect& r) {
-                    mTargetPos = r.getPos(Rect::Align::CENTER);
-                },
-                robot ? ROBOT_WIZARD : mTargetId);
-        });
+    switch (mSrc) {
+        case POWER_WIZARD:
+            mRobotBoughtSub =
+                ParameterSystem::Param(State::ShootRobot)
+                    .subscribe([this](bool robot) {
+                        mTargetSub =
+                            WizardSystem::GetWizardPosObservable()->subscribe(
+                                [this](const Rect& r) {
+                                    mTargetPos = r.getPos(Rect::Align::CENTER);
+                                },
+                                robot ? ROBOT_WIZARD : mTargetId);
+                    });
+            break;
+        case ROBOT_WIZARD:
+            mUpdateSub = ServiceSystem::Get<UpdateService, UpdateObservable>()
+                             ->subscribe([this](Time dt) { onUpdate(dt); });
+            break;
+    };
 }
 
 void PowerWizFireball::onDeath() {

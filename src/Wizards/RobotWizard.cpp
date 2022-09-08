@@ -163,6 +163,6 @@ void RobotWizard::onPowFireballHit(const PowerWizFireball& fireball) {
         fireball.getPower() > it->second.power ||
         fireball.getDuration() > it->second.duration) {
         mStoredFireballs[target] = fireball.getData();
-        std::cerr << mStoredFireballs[target].speed << std::endl;
+        mStoredFireballs[target].src = ROBOT_WIZARD;
     }
 }

@@ -17,6 +17,7 @@ class PowerWizFireball : public Fireball {
     struct Data {
         Number power, duration;
         float sizeFactor = 1, speed = .65;
+        WizardId src = POWER_WIZARD;
     };
 
     typedef TargetSystem::TargetObservable<WizardId, const PowerWizFireball&>
@@ -52,6 +53,7 @@ class PowerWizFireball : public Fireball {
 
     void onDeath();
 
+    WizardId mSrc = POWER_WIZARD;
     int mFireballFreezeCnt = 1, mSizeSum = 0;
     Number mPower = 0, mDuration = 0;
 

@@ -144,7 +144,7 @@ void RobotWizard::onMoveUpdate(Time dt) {
           dy = mTargetPos.y - mPos->rect.cY();
     float mag = sqrtf(dx * dx + dy * dy);
 
-    if (mag <= 10) {
+    if (mag <= (wizTarget ? 50 : 10)) {
         if (wizTarget) {
             upgradeTarget();
             mPrevTarget = mTarget;
@@ -169,7 +169,7 @@ void RobotWizard::onMoveUpdate(Time dt) {
     }
 }
 bool RobotWizard::onUpgradeTimer(Timer& t) {
-    if (mTarget != WizardId::size && rDist(gen) < .1) {
+    if (mTarget == WizardId::size && rDist(gen) < .1) {
         mTarget = WIZARD;
         mWaitSub.reset();
         mMoveUpdateSub->setActive(true);

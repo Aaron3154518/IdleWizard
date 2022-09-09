@@ -58,7 +58,7 @@ class RobotWizard : public WizardBase {
     void upgradeTarget();
 
     WizardId mTarget = WizardId::size;
-    int mTargetIdx = -1;
+    int mTargetIdx = 0;
     SDL_FPoint mTargetPos;
 
     RenderData mTpImg;

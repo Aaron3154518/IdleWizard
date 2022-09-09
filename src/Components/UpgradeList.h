@@ -42,8 +42,9 @@ class UpgradeList : public UpgradeListBase {
 
     std::unordered_set<void*> getActive() const;
 
-    Number buyAll(ParameterSystem::BaseValue money, Number max = -1);
-    void buyAllFree(ParameterSystem::BaseValue money);
+    bool canBuyOne(ParameterSystem::BaseValue money, Number max = -1);
+    Number upgradeAll(ParameterSystem::BaseValue money, Number max = -1);
+    void maxAll(ParameterSystem::BaseValue money);
 
    private:
     void computeRects();

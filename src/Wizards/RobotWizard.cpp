@@ -147,6 +147,7 @@ void RobotWizard::onMoveUpdate(Time dt) {
     if (mag <= (wizTarget ? 50 : 10)) {
         if (wizTarget) {
             upgradeTarget();
+            mUpTimerSub->setActive(true);
         }
         mTarget = WizardId::size;
         mWaitSub =
@@ -168,15 +169,24 @@ void RobotWizard::onMoveUpdate(Time dt) {
     }
 }
 bool RobotWizard::onUpgradeTimer(Timer& t) {
-    if (mTarget == WizardId::size && rDist(gen) < .1) {
-        mTargetIdx = (mTargetIdx + 1) % RobotWizardDefs::TARGETS.size();
-        mTarget = RobotWizardDefs::TARGETS.at(mTargetIdx);
-        mWaitSub.reset();
-        mMoveUpdateSub->setActive(true);
-        /*do {
+    if (mTarget == WizardId::size) {
+        mTarget = WizardId::size;
+        int currIdx = mTargetIdx;
+        Number cap =
+            ParameterSystem::Param<CATALYST>(CatalystParams::Magic).get() * .1;
+        do {
+            WizardId target = RobotWizardDefs::TARGETS.at(mTargetIdx);
             mTargetIdx = (mTargetIdx + 1) % RobotWizardDefs::TARGETS.size();
-        } while (RobotWizardDefs::TARGETS.at(mTargetIdx) != CRYSTAL &&
-                 WizardSystem::Hidden(RobotWizardDefs::TARGETS.at(mTargetIdx)));*/
+            if (!WizardSystem::Hidden(target) &&
+                GetWizardUpgrades(target)->canBuyOne(
+                    UpgradeDefaults::CRYSTAL_MAGIC, cap)) {
+                mTarget = target;
+                mWaitSub.reset();
+                mMoveUpdateSub->setActive(true);
+                mUpTimerSub->setActive(false);
+                break;
+            }
+        } while (mTargetIdx != currIdx);
     }
     return true;
 }
@@ -252,7 +262,7 @@ void RobotWizard::onPowFireballHit(const PowerWizFireball& fireball) {
 void RobotWizard::upgradeTarget() {
     auto catMagic = ParameterSystem::Param<CATALYST>(CatalystParams::Magic);
     Number maxSpend = catMagic.get() / 10 + 1;
-    Number spent = GetWizardUpgrades(mTarget)->buyAll(
+    Number spent = GetWizardUpgrades(mTarget)->upgradeAll(
         UpgradeDefaults::CRYSTAL_MAGIC, catMagic.get() / 10);
     catMagic.set(catMagic.get() - spent);
 }

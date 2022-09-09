@@ -215,7 +215,23 @@ std::unordered_set<void*> UpgradeList::getActive() const {
     return set;
 }
 
-Number UpgradeList::buyAll(ParameterSystem::BaseValue money, Number max) {
+bool UpgradeList::canBuyOne(ParameterSystem::BaseValue money, Number max) {
+    bool noMax = max < 0;
+
+    for (auto sub : *this) {
+        auto& up = sub->get<DATA>();
+        const auto& upCost = up->getCost();
+        if (upCost && upCost->getMoneyParam() == money) {
+            if (up->status(true) != Upgrade::Status::BOUGHT &&
+                (noMax || upCost->getCost() <= max)) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+Number UpgradeList::upgradeAll(ParameterSystem::BaseValue money, Number max) {
     bool noMax = max < 0;
     Number cost = 0;
 
@@ -233,7 +249,7 @@ Number UpgradeList::buyAll(ParameterSystem::BaseValue money, Number max) {
 
     return cost;
 }
-void UpgradeList::buyAllFree(ParameterSystem::BaseValue money) {
+void UpgradeList::maxAll(ParameterSystem::BaseValue money) {
     for (auto sub : *this) {
         auto& up = sub->get<DATA>();
         const auto& upCost = up->getCost();

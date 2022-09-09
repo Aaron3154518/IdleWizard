@@ -57,6 +57,8 @@ void RobotWizard::init() {
     WizardBase::init();
 
     mDragSub.reset();
+
+    mTargetPos = {mPos->rect.cX(), mPos->rect.cY()};
 }
 void RobotWizard::setSubscriptions() {
     mAnimTimerSub =
@@ -71,8 +73,8 @@ void RobotWizard::setSubscriptions() {
         [this](const PowerWizFireball& f) { onPowFireballHit(f); }, mId);
     mMoveUpdateSub = TimeSystem::GetUpdateObservable()->subscribe(
         [this](Time dt) { onMoveUpdate(dt); });
-    // mUpTimerSub = TimeSystem::GetTimerObservable()->subscribe(
-    //[this](Timer& t) { return onUpTimer(t); }, Timer(2000));
+    mUpTimerSub = TimeSystem::GetTimerObservable()->subscribe(
+        [this](Timer& t) { return onUpgradeTimer(t); }, Timer(1000));
 
     attachSubToVisibility(mPowFireballHitSub);
     attachSubToVisibility(mMoveUpdateSub);
@@ -132,18 +134,51 @@ void RobotWizard::setParamTriggers() {
 }
 
 void RobotWizard::onMoveUpdate(Time dt) {
-    Rect pos =
-        WizardSystem::GetWizardPos(RobotWizardDefs::TARGETS.at(mTargetIdx));
-    float dx = pos.cX() - mPos->rect.cX(), dy = pos.cY() - mPos->rect.cY();
+    bool wizTarget = mTarget != WizardId::size;
+
+    if (wizTarget) {
+        Rect r = WizardSystem::GetWizardPos(mTarget);
+        mTargetPos = {r.cX(), r.cY()};
+    }
+    float dx = mTargetPos.x - mPos->rect.cX(),
+          dy = mTargetPos.y - mPos->rect.cY();
     float mag = sqrtf(dx * dx + dy * dy);
 
     if (mag <= 10) {
-        Timer t;
-        onUpTimer(t);
+        if (wizTarget) {
+            upgradeTarget();
+            mPrevTarget = mTarget;
+        }
+        mTarget = WizardId::size;
+        mWaitSub =
+            ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
+                [this](Timer& t) {
+                    SDL_Point dim = RenderSystem::getWindowSize();
+                    float dx = (rDist(gen) * .25f + .1f) * dim.x,
+                          dy = (rDist(gen) * .25f + .1f) * dim.y;
+                    mTargetPos.x += (mTargetPos.x < dim.x / 2) ? dx : -dx;
+                    mTargetPos.y += (mTargetPos.y < dim.y / 2) ? dy : -dy;
+                    mMoveUpdateSub->setActive(true);
+                    return false;
+                },
+                Timer(rDist(gen) * 5000 + 2500));
+        mMoveUpdateSub->setActive(false);
     } else {
         float frac = 100 * dt.s() / mag;
         setPos(mPos->rect.cX() + dx * frac, mPos->rect.cY() + dy * frac);
     }
+}
+bool RobotWizard::onUpgradeTimer(Timer& t) {
+    if (mTarget != WizardId::size && rDist(gen) < .1) {
+        mTarget = WIZARD;
+        mWaitSub.reset();
+        mMoveUpdateSub->setActive(true);
+        /*do {
+            mTargetIdx = (mTargetIdx + 1) % RobotWizardDefs::TARGETS.size();
+        } while (RobotWizardDefs::TARGETS.at(mTargetIdx) != CRYSTAL &&
+                 WizardSystem::Hidden(RobotWizardDefs::TARGETS.at(mTargetIdx)));*/
+    }
+    return true;
 }
 void RobotWizard::onRender(SDL_Renderer* r) {
     WizardBase::onRender(r);
@@ -196,18 +231,11 @@ void RobotWizard::onRender(SDL_Renderer* r) {
         }
     }
 }
-bool RobotWizard::onUpTimer(Timer& t) {
-    WizardId target = RobotWizardDefs::TARGETS.at(mTargetIdx);
-    auto catMagic = ParameterSystem::Param<CATALYST>(CatalystParams::Magic);
-    Number maxSpend = catMagic.get() / 10 + 1;
-    Number spent = GetWizardUpgrades(target)->buyAll(
-        UpgradeDefaults::CRYSTAL_MAGIC, catMagic.get() / 10);
-    catMagic.set(catMagic.get() - spent);
-    do {
-        mTargetIdx = (mTargetIdx + 1) % RobotWizardDefs::TARGETS.size();
-    } while (RobotWizardDefs::TARGETS.at(mTargetIdx) != CRYSTAL &&
-             WizardSystem::Hidden(RobotWizardDefs::TARGETS.at(mTargetIdx)));
-    return true;
+void RobotWizard::onResize(ResizeData data) {
+    WizardBase::onResize(data);
+
+    mTargetPos = {mTargetPos.x * data.newW / data.oldW,
+                  mTargetPos.y * data.newH / data.oldH};
 }
 void RobotWizard::onPowFireballHit(const PowerWizFireball& fireball) {
     WizardId target = fireball.getTargetId();
@@ -219,4 +247,12 @@ void RobotWizard::onPowFireballHit(const PowerWizFireball& fireball) {
         mStoredFireballs[target] = fireball.getData();
         mStoredFireballs[target].src = ROBOT_WIZARD;
     }
+}
+
+void RobotWizard::upgradeTarget() {
+    auto catMagic = ParameterSystem::Param<CATALYST>(CatalystParams::Magic);
+    Number maxSpend = catMagic.get() / 10 + 1;
+    Number spent = GetWizardUpgrades(mTarget)->buyAll(
+        UpgradeDefaults::CRYSTAL_MAGIC, catMagic.get() / 10);
+    catMagic.set(catMagic.get() - spent);
 }

@@ -59,8 +59,8 @@ void WizardBase::setUpgrades() {}
 void WizardBase::setParamTriggers() {}
 
 void WizardBase::onResize(ResizeData data) {
-    setPos((float)mPos->rect.cX() * data.newW / data.oldW,
-           (float)mPos->rect.cY() * data.newH / data.oldH);
+    setPos(mPos->rect.cX() * data.newW / data.oldW,
+           mPos->rect.cY() * data.newH / data.oldH);
 }
 
 void WizardBase::onRender(SDL_Renderer* r) {

@@ -147,7 +147,6 @@ void RobotWizard::onMoveUpdate(Time dt) {
     if (mag <= (wizTarget ? 50 : 10)) {
         if (wizTarget) {
             upgradeTarget();
-            mPrevTarget = mTarget;
         }
         mTarget = WizardId::size;
         mWaitSub =
@@ -161,7 +160,7 @@ void RobotWizard::onMoveUpdate(Time dt) {
                     mMoveUpdateSub->setActive(true);
                     return false;
                 },
-                Timer(rDist(gen) * 5000 + 2500));
+                Timer(rDist(gen) * 4000 + 2500));
         mMoveUpdateSub->setActive(false);
     } else {
         float frac = 100 * dt.s() / mag;
@@ -170,7 +169,8 @@ void RobotWizard::onMoveUpdate(Time dt) {
 }
 bool RobotWizard::onUpgradeTimer(Timer& t) {
     if (mTarget == WizardId::size && rDist(gen) < .1) {
-        mTarget = WIZARD;
+        mTargetIdx = (mTargetIdx + 1) % RobotWizardDefs::TARGETS.size();
+        mTarget = RobotWizardDefs::TARGETS.at(mTargetIdx);
         mWaitSub.reset();
         mMoveUpdateSub->setActive(true);
         /*do {

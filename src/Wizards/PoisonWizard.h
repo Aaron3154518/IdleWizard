@@ -10,6 +10,7 @@
 #include <Systems/ParameterSystem/ParameterAccess.h>
 #include <Systems/ParameterSystem/WizardParameters.h>
 #include <Systems/WizardSystem.h>
+#include <Wizards/Definitions/CatalystDefs.h>
 #include <Wizards/Definitions/PoisonWizardDefs.h>
 #include <Wizards/Money.h>
 #include <Wizards/WizardBase.h>
@@ -30,7 +31,7 @@ class PoisonWizard : public WizardBase {
     void onRender(SDL_Renderer* r);
 
     TimeSystem::TimerObservable::SubscriptionPtr mAnimTimerSub;
-    UpgradeList::SubscriptionPtr mTODO;
+    UpgradeList::SubscriptionPtr mCatGainUp1, mCatGainUp2;
 };
 
 #endif

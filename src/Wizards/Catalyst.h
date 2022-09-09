@@ -35,6 +35,7 @@ class Catalyst : public WizardBase {
 
     Number calcMagicEffect();
     Number calcRange();
+    Number calcGain(Number magic);
     void drawMagic();
     void updateRange();
 

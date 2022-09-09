@@ -128,7 +128,7 @@ void Catalyst::setParamTriggers() {
 void Catalyst::onWizFireballHit(const WizardFireball& fireball) {
     ParameterSystem::Params<CATALYST> params;
     auto magic = params[CatalystParams::Magic];
-    Number gain = fireball.getPower().logTenCopy();
+    Number gain = calcGain(fireball.getPower());
     magic.set(max(
         0, min(magic.get() + gain, params[CatalystParams::Capacity].get())));
     mMessages->addMessage(mPos->rect, "+" + gain.toString(), RED);
@@ -155,6 +155,21 @@ Number Catalyst::calcRange() {
     ParameterSystem::Params<CATALYST> params;
     return params[CatalystParams::BaseRange].get() *
            params[CatalystParams::RangeUp].get();
+}
+
+Number Catalyst::calcGain(Number magic) {
+    ParameterSystem::Params<CATALYST> params;
+    ParameterSystem::Params<POISON_WIZARD> poiParams;
+
+    if (poiParams[PoisonWizardParams::CatGainUp2Lvl].get() > 0) {
+        magic ^= poiParams[PoisonWizardParams::CatGainUp2].get();
+    } else {
+        magic.logTen();
+    }
+
+    magic *= poiParams[PoisonWizardParams::CatGainUp1].get();
+
+    return magic;
 }
 
 void Catalyst::drawMagic() {

@@ -157,9 +157,19 @@ enum N : param_t {
 };
 }  // namespace TimeWizardParams
 namespace PoisonWizardParams {
-enum B : param_t {};
+enum B : param_t {
 
-enum N : param_t {};
+    CatGainUp1Lvl = 0,
+    CatGainUp2Lvl,
+};
+
+enum N : param_t {
+
+    CatGainUp1 = 0,
+    CatGainUp1Cost,
+    CatGainUp2,
+    CatGainUp2Cost,
+};
 }  // namespace PoisonWizardParams
 namespace RobotWizardParams {
 enum B : param_t {};

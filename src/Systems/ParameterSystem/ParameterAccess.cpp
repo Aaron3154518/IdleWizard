@@ -9,7 +9,9 @@ ValueParam::ValueParam(const ValueParam& other)
     : ValueParam(other.mId, other.mKey, other.mIsBase) {}
 
 ValueParam& ValueParam::operator=(const ValueParam& other) {
-    *this = ValueParam(other);
+    mId = other.mId;
+    mKey = other.mKey;
+    mIsBase = other.mIsBase;
     return *this;
 }
 bool ValueParam::operator==(const ValueParam& other) const {
@@ -52,7 +54,8 @@ StateParam::StateParam(const StateParam& other)
     : StateParam(other.mKey, other.mIsBase) {}
 
 StateParam& StateParam::operator=(const StateParam& other) {
-    *this = StateParam(other);
+    mKey = other.mKey;
+    mIsBase = other.mIsBase;
     return *this;
 }
 bool StateParam::operator==(const StateParam& other) const {

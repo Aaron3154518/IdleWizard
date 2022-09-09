@@ -12,6 +12,7 @@
 #include <initializer_list>
 #include <list>
 #include <memory>
+#include <utility>
 
 namespace ParameterSystem {
 // Base class for different Value templates
@@ -32,9 +33,9 @@ struct ValueParam {
     ParameterSubscriptionPtr subscribe(std::function<void(const Number&)> func,
                                        bool fire = true) const;
 
-    const WizardId mId;
-    const param_t mKey;
-    const bool mIsBase;
+    WizardId mId;
+    param_t mKey;
+    bool mIsBase;
 
    protected:
     ValueParam(WizardId id, param_t key, bool isBase);
@@ -60,8 +61,8 @@ struct StateParam {
     ParameterSubscriptionPtr subscribe(std::function<void(bool)> func,
                                        bool fire = true) const;
 
-    const param_t mKey;
-    const bool mIsBase;
+    param_t mKey;
+    bool mIsBase;
 
    protected:
     StateParam(param_t key, bool isBase);

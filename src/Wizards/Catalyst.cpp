@@ -56,7 +56,7 @@ void Catalyst::setUpgrades() {
         std::make_shared<Upgrade>(params[CatalystParams::ZapCntUpLvl], 3);
     up->setImage("");
     up->setDescription({"Increases the number of times each {i} can be zapped",
-                        {WizardFireball::GetIcon()}});
+                        {IconSystem::Get(WizardDefs::FB_IMG)}});
     up->setCost(UpgradeDefaults::CRYSTAL_MAGIC,
                 params[CatalystParams::ZapCntUpCost]);
     up->setEffects(params[CatalystParams::ZapCnt], UpgradeDefaults::NoEffect);
@@ -84,7 +84,7 @@ void Catalyst::setUpgrades() {
     uUp->setImage("");
     uUp->setDescription(
         {"{i} effect boosts {i} gain",
-         {CatalystDefs::GetIcon(),
+         {IconSystem::Get(CatalystDefs::IMG),
           Money::GetMoneyIcon(UpgradeDefaults::CRYSTAL_SHARDS)}});
     uUp->setCost(UpgradeDefaults::CRYSTAL_SHARDS,
                  params[CatalystParams::ShardGainUpCost]);

@@ -2,7 +2,9 @@
 
 namespace WizardDefs {
 const AnimationData IMG{"res/wizards/wizard_ss.png", 5, 150},
-    POWER_BKGRND{"res/wizards/power_effect_bkgrnd_ss.png", 6, 100};
+    POWER_BKGRND{"res/wizards/power_effect_bkgrnd_ss.png", 6, 100},
+    FB_IMG{"res/projectiles/fireball_ss.png", 6, 75},
+    FB_POW_IMG{"res/projectiles/fireball_buffed_ss.png", 6, 75};
 
 const std::string POWER_UP_IMG = "res/upgrades/fireball_upgrade.png";
 const std::string MULTI_UP_IMG = "res/upgrades/multi_upgrade.png";
@@ -28,23 +30,5 @@ void setDefaults() {
 
     ParameterSystem::States states;
     states[State::WizBoosted]->init(false, Event::ResetT1);
-}
-
-RenderDataCWPtr GetIcon() {
-    static RenderDataPtr ICON;
-    static TimerObservable::SubscriptionPtr ANIM_SUB;
-    if (!ICON) {
-        ICON = std::make_shared<RenderData>();
-        ICON->set(IMG);
-        ANIM_SUB =
-            ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
-                [](Timer& t) {
-                    ICON->nextFrame();
-                    return true;
-                },
-                Timer(IMG.frame_ms));
-    }
-
-    return ICON;
 }
 }  // namespace WizardDefs

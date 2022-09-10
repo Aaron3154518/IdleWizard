@@ -9,6 +9,7 @@
 #include <Systems/ParameterSystem/ParameterAccess.h>
 #include <Systems/TargetSystem.h>
 #include <Utils/Number.h>
+#include <Wizards/Definitions/PowerWizardDefs.h>
 
 #include <memory>
 
@@ -43,8 +44,6 @@ class PowerWizFireball : public Fireball {
     void addFireball(const Data& data);
 
     void applyTimeEffect(const Number& effect);
-
-    const static AnimationData IMG;
 
    private:
     void init();

@@ -16,8 +16,6 @@ extern const std::vector<WizardId> TARGETS;
 extern const AnimationData IMG, PORTAL_TOP, PORTAL_BOT;
 
 void setDefaults();
-
-RenderDataCWPtr GetIcon();
 }  // namespace RobotWizardDefs
 
 #endif

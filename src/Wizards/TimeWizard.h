@@ -14,6 +14,7 @@
 #include <ServiceSystem/CoreServices/UpdateService.h>
 #include <ServiceSystem/Lockable.h>
 #include <ServiceSystem/UpdateServices/TimerService.h>
+#include <Systems/IconSystem.h>
 #include <Systems/ParameterSystem/ParameterAccess.h>
 #include <Systems/ParameterSystem/WizardParameters.h>
 #include <Systems/TimeSystem.h>

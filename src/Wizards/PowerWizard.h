@@ -10,6 +10,7 @@
 #include <RenderSystem/TextureBuilder.h>
 #include <ServiceSystem/CoreServices/RenderService.h>
 #include <ServiceSystem/UpdateServices/TimerService.h>
+#include <Systems/IconSystem.h>
 #include <Systems/ParameterSystem/ParameterAccess.h>
 #include <Systems/ParameterSystem/WizardParameters.h>
 #include <Systems/WizardSystem.h>

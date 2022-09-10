@@ -9,6 +9,7 @@
 #include <ServiceSystem/CoreServices/RenderService.h>
 #include <ServiceSystem/EventServices/HoverService.h>
 #include <ServiceSystem/EventServices/MouseService.h>
+#include <Systems/IconSystem.h>
 #include <Systems/ParameterSystem/ParameterAccess.h>
 #include <Systems/WizardSystem.h>
 #include <Wizards/Definitions/CrystalDefs.h>

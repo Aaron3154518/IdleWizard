@@ -11,11 +11,9 @@
 #include <vector>
 
 namespace PoisonWizardDefs {
-extern const AnimationData IMG;
+extern const AnimationData IMG, GLOB_IMG, BUBBLE1_IMG, BUBBLE2_IMG;
 
 void setDefaults();
-
-RenderDataCWPtr GetIcon();
 }  // namespace PoisonWizardDefs
 
 #endif

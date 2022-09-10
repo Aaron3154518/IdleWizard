@@ -56,7 +56,7 @@ void PowerWizard::setUpgrades() {
                << UpgradeDefaults::MultiplicativeEffect(
                       params[PowerWizardParams::FBSpeedEffect].get())
                       .text;
-            imgs.push_back(PowerWizFireball::GetIcon());
+            imgs.push_back(IconSystem::Get(PowerWizardDefs::FB_IMG));
             return {ss.str(), imgs};
         });
     mPowerDisplay = mUpgrades->subscribe(dUp);
@@ -65,8 +65,8 @@ void PowerWizard::setUpgrades() {
     UpgradePtr up =
         std::make_shared<Upgrade>(params[PowerWizardParams::PowerUpLvl], 15);
     up->setImage(PowerWizardDefs::POWER_UP_IMG);
-    up->setDescription(
-        {"Increase {i} power by *1.15", {PowerWizFireball::GetIcon()}});
+    up->setDescription({"Increase {i} power by *1.15",
+                        {IconSystem::Get(PowerWizardDefs::FB_IMG)}});
     up->setCost(UpgradeDefaults::CRYSTAL_MAGIC,
                 params[PowerWizardParams::PowerUpCost]);
     up->setEffects(params[PowerWizardParams::PowerUp],
@@ -85,19 +85,22 @@ void PowerWizard::setUpgrades() {
         {"Unlocks time warp - {i} boosts {i}, speeding up all "
          "{i}\nSped up fireballs gain power based on {i} "
          "effect",
-         {PowerWizardDefs::GetIcon(), TimeWizardDefs::GetIcon(),
-          WizardFireball::GetIcon(), PowerWizFireball::GetIcon()}});
+         {IconSystem::Get(PowerWizardDefs::IMG),
+          IconSystem::Get(TimeWizardDefs::IMG),
+          IconSystem::Get(WizardDefs::FB_IMG),
+          IconSystem::Get(PowerWizardDefs::FB_IMG)}});
     up->setCost(UpgradeDefaults::CRYSTAL_MAGIC,
                 params[PowerWizardParams::TimeWarpUpCost]);
-    up->setEffects({params[PowerWizardParams::TimeWarpUp]},
-                   {states[State::TimeWarpEnabled]}, []() -> TextUpdateData {
-                       std::stringstream ss;
-                       ss << "*{i}^"
-                          << ParameterSystem::Param<POWER_WIZARD>(
-                                 PowerWizardParams::TimeWarpUp)
-                                 .get();
-                       return {ss.str(), {PowerWizFireball::GetIcon()}};
-                   });
+    up->setEffects(
+        {params[PowerWizardParams::TimeWarpUp]},
+        {states[State::TimeWarpEnabled]}, []() -> TextUpdateData {
+            std::stringstream ss;
+            ss << "*{i}^"
+               << ParameterSystem::Param<POWER_WIZARD>(
+                      PowerWizardParams::TimeWarpUp)
+                      .get();
+            return {ss.str(), {IconSystem::Get(PowerWizardDefs::FB_IMG)}};
+        });
     mParamSubs.push_back(params[PowerWizardParams::TimeWarpUpCost].subscribeTo(
         up->level(),
         [](const Number& lvl) { return Number(1, 8) * (3 ^ lvl); }));

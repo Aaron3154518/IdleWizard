@@ -1,35 +1,15 @@
 #include "WizardFireball.h"
 
 // WizardFireball
-const AnimationData WizardFireball::IMG{"res/projectiles/fireball_ss.png", 6,
-                                        75},
-    WizardFireball::POW_IMG{"res/projectiles/fireball_buffed_ss.png", 6, 75};
-
-RenderDataCWPtr WizardFireball::GetIcon() {
-    static RenderDataPtr ICON;
-    static TimerObservable::SubscriptionPtr ANIM_SUB;
-    if (!ICON) {
-        ICON = std::make_shared<RenderData>();
-        ICON->set(IMG);
-        ANIM_SUB =
-            ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
-                [](Timer& t) {
-                    ICON->nextFrame();
-                    return true;
-                },
-                Timer(IMG.frame_ms));
-    }
-
-    return ICON;
-}
-
 std::shared_ptr<WizardFireball::HitObservable>
 WizardFireball::GetHitObservable() {
     return ServiceSystem::Get<Service, HitObservable>();
 }
 
 WizardFireball::WizardFireball(SDL_FPoint c, WizardId target, const Data& data)
-    : Fireball(c, target, data.boosted ? POW_IMG : IMG, data.speed),
+    : Fireball(c, target,
+               data.boosted ? WizardDefs::FB_POW_IMG : WizardDefs::FB_IMG,
+               data.speed),
       mSizeSum(data.sizeFactor),
       mPower(data.power),
       mPowerWizBoosted(data.boosted) {
@@ -80,7 +60,7 @@ void WizardFireball::addFireball(const Data& data) {
 
     if (data.boosted && !mPowerWizBoosted) {
         mPowerWizBoosted = true;
-        mImg.set(POW_IMG);
+        mImg.set(WizardDefs::FB_POW_IMG);
     }
 }
 

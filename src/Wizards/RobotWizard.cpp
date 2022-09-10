@@ -195,7 +195,7 @@ void RobotWizard::onRender(SDL_Renderer* r) {
 
     TextureBuilder tex;
 
-    RenderDataCPtr ptr = PowerWizFireball::GetIcon().lock();
+    RenderDataCPtr ptr = IconSystem::Get(PowerWizardDefs::FB_IMG).lock();
     if (ptr) {
         float w = IMG_RECT.minDim() / 3;
         Rect imgR(0, 0, w, w);
@@ -207,17 +207,17 @@ void RobotWizard::onRender(SDL_Renderer* r) {
                 case WIZARD:
                     imgR.setPos(mPos->rect.x(), mPos->rect.y2(),
                                 Rect::Align::CENTER);
-                    wImgPtr = WizardDefs::GetIcon().lock();
+                    wImgPtr = IconSystem::Get(WizardDefs::IMG).lock();
                     break;
                 case CRYSTAL:
                     imgR.setPos(mPos->rect.cX(), mPos->rect.y2(),
                                 Rect::Align::CENTER, Rect::Align::TOP_LEFT);
-                    wImgPtr = CrystalDefs::GetIcon().lock();
+                    wImgPtr = IconSystem::Get(CrystalDefs::IMG).lock();
                     break;
                 case TIME_WIZARD:
                     imgR.setPos(mPos->rect.x2(), mPos->rect.y2(),
                                 Rect::Align::CENTER);
-                    wImgPtr = TimeWizardDefs::GetIcon().lock();
+                    wImgPtr = IconSystem::Get(TimeWizardDefs::IMG).lock();
                     break;
             }
 

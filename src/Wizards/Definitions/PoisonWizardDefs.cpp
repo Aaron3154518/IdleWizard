@@ -1,7 +1,10 @@
 #include "PoisonWizardDefs.h"
 
 namespace PoisonWizardDefs {
-const AnimationData IMG{"res/wizards/poison_wizard_ss.png", 8, 100};
+const AnimationData IMG{"res/wizards/poison_wizard_ss.png", 8, 100},
+    GLOB_IMG{"res/projectiles/poison_glob_ss.png", 8, 100},
+    BUBBLE1_IMG{"res/projectiles/poison_bubble1_ss.png", 9, 150},
+    BUBBLE2_IMG{"res/projectiles/poison_bubble2_ss.png", 6, 150};
 
 void setDefaults() {
     using WizardSystem::Event;
@@ -9,23 +12,5 @@ void setDefaults() {
     ParameterSystem::Params<CRYSTAL> params;
 
     ParameterSystem::States states;
-}
-
-RenderDataCWPtr GetIcon() {
-    static RenderDataPtr ICON;
-    static TimerObservable::SubscriptionPtr ANIM_SUB;
-    if (!ICON) {
-        ICON = std::make_shared<RenderData>();
-        ICON->set(IMG);
-        ANIM_SUB =
-            ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
-                [](Timer& t) {
-                    ICON->nextFrame();
-                    return true;
-                },
-                Timer(IMG.frame_ms));
-    }
-
-    return ICON;
 }
 }  // namespace PoisonWizardDefs

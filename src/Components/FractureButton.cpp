@@ -5,7 +5,7 @@ FractureButton::FractureButton()
     : mPos(std::make_shared<UIComponent>(Rect(), Elevation::WIZARDS)) {
     setImage(CrystalDefs::FRACTURE_IMG);
     setDescription({"Blast {i} with all your strength\nDestroys your wizards",
-                    {CrystalDefs::GetIcon()}});
+                    {IconSystem::Get(CrystalDefs::IMG)}});
     setEffects(ParameterSystem::Param<CRYSTAL>(CrystalParams::ShardGain),
                [](const Number& gain) -> TextUpdateData {
                    return {

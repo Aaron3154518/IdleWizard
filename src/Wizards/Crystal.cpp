@@ -98,8 +98,9 @@ void Crystal::setUpgrades() {
     uUp->setDescription(
         {"After begin struck by {i}, {i} will absorb {i}\nWhen the effect "
          "expires, their power will be multiplied",
-         {PowerWizardDefs::GetIcon(), CrystalDefs::GetIcon(),
-          WizardFireball::GetIcon()}});
+         {IconSystem::Get(PowerWizardDefs::IMG),
+          IconSystem::Get(CrystalDefs::IMG),
+          IconSystem::Get(WizardDefs::FB_IMG)}});
     uUp->setCost(UpgradeDefaults::CRYSTAL_MAGIC,
                  params[CrystalParams::GlowUpCost]);
     uUp->setEffects(params[CrystalParams::GlowEffect],
@@ -112,8 +113,8 @@ void Crystal::setUpgrades() {
     uUp->setDescription(
         {"Power Wizard empowers {i} and overloads {i} for increased {i} "
          "power",
-         {WizardDefs::GetIcon(), CrystalDefs::GetIcon(),
-          WizardFireball::GetIcon()}});
+         {IconSystem::Get(WizardDefs::IMG), IconSystem::Get(CrystalDefs::IMG),
+          IconSystem::Get(WizardDefs::FB_IMG)}});
     uUp->setCost(UpgradeDefaults::CRYSTAL_MAGIC,
                  params[CrystalParams::T1WizardCost]);
     mPowWizBuy = mUpgrades->subscribe(uUp);
@@ -124,7 +125,7 @@ void Crystal::setUpgrades() {
     uUp->setDescription(
         {"Time Wizard boosts {i} fire rate and freezes time for a "
          "massive power boost",
-         {WizardDefs::GetIcon()}});
+         {IconSystem::Get(WizardDefs::IMG)}});
     uUp->setCost(UpgradeDefaults::CRYSTAL_MAGIC,
                  params[CrystalParams::T1WizardCost]);
     mTimeWizBuy = mUpgrades->subscribe(uUp);
@@ -134,7 +135,7 @@ void Crystal::setUpgrades() {
     uUp->setImage(WIZ_IMGS.at(CATALYST));
     uUp->setDescription(
         {"Catalyst stores magic and boosts {i} that pass nearby",
-         {WizardFireball::GetIcon()}});
+         {IconSystem::Get(WizardDefs::FB_IMG)}});
     uUp->setCost(UpgradeDefaults::CRYSTAL_SHARDS,
                  params[CrystalParams::CatalystCost]);
     mCatalystBuy = mUpgrades->subscribe(uUp);
@@ -145,7 +146,7 @@ void Crystal::setUpgrades() {
     uUp->setDescription(
         {"Poison wizard increases {i} effects and enables magic-over-time "
          "gains",
-         {CrystalDefs::GetIcon()}});
+         {IconSystem::Get(CrystalDefs::IMG)}});
     uUp->setCost(UpgradeDefaults::CRYSTAL_SHARDS,
                  params[CrystalParams::PoisonWizCost]);
     mPoisWizBuy = mUpgrades->subscribe(uUp);
@@ -154,7 +155,7 @@ void Crystal::setUpgrades() {
     uUp = std::make_shared<Unlockable>(states[State::BoughtRobotWizard]);
     uUp->setImage(WIZ_IMGS.at(ROBOT_WIZARD));
     uUp->setDescription({"Robot automates upgrade purchases and {i} synergies",
-                         {PowerWizFireball::GetIcon()}});
+                         {IconSystem::Get(PowerWizardDefs::FB_IMG)}});
     uUp->setCost(UpgradeDefaults::CRYSTAL_SHARDS,
                  params[CrystalParams::RobotCost]);
     mRobotBuy = mUpgrades->subscribe(uUp);

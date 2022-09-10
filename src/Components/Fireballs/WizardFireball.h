@@ -9,6 +9,7 @@
 #include <ServiceSystem/ServiceSystem.h>
 #include <Systems/TargetSystem.h>
 #include <Utils/Number.h>
+#include <Wizards/Definitions/WizardDefs.h>
 
 #include <memory>
 
@@ -36,10 +37,6 @@ class WizardFireball : public Fireball {
     void addFireball(const Data& data);
 
     void applyTimeEffect(const Number& effect);
-
-    const static AnimationData IMG, POW_IMG;
-
-    static RenderDataCWPtr GetIcon();
 
    private:
     void init();

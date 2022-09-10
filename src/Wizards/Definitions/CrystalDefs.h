@@ -18,8 +18,6 @@ extern const std::string WIZ_CNT_UP_IMG, CRYS_GLOW_UP_IMG, FRACTURE_IMG;
 extern const AnimationData IMG, GLOW_EFFECT_IMG, GLOW_FINISH_IMG;
 
 void setDefaults();
-
-RenderDataCWPtr GetIcon();
 }  // namespace CrystalDefs
 
 #endif

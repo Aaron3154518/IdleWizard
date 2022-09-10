@@ -26,7 +26,8 @@ void PoisonWizard::setUpgrades() {
     UpgradePtr up = std::make_shared<Upgrade>(
         params[PoisonWizardParams::CatGainUp1Lvl], 10);
     up->setImage("");
-    up->setDescription({"Multiplies {i} gain *2", {CatalystDefs::GetIcon()}});
+    up->setDescription(
+        {"Multiplies {i} gain *2", {IconSystem::Get(CatalystDefs::IMG)}});
     up->setCost(UpgradeDefaults::CRYSTAL_SHARDS,
                 params[PoisonWizardParams::CatGainUp1Cost]);
     up->setEffects(params[PoisonWizardParams::CatGainUp1],
@@ -41,7 +42,7 @@ void PoisonWizard::setUpgrades() {
         std::make_shared<Upgrade>(params[PoisonWizardParams::CatGainUp2Lvl], 5);
     up->setImage("");
     up->setDescription(
-        {"Improves {i} gain formula", {CatalystDefs::GetIcon()}});
+        {"Improves {i} gain formula", {IconSystem::Get(CatalystDefs::IMG)}});
     up->setCost(UpgradeDefaults::CRYSTAL_SHARDS,
                 params[PoisonWizardParams::CatGainUp2Cost]);
     up->setEffects(

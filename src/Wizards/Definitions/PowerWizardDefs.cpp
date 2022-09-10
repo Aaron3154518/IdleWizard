@@ -1,7 +1,8 @@
 #include "PowerWizardDefs.h"
 
 namespace PowerWizardDefs {
-const AnimationData IMG{"res/wizards/power_wizard_ss.png", 8, 150};
+const AnimationData IMG{"res/wizards/power_wizard_ss.png", 8, 150},
+    FB_IMG{"res/projectiles/power_fireball_ss.png", 6, 75};
 
 const std::string POWER_UP_IMG = "res/upgrades/power_fireball_upgrade.png",
                   TIME_WARP_UP_IMG = "res/upgrades/time_warp_upgrade.png";
@@ -17,23 +18,5 @@ void setDefaults() {
 
     params[PowerWizardParams::PowerUpLvl]->init(Event::ResetT1);
     params[PowerWizardParams::TimeWarpUpLvl]->init(Event::ResetT1);
-}
-
-RenderDataCWPtr GetIcon() {
-    static RenderDataPtr ICON;
-    static TimerObservable::SubscriptionPtr ANIM_SUB;
-    if (!ICON) {
-        ICON = std::make_shared<RenderData>();
-        ICON->set(IMG);
-        ANIM_SUB =
-            ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
-                [](Timer& t) {
-                    ICON->nextFrame();
-                    return true;
-                },
-                Timer(IMG.frame_ms));
-    }
-
-    return ICON;
 }
 }  // namespace PowerWizardDefs

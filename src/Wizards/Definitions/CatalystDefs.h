@@ -15,8 +15,6 @@ extern const unsigned int MSPF, NUM_FRAMES;
 extern const std::string IMG;
 
 void setDefaults();
-
-RenderDataCWPtr GetIcon();
 }  // namespace CatalystDefs
 
 #endif

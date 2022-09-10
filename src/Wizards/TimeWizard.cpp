@@ -75,7 +75,8 @@ void TimeWizard::setUpgrades() {
     mActiveToggle->setDescription(
         {"Consume {i} for a fire rate multiplier to {i}, {i}",
          {Money::GetMoneyIcon(UpgradeDefaults::CRYSTAL_MAGIC),
-          WizardDefs::GetIcon(), PowerWizardDefs::GetIcon()}});
+          IconSystem::Get(WizardDefs::IMG),
+          IconSystem::Get(PowerWizardDefs::IMG)}});
     mActiveToggle->setEffects(
         {params[TimeWizardParams::SpeedCost],
          params[TimeWizardParams::SpeedEffect]},
@@ -145,7 +146,7 @@ void TimeWizard::setUpgrades() {
     up->setImage(TimeWizardDefs::FB_SPEED_UP_IMG);
     up->setDescription(
         {"Increase {i} speed *1.075\nHigher speed gives more power",
-         {WizardFireball::GetIcon()}});
+         {IconSystem::Get(WizardDefs::FB_IMG)}});
     up->setCost(UpgradeDefaults::CRYSTAL_MAGIC,
                 params[TimeWizardParams::FBSpeedCost]);
     up->setEffects(params[TimeWizardParams::FBSpeedUp],

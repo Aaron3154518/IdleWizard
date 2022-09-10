@@ -66,7 +66,7 @@ void Wizard::setUpgrades() {
                << UpgradeDefaults::MultiplicativeEffect(
                       params[WizardParams::FBSpeedEffect].get())
                       .text;
-            imgs.push_back(WizardFireball::GetIcon());
+            imgs.push_back(IconSystem::Get(WizardDefs::FB_IMG));
             return {ss.str(), imgs};
         });
     mPowerDisplay = mUpgrades->subscribe(dUp);
@@ -131,8 +131,8 @@ void Wizard::setUpgrades() {
     // Multi Upgrade
     up = std::make_shared<Upgrade>(params[WizardParams::MultiUpLvl], 20);
     up->setImage(WizardDefs::MULTI_UP_IMG);
-    up->setDescription(
-        {"Increase double {i} chance by +5%", {WizardFireball::GetIcon()}});
+    up->setDescription({"Increase double {i} chance by +5%",
+                        {IconSystem::Get(WizardDefs::FB_IMG)}});
     up->setCost(UpgradeDefaults::CRYSTAL_MAGIC,
                 params[WizardParams::MultiUpCost]);
     up->setEffects(params[WizardParams::MultiUp],

@@ -1,6 +1,7 @@
 #ifndef POISON_WIZARD_H
 #define POISON_WIZARD_H
 
+#include <Components/Fireballs/PoisonFireball.h>
 #include <Components/Upgrade.h>
 #include <RenderSystem/AssetManager.h>
 #include <RenderSystem/RenderTypes.h>
@@ -30,9 +31,19 @@ class PoisonWizard : public WizardBase {
     void setParamTriggers();
 
     void onRender(SDL_Renderer* r);
+    bool onFireballTimer(Timer& t);
+    void onT1Reset();
 
+    PoisonFireball::Data newFireballData();
+
+    void shootFireball();
+
+    TimerObservable::SubscriptionPtr mFireballTimerSub;
     TimeSystem::TimerObservable::SubscriptionPtr mAnimTimerSub;
     UpgradeList::SubscriptionPtr mCatGainUp1, mCatGainUp2;
+    WizardSystem::WizardEventObservable::IdSubscriptionPtr mT1ResetSub;
+
+    std::vector<PoisonFireballPtr> mFireballs;
 };
 
 #endif

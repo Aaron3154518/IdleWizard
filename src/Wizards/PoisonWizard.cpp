@@ -11,6 +11,9 @@ void PoisonWizard::init() {
     WizardBase::init();
 }
 void PoisonWizard::setSubscriptions() {
+    mFireballTimerSub =
+        ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
+            [this](Timer& t) { return onFireballTimer(t); }, Timer(1000));
     mAnimTimerSub = TimeSystem::GetTimerObservable()->subscribe(
         [this](Timer& t) {
             mImg.nextFrame();
@@ -18,6 +21,8 @@ void PoisonWizard::setSubscriptions() {
             return true;
         },
         PoisonWizardDefs::IMG);
+    mT1ResetSub = WizardSystem::GetWizardEventObservable()->subscribe(
+        [this]() { onT1Reset(); }, WizardSystem::Event::ResetT1);
 }
 void PoisonWizard::setUpgrades() {
     ParameterSystem::Params<POISON_WIZARD> params;
@@ -74,4 +79,43 @@ void PoisonWizard::setParamTriggers() {
         }));
 }
 
-void PoisonWizard::onRender(SDL_Renderer* r) { WizardBase::onRender(r); }
+void PoisonWizard::onRender(SDL_Renderer* r) {
+    WizardBase::onRender(r);
+
+    for (auto it = mFireballs.begin(); it != mFireballs.end(); ++it) {
+        if ((*it)->dead()) {
+            it = mFireballs.erase(it);
+            if (it == mFireballs.end()) {
+                break;
+            }
+        }
+    }
+}
+bool PoisonWizard::onFireballTimer(Timer& t) {
+    shootFireball();
+    return true;
+}
+void PoisonWizard::onT1Reset() {
+    mFireballs.clear();
+
+    if (mFireballTimerSub) {
+        mFireballTimerSub->get<TimerObservable::DATA>().reset();
+    }
+}
+
+void PoisonWizard::shootFireball() {
+    auto data = newFireballData();
+    float rand = rDist(gen) * 3;
+    mFireballs.push_back(ComponentFactory<PoisonFireball>::New(
+        SDL_FPoint{mPos->rect.cX(), mPos->rect.cY()},
+        rand < 1   ? CRYSTAL
+        : rand < 2 ? CATALYST
+                   : ROBOT_WIZARD,
+        data));
+}
+
+PoisonFireball::Data PoisonWizard::newFireballData() {
+    ParameterSystem::Params<WIZARD> params;
+
+    return {};
+}

@@ -47,9 +47,9 @@ class Fireball : public Component {
    protected:
     virtual void init();
 
-    void onUpdate(Time dt);
+    virtual void onUpdate(Time dt);
     void onResize(ResizeData data);
-    void onRender(SDL_Renderer* renderer);
+    virtual void onRender(SDL_Renderer* renderer);
 
     virtual void onDeath();
 

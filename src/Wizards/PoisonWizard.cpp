@@ -66,6 +66,13 @@ void PoisonWizard::setParamTriggers() {
     ParameterSystem::Params<POISON_WIZARD> params;
     ParameterSystem::States states;
 
+    mParamSubs.push_back(params[PoisonWizardParams::Speed].subscribeTo(
+        {params[PoisonWizardParams::BaseSpeed]}, {},
+        [this]() { return calcSpeed(); }));
+
+    mParamSubs.push_back(
+        params[PoisonWizardParams::Speed].subscribe([this]() { calcTimer(); }));
+
     mParamSubs.push_back(
         states[State::BoughtPoisonWizard].subscribe([this](bool bought) {
             WizardSystem::GetHideObservable()->next(mId, !bought);
@@ -103,12 +110,29 @@ void PoisonWizard::onT1Reset() {
     }
 }
 
+Number PoisonWizard::calcSpeed() {
+    ParameterSystem::Params<POISON_WIZARD> params;
+    return params[PoisonWizardParams::BaseSpeed].get();
+}
+void PoisonWizard::calcTimer() {
+    ParameterSystem::Params<POISON_WIZARD> params;
+
+    Timer& timer = mFireballTimerSub->get<TimerObservable::DATA>();
+    float div = params[PoisonWizardParams::Speed].get().toFloat();
+    if (div <= 0) {
+        div = 1;
+    }
+    float prevLen = timer.length;
+    timer.length = fmax(1000 / div, 16);
+    timer.timer *= timer.length / prevLen;
+}
+
 void PoisonWizard::shootFireball() {
     auto data = newFireballData();
     float rand = rDist(gen) * 3;
     mFireballs.push_back(ComponentFactory<PoisonFireball>::New(
         SDL_FPoint{mPos->rect.cX(), mPos->rect.cY()},
-        rand < 1   ? CRYSTAL
+        rand < 3   ? CRYSTAL
         : rand < 2 ? CATALYST
                    : ROBOT_WIZARD,
         data));
@@ -117,5 +141,8 @@ void PoisonWizard::shootFireball() {
 PoisonFireball::Data PoisonWizard::newFireballData() {
     ParameterSystem::Params<WIZARD> params;
 
-    return {};
+    PoisonFireball::Data data;
+    data.duration = 7500;
+
+    return data;
 }

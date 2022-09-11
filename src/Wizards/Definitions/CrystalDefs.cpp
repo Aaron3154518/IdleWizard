@@ -2,7 +2,8 @@
 
 namespace CrystalDefs {
 const Number T1_COST1 = 500, T1_COST2 = 1e6;
-const SDL_Color MSG_COLOR{200, 0, 175, 255}, GLOW_MSG_COLOR{175, 100, 200, 255};
+const SDL_Color MSG_COLOR{200, 0, 175, 255}, GLOW_MSG_COLOR{175, 100, 200, 255},
+    POISON_MSG_COLOR{105, 130, 25, 255};
 
 const std::string WIZ_CNT_UP_IMG = "res/upgrades/wizard_count_upgrade.png",
                   CRYS_GLOW_UP_IMG = "res/upgrades/crystal_glow_upgrade.png",
@@ -32,6 +33,7 @@ void setDefaults() {
 
     states[State::ResetT1]->init(false);
     states[State::CrysGlowActive]->init(false, Event::ResetT1);
+    states[State::CrysPoisoned]->init(false, Event::ResetT1);
     states[State::BoughtCrysWizCntUp]->init(false, Event::ResetT1);
     states[State::BoughtCrysGlowUp]->init(false, Event::ResetT1);
     states[State::BoughtPowerWizard]->init(false, Event::ResetT1);

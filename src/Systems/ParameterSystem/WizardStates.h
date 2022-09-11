@@ -21,6 +21,7 @@ enum B : param_t {
     WizBoosted,
 
     CrysGlowActive,
+    CrysPoisoned,
 
     TimeWizActive,
     TimeWizFrozen,

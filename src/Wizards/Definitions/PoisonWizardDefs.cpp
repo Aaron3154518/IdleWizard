@@ -9,7 +9,10 @@ const AnimationData IMG{"res/wizards/poison_wizard_ss.png", 8, 100},
 void setDefaults() {
     using WizardSystem::Event;
 
-    ParameterSystem::Params<CRYSTAL> params;
+    ParameterSystem::Params<POISON_WIZARD> params;
+
+    params[PoisonWizardParams::BaseSpeed]->init(.125);
+    params[PoisonWizardParams::PoisonDecay]->init(.95);
 
     ParameterSystem::States states;
 }

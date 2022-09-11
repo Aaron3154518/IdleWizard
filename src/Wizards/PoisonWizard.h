@@ -34,6 +34,9 @@ class PoisonWizard : public WizardBase {
     bool onFireballTimer(Timer& t);
     void onT1Reset();
 
+    Number calcSpeed();
+    void calcTimer();
+
     PoisonFireball::Data newFireballData();
 
     void shootFireball();

@@ -28,7 +28,7 @@ int main(int argc, char* argv[]) {
     CatalystDefs::setDefaults();
     PowerWizardDefs::setDefaults();
     TimeWizardDefs::setDefaults();
-    PowerWizardDefs::setDefaults();
+    PoisonWizardDefs::setDefaults();
     RobotWizardDefs::setDefaults();
 
     // Create Components

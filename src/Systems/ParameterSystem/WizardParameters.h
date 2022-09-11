@@ -158,14 +158,18 @@ enum N : param_t {
 }  // namespace TimeWizardParams
 namespace PoisonWizardParams {
 enum B : param_t {
+    BaseSpeed = 0,
 
-    CatGainUp1Lvl = 0,
+    PoisonDecay,
+
+    CatGainUp1Lvl,
     CatGainUp2Lvl,
 };
 
 enum N : param_t {
+    Speed = 0,
 
-    CatGainUp1 = 0,
+    CatGainUp1,
     CatGainUp1Cost,
     CatGainUp2,
     CatGainUp2Cost,

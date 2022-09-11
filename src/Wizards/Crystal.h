@@ -2,6 +2,7 @@
 #define CRYSTAL_H
 
 #include <Components/FireRing.h>
+#include <Components/Fireballs/PoisonFireball.h>
 #include <Components/Fireballs/PowerWizFireball.h>
 #include <Components/Fireballs/WizardFireball.h>
 #include <Components/FractureButton.h>
@@ -29,6 +30,12 @@
 
 class Crystal : public WizardBase {
    public:
+    enum MagicSource : uint8_t {
+        Fireball = 0,
+        Glow,
+        Poison,
+    };
+
     Crystal();
 
    private:
@@ -43,8 +50,10 @@ class Crystal : public WizardBase {
     void onT1Reset();
     void onWizFireballHit(const WizardFireball& fireball);
     void onPowFireballHit(const PowerWizFireball& fireball);
+    void onPoisFireballHit(const PoisonFireball& fireball);
     bool onGlowTimer(Timer& t);
     bool onGlowFinishTimer(Timer& t, const Number& magic);
+    bool onPoisonTimer(Timer& t);
 
     Number calcMagicEffect();
     Number calcShardGain();
@@ -53,6 +62,8 @@ class Crystal : public WizardBase {
     Number calcGlowEffect();
     void drawMagic();
 
+    void addMagic(MagicSource source, const Number& amnt, SDL_Color msgColor);
+
     int getAnimationDelay();
 
     std::unique_ptr<FireRing>& createFireRing(const Number& val);
@@ -60,9 +71,11 @@ class Crystal : public WizardBase {
     void setPos(float x, float y);
 
     TimeSystem::TimerObservable::SubscriptionPtr mAnimTimerSub, mGlowTimerSub,
-        mGlowFinishTimerSub, mGlowAnimTimerSub;
+        mGlowFinishTimerSub, mGlowAnimTimerSub, mPoisonTimerSub,
+        mPoisonEffectTimerSub;
     WizardFireball::HitObservable::IdSubscriptionPtr mWizFireballHitSub;
     PowerWizFireball::HitObservable::IdSubscriptionPtr mPowFireballHitSub;
+    PoisonFireball::HitObservable::IdSubscriptionPtr mPoisFireballHitSub;
     WizardSystem::WizardEventObservable::IdSubscriptionPtr mT1ResetSub;
     UpgradeList::SubscriptionPtr mMagicEffectDisplay, mWizCntUp, mGlowUp,
         mPowWizBuy, mTimeWizBuy, mCatalystBuy, mPoisWizBuy, mRobotBuy;
@@ -70,7 +83,7 @@ class Crystal : public WizardBase {
     MessageHandlerPtr mMessages;
 
     bool mGlowFinishing = false;
-    Number mGlowMagic;
+    Number mGlowMagic, mPoisonMagic;
     std::vector<std::unique_ptr<FireRing>> mFireRings;
     std::unique_ptr<FractureButton> mFractureBtn;
 

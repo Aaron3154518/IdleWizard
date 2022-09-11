@@ -9,7 +9,8 @@ PoisonFireball::GetHitObservable() {
 PoisonFireball::PoisonFireball(SDL_FPoint c, WizardId target, const Data& data)
     : Fireball(c, target, PoisonWizardDefs::GLOB_IMG, data.speed),
       mSizeSum(data.sizeFactor),
-      mPower(data.power) {
+      mPower(data.power),
+      mDuration(data.duration) {
     setSize(data.sizeFactor);
 
     auto ptr = IconSystem::Get(PoisonWizardDefs::BUBBLE1_IMG).lock();
@@ -82,5 +83,10 @@ void PoisonFireball::onDeath() {
 
 const Number& PoisonFireball::getPower() const { return mPower; }
 void PoisonFireball::setPower(const Number& pow) { mPower = pow; }
+
+const Number& PoisonFireball::getDuration() const { return mDuration; }
+void PoisonFireball::setDuration(const Number& duration) {
+    mDuration = duration;
+}
 
 void PoisonFireball::applyTimeEffect(const Number& effect) { mPower ^= effect; }

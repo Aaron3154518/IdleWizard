@@ -17,7 +17,7 @@
 class PoisonFireball : public Fireball {
    public:
     struct Data {
-        Number power;
+        Number power, duration;
         float sizeFactor = .75, speed = .5;
     };
 
@@ -43,6 +43,9 @@ class PoisonFireball : public Fireball {
     const Number& getPower() const;
     void setPower(const Number& pow);
 
+    const Number& getDuration() const;
+    void setDuration(const Number& duration);
+
     void applyTimeEffect(const Number& effect);
 
    private:
@@ -57,7 +60,7 @@ class PoisonFireball : public Fireball {
     std::uniform_real_distribution<float> rDist;
 
     float mSizeSum;
-    Number mPower;
+    Number mPower, mDuration;
 
     RenderData mBubbleAImg, mBubbleBImg;
     std::vector<Bubble> mBubbles;

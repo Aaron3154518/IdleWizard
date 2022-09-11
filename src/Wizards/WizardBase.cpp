@@ -36,7 +36,7 @@ void WizardBase::init() {
             [this](Timer& t) { return onStarTimer(t); }, Timer(150));
     mStarAnimSub = TimeSystem::GetTimerObservable()->subscribe(
         [this](Timer& t) {
-            mStar.nextFrame();
+            mStar->nextFrame();
             return true;
         },
         STAR_IMG.frame_ms);

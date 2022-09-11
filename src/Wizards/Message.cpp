@@ -43,10 +43,10 @@ void MessageHandler::addMessage(const Rect& r, const std::string& msg,
 
     float dx = (rDist(gen) - .5) * r.halfW(),
           dy = (rDist(gen) - .5) * r.halfH();
-    RenderData rData = RenderData()
-                           .set(mMsgTData)
-                           .setFit(RenderData::FitMode::Texture)
-                           .setDest(Rect(r.cX() + dx, r.cY() + dy, 0, 0));
+    RenderData rData;
+    rData.set(mMsgTData);
+    rData.setFit(RenderData::FitMode::Texture);
+    rData.setDest(Rect(r.cX() + dx, r.cY() + dy, 0, 0));
 
     SDL_FPoint trajectory{copysignf(rDist(gen), dx), copysignf(rDist(gen), dy)};
     if (trajectory.x == 0 && trajectory.y == 0) {

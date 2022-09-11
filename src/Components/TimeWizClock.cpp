@@ -10,8 +10,10 @@ const std::string TimeWizClock::LARGE_HAND = "res/wizards/clock_hand_large.png";
 TimeWizClock::TimeWizClock(Rect r)
     : mPos(std::make_shared<UIComponent>(r, Elevation::WIZARDS)) {
     mClock.set(CLOCK);
-    mSmallHand.set(SMALL_HAND).setRotationDeg(mSmallRot);
-    mLargeHand.set(LARGE_HAND).setRotationDeg(mLargeRot);
+    mSmallHand.set(SMALL_HAND);
+    mSmallHand.setRotationDeg(mSmallRot);
+    mLargeHand.set(LARGE_HAND);
+    mLargeHand.setRotationDeg(mLargeRot);
     setRect(r);
 }
 

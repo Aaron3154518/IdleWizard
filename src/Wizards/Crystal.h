@@ -88,7 +88,8 @@ class Crystal : public WizardBase {
     std::unique_ptr<FractureButton> mFractureBtn;
 
     TextDataPtr mMagicText = std::make_shared<TextData>();
-    RenderData mMagicRender, mGlowBkgrnd, mGlowFinishBkgrnd;
+    RenderData mMagicRender;
+    RenderAnimation mGlowBkgrnd, mGlowFinishBkgrnd;
 };
 
 #endif

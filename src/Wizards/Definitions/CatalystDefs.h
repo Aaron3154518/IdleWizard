@@ -12,7 +12,7 @@
 
 namespace CatalystDefs {
 extern const unsigned int MSPF, NUM_FRAMES;
-extern const std::string IMG;
+extern const AnimationData IMG;
 
 void setDefaults();
 }  // namespace CatalystDefs

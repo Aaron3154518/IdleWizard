@@ -28,7 +28,7 @@ class PowerWizFireball : public Fireball {
 
     static std::shared_ptr<HitObservable> GetHitObservable();
 
-    static RenderDataCWPtr GetIcon();
+    static RenderTextureCPtr GetIcon();
 
    public:
     PowerWizFireball(SDL_FPoint c, WizardId target, const Data& data);

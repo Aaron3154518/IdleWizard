@@ -64,7 +64,7 @@ class Wizard : public WizardBase {
 
     void setPos(float x, float y);
 
-    RenderData mPowBkgrnd;
+    RenderAnimation mPowBkgrnd;
 
     TimerObservable::SubscriptionPtr mFireballTimerSub;
     TimeSystem::TimerObservable::SubscriptionPtr mPowWizTimerSub, mAnimTimerSub,

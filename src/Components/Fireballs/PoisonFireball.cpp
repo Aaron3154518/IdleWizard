@@ -13,14 +13,8 @@ PoisonFireball::PoisonFireball(SDL_FPoint c, WizardId target, const Data& data)
       mDuration(data.duration) {
     setSize(data.sizeFactor);
 
-    auto ptr = IconSystem::Get(PoisonWizardDefs::BUBBLE1_IMG).lock();
-    if (ptr) {
-        mBubbleAImg = *ptr;
-    }
-    ptr = IconSystem::Get(PoisonWizardDefs::BUBBLE2_IMG).lock();
-    if (ptr) {
-        mBubbleBImg = *ptr;
-    }
+    mBubbleAImg.set(IconSystem::Get(PoisonWizardDefs::BUBBLE1_IMG));
+    mBubbleBImg.set(IconSystem::Get(PoisonWizardDefs::BUBBLE2_IMG));
 }
 
 void PoisonFireball::init() { Fireball::init(); }
@@ -53,21 +47,15 @@ void PoisonFireball::onUpdate(Time dt) {
 void PoisonFireball::onRender(SDL_Renderer* renderer) {
     TextureBuilder tex;
 
-    auto ptr = IconSystem::Get(PoisonWizardDefs::BUBBLE1_IMG).lock();
-    if (ptr) {
-        mBubbleAImg.setFrame(ptr->getFrame());
-    }
-    ptr = IconSystem::Get(PoisonWizardDefs::BUBBLE2_IMG).lock();
-    if (ptr) {
-        mBubbleBImg.setFrame(ptr->getFrame());
-    }
     for (auto& bubble : mBubbles) {
         switch (bubble.type) {
             case BubbleType::A:
-                tex.draw(mBubbleAImg.setDest(bubble.pos));
+                mBubbleAImg.setDest(bubble.pos);
+                tex.draw(mBubbleAImg);
                 break;
             case BubbleType::B:
-                tex.draw(mBubbleBImg.setDest(bubble.pos));
+                mBubbleBImg.setDest(bubble.pos);
+                tex.draw(mBubbleBImg);
                 break;
         }
     }

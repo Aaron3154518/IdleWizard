@@ -1,7 +1,7 @@
 #include "IconSystem.h"
 
 namespace IconSystem {
-RenderDataCWPtr AnimationSet::operator[](const AnimationData& data) {
+RenderTextureCPtr AnimationSet::operator[](const AnimationData& data) {
     if (!mTimerSub) {
         mTimerSub =
             ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
@@ -16,25 +16,23 @@ RenderDataCWPtr AnimationSet::operator[](const AnimationData& data) {
 
     auto& rData = mAnims[data.file];
     if (!rData) {
-        rData = std::make_shared<RenderData>();
-        rData->set(data);
+        rData = std::make_shared<RenderTexture>(data);
     }
     return rData;
 }
 
-RenderDataCWPtr Get(const AnimationData& data) {
+RenderTextureCPtr Get(const AnimationData& data) {
     static std::unordered_map<int, AnimationSet> ANIMS;
 
     return ANIMS[data.frame_ms][data];
 }
 
-RenderDataCWPtr Get(const std::string& file) {
-    static std::unordered_map<std::string, RenderDataPtr> IMGS;
+RenderTextureCPtr Get(const std::string& file) {
+    static std::unordered_map<std::string, RenderTexturePtr> IMGS;
 
     auto& rData = IMGS[file];
     if (!rData) {
-        rData = std::make_shared<RenderData>();
-        rData->set(file);
+        rData = std::make_shared<RenderTexture>(file);
     }
     return rData;
 }

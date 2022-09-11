@@ -9,15 +9,16 @@ void Catalyst::init() {
     mMessages = ComponentFactory<MessageHandler>::New(FONT);
 
     ParameterSystem::Params<CATALYST> params;
-    mImg.set(CatalystDefs::IMG).setDest(IMG_RECT);
+    mImg.set(CatalystDefs::IMG);
+    mImg.setDest(IMG_RECT);
     mPos->rect = mImg.getDest();
     WizardSystem::GetWizardImageObservable()->next(mId, mImg);
 
     mMagicText->setFont(FONT).setImgs(
         {Money::GetMoneyIcon(params[CatalystParams::Magic])});
-    mMagicRender.set(mMagicText)
-        .setFit(RenderData::FitMode::Texture)
-        .setFitAlign(Rect::Align::CENTER, Rect::Align::TOP_LEFT);
+    mMagicRender.set(mMagicText);
+    mMagicRender.setFit(RenderData::FitMode::Texture);
+    mMagicRender.setFitAlign(Rect::Align::CENTER, Rect::Align::TOP_LEFT);
 
     mRange = CircleShape(PURPLE).setDashed(50);
 

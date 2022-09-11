@@ -12,9 +12,9 @@ RobotWizard::Portals::Portals()
     mPortalTimerSub =
         ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
             [this](Timer& t) {
-                mPortalBotImg.nextFrame();
-                mPortalTopImg.nextFrame();
-                if (mPortalBotImg.getFrame() == 0) {
+                mPortalBotImg->nextFrame();
+                mPortalTopImg->nextFrame();
+                if (mPortalBotImg->getFrame() == 0) {
                     setActive(false);
                 }
                 return true;
@@ -35,8 +35,10 @@ RobotWizard::Portals::Portals()
 }
 
 void RobotWizard::Portals::start(const Rect& r) {
-    mPortalTopImg.setFrame(0).setDest(r);
-    mPortalBotImg.setFrame(0).setDest(r);
+    mPortalTopImg->setFrame(0);
+    mPortalTopImg.setDest(r);
+    mPortalBotImg->setFrame(0);
+    mPortalBotImg.setDest(r);
     setActive(true);
 }
 
@@ -50,7 +52,8 @@ void RobotWizard::Portals::setActive(bool active) {
 RobotWizard::RobotWizard() : WizardBase(ROBOT_WIZARD) {}
 
 void RobotWizard::init() {
-    mImg.set(RobotWizardDefs::IMG).setDest(IMG_RECT);
+    mImg.set(RobotWizardDefs::IMG);
+    mImg.setDest(IMG_RECT);
     mPos->rect = mImg.getDest();
     WizardSystem::GetWizardImageObservable()->next(mId, mImg);
 
@@ -64,7 +67,7 @@ void RobotWizard::setSubscriptions() {
     mAnimTimerSub =
         ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
             [this](Timer& t) {
-                mImg.nextFrame();
+                mImg->nextFrame();
                 WizardSystem::GetWizardImageObservable()->next(mId, mImg);
                 return true;
             },
@@ -195,40 +198,35 @@ void RobotWizard::onRender(SDL_Renderer* r) {
 
     TextureBuilder tex;
 
-    RenderDataCPtr ptr = IconSystem::Get(PowerWizardDefs::FB_IMG).lock();
-    if (ptr) {
-        float w = IMG_RECT.minDim() / 3;
-        Rect imgR(0, 0, w, w);
-        RenderDataCPtr wImgPtr;
-        RenderData wImg;
-        RenderData fImg = RenderData(*ptr);
-        for (WizardId id : {WIZARD, CRYSTAL, TIME_WIZARD}) {
-            switch (id) {
-                case WIZARD:
-                    imgR.setPos(mPos->rect.x(), mPos->rect.y2(),
-                                Rect::Align::CENTER);
-                    wImgPtr = IconSystem::Get(WizardDefs::IMG).lock();
-                    break;
-                case CRYSTAL:
-                    imgR.setPos(mPos->rect.cX(), mPos->rect.y2(),
-                                Rect::Align::CENTER, Rect::Align::TOP_LEFT);
-                    wImgPtr = IconSystem::Get(CrystalDefs::IMG).lock();
-                    break;
-                case TIME_WIZARD:
-                    imgR.setPos(mPos->rect.x2(), mPos->rect.y2(),
-                                Rect::Align::CENTER);
-                    wImgPtr = IconSystem::Get(TimeWizardDefs::IMG).lock();
-                    break;
-            }
+    RenderData fImg, wImg;
+    fImg.set(IconSystem::Get(PowerWizardDefs::FB_IMG));
+    float w = IMG_RECT.minDim() / 3;
+    Rect imgR(0, 0, w, w);
+    for (WizardId id : {WIZARD, CRYSTAL, TIME_WIZARD}) {
+        switch (id) {
+            case WIZARD:
+                imgR.setPos(mPos->rect.x(), mPos->rect.y2(),
+                            Rect::Align::CENTER);
+                wImg.set(IconSystem::Get(WizardDefs::IMG));
+                break;
+            case CRYSTAL:
+                imgR.setPos(mPos->rect.cX(), mPos->rect.y2(),
+                            Rect::Align::CENTER, Rect::Align::TOP_LEFT);
+                wImg.set(IconSystem::Get(CrystalDefs::IMG));
+                break;
+            case TIME_WIZARD:
+                imgR.setPos(mPos->rect.x2(), mPos->rect.y2(),
+                            Rect::Align::CENTER);
+                wImg.set(IconSystem::Get(TimeWizardDefs::IMG));
+                break;
+        }
 
-            if (mStoredFireballs.find(id) == mStoredFireballs.end()) {
-                if (wImgPtr) {
-                    wImg = RenderData(*wImgPtr);
-                    tex.draw(wImg.setDest(imgR));
-                }
-            } else {
-                tex.draw(fImg.setDest(imgR));
-            }
+        if (mStoredFireballs.find(id) == mStoredFireballs.end()) {
+            wImg.setDest(imgR);
+            tex.draw(wImg);
+        } else {
+            fImg.setDest(imgR);
+            tex.draw(fImg);
         }
     }
 

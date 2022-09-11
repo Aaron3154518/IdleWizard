@@ -55,7 +55,7 @@ class WizardBase : public Component {
 
     bool mHidden = false, mShowStar = false;
 
-    RenderData mImg, mStar;
+    RenderAnimation mImg, mStar;
 
     UIComponentPtr mPos;
     DragComponentPtr mDrag;

@@ -4,7 +4,8 @@
 PoisonWizard::PoisonWizard() : WizardBase(POISON_WIZARD) {}
 
 void PoisonWizard::init() {
-    mImg.set(PoisonWizardDefs::IMG).setDest(IMG_RECT);
+    mImg.set(PoisonWizardDefs::IMG);
+    mImg.setDest(IMG_RECT);
     mPos->rect = mImg.getDest();
     WizardSystem::GetWizardImageObservable()->next(mId, mImg);
 
@@ -16,7 +17,7 @@ void PoisonWizard::setSubscriptions() {
             [this](Timer& t) { return onFireballTimer(t); }, Timer(1000));
     mAnimTimerSub = TimeSystem::GetTimerObservable()->subscribe(
         [this](Timer& t) {
-            mImg.nextFrame();
+            mImg->nextFrame();
             WizardSystem::GetWizardImageObservable()->next(mId, mImg);
             return true;
         },

@@ -4,7 +4,8 @@
 Wizard::Wizard() : WizardBase(WIZARD) {}
 
 void Wizard::init() {
-    mImg.set(WizardDefs::IMG).setDest(IMG_RECT);
+    mImg.set(WizardDefs::IMG);
+    mImg.setDest(IMG_RECT);
     mPos->rect = mImg.getDest();
     WizardSystem::GetWizardImageObservable()->next(mId, mImg);
 
@@ -20,14 +21,14 @@ void Wizard::setSubscriptions() {
         [this](const PowerWizFireball& f) { onPowFireballHit(f); }, mId);
     mAnimTimerSub = TimeSystem::GetTimerObservable()->subscribe(
         [this](Timer& t) {
-            mImg.nextFrame();
+            mImg->nextFrame();
             WizardSystem::GetWizardImageObservable()->next(mId, mImg);
             return true;
         },
         WizardDefs::IMG);
     mPowBkAnimTimerSub = TimeSystem::GetTimerObservable()->subscribe(
         [this](Timer& t) {
-            mPowBkgrnd.nextFrame();
+            mPowBkgrnd->nextFrame();
             return true;
         },
         WizardDefs::POWER_BKGRND);
@@ -52,7 +53,7 @@ void Wizard::setUpgrades() {
         {}, []() -> TextUpdateData {
             ParameterSystem::Params<WIZARD> params;
             std::stringstream ss;
-            std::vector<RenderDataCWPtr> imgs;
+            std::vector<RenderTextureCPtr> imgs;
             ss << "Power: "
                << UpgradeDefaults::MultiplicativeEffect(
                       params[WizardParams::Power].get())
@@ -213,7 +214,8 @@ void Wizard::onRender(SDL_Renderer* r) {
 
     if (mPowWizTimerSub &&
         mPowWizTimerSub->get<TimerObservable::DATA>().isActive()) {
-        tex.draw(mPowBkgrnd.setDest(mPos->rect));
+        mPowBkgrnd.setDest(mPos->rect);
+        tex.draw(mPowBkgrnd);
     }
 
     WizardBase::onRender(r);

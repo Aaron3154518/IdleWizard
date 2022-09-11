@@ -19,10 +19,10 @@ void TimeWizard::setSubscriptions() {
     mAnimTimerSub =
         ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
             [this](Timer& t) {
-                mImg.nextFrame();
+                mImg->nextFrame();
                 WizardSystem::GetWizardImageObservable()->next(mId, mImg);
                 if (ParameterSystem::Param(State::TimeWizFrozen).get()) {
-                    t.length = mImg.getFrame() != 0
+                    t.length = mImg->getFrame() != 0
                                    ? TimeWizardDefs::FREEZE_IMG.frame_ms
                                    : (int)(rDist(gen) * 500) + 1000;
                 }
@@ -363,7 +363,8 @@ void TimeWizard::updateImg() {
         mAnimTimerSub->get<TimerObservable::DATA>() =
             frozen ? TimeWizardDefs::FREEZE_IMG : mImgAnimData;
     }
-    mPos->rect = mImg.setDest(imgR).getDest();
+    mImg.setDest(imgR);
+    mPos->rect = mImg.getDest();
     WizardSystem::GetWizardImageObservable()->next(mId, mImg);
 }
 

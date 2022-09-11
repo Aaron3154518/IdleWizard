@@ -4,7 +4,8 @@
 PowerWizard::PowerWizard() : WizardBase(POWER_WIZARD) {}
 
 void PowerWizard::init() {
-    mImg.set(PowerWizardDefs::IMG).setDest(IMG_RECT);
+    mImg.set(PowerWizardDefs::IMG);
+    mImg.setDest(IMG_RECT);
     mPos->rect = mImg.getDest();
     WizardSystem::GetWizardImageObservable()->next(mId, mImg);
 
@@ -18,7 +19,7 @@ void PowerWizard::setSubscriptions() {
             [this](Timer& t) { return onTimer(t); }, Timer(1000));
     mAnimTimerSub = TimeSystem::GetTimerObservable()->subscribe(
         [this](Timer& t) {
-            mImg.nextFrame();
+            mImg->nextFrame();
             WizardSystem::GetWizardImageObservable()->next(mId, mImg);
             return true;
         },
@@ -43,7 +44,7 @@ void PowerWizard::setUpgrades() {
         {}, []() -> TextUpdateData {
             ParameterSystem::Params<POWER_WIZARD> params;
             std::stringstream ss;
-            std::vector<RenderDataCWPtr> imgs;
+            std::vector<RenderTextureCPtr> imgs;
             ss << "Power: "
                << UpgradeDefaults::MultiplicativeEffect(
                       params[PowerWizardParams::Power].get())

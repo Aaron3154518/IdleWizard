@@ -3,7 +3,7 @@
 namespace CatalystDefs {
 const unsigned int MSPF = 150, NUM_FRAMES = 5;
 
-const std::string IMG = "res/wizards/catalyst.png";
+const AnimationData IMG{"res/wizards/catalyst.png", 1, 100};
 
 void setDefaults() {
     using WizardSystem::Event;

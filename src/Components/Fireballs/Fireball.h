@@ -59,7 +59,7 @@ class Fireball : public Component {
     float mMaxSpeed;
     UIComponentPtr mPos;
 
-    RenderData mImg;
+    RenderAnimation mImg;
     AnimationData mImgAnim;
 
     float mSize = 1;

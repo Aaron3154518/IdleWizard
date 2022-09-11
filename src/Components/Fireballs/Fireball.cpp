@@ -19,7 +19,8 @@ Fireball::Fireball(SDL_FPoint c, WizardId target, const AnimationData& img,
       mMaxSpeed(MAX_SPEED * maxSpeedMult) {
     Rect imgR = IMG_RECT;
     imgR.setPos(c.x, c.y, Rect::Align::CENTER);
-    mImg.set(img).setDest(imgR);
+    mImg.set(img);
+    mImg.setDest(imgR);
     setSize(1);
 }
 
@@ -39,7 +40,7 @@ void Fireball::init() {
         mAnimTimerSub =
             ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
                 [this](Timer& t) {
-                    mImg.nextFrame();
+                    mImg->nextFrame();
                     return true;
                 },
                 mImgAnim);
@@ -132,7 +133,8 @@ void Fireball::onUpdate(Time dt) {
 
         Rect imgR = mImg.getRect();
         imgR.move(moveX, moveY);
-        mImg.setDest(imgR).setRotationDeg(theta);
+        mImg.setDest(imgR);
+        mImg.setRotationDeg(theta);
         mPos->rect = mImg.getDest();
     }
 }

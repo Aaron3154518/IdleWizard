@@ -13,7 +13,7 @@ const ParameterSystem::BaseValue& UpgradeCost::getMoneyParam() const {
 }
 const Number& UpgradeCost::getCost() const { return mCost.get(); }
 const Number& UpgradeCost::getMoney() const { return mMoney.get(); }
-RenderDataCWPtr UpgradeCost::getMoneyIcon() const {
+RenderTextureCPtr UpgradeCost::getMoneyIcon() const {
     return Money::GetMoneyIcon(mMoney);
 }
 bool UpgradeCost::canBuy() const { return mCost.get() <= mMoney.get(); }
@@ -66,8 +66,8 @@ UpgradeBase::UpgradeBase() {
     for (auto& text : mDescText) {
         text = {std::make_shared<TextData>()};
         text.text->setFont(DESC_FONT);
-        text.texture.setFit(RenderData::FitMode::Texture)
-            .setFitAlign(Rect::CENTER, Rect::TOP_LEFT);
+        text.texture.setFit(RenderData::FitMode::Texture);
+        text.texture.setFitAlign(Rect::CENTER, Rect::TOP_LEFT);
     }
 }
 
@@ -130,14 +130,16 @@ void UpgradeBase::setEffect(const TextUpdateData& data) {
 }
 
 void UpgradeBase::drawIcon(TextureBuilder& tex, const Rect& r) {
-    tex.draw(mImg.setDest(r));
+    mImg.setDest(r);
+    tex.draw(mImg);
 }
 
 void UpgradeBase::drawDescription(TextureBuilder tex, SDL_FPoint offset) {
     float w = 0, h = 0;
     for (auto& desc : mDescText) {
-        desc.texture.set(desc.text).setDest(Rect(offset.x, offset.y + h, 0, 0));
-        SDL_Point dim = desc.texture.getTextureDim();
+        desc.texture.set(desc.text);
+        desc.texture.setDest(Rect(offset.x, offset.y + h, 0, 0));
+        SDL_Point dim = desc.texture.get()->getTextureDim();
         if (w < dim.x) {
             w = dim.x;
         }
@@ -240,7 +242,7 @@ void Unlockable::_buy() { mLevel.set(!mLevel.get()); }
 void Unlockable::_max() { mLevel.set(true); }
 
 TextUpdateData Unlockable::getCostText() const {
-    std::vector<RenderDataCWPtr> imgs;
+    std::vector<RenderTextureCPtr> imgs;
     std::stringstream ss;
     if (mLevel.get()) {
         ss << "Bought";
@@ -284,7 +286,7 @@ void Upgrade::_buy() { mLevel.set(mLevel.get() + 1); }
 void Upgrade::_max() { mLevel.set(mMaxLevel); }
 
 TextUpdateData Upgrade::getCostText() const {
-    std::vector<RenderDataCWPtr> imgs;
+    std::vector<RenderTextureCPtr> imgs;
     std::stringstream ss;
     if (mMaxLevel > 0) {
         Number lvl = mLevel.get();

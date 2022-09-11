@@ -8,26 +8,27 @@ void Crystal::init() {
 
     ParameterSystem::Params<CRYSTAL> params;
 
-    mImg.set(CrystalDefs::IMG).setDest(IMG_RECT);
+    mImg.set(CrystalDefs::IMG);
+    mImg.setDest(IMG_RECT);
     mPos->rect = mImg.getDest();
     WizardSystem::GetWizardImageObservable()->next(mId, mImg);
     mGlowBkgrnd.set(CrystalDefs::GLOW_EFFECT_IMG);
-    SDL_Point imgDim = mImg.getTextureDim(),
-              glowDim = mGlowBkgrnd.getTextureDim();
+    SDL_Point imgDim = mImg.get()->getTextureDim(),
+              glowDim = mGlowBkgrnd.get()->getTextureDim();
     mGlowBkgrnd.setDest(Rect(0, 0, mPos->rect.w() * glowDim.x / imgDim.x,
                              mPos->rect.h() * glowDim.y / imgDim.y));
     mGlowFinishBkgrnd.set(CrystalDefs::GLOW_FINISH_IMG);
-    imgDim = mImg.getTextureDim();
-    glowDim = mGlowFinishBkgrnd.getTextureDim();
+    imgDim = mImg.get()->getTextureDim();
+    glowDim = mGlowFinishBkgrnd.get()->getTextureDim();
     mGlowFinishBkgrnd.setDest(Rect(0, 0, mPos->rect.w() * glowDim.x / imgDim.x,
                                    mPos->rect.h() * glowDim.y / imgDim.y));
 
     mMagicText->setFont(FONT).setImgs(
         {Money::GetMoneyIcon(params[CrystalParams::Magic]),
          Money::GetMoneyIcon(params[CrystalParams::Shards])});
-    mMagicRender.set(mMagicText)
-        .setFit(RenderData::FitMode::Texture)
-        .setFitAlign(Rect::Align::CENTER, Rect::Align::TOP_LEFT);
+    mMagicRender.set(mMagicText);
+    mMagicRender.setFit(RenderData::FitMode::Texture);
+    mMagicRender.setFitAlign(Rect::Align::CENTER, Rect::Align::TOP_LEFT);
 
     mFractureBtn = ComponentFactory<FractureButton>::New();
     mFractureBtn->setHidden(true);
@@ -46,17 +47,17 @@ void Crystal::setSubscriptions() {
         [this](const PoisonFireball& f) { onPoisFireballHit(f); }, mId);
     mAnimTimerSub = TimeSystem::GetTimerObservable()->subscribe(
         [this](Timer& t) {
-            mImg.nextFrame();
+            mImg->nextFrame();
             WizardSystem::GetWizardImageObservable()->next(mId, mImg);
-            t.length = mImg.getFrame() == 0 ? getAnimationDelay()
-                                            : CrystalDefs::IMG.frame_ms;
+            t.length = mImg->getFrame() == 0 ? getAnimationDelay()
+                                             : CrystalDefs::IMG.frame_ms;
             return true;
         },
         CrystalDefs::IMG);
     mGlowAnimTimerSub = TimeSystem::GetTimerObservable()->subscribe(
         [this](Timer& t) {
-            mGlowBkgrnd.nextFrame();
-            if (mGlowBkgrnd.getFrame() == 0) {
+            mGlowBkgrnd->nextFrame();
+            if (mGlowBkgrnd->getFrame() == 0) {
                 mGlowAnimTimerSub->setActive(false);
             }
             return true;
@@ -376,8 +377,8 @@ bool Crystal::onGlowTimer(Timer& t) {
 }
 
 bool Crystal::onGlowFinishTimer(Timer& t, const Number& magic) {
-    mGlowFinishBkgrnd.nextFrame();
-    if (mGlowFinishBkgrnd.getFrame() == 0) {
+    mGlowFinishBkgrnd->nextFrame();
+    if (mGlowFinishBkgrnd->getFrame() == 0) {
         addMagic(MagicSource::Glow, magic, CrystalDefs::GLOW_MSG_COLOR);
         mGlowFinishing = false;
         return false;

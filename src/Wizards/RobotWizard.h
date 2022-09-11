@@ -35,7 +35,7 @@ class RobotWizard : public WizardBase {
        private:
         void setActive(bool active);
 
-        RenderData mPortalTopImg, mPortalBotImg;
+        RenderAnimation mPortalTopImg, mPortalBotImg;
         TimerObservable::SubscriptionPtr mPortalTimerSub;
         UIComponentPtr mPortalTopPos, mPortalBotPos;
         RenderObservable::SubscriptionPtr mPortalTopRenderSub,
@@ -62,7 +62,7 @@ class RobotWizard : public WizardBase {
     int mTargetIdx = 0;
     SDL_FPoint mTargetPos;
 
-    RenderData mTpImg;
+    RenderAnimation mTpImg;
     std::unordered_map<WizardId, Portals> mPortals;
 
     std::unordered_map<WizardId, PowerWizFireball::Data> mStoredFireballs;

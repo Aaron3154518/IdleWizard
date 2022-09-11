@@ -419,7 +419,7 @@ void Crystal::drawMagic() {
     ParameterSystem::Params<CRYSTAL> params;
     std::stringstream ss;
     ss << "{i}" << params[CrystalParams::Magic].get();
-    if (ParameterSystem::Param(State::ResetT1).get()) {
+    if (ParameterSystem::Param<CRYSTAL>(CrystalParams::Shards).get() > 0) {
         ss << "\n{i}" << params[CrystalParams::Shards].get();
     }
     mMagicText->setText(ss.str(), mImg.getRect().W());

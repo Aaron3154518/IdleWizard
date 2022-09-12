@@ -38,6 +38,8 @@ void Wizard::setSubscriptions() {
         [this]() { onTimeWarp(); }, WizardSystem::Event::TimeWarp);
     mTargetHideSub = WizardSystem::GetHideObservable()->subscribeToAll(
         [this](WizardId id, bool hide) { onTargetHide(id, hide); });
+    mGlobHitSub =
+        Glob::GetHitObservable()->subscribe([this]() { onGlobHit(); }, mPos);
     attachSubToVisibility(mFireballTimerSub);
     attachSubToVisibility(mPowFireballHitSub);
 }
@@ -317,6 +319,8 @@ void Wizard::onPowFireballHit(const PowerWizFireball& fireball) {
         [this](Time dt, Timer& t) { onPowWizTimerUpdate(dt, t); },
         Timer(mPowWizBoosts.front().second.toFloat()));
 }
+
+void Wizard::onGlobHit() { shootFireball(); }
 
 bool Wizard::onPowWizTimer(Timer& timer) {
     auto powerWizEffect =

@@ -1,5 +1,25 @@
 #include "Glob.h"
 
+// HitObservable
+Glob::HitObservable::Side Glob::HitObservable::next(const Rect& rect) {
+    for (auto sub : *this) {
+        auto& pos = sub->get<DATA>();
+        if (pos->visible) {
+            SDL_Rect r;
+            if (SDL_IntersectRect(pos->rect, rect, &r)) {
+                sub->get<FUNC>()();
+                return Side::LEFT;
+            }
+        }
+    }
+
+    return Side::NONE;
+}
+
+std::shared_ptr<Glob::HitObservable> Glob::GetHitObservable() {
+    return ServiceSystem::Get<GlobService, Glob::HitObservable>();
+}
+
 // Glob
 const Rect Glob::IMG_RECT(0, 0, 20, 20);
 const AnimationData Glob::IMG{"res/projectiles/poison_glob_ss.png", 8, 100};
@@ -55,17 +75,16 @@ void Glob::onUpdate(Time dt) {
     SDL_Point dim = RenderSystem::getWindowSize();
     float x = imgD.x(), y = imgD.y();
     imgD.fitWithin(Rect(0, 0, dim.x, dim.y));
-    bool bounce = false;
     if (x != imgD.x()) {
         mV.x *= -1;
-        bounce = true;
     }
     if (y != imgD.y()) {
         mV.y *= -1;
-        bounce = true;
     }
 
-    if (bounce && --mBncCnt <= 0) {
+    HitObservable::Side side = GetHitObservable()->next(mPos->rect);
+
+    if (side != HitObservable::Side::NONE) {
         onDeath();
         mDead = true;
         mResizeSub.reset();

@@ -24,6 +24,19 @@ class Glob : public Component {
     friend class GlobObservable;
 
    public:
+    typedef Observable<void(), UIComponentPtr> HitObservableBase;
+    class HitObservable : public HitObservableBase {
+       public:
+        enum : uint8_t { FUNC = 0, DATA };
+
+        enum Side : uint8_t { NONE = 0, LEFT, RIGHT, TOP, BOTTOM };
+
+        Side next(const Rect& rect);
+    };
+
+    static std::shared_ptr<HitObservable> GetHitObservable();
+
+   public:
     Glob(SDL_FPoint c, SDL_FPoint v);
 
     bool dead() const;
@@ -56,5 +69,7 @@ class Glob : public Component {
 };
 
 typedef std::unique_ptr<Glob> GlobPtr;
+
+class GlobService : public Service<Glob::HitObservable> {};
 
 #endif

@@ -1,6 +1,7 @@
 #ifndef WIZARD_H
 #define WIZARD_H
 
+#include <Components/Fireballs/Glob.h>
 #include <Components/Fireballs/PowerWizFireball.h>
 #include <Components/Fireballs/WizardFireball.h>
 #include <Components/Upgrade.h>
@@ -44,6 +45,7 @@ class Wizard : public WizardBase {
     void onT1Reset();
     bool onTimer(Timer& timer);
     void onPowFireballHit(const PowerWizFireball& fireball);
+    void onGlobHit();
     bool onPowWizTimer(Timer& timer);
     void onPowWizTimerUpdate(Time dt, Timer& timer);
     void onTimeFreeze(bool frozen);
@@ -75,6 +77,7 @@ class Wizard : public WizardBase {
         mTimeWarpSub;
     UpgradeList::SubscriptionPtr mPowerDisplay, mTargetUp, mPowerUp, mMultiUp,
         mCritUp;
+    Glob::HitObservable::SubscriptionPtr mGlobHitSub;
 
     // Pairs of effect, duration
     std::vector<std::pair<Number, Number>> mPowWizBoosts;

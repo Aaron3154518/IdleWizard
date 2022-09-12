@@ -17,7 +17,11 @@ PoisonFireball::PoisonFireball(SDL_FPoint c, WizardId target, const Data& data)
     mBubbleBImg.set(IconSystem::Get(PoisonWizardDefs::BUBBLE2_IMG));
 }
 
-void PoisonFireball::init() { Fireball::init(); }
+void PoisonFireball::init() {
+    Fireball::init();
+
+    mGlobHitSub.reset();
+}
 
 void PoisonFireball::onUpdate(Time dt) {
     for (auto it = mBubbles.begin(); it != mBubbles.end();) {

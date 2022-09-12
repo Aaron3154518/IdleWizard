@@ -36,6 +36,8 @@ void Fireball::init() {
     mTargetSub = WizardSystem::GetWizardPosObservable()->subscribe(
         [this](const Rect& r) { mTargetPos = r.getPos(Rect::Align::CENTER); },
         mTargetId);
+    mGlobHitSub =
+        Glob::GetHitObservable()->subscribe([this]() { onGlobHit(); }, mPos);
     if (mImgAnim.num_frames > 1) {
         mAnimTimerSub =
             ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
@@ -140,5 +142,7 @@ void Fireball::onUpdate(Time dt) {
 }
 
 void Fireball::onRender(SDL_Renderer* renderer) { TextureBuilder().draw(mImg); }
+
+void Fireball::onGlobHit() { setSpeed(mMaxSpeed * 1.25); }
 
 void Fireball::onDeath() {}

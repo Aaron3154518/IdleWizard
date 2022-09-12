@@ -1,6 +1,7 @@
 #ifndef FIREBALL_H
 #define FIREBALL_H
 
+#include <Components/Fireballs/Glob.h>
 #include <RenderSystem/AssetManager.h>
 #include <RenderSystem/RenderTypes.h>
 #include <RenderSystem/Shapes.h>
@@ -50,6 +51,7 @@ class Fireball : public Component {
     virtual void onUpdate(Time dt);
     void onResize(ResizeData data);
     virtual void onRender(SDL_Renderer* renderer);
+    virtual void onGlobHit();
 
     virtual void onDeath();
 
@@ -69,6 +71,7 @@ class Fireball : public Component {
     TimeSystem::UpdateObservable::SubscriptionPtr mUpdateSub;
     RenderObservable::SubscriptionPtr mRenderSub;
     WizardSystem::WizardPosObservable::IdSubscriptionPtr mTargetSub;
+    Glob::HitObservable::SubscriptionPtr mGlobHitSub;
 
     const static int COLLIDE_ERR, MAX_SPEED;
 };

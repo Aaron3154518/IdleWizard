@@ -62,7 +62,7 @@ class Glob : public Component {
 
     ResizeObservable::SubscriptionPtr mResizeSub;
     TimerObservable::SubscriptionPtr mAnimTimerSub;
-    TimeSystem::UpdateObservable::SubscriptionPtr mUpdateSub;
+    UpdateObservable::SubscriptionPtr mUpdateSub;
     RenderObservable::SubscriptionPtr mRenderSub;
 };
 

@@ -36,6 +36,8 @@ void TimeWizard::setSubscriptions() {
             onPowFireballHit(fireball);
         },
         mId);
+    mGlobHitSub =
+        Glob::GetHitObservable()->subscribe([this]() { onGlobHit(); }, mPos);
     attachSubToVisibility(mCostTimerSub);
 }
 void TimeWizard::setUpgrades() {
@@ -314,6 +316,16 @@ void TimeWizard::onPowFireballHit(const PowerWizFireball& fireball) {
     params[TimeWizardParams::TimeWarpEffect].set(fireball.getPower());
     WizardSystem::GetWizardEventObservable()->next(
         WizardSystem::Event::TimeWarp);
+}
+
+void TimeWizard::onGlobHit() {
+    if (ParameterSystem::Param(State::TimeWizFrozen).get()) {
+        Timer& t = mFreezeTimerSub->get<TimerObservable::DATA>();
+        t.timer += t.length / 15;
+    } else {
+        Timer& t = mFreezeDelaySub->get<TimerObservable::DATA>();
+        t.timer -= t.length / 50;
+    }
 }
 
 Number TimeWizard::calcFreezeEffect() {

@@ -37,8 +37,9 @@ void Glob::init() {
     mResizeSub =
         ServiceSystem::Get<ResizeService, ResizeObservable>()->subscribe(
             [this](ResizeData d) { onResize(d); });
-    mUpdateSub = TimeSystem::GetUpdateObservable()->subscribe(
-        [this](Time dt) { onUpdate(dt); });
+    mUpdateSub =
+        ServiceSystem::Get<UpdateService, UpdateObservable>()->subscribe(
+            [this](Time dt) { onUpdate(dt); });
     mRenderSub =
         ServiceSystem::Get<RenderService, RenderObservable>()->subscribe(
             [this](SDL_Renderer* r) { onRender(r); }, mPos);

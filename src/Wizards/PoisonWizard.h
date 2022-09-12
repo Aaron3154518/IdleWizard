@@ -1,6 +1,7 @@
 #ifndef POISON_WIZARD_H
 #define POISON_WIZARD_H
 
+#include <Components/Fireballs/Glob.h>
 #include <Components/Fireballs/PoisonFireball.h>
 #include <Components/Upgrade.h>
 #include <RenderSystem/AssetManager.h>
@@ -47,6 +48,7 @@ class PoisonWizard : public WizardBase {
     WizardSystem::WizardEventObservable::IdSubscriptionPtr mT1ResetSub;
 
     std::vector<PoisonFireballPtr> mFireballs;
+    std::vector<GlobPtr> mGlobs;
 };
 
 #endif

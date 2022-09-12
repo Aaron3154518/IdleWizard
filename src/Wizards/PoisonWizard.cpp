@@ -90,12 +90,19 @@ void PoisonWizard::setParamTriggers() {
 void PoisonWizard::onRender(SDL_Renderer* r) {
     WizardBase::onRender(r);
 
-    for (auto it = mFireballs.begin(); it != mFireballs.end(); ++it) {
+    for (auto it = mFireballs.begin(); it != mFireballs.end();) {
         if ((*it)->dead()) {
             it = mFireballs.erase(it);
-            if (it == mFireballs.end()) {
-                break;
-            }
+        } else {
+            ++it;
+        }
+    }
+
+    for (auto it = mGlobs.begin(); it != mGlobs.end();) {
+        if ((*it)->dead()) {
+            it = mGlobs.erase(it);
+        } else {
+            ++it;
         }
     }
 }
@@ -137,6 +144,13 @@ void PoisonWizard::shootFireball() {
         : rand < 2 ? CATALYST
                    : ROBOT_WIZARD,
         data));
+
+    for (int i = 0; i < 25; i++) {
+        float theta = rDist(gen) * 2 * M_PI;
+        mGlobs.push_back(ComponentFactory<Glob>::New(
+            mPos->rect.getPos(Rect::Align::CENTER),
+            SDL_FPoint{cosf(theta) * 500, sinf(theta) * 500}));
+    }
 }
 
 PoisonFireball::Data PoisonWizard::newFireballData() {

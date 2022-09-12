@@ -220,12 +220,11 @@ void Wizard::onRender(SDL_Renderer* r) {
 
     WizardBase::onRender(r);
 
-    for (auto it = mFireballs.begin(); it != mFireballs.end(); ++it) {
+    for (auto it = mFireballs.begin(); it != mFireballs.end();) {
         if ((*it)->dead()) {
             it = mFireballs.erase(it);
-            if (it == mFireballs.end()) {
-                break;
-            }
+        } else {
+            ++it;
         }
     }
 }

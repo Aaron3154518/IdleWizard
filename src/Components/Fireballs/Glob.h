@@ -29,9 +29,7 @@ class Glob : public Component {
        public:
         enum : uint8_t { FUNC = 0, DATA };
 
-        enum Side : uint8_t { NONE = 0, LEFT, RIGHT, TOP, BOTTOM };
-
-        Side next(const Rect& rect);
+        Rect next(const Rect& rect);
     };
 
     static std::shared_ptr<HitObservable> GetHitObservable();
@@ -47,16 +45,16 @@ class Glob : public Component {
     const static AnimationData IMG;
 
    protected:
-    virtual void init();
+    void init();
 
-    virtual void onUpdate(Time dt);
+    void onUpdate(Time dt);
     void onResize(ResizeData data);
-    virtual void onRender(SDL_Renderer* renderer);
+    void onRender(SDL_Renderer* renderer);
 
-    virtual void onDeath();
+    void onDeath();
 
     bool mDead = false;
-    int mBncCnt = 10;
+    int mBncCnt = 3;
     SDL_FPoint mV{0, 0};
     UIComponentPtr mPos;
 

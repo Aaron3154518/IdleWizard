@@ -1,19 +1,19 @@
 #include "Glob.h"
 
 // HitObservable
-Glob::HitObservable::Side Glob::HitObservable::next(const Rect& rect) {
+Rect Glob::HitObservable::next(const Rect& rect) {
     for (auto sub : *this) {
         auto& pos = sub->get<DATA>();
         if (pos->visible) {
             SDL_Rect r;
             if (SDL_IntersectRect(pos->rect, rect, &r)) {
                 sub->get<FUNC>()();
-                return Side::LEFT;
+                return pos->rect;
             }
         }
     }
 
-    return Side::NONE;
+    return Rect();
 }
 
 std::shared_ptr<Glob::HitObservable> Glob::GetHitObservable() {
@@ -82,20 +82,40 @@ void Glob::onUpdate(Time dt) {
         mV.y *= -1;
     }
 
-    HitObservable::Side side = GetHitObservable()->next(mPos->rect);
+    Rect rect = GetHitObservable()->next(imgD);
+    if (!rect.empty()) {
+        if (--mBncCnt <= 0) {
+            onDeath();
+            mDead = true;
+            mResizeSub.reset();
+            mRenderSub.reset();
+            mUpdateSub.reset();
+            return;
+        }
 
-    if (side != HitObservable::Side::NONE) {
-        onDeath();
-        mDead = true;
-        mResizeSub.reset();
-        mRenderSub.reset();
-        mUpdateSub.reset();
-    } else {
-        Rect imgR = mImg.getRect();
-        imgR.setPos(imgD, Rect::Align::CENTER);
-        mImg.setDest(imgR);
-        mPos->rect = mImg.getDest();
+        if (imgD.cX() > rect.x() && imgD.cX() < rect.x2()) {
+            if (imgD.cY() < rect.cY()) {
+                imgD.setPosY(rect.y(), Rect::Align::BOT_RIGHT);
+                mV.y *= -1;
+            } else {
+                imgD.setPosY(rect.y2(), Rect::Align::TOP_LEFT);
+                mV.y *= -1;
+            }
+        } else {
+            if (imgD.cX() < rect.cX()) {
+                imgD.setPosX(rect.x(), Rect::Align::BOT_RIGHT);
+                mV.x *= -1;
+            } else {
+                imgD.setPosX(rect.x2(), Rect::Align::TOP_LEFT);
+                mV.x *= -1;
+            }
+        }
     }
+
+    Rect imgR = mImg.getRect();
+    imgR.setPos(imgD, Rect::Align::CENTER);
+    mImg.setDest(imgR);
+    mPos->rect = mImg.getDest();
 }
 
 void Glob::onRender(SDL_Renderer* renderer) { TextureBuilder().draw(mImg); }

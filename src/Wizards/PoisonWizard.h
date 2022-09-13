@@ -32,6 +32,7 @@ class PoisonWizard : public WizardBase {
     void setParamTriggers();
 
     void onRender(SDL_Renderer* r);
+    void onHide(bool hide);
     bool onFireballTimer(Timer& t);
     void onT1Reset();
 

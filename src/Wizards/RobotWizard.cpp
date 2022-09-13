@@ -81,6 +81,7 @@ void RobotWizard::setSubscriptions() {
 
     attachSubToVisibility(mPowFireballHitSub);
     attachSubToVisibility(mMoveUpdateSub);
+    attachSubToVisibility(mUpTimerSub);
 }
 void RobotWizard::setUpgrades() {
     ParameterSystem::Params<POISON_WIZARD> params;
@@ -244,6 +245,15 @@ void RobotWizard::onResize(ResizeData data) {
 
     mTargetPos = {mTargetPos.x * data.newW / data.oldW,
                   mTargetPos.y * data.newH / data.oldH};
+}
+void RobotWizard::onHide(bool hide) {
+    WizardBase::onHide(hide);
+
+    if (hide) {
+        mWaitSub.reset();
+    } else {
+        // mUpTimerSub->setActive(false);
+    }
 }
 void RobotWizard::onPowFireballHit(const PowerWizFireball& fireball) {
     WizardId target = fireball.getTargetId();

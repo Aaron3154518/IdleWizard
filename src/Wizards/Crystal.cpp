@@ -69,6 +69,8 @@ void Crystal::setSubscriptions() {
         [this]() { onT1Reset(); }, WizardSystem::Event::ResetT1);
     attachSubToVisibility(mWizFireballHitSub);
     attachSubToVisibility(mPowFireballHitSub);
+    attachSubToVisibility(mPoisFireballHitSub);
+    attachSubToVisibility(mPoisonEffectTimerSub);
 }
 void Crystal::setUpgrades() {
     ParameterSystem::Params<CRYSTAL> params;

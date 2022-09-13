@@ -54,6 +54,7 @@ class RobotWizard : public WizardBase {
     bool onUpgradeTimer(Timer& t);
     void onRender(SDL_Renderer* r);
     void onResize(ResizeData data);
+    void onHide(bool hide);
     void onPowFireballHit(const PowerWizFireball& fireball);
 
     void upgradeTarget();

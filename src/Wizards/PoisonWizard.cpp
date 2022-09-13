@@ -24,6 +24,7 @@ void PoisonWizard::setSubscriptions() {
         PoisonWizardDefs::IMG);
     mT1ResetSub = WizardSystem::GetWizardEventObservable()->subscribe(
         [this]() { onT1Reset(); }, WizardSystem::Event::ResetT1);
+    attachSubToVisibility(mFireballTimerSub);
 }
 void PoisonWizard::setUpgrades() {
     ParameterSystem::Params<POISON_WIZARD> params;
@@ -105,6 +106,12 @@ void PoisonWizard::onRender(SDL_Renderer* r) {
             ++it;
         }
     }
+}
+void PoisonWizard::onHide(bool hide) {
+    WizardBase::onHide(hide);
+
+    mFireballs.clear();
+    mGlobs.clear();
 }
 bool PoisonWizard::onFireballTimer(Timer& t) {
     shootFireball();

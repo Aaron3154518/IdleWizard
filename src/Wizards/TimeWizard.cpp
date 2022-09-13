@@ -39,6 +39,8 @@ void TimeWizard::setSubscriptions() {
     mGlobHitSub =
         Glob::GetHitObservable()->subscribe([this]() { onGlobHit(); }, mPos);
     attachSubToVisibility(mCostTimerSub);
+    attachSubToVisibility(mPowFireballHitSub);
+    attachSubToVisibility(mGlobHitSub);
 }
 void TimeWizard::setUpgrades() {
     ParameterSystem::Params<TIME_WIZARD> params;

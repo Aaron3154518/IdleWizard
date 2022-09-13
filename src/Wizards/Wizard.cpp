@@ -42,6 +42,8 @@ void Wizard::setSubscriptions() {
         Glob::GetHitObservable()->subscribe([this]() { onGlobHit(); }, mPos);
     attachSubToVisibility(mFireballTimerSub);
     attachSubToVisibility(mPowFireballHitSub);
+    attachSubToVisibility(mTimeWarpSub);
+    attachSubToVisibility(mGlobHitSub);
 }
 void Wizard::setUpgrades() {
     ParameterSystem::Params<WIZARD> params;
@@ -233,6 +235,7 @@ void Wizard::onRender(SDL_Renderer* r) {
 
 void Wizard::onHide(bool hide) {
     WizardBase::onHide(hide);
+
     mFireballs.clear();
 }
 

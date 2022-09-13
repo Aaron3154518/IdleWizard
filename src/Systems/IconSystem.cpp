@@ -1,6 +1,7 @@
 #include "IconSystem.h"
 
 namespace IconSystem {
+// AnimationSet
 RenderTextureCPtr AnimationSet::operator[](const AnimationData& data) {
     if (!mTimerSub) {
         mTimerSub =
@@ -21,19 +22,25 @@ RenderTextureCPtr AnimationSet::operator[](const AnimationData& data) {
     return rData;
 }
 
-RenderTextureCPtr Get(const AnimationData& data) {
-    static std::unordered_map<int, AnimationSet> ANIMS;
-
-    return ANIMS[data.frame_ms][data];
+// AnimationManager
+RenderTextureCPtr AnimationManager::operator[](const AnimationData& data) {
+    return mAnims[data.frame_ms][data];
 }
-
-RenderTextureCPtr Get(const std::string& file) {
-    static std::unordered_map<std::string, RenderTexturePtr> IMGS;
-
-    auto& rData = IMGS[file];
+RenderTextureCPtr AnimationManager::operator[](const std::string& file) {
+    auto& rData = mImgs[file];
     if (!rData) {
         rData = std::make_shared<RenderTexture>(file);
     }
     return rData;
 }
+
+AnimationManager& Get() {
+    static AnimationManager ANIM_MANAGER;
+
+    return ANIM_MANAGER;
+}
+
+RenderTextureCPtr Get(const AnimationData& data) { return Get()[data]; }
+
+RenderTextureCPtr Get(const std::string& file) { return Get()[file]; }
 }  // namespace IconSystem

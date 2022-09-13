@@ -16,6 +16,17 @@ class AnimationSet {
     TimerObservable::SubscriptionPtr mTimerSub;
 };
 
+class AnimationManager {
+   public:
+    RenderTextureCPtr operator[](const AnimationData& data);
+    RenderTextureCPtr operator[](const std::string& file);
+
+   private:
+    std::unordered_map<int, AnimationSet> mAnims;
+    std::unordered_map<std::string, RenderTexturePtr> mImgs;
+};
+
+AnimationManager& Get();
 RenderTextureCPtr Get(const AnimationData& data);
 RenderTextureCPtr Get(const std::string& file);
 }  // namespace IconSystem

@@ -51,8 +51,8 @@ class PoisonFireball : public Fireball {
    private:
     void init();
 
-    void onUpdate(Time dt);
-    void onRender(SDL_Renderer* renderer);
+    bool onUpdate(Time dt);
+    void onRender(TextureBuilder& tex);
 
     void onDeath();
 

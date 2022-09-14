@@ -72,8 +72,8 @@ void RobotWizard::setSubscriptions() {
                 return true;
             },
             RobotWizardDefs::IMG);
-    mPowFireballHitSub = PowerWizFireball::GetHitObservable()->subscribe(
-        [this](const PowerWizFireball& f) { onPowFireballHit(f); }, mId);
+    mPowFireballHitSub = PowerFireball::GetHitObservable()->subscribe(
+        [this](const PowerFireball& f) { onPowFireballHit(f); }, mId);
     mMoveUpdateSub = TimeSystem::GetUpdateObservable()->subscribe(
         [this](Time dt) { onMoveUpdate(dt); });
     mUpTimerSub = TimeSystem::GetTimerObservable()->subscribe(
@@ -118,7 +118,7 @@ void RobotWizard::setParamTriggers() {
                 SDL_FPoint p{
                     pos.cX() - (mPos->rect.w() * (rDist(gen) * .5f + .5f)),
                     pos.cY() + (mPos->rect.h() * (rDist(gen) * 1.f - .5f))};
-                mFireballs.push_back(ComponentFactory<PowerWizFireball>::New(
+                mFireballs->push_back(ComponentFactory<PowerFireball>::New(
                     p, target, it->second));
                 mStoredFireballs.erase(it);
 
@@ -231,10 +231,10 @@ void RobotWizard::onRender(SDL_Renderer* r) {
         }
     }
 
-    for (auto it = mFireballs.begin(); it != mFireballs.end(); ++it) {
+    for (auto it = mFireballs->begin(); it != mFireballs->end(); ++it) {
         if ((*it)->dead()) {
-            it = mFireballs.erase(it);
-            if (it == mFireballs.end()) {
+            it = mFireballs->erase(it);
+            if (it == mFireballs->end()) {
                 break;
             }
         }
@@ -255,7 +255,7 @@ void RobotWizard::onHide(bool hide) {
         // mUpTimerSub->setActive(false);
     }
 }
-void RobotWizard::onPowFireballHit(const PowerWizFireball& fireball) {
+void RobotWizard::onPowFireballHit(const PowerFireball& fireball) {
     WizardId target = fireball.getTargetId();
 
     auto it = mStoredFireballs.find(target);

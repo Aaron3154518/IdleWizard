@@ -4,23 +4,10 @@
 #include <Components/CatalystRing.h>
 #include <Components/FireRing.h>
 #include <Components/Fireballs/Fireball.h>
-#include <ServiceSystem/Observable.h>
-#include <ServiceSystem/Service.h>
-#include <ServiceSystem/ServiceSystem.h>
-#include <Systems/TargetSystem.h>
-#include <Utils/Number.h>
 #include <Wizards/Definitions/WizardDefs.h>
-
-#include <memory>
 
 class WizardFireball : public Fireball {
    public:
-    struct Data {
-        Number power;
-        float sizeFactor = 1, speed = 1;
-        bool boosted = false;
-    };
-
     typedef TargetSystem::TargetObservable<WizardId, const WizardFireball&>
         HitObservable;
 
@@ -29,6 +16,12 @@ class WizardFireball : public Fireball {
     static std::shared_ptr<HitObservable> GetHitObservable();
 
    public:
+    struct Data {
+        Number power;
+        float sizeFactor = 1, speed = 1;
+        bool boosted = false;
+    };
+
     WizardFireball(SDL_FPoint c, WizardId target, const Data& data);
 
     const Number& getPower() const;
@@ -41,15 +34,15 @@ class WizardFireball : public Fireball {
    private:
     void init();
 
+    void onDeath();
     void onFireRingHit(const Number& effect);
     void onCatalystHit(const Number& effect);
 
-    void onDeath();
+    Number mPower;
 
     bool mHitFireRing = false, mPowerWizBoosted = false;
 
     float mSizeSum;
-    Number mPower;
 
     FireRing::HitObservable::SubscriptionPtr mFireRingSub;
     CatalystRing::HitObservable::SubscriptionPtr mCatalystHitSub;

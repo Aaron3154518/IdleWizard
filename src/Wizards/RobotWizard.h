@@ -1,7 +1,7 @@
 #ifndef ROBOT_WIZARD_H
 #define ROBOT_WIZARD_H
 
-#include <Components/Fireballs/PowerWizFireball.h>
+#include <Components/Fireballs/PowerFireball.h>
 #include <Components/Upgrade.h>
 #include <RenderSystem/AssetManager.h>
 #include <RenderSystem/RenderTypes.h>
@@ -55,7 +55,7 @@ class RobotWizard : public WizardBase {
     void onRender(SDL_Renderer* r);
     void onResize(ResizeData data);
     void onHide(bool hide);
-    void onPowFireballHit(const PowerWizFireball& fireball);
+    void onPowFireballHit(const PowerFireball& fireball);
 
     void upgradeTarget();
 
@@ -66,11 +66,11 @@ class RobotWizard : public WizardBase {
     RenderAnimation mTpImg;
     std::unordered_map<WizardId, Portals> mPortals;
 
-    std::unordered_map<WizardId, PowerWizFireball::Data> mStoredFireballs;
-    std::vector<PowerWizFireballPtr> mFireballs;
+    std::unordered_map<WizardId, PowerFireball::Data> mStoredFireballs;
+    std::vector<PowerFireballPtr> mFireballs;
 
     TimerObservable::SubscriptionPtr mAnimTimerSub, mWaitSub;
-    PowerWizFireball::HitObservable::IdSubscriptionPtr mPowFireballHitSub;
+    PowerFireball::HitObservable::IdSubscriptionPtr mPowFireballHitSub;
     TimeSystem::UpdateObservable::SubscriptionPtr mMoveUpdateSub;
     TimeSystem::TimerObservable::SubscriptionPtr mUpTimerSub;
     UpgradeList::SubscriptionPtr mTODO;

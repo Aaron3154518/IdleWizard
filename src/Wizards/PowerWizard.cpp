@@ -173,34 +173,24 @@ void PowerWizard::setParamTriggers() {
         }));
 }
 
-void PowerWizard::onRender(SDL_Renderer* r) {
-    WizardBase::onRender(r);
-
-    for (auto it = mFireballs.begin(); it != mFireballs.end();) {
-        if ((*it)->dead()) {
-            it = mFireballs.erase(it);
-        } else {
-            ++it;
-        }
-    }
-}
+void PowerWizard::onRender(SDL_Renderer* r) { WizardBase::onRender(r); }
 
 void PowerWizard::onHide(bool hide) {
     WizardBase::onHide(hide);
-    mFireballs.clear();
+    mFireballs->clear();
 }
 
 void PowerWizard::onTargetHide(WizardId id, bool hide) {
     if (hide) {
-        std::remove_if(mFireballs.begin(), mFireballs.end(),
-                       [id](const PowerWizFireballPtr& ball) {
+        std::remove_if(mFireballs->begin(), mFireballs->end(),
+                       [id](const PowerFireballPtr& ball) {
                            return ball->getTargetId() == id;
                        });
     }
 }
 
 void PowerWizard::onT1Reset() {
-    mFireballs.clear();
+    mFireballs->clear();
 
     if (mFireballTimerSub) {
         mFireballTimerSub->get<TimerObservable::DATA>().reset();
@@ -218,7 +208,7 @@ void PowerWizard::onTimeFreeze(bool frozen) {
             ParameterSystem::Param<TIME_WIZARD>(TimeWizardParams::FreezeEffect)
                 .get();
         mFreezeFireball->applyTimeEffect(freezeEffect);
-        mFireballs.push_back(std::move(mFreezeFireball));
+        mFireballs->push_back(std::move(mFreezeFireball));
     }
 }
 
@@ -227,11 +217,11 @@ void PowerWizard::shootFireball() {
     auto data = newFireballData(target);
 
     if (!ParameterSystem::Param(State::TimeWizFrozen).get()) {
-        mFireballs.push_back(std::move(ComponentFactory<PowerWizFireball>::New(
+        mFireballs->push_back(std::move(ComponentFactory<PowerFireball>::New(
             SDL_FPoint{mPos->rect.cX(), mPos->rect.cY()}, target, data)));
     } else {
         if (!mFreezeFireball) {
-            mFreezeFireball = std::move(ComponentFactory<PowerWizFireball>::New(
+            mFreezeFireball = std::move(ComponentFactory<PowerFireball>::New(
                 SDL_FPoint{mPos->rect.cX(), mPos->rect.cY()}, target, data));
         } else {
             mFreezeFireball->addFireball(data);
@@ -240,10 +230,10 @@ void PowerWizard::shootFireball() {
 }
 
 void PowerWizard::shootFireball(SDL_FPoint target) {
-    size_t size = mFireballs.size();
+    size_t size = mFireballs->size();
     shootFireball();
-    if (size != mFireballs.size()) {
-        mFireballs.back()->launch(target);
+    if (size != mFireballs->size()) {
+        mFireballs->back()->launch(target);
     }
 }
 
@@ -281,11 +271,11 @@ WizardId PowerWizard::getTarget() {
     return CRYSTAL;
 }
 
-PowerWizFireball::Data PowerWizard::newFireballData(WizardId target) {
+PowerFireball::Data PowerWizard::newFireballData(WizardId target) {
     ParameterSystem::Params<POWER_WIZARD> params;
     Number speedEffect = params[PowerWizardParams::FBSpeedEffect].get();
 
-    PowerWizFireball::Data data;
+    PowerFireball::Data data;
     switch (target) {
         case WIZARD:
             data.duration = params[PowerWizardParams::Duration].get();

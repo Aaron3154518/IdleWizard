@@ -31,10 +31,8 @@ void TimeWizard::setSubscriptions() {
             TimeWizardDefs::IMG);
     mT1ResetSub = WizardSystem::GetWizardEventObservable()->subscribe(
         [this]() { onT1Reset(); }, WizardSystem::Event::ResetT1);
-    mPowFireballHitSub = PowerWizFireball::GetHitObservable()->subscribe(
-        [this](const PowerWizFireball& fireball) {
-            onPowFireballHit(fireball);
-        },
+    mPowFireballHitSub = PowerFireball::GetHitObservable()->subscribe(
+        [this](const PowerFireball& fireball) { onPowFireballHit(fireball); },
         mId);
     mGlobHitSub =
         Glob::GetHitObservable()->subscribe([this]() { onGlobHit(); }, mPos);
@@ -313,7 +311,7 @@ void TimeWizard::onFreezeChange(bool frozen) {
     updateImg();
 }
 
-void TimeWizard::onPowFireballHit(const PowerWizFireball& fireball) {
+void TimeWizard::onPowFireballHit(const PowerFireball& fireball) {
     ParameterSystem::Params<TIME_WIZARD> params;
     params[TimeWizardParams::TimeWarpEffect].set(fireball.getPower());
     WizardSystem::GetWizardEventObservable()->next(

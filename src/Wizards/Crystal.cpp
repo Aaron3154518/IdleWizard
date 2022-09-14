@@ -41,8 +41,8 @@ void Crystal::init() {
 void Crystal::setSubscriptions() {
     mWizFireballHitSub = WizardFireball::GetHitObservable()->subscribe(
         [this](const WizardFireball& f) { onWizFireballHit(f); }, mId);
-    mPowFireballHitSub = PowerWizFireball::GetHitObservable()->subscribe(
-        [this](const PowerWizFireball& f) { onPowFireballHit(f); }, mId);
+    mPowFireballHitSub = PowerFireball::GetHitObservable()->subscribe(
+        [this](const PowerFireball& f) { onPowFireballHit(f); }, mId);
     mPoisFireballHitSub = PoisonFireball::GetHitObservable()->subscribe(
         [this](const PoisonFireball& f) { onPoisFireballHit(f); }, mId);
     mAnimTimerSub = TimeSystem::GetTimerObservable()->subscribe(
@@ -331,7 +331,7 @@ void Crystal::onWizFireballHit(const WizardFireball& fireball) {
     }
 }
 
-void Crystal::onPowFireballHit(const PowerWizFireball& fireball) {
+void Crystal::onPowFireballHit(const PowerFireball& fireball) {
     createFireRing(fireball.getPower());
     ParameterSystem::States states;
     if (states[State::BoughtCrysGlowUp].get()) {

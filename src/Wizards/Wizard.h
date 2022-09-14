@@ -2,7 +2,7 @@
 #define WIZARD_H
 
 #include <Components/Fireballs/Glob.h>
-#include <Components/Fireballs/PowerWizFireball.h>
+#include <Components/Fireballs/PowerFireball.h>
 #include <Components/Fireballs/WizardFireball.h>
 #include <Components/Upgrade.h>
 #include <RenderSystem/AssetManager.h>
@@ -44,7 +44,7 @@ class Wizard : public WizardBase {
     void onTargetHide(WizardId id, bool hide);
     void onT1Reset();
     bool onTimer(Timer& timer);
-    void onPowFireballHit(const PowerWizFireball& fireball);
+    void onPowFireballHit(const PowerFireball& fireball);
     void onGlobHit();
     bool onPowWizTimer(Timer& timer);
     void onPowWizTimerUpdate(Time dt, Timer& timer);
@@ -71,7 +71,7 @@ class Wizard : public WizardBase {
     TimerObservable::SubscriptionPtr mFireballTimerSub;
     TimeSystem::TimerObservable::SubscriptionPtr mPowWizTimerSub, mAnimTimerSub,
         mPowBkAnimTimerSub;
-    PowerWizFireball::HitObservable::IdSubscriptionPtr mPowFireballHitSub;
+    PowerFireball::HitObservable::IdSubscriptionPtr mPowFireballHitSub;
     WizardSystem::HideObservable::AllSubscriptionPtr mTargetHideSub;
     WizardSystem::WizardEventObservable::IdSubscriptionPtr mT1ResetSub,
         mTimeWarpSub;
@@ -85,7 +85,7 @@ class Wizard : public WizardBase {
     WizardId mTarget = CRYSTAL;
 
     WizardFireballPtr mFreezeFireball;
-    std::vector<WizardFireballPtr> mFireballs;
+    FireballListPtr mFireballs;
 };
 
 #endif

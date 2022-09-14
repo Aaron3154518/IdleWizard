@@ -91,14 +91,6 @@ void PoisonWizard::setParamTriggers() {
 void PoisonWizard::onRender(SDL_Renderer* r) {
     WizardBase::onRender(r);
 
-    for (auto it = mFireballs.begin(); it != mFireballs.end();) {
-        if ((*it)->dead()) {
-            it = mFireballs.erase(it);
-        } else {
-            ++it;
-        }
-    }
-
     for (auto it = mGlobs.begin(); it != mGlobs.end();) {
         if ((*it)->dead()) {
             it = mGlobs.erase(it);
@@ -110,7 +102,7 @@ void PoisonWizard::onRender(SDL_Renderer* r) {
 void PoisonWizard::onHide(bool hide) {
     WizardBase::onHide(hide);
 
-    mFireballs.clear();
+    mFireballs->clear();
     mGlobs.clear();
 }
 bool PoisonWizard::onFireballTimer(Timer& t) {
@@ -118,7 +110,7 @@ bool PoisonWizard::onFireballTimer(Timer& t) {
     return true;
 }
 void PoisonWizard::onT1Reset() {
-    mFireballs.clear();
+    mFireballs->clear();
 
     if (mFireballTimerSub) {
         mFireballTimerSub->get<TimerObservable::DATA>().reset();
@@ -145,7 +137,7 @@ void PoisonWizard::calcTimer() {
 void PoisonWizard::shootFireball() {
     auto data = newFireballData();
     float rand = rDist(gen) * 3;
-    mFireballs.push_back(ComponentFactory<PoisonFireball>::New(
+    mFireballs->push_back(ComponentFactory<PoisonFireball>::New(
         SDL_FPoint{mPos->rect.cX(), mPos->rect.cY()},
         rand < 3   ? CRYSTAL
         : rand < 2 ? CATALYST

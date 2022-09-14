@@ -7,7 +7,7 @@ PoisonFireball::GetHitObservable() {
 }
 
 PoisonFireball::PoisonFireball(SDL_FPoint c, WizardId target, const Data& data)
-    : Fireball(c, target, PoisonWizardDefs::GLOB_IMG, data.speed),
+    : Fireball(c, target, data.speed, PoisonWizardDefs::GLOB_IMG),
       mSizeSum(data.sizeFactor),
       mPower(data.power),
       mDuration(data.duration) {
@@ -23,7 +23,7 @@ void PoisonFireball::init() {
     mGlobHitSub.reset();
 }
 
-void PoisonFireball::onUpdate(Time dt) {
+bool PoisonFireball::onUpdate(Time dt) {
     for (auto it = mBubbles.begin(); it != mBubbles.end();) {
         it->timer -= dt.ms();
         if (it->timer <= 0) {
@@ -46,11 +46,9 @@ void PoisonFireball::onUpdate(Time dt) {
                             (int)(rDist(gen) * 750 + 250)});
     }
 
-    Fireball::onUpdate(dt);
+    return Fireball::onUpdate(dt);
 }
-void PoisonFireball::onRender(SDL_Renderer* renderer) {
-    TextureBuilder tex;
-
+void PoisonFireball::onRender(TextureBuilder& tex) {
     for (auto& bubble : mBubbles) {
         switch (bubble.type) {
             case BubbleType::A:
@@ -64,7 +62,7 @@ void PoisonFireball::onRender(SDL_Renderer* renderer) {
         }
     }
 
-    Fireball::onRender(renderer);
+    Fireball::onRender(tex);
 }
 
 void PoisonFireball::onDeath() {

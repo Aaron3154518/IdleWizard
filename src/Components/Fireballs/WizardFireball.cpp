@@ -7,9 +7,8 @@ WizardFireball::GetHitObservable() {
 }
 
 WizardFireball::WizardFireball(SDL_FPoint c, WizardId target, const Data& data)
-    : Fireball(c, target,
-               data.boosted ? WizardDefs::FB_POW_IMG : WizardDefs::FB_IMG,
-               data.speed),
+    : Fireball(c, target, data.speed,
+               data.boosted ? WizardDefs::FB_POW_IMG : WizardDefs::FB_IMG),
       mSizeSum(data.sizeFactor),
       mPower(data.power),
       mPowerWizBoosted(data.boosted) {
@@ -60,7 +59,8 @@ void WizardFireball::addFireball(const Data& data) {
 
     if (data.boosted && !mPowerWizBoosted) {
         mPowerWizBoosted = true;
-        mImg.set(WizardDefs::FB_POW_IMG);
+        mFireRingSub.reset();
+        mImg.set(IconSystem::Get(WizardDefs::FB_POW_IMG));
     }
 }
 

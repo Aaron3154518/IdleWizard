@@ -13,15 +13,9 @@
 
 #include <memory>
 
-class PowerWizFireball : public Fireball {
+class PowerFireball : public Fireball {
    public:
-    struct Data {
-        Number power, duration;
-        float sizeFactor = 1, speed = .65;
-        WizardId src = POWER_WIZARD;
-    };
-
-    typedef TargetSystem::TargetObservable<WizardId, const PowerWizFireball&>
+    typedef TargetSystem::TargetObservable<WizardId, const PowerFireball&>
         HitObservable;
 
     class Service : public ::Service<HitObservable> {};
@@ -31,7 +25,13 @@ class PowerWizFireball : public Fireball {
     static RenderTextureCPtr GetIcon();
 
    public:
-    PowerWizFireball(SDL_FPoint c, WizardId target, const Data& data);
+    struct Data {
+        Number power, duration;
+        float sizeFactor = 1, speed = .65;
+        WizardId src = POWER_WIZARD;
+    };
+
+    PowerFireball(SDL_FPoint c, WizardId target, const Data& data);
 
     Data getData() const;
 
@@ -52,7 +52,7 @@ class PowerWizFireball : public Fireball {
 
     void onDeath();
 
-    WizardId mSrc;
+    WizardId mSrc, mTarget;
     int mFireballFreezeCnt = 1;
     float mSizeSum;
     Number mPower, mDuration;
@@ -60,6 +60,6 @@ class PowerWizFireball : public Fireball {
     ParameterSystem::ParameterSubscriptionPtr mRobotBoughtSub;
 };
 
-typedef std::unique_ptr<PowerWizFireball> PowerWizFireballPtr;
+typedef std::unique_ptr<PowerFireball> PowerFireballPtr;
 
 #endif

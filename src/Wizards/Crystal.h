@@ -3,7 +3,7 @@
 
 #include <Components/FireRing.h>
 #include <Components/Fireballs/PoisonFireball.h>
-#include <Components/Fireballs/PowerWizFireball.h>
+#include <Components/Fireballs/PowerFireball.h>
 #include <Components/Fireballs/WizardFireball.h>
 #include <Components/FractureButton.h>
 #include <Components/Upgrade.h>
@@ -49,7 +49,7 @@ class Crystal : public WizardBase {
     void onHide(bool hide);
     void onT1Reset();
     void onWizFireballHit(const WizardFireball& fireball);
-    void onPowFireballHit(const PowerWizFireball& fireball);
+    void onPowFireballHit(const PowerFireball& fireball);
     void onPoisFireballHit(const PoisonFireball& fireball);
     bool onGlowTimer(Timer& t);
     bool onGlowFinishTimer(Timer& t, const Number& magic);
@@ -74,7 +74,7 @@ class Crystal : public WizardBase {
         mGlowFinishTimerSub, mGlowAnimTimerSub, mPoisonTimerSub,
         mPoisonEffectTimerSub;
     WizardFireball::HitObservable::IdSubscriptionPtr mWizFireballHitSub;
-    PowerWizFireball::HitObservable::IdSubscriptionPtr mPowFireballHitSub;
+    PowerFireball::HitObservable::IdSubscriptionPtr mPowFireballHitSub;
     PoisonFireball::HitObservable::IdSubscriptionPtr mPoisFireballHitSub;
     WizardSystem::WizardEventObservable::IdSubscriptionPtr mT1ResetSub;
     UpgradeList::SubscriptionPtr mMagicEffectDisplay, mWizCntUp, mGlowUp,

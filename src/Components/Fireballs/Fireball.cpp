@@ -1,57 +1,83 @@
 #include "Fireball.h"
 
 // Fireball
-const int Fireball::COLLIDE_ERR = 10;
-const int Fireball::MAX_SPEED = 150;
+const int Fireball::COLLIDE_ERR = 10, Fireball::MAX_SPEED = 150;
 
 const Rect Fireball::IMG_RECT(0, 0, 40, 40);
 
 constexpr int FIREBALL_BASE_ROT_DEG = -45;
 
-Fireball::Fireball(SDL_FPoint c, WizardId target, const std::string& img,
-                   float maxSpeedMult)
-    : Fireball(c, target, AnimationData{img}, maxSpeedMult) {}
-Fireball::Fireball(SDL_FPoint c, WizardId target, const AnimationData& img,
-                   float maxSpeedMult)
+Fireball::Fireball(SDL_FPoint c, WizardId target, float maxSpeedMult,
+                   const std::string& img)
+    : Fireball(c, target, maxSpeedMult, {img}) {}
+Fireball::Fireball(SDL_FPoint c, WizardId target, float maxSpeedMult,
+                   const AnimationData& img)
     : mPos(std::make_shared<UIComponent>(Rect(), Elevation::PROJECTILES)),
       mTargetId(target),
-      mImgAnim(img),
       mMaxSpeed(MAX_SPEED * maxSpeedMult) {
+    mImg.set(IconSystem::Get(img));
     Rect imgR = IMG_RECT;
     imgR.setPos(c.x, c.y, Rect::Align::CENTER);
-    mImg.set(img);
     mImg.setDest(imgR);
+    mPos->rect = mImg.getDest();
     setSize(1);
 }
 
 void Fireball::init() {
-    mResizeSub =
-        ServiceSystem::Get<ResizeService, ResizeObservable>()->subscribe(
-            [this](ResizeData d) { onResize(d); });
-    mUpdateSub = TimeSystem::GetUpdateObservable()->subscribe(
-        [this](Time dt) { onUpdate(dt); });
-    mRenderSub =
-        ServiceSystem::Get<RenderService, RenderObservable>()->subscribe(
-            [this](SDL_Renderer* r) { onRender(r); }, mPos);
-    mTargetSub = WizardSystem::GetWizardPosObservable()->subscribe(
-        [this](const Rect& r) { mTargetPos = r.getPos(Rect::Align::CENTER); },
-        mTargetId);
-    mGlobHitSub =
-        Glob::GetHitObservable()->subscribe([this]() { onGlobHit(); }, mPos);
-    if (mImgAnim.num_frames > 1) {
-        mAnimTimerSub =
-            ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
-                [this](Timer& t) {
-                    mImg->nextFrame();
-                    return true;
-                },
-                mImgAnim);
-    }
-
-    launch(mTargetPos);
+    launch(WizardSystem::GetWizardPos(mTargetId).getPos(Rect::Align::CENTER));
 }
 
-bool Fireball::dead() const { return mDead; }
+bool Fireball::onUpdate(Time dt) {
+    float sec = dt.s();
+    float aCoeff = sec * sec / 2;
+
+    SDL_FPoint target =
+        WizardSystem::GetWizardPos(mTargetId).getPos(Rect::Align::CENTER);
+    float dx = target.x - mPos->rect.cX(), dy = target.y - mPos->rect.cY();
+    float d = sqrtf(dx * dx + dy * dy);
+
+    // Check in case we were moved onto the target
+    if (d < COLLIDE_ERR) {
+        onDeath();
+        return false;
+    }
+
+    d = fminf(d / 2, mMaxSpeed);
+    float v_squared =
+        fmaxf(mV.x * mV.x + mV.y * mV.y, mMaxSpeed * mMaxSpeed / 4);
+    float frac = v_squared / (d * d);
+    mA.x = dx * frac;
+    mA.y = dy * frac;
+
+    float moveX = mV.x * sec + mA.x * aCoeff,
+          moveY = mV.y * sec + mA.y * aCoeff;
+    mV.x += mA.x * sec;
+    mV.y += mA.y * sec;
+
+    // Cap speed
+    float mag = sqrtf(mV.x * mV.x + mV.y * mV.y);
+    if (mag > mMaxSpeed) {
+        frac = mMaxSpeed / mag;
+        mV.x *= frac;
+        mV.y *= frac;
+    }
+
+    float theta = 0;
+    if (moveX != 0) {
+        theta = atanf(moveY / moveX) / DEG_TO_RAD;
+        if (moveX < 0) {
+            theta += 180;
+        }
+    }
+    theta += FIREBALL_BASE_ROT_DEG;
+
+    mImg.setRotationRad(theta);
+    mPos->rect.move(moveX, moveY);
+
+    return true;
+}
+void Fireball::onRender(TextureBuilder& tex) { tex.draw(mImg); }
+void Fireball::onDeath() {}
 
 void Fireball::launch(SDL_FPoint target) {
     // Start at half max speed
@@ -65,7 +91,8 @@ float Fireball::getSize() const { return mSize; }
 void Fireball::setSize(float size) {
     mSize = fminf(fmaxf(size, 0), 50);
     Rect imgR = mImg.getRect();
-    imgR.setDim(IMG_RECT.w() * size, IMG_RECT.h() * size, Rect::Align::CENTER);
+    imgR.setDim(IMG_RECT.w() * mSize, IMG_RECT.h() * mSize,
+                Rect::Align::CENTER);
     mImg.setDest(imgR);
     mPos->rect = mImg.getDest();
 }
@@ -82,67 +109,62 @@ void Fireball::setPos(float x, float y) {
 
 WizardId Fireball::getTargetId() const { return mTargetId; }
 
-void Fireball::onResize(ResizeData data) {
-    Rect imgR = mImg.getRect();
-    imgR.moveFactor((float)data.newW / data.oldW, (float)data.newH / data.oldH);
-    mImg.setDest(imgR);
+void Fireball::setImg(const RenderTextureCPtr& img) {
+    mImg.set(img);
     mPos->rect = mImg.getDest();
 }
 
-void Fireball::onUpdate(Time dt) {
-    float sec = dt.s();
-    float aCoeff = sec * sec / 2;
-    float dx = mTargetPos.x - mPos->rect.cX(),
-          dy = mTargetPos.y - mPos->rect.cY();
-    float d = sqrtf(dx * dx + dy * dy);
-    // Check in case we were moved onto the target
-    if (d < COLLIDE_ERR) {
-        onDeath();
-        mDead = true;
-        mResizeSub.reset();
-        mRenderSub.reset();
-        mUpdateSub.reset();
-        mTargetSub.reset();
-    } else {
-        d = fminf(d / 2, mMaxSpeed);
-        float v_squared =
-            fmaxf(mV.x * mV.x + mV.y * mV.y, mMaxSpeed * mMaxSpeed / 4);
-        float frac = v_squared / (d * d);
-        mA.x = dx * frac;
-        mA.y = dy * frac;
+// FireballList
+FBVector::iterator FireballList::begin() { return mFireballs.begin(); }
+FBVector::iterator FireballList::end() { return mFireballs.end(); }
 
-        float moveX = mV.x * sec + mA.x * aCoeff,
-              moveY = mV.y * sec + mA.y * aCoeff;
-        mV.x += mA.x * sec;
-        mV.y += mA.y * sec;
+size_t FireballList::size() const { return mFireballs.size(); }
 
-        // Cap speed
-        float mag = sqrtf(mV.x * mV.x + mV.y * mV.y);
-        if (mag > mMaxSpeed) {
-            frac = mMaxSpeed / mag;
-            mV.x *= frac;
-            mV.y *= frac;
-        }
+FireballPtr& FireballList::back() { return mFireballs.back(); }
 
-        float theta = 0;
-        if (moveX != 0) {
-            theta = atanf(moveY / moveX) / DEG_TO_RAD;
-            if (moveX < 0) {
-                theta += 180;
-            }
-        }
-        theta += FIREBALL_BASE_ROT_DEG;
+void FireballList::add(FireballPtr fb) { mFireballs.push_back(std::move(fb)); }
 
-        Rect imgR = mImg.getRect();
-        imgR.move(moveX, moveY);
-        mImg.setDest(imgR);
-        mImg.setRotationDeg(theta);
-        mPos->rect = mImg.getDest();
+void FireballList::remove(WizardId target) {
+    std::remove_if(mFireballs.begin(), mFireballs.end(),
+                   [target](const FireballPtr& fb) {
+                       return fb->getTargetId() == target;
+                   });
+}
+
+void FireballList::clear() { mFireballs.clear(); }
+
+void FireballList::init() {
+    mResizeSub =
+        ServiceSystem::Get<ResizeService, ResizeObservable>()->subscribe(
+            [this](ResizeData d) { onResize(d); });
+    mUpdateSub = TimeSystem::GetUpdateObservable()->subscribe(
+        [this](Time dt) { onUpdate(dt); });
+    mRenderSub =
+        ServiceSystem::Get<RenderService, RenderObservable>()->subscribe(
+            [this](SDL_Renderer* r) { onRender(r); },
+            std::make_shared<UIComponent>(Rect(), Elevation::PROJECTILES));
+}
+
+void FireballList::onResize(ResizeData data) {
+    for (auto& fb : mFireballs) {
+        fb->mPos->rect.moveFactor((float)data.newW / data.oldW,
+                                  (float)data.newH / data.oldH);
     }
 }
 
-void Fireball::onRender(SDL_Renderer* renderer) { TextureBuilder().draw(mImg); }
+void FireballList::onUpdate(Time dt) {
+    for (auto it = mFireballs.begin(); it != mFireballs.end();) {
+        if ((*it)->onUpdate(dt)) {
+            ++it;
+        } else {
+            it = mFireballs.erase(it);
+        }
+    }
+}
 
-void Fireball::onGlobHit() { setSpeed(mMaxSpeed * 1.25); }
-
-void Fireball::onDeath() {}
+void FireballList::onRender(SDL_Renderer* renderer) {
+    TextureBuilder tex;
+    for (auto& fb : mFireballs) {
+        fb->onRender(tex);
+    }
+}

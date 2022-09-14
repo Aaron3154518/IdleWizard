@@ -49,7 +49,9 @@ void RobotWizard::Portals::setActive(bool active) {
 }
 
 // RobotWizard
-RobotWizard::RobotWizard() : WizardBase(ROBOT_WIZARD) {}
+RobotWizard::RobotWizard()
+    : WizardBase(ROBOT_WIZARD),
+      mFireballs(ComponentFactory<FireballList<PowerFireball>>::New()) {}
 
 void RobotWizard::init() {
     mImg.set(RobotWizardDefs::IMG);
@@ -228,15 +230,6 @@ void RobotWizard::onRender(SDL_Renderer* r) {
         } else {
             fImg.setDest(imgR);
             tex.draw(fImg);
-        }
-    }
-
-    for (auto it = mFireballs->begin(); it != mFireballs->end(); ++it) {
-        if ((*it)->dead()) {
-            it = mFireballs->erase(it);
-            if (it == mFireballs->end()) {
-                break;
-            }
         }
     }
 }

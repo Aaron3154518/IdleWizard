@@ -62,7 +62,7 @@ class Wizard : public WizardBase {
     WizardFireball::Data newFireballData();
 
     void shootFireball();
-    void shootFireball(SDL_FPoint target);
+    void shootFireball(SDL_FPoint launch);
 
     void setPos(float x, float y);
 
@@ -85,7 +85,7 @@ class Wizard : public WizardBase {
     WizardId mTarget = CRYSTAL;
 
     WizardFireballPtr mFreezeFireball;
-    FireballListPtr mFireballs;
+    FireballListPtr<WizardFireball> mFireballs;
 };
 
 #endif

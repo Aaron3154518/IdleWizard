@@ -1,7 +1,9 @@
 #include "PoisonWizard.h"
 
 // PoisonWizard
-PoisonWizard::PoisonWizard() : WizardBase(POISON_WIZARD) {}
+PoisonWizard::PoisonWizard()
+    : WizardBase(POISON_WIZARD),
+      mFireballs(ComponentFactory<FireballList<PoisonFireball>>::New()) {}
 
 void PoisonWizard::init() {
     mImg.set(PoisonWizardDefs::IMG);

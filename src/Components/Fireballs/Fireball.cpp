@@ -9,7 +9,7 @@ constexpr int FIREBALL_BASE_ROT_DEG = -45;
 
 Fireball::Fireball(SDL_FPoint c, WizardId target, float maxSpeedMult,
                    const std::string& img)
-    : Fireball(c, target, maxSpeedMult, {img}) {}
+    : Fireball(c, target, maxSpeedMult, AnimationData{img}) {}
 Fireball::Fireball(SDL_FPoint c, WizardId target, float maxSpeedMult,
                    const AnimationData& img)
     : mPos(std::make_shared<UIComponent>(Rect(), Elevation::PROJECTILES)),
@@ -71,8 +71,11 @@ bool Fireball::onUpdate(Time dt) {
     }
     theta += FIREBALL_BASE_ROT_DEG;
 
-    mImg.setRotationRad(theta);
-    mPos->rect.move(moveX, moveY);
+    mImg.setRotationDeg(theta);
+    Rect imgR = mImg.getRect();
+    imgR.move(moveX, moveY);
+    mImg.setDest(imgR);
+    mPos->rect = mImg.getDest();
 
     return true;
 }
@@ -114,26 +117,19 @@ void Fireball::setImg(const RenderTextureCPtr& img) {
     mPos->rect = mImg.getDest();
 }
 
-// FireballList
-FBVector::iterator FireballList::begin() { return mFireballs.begin(); }
-FBVector::iterator FireballList::end() { return mFireballs.end(); }
+// FireballListImpl
+size_t FireballListImpl::size() const { return mFireballs.size(); }
 
-size_t FireballList::size() const { return mFireballs.size(); }
-
-FireballPtr& FireballList::back() { return mFireballs.back(); }
-
-void FireballList::add(FireballPtr fb) { mFireballs.push_back(std::move(fb)); }
-
-void FireballList::remove(WizardId target) {
+void FireballListImpl::remove(WizardId target) {
     std::remove_if(mFireballs.begin(), mFireballs.end(),
                    [target](const FireballPtr& fb) {
                        return fb->getTargetId() == target;
                    });
 }
 
-void FireballList::clear() { mFireballs.clear(); }
+void FireballListImpl::clear() { mFireballs.clear(); }
 
-void FireballList::init() {
+void FireballListImpl::init() {
     mResizeSub =
         ServiceSystem::Get<ResizeService, ResizeObservable>()->subscribe(
             [this](ResizeData d) { onResize(d); });
@@ -145,14 +141,14 @@ void FireballList::init() {
             std::make_shared<UIComponent>(Rect(), Elevation::PROJECTILES));
 }
 
-void FireballList::onResize(ResizeData data) {
+void FireballListImpl::onResize(ResizeData data) {
     for (auto& fb : mFireballs) {
         fb->mPos->rect.moveFactor((float)data.newW / data.oldW,
                                   (float)data.newH / data.oldH);
     }
 }
 
-void FireballList::onUpdate(Time dt) {
+void FireballListImpl::onUpdate(Time dt) {
     for (auto it = mFireballs.begin(); it != mFireballs.end();) {
         if ((*it)->onUpdate(dt)) {
             ++it;
@@ -162,7 +158,7 @@ void FireballList::onUpdate(Time dt) {
     }
 }
 
-void FireballList::onRender(SDL_Renderer* renderer) {
+void FireballListImpl::onRender(SDL_Renderer* renderer) {
     TextureBuilder tex;
     for (auto& fb : mFireballs) {
         fb->onRender(tex);

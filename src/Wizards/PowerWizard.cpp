@@ -1,7 +1,9 @@
 #include "PowerWizard.h"
 
 // PowerWizard
-PowerWizard::PowerWizard() : WizardBase(POWER_WIZARD) {}
+PowerWizard::PowerWizard()
+    : WizardBase(POWER_WIZARD),
+      mFireballs(ComponentFactory<FireballList<PowerFireball>>::New()) {}
 
 void PowerWizard::init() {
     mImg.set(PowerWizardDefs::IMG);
@@ -182,10 +184,7 @@ void PowerWizard::onHide(bool hide) {
 
 void PowerWizard::onTargetHide(WizardId id, bool hide) {
     if (hide) {
-        std::remove_if(mFireballs->begin(), mFireballs->end(),
-                       [id](const PowerFireballPtr& ball) {
-                           return ball->getTargetId() == id;
-                       });
+        mFireballs->remove(id);
     }
 }
 
@@ -233,7 +232,7 @@ void PowerWizard::shootFireball(SDL_FPoint target) {
     size_t size = mFireballs->size();
     shootFireball();
     if (size != mFireballs->size()) {
-        mFireballs->back()->launch(target);
+        mFireballs->back().launch(target);
     }
 }
 

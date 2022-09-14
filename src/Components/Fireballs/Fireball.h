@@ -21,7 +21,7 @@
 #include <memory>
 
 class Fireball : public Component {
-    friend class FireballList;
+    friend class FireballListImpl;
 
    public:
     const static Rect IMG_RECT;
@@ -69,20 +69,13 @@ typedef std::unique_ptr<Fireball> FireballPtr;
 
 typedef std::vector<FireballPtr> FBVector;
 
-class FireballList : public Component {
+class FireballListImpl : public Component {
     friend class FireballObservable;
 
    public:
-    virtual ~FireballList() = default;
-
-    FBVector::iterator begin();
-    FBVector::iterator end();
+    virtual ~FireballListImpl() = default;
 
     size_t size() const;
-
-    FireballPtr& back();
-
-    void add(FireballPtr fb);
 
     void remove(WizardId target);
 
@@ -103,27 +96,27 @@ class FireballList : public Component {
 };
 
 template <class T>
-class FireballListReal : public FireballList {
+class FireballList : public FireballListImpl {
     static_assert(std::is_base_of<Fireball, T>::value,
                   "FireballList template must inherit from Fireball");
 
-    class Iterator {
+    class iterator {
        public:
-        Iterator(FBVector::iterator it) : mIt(it) {}
+        iterator(FBVector::iterator it) : mIt(it) {}
 
-        Iterator& operator++() {
+        iterator& operator++() {
             ++mIt;
             return *this;
         }
 
-        bool operator!=(const Iterator& rhs) { return mIt != rhs.mIt; }
+        bool operator!=(const iterator& rhs) { return mIt != rhs.mIt; }
 
         T& operator*() {
-            T* ptr = std::static_cast < T * (*mIt);
+            T* ptr = static_cast<T*>(mIt->get());
             if (!ptr) {
                 throw std::runtime_error(
-                    "FireballList could not convert entry to correct Fireball "
-                    "type");
+                    "FireballListImpl could not convert entry to correct "
+                    "Fireball type");
             }
             return *ptr;
         }
@@ -131,13 +124,21 @@ class FireballListReal : public FireballList {
        private:
         FBVector::iterator mIt;
     };
-    typedef Iterator iterator;
 
    public:
     iterator begin() { return iterator(mFireballs.begin()); }
     iterator end() { return iterator(mFireballs.end()); }
 
-    void add(std::unique_ptr<T> fb) { mFireballs.push_back(std::move(fb)); }
+    void push_back(std::unique_ptr<T> fb) {
+        mFireballs.push_back(std::move(fb));
+    }
+
+    T& back() {
+        if (mFireballs.empty()) {
+            throw std::runtime_error("FireballListImpl::back(): list is empty");
+        }
+        return *iterator(mFireballs.end() - 1);
+    }
 
    private:
 };

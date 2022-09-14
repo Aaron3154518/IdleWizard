@@ -67,7 +67,7 @@ class RobotWizard : public WizardBase {
     std::unordered_map<WizardId, Portals> mPortals;
 
     std::unordered_map<WizardId, PowerFireball::Data> mStoredFireballs;
-    std::vector<PowerFireballPtr> mFireballs;
+    FireballListPtr<PowerFireball> mFireballs;
 
     TimerObservable::SubscriptionPtr mAnimTimerSub, mWaitSub;
     PowerFireball::HitObservable::IdSubscriptionPtr mPowFireballHitSub;

@@ -2,7 +2,8 @@
 
 // Wizard
 Wizard::Wizard()
-    : WizardBase(WIZARD), mFireballs(ComponentFactory<FireballList>::New()) {}
+    : WizardBase(WIZARD),
+      mFireballs(ComponentFactory<FireballList<WizardFireball>>::New()) {}
 
 void Wizard::init() {
     mImg.set(WizardDefs::IMG);
@@ -338,7 +339,7 @@ void Wizard::onTimeFreeze(bool frozen) {
             ParameterSystem::Param<TIME_WIZARD>(TimeWizardParams::FreezeEffect)
                 .get();
         mFreezeFireball->applyTimeEffect(freezeEffect);
-        mFireballs->add(std::move(mFreezeFireball));
+        mFireballs->push_back(std::move(mFreezeFireball));
     }
 }
 
@@ -347,15 +348,15 @@ void Wizard::onTimeWarp() {
         ParameterSystem::Param<TIME_WIZARD>(TimeWizardParams::TimeWarpEffect)
             .get();
     for (auto& fireball : *mFireballs) {
-        fireball->setSpeed(fireball->getSpeed() * 10);
-        fireball->setPower(fireball->getPower() * effect);
+        fireball.setSpeed(fireball.getSpeed() * 10);
+        fireball.setPower(fireball.getPower() * effect);
     }
 }
 
 void Wizard::shootFireball() {
     auto data = newFireballData();
     if (!ParameterSystem::Param(State::TimeWizFrozen).get()) {
-        mFireballs->add(ComponentFactory<WizardFireball>::New(
+        mFireballs->push_back(ComponentFactory<WizardFireball>::New(
             SDL_FPoint{mPos->rect.cX(), mPos->rect.cY()}, mTarget, data));
     } else {
         if (!mFreezeFireball) {
@@ -367,11 +368,11 @@ void Wizard::shootFireball() {
     }
 }
 
-void Wizard::shootFireball(SDL_FPoint target) {
+void Wizard::shootFireball(SDL_FPoint launch) {
     size_t size = mFireballs->size();
     shootFireball();
     if (size != mFireballs->size()) {
-        mFireballs->back()->launch(target);
+        mFireballs->back().launch(launch);
     }
 }
 

@@ -30,11 +30,13 @@ void PowerFireball::init() {
     };
 }
 
-void PowerFireball::onDeath() { GetHitObservable()->next(mTarget, *this); }
+void PowerFireball::onDeath() { GetHitObservable()->next(mTargetId, *this); }
 
 PowerFireball::Data PowerFireball::getData() const {
     return {mPower, mDuration, mSize, mMaxSpeed / MAX_SPEED};
 }
+
+WizardId PowerFireball::getTarget() const { return mTarget; }
 
 const Number& PowerFireball::getPower() const { return mPower; }
 void PowerFireball::setPower(const Number& pow) { mPower = pow; }

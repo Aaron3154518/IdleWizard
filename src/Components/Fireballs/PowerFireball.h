@@ -41,6 +41,8 @@ class PowerFireball : public Fireball {
     const Number& getDuration() const;
     void setDuration(const Number& duration);
 
+    WizardId getTarget() const;
+
     void addFireball(const Data& data);
 
     void applyTimeEffect(const Number& effect);
@@ -52,6 +54,7 @@ class PowerFireball : public Fireball {
 
     void onDeath();
 
+    // mTarget = actual target
     WizardId mSrc, mTarget;
     int mFireballFreezeCnt = 1;
     float mSizeSum;

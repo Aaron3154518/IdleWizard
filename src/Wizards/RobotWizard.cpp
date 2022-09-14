@@ -249,7 +249,7 @@ void RobotWizard::onHide(bool hide) {
     }
 }
 void RobotWizard::onPowFireballHit(const PowerFireball& fireball) {
-    WizardId target = fireball.getTargetId();
+    WizardId target = fireball.getTarget();
 
     auto it = mStoredFireballs.find(target);
     if (it == mStoredFireballs.end() ||

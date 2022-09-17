@@ -85,7 +85,7 @@ class Wizard : public WizardBase {
     WizardId mTarget = CRYSTAL;
 
     WizardFireballPtr mFreezeFireball;
-    FireballListPtr<WizardFireball> mFireballs;
+    WizardFireballListPtr mFireballs;
 };
 
 #endif

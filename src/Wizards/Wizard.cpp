@@ -3,7 +3,7 @@
 // Wizard
 Wizard::Wizard()
     : WizardBase(WIZARD),
-      mFireballs(ComponentFactory<FireballList<WizardFireball>>::New()) {}
+      mFireballs(ComponentFactory<WizardFireballList>::New()) {}
 
 void Wizard::init() {
     mImg.set(WizardDefs::IMG);

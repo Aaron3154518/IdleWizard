@@ -59,6 +59,29 @@ void WizardFireball::onCatalystHit(const Number& effect) {
     setSize(mSize * 1.1);
 }
 
+void WizardFireball::subscribeToGlob(
+    std::function<void(WizardFireballPtr)> push_back) {
+    mGlobHitSub = Glob::GetHitObservable()->subscribe(
+        [this, push_back]() {
+            if (!mPoisoned) {
+                mPoisoned = true;
+                setInnerImg(IconSystem::Get(WizardDefs::FB_INNER_POISON_IMG));
+            } else {
+                push_back(clone());
+            }
+        },
+        mPos);
+}
+
+std::unique_ptr<WizardFireball> WizardFireball::clone() const {
+    return ComponentFactory<WizardFireball>::New(
+        mPos->rect.getPos(Rect::Align::CENTER), mTargetId, getData());
+}
+
+WizardFireball::Data WizardFireball::getData() const {
+    return {mPower, mSize, mSpeed, mBoosted, mPoisoned};
+}
+
 const Number& WizardFireball::getPower() const { return mPower; }
 void WizardFireball::setPower(const Number& pow) { mPower = pow; }
 
@@ -90,3 +113,10 @@ void WizardFireball::addFireball(const Data& data) {
 }
 
 void WizardFireball::applyTimeEffect(const Number& effect) { mPower ^= effect; }
+
+// WizardFireballList
+void WizardFireballList::push_back(WizardFireballPtr fb) {
+    fb->subscribeToGlob(
+        [this](WizardFireballPtr fb) { push_back(std::move(fb)); });
+    FireballList::push_back(std::move(fb));
+}

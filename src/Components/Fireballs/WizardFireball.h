@@ -7,6 +7,8 @@
 #include <Wizards/Definitions/WizardDefs.h>
 
 class WizardFireball : public Fireball {
+    friend class WizardFireballList;
+
    public:
     typedef TargetSystem::TargetObservable<WizardId, const WizardFireball&>
         HitObservable;
@@ -23,6 +25,9 @@ class WizardFireball : public Fireball {
     };
 
     WizardFireball(SDL_FPoint c, WizardId target, const Data& data);
+
+    std::unique_ptr<WizardFireball> clone() const;
+    Data getData() const;
 
     const Number& getPower() const;
     void setPower(const Number& pow);
@@ -42,6 +47,9 @@ class WizardFireball : public Fireball {
     void onFireRingHit(const Number& effect);
     void onCatalystHit(const Number& effect);
 
+    void subscribeToGlob(
+        std::function<void(std::unique_ptr<WizardFireball>)> push_back);
+
     Number mPower;
 
     bool mHitFireRing = false, mBoosted = false, mPoisoned = false;
@@ -52,8 +60,18 @@ class WizardFireball : public Fireball {
 
     FireRing::HitObservable::SubscriptionPtr mFireRingSub;
     CatalystRing::HitObservable::SubscriptionPtr mCatalystHitSub;
+    Glob::HitObservable::SubscriptionPtr mGlobHitSub;
 };
 
 typedef std::unique_ptr<WizardFireball> WizardFireballPtr;
+
+class WizardFireballList : public FireballList<WizardFireball> {
+   public:
+    void push_back(WizardFireballPtr fb);
+
+   private:
+};
+
+typedef std::unique_ptr<WizardFireballList> WizardFireballListPtr;
 
 #endif

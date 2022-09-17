@@ -31,8 +31,8 @@ void WizardFireball::init() {
         [this](const Number& e) { onCatalystHit(e); }, mPos);
 }
 
-void WizardFireball::onRender(TextureBuilder& tex) {
-    Fireball::onRender(tex);
+void WizardFireball::draw(TextureBuilder& tex) {
+    Fireball::draw(tex);
     mOuterImg.setDest(mImg.getRect());
     mOuterImg.setRotationDeg(mImg.getRotationDeg());
     tex.draw(mOuterImg);
@@ -67,15 +67,25 @@ void WizardFireball::subscribeToGlob(
                 mPoisoned = true;
                 setInnerImg(IconSystem::Get(WizardDefs::FB_INNER_POISON_IMG));
             } else {
-                push_back(clone());
+                push_back(split());
             }
         },
         mPos);
 }
 
-std::unique_ptr<WizardFireball> WizardFireball::clone() const {
-    return ComponentFactory<WizardFireball>::New(
-        mPos->rect.getPos(Rect::Align::CENTER), mTargetId, getData());
+std::unique_ptr<WizardFireball> WizardFireball::split() {
+    SDL_FPoint c = mPos->rect.getPos(Rect::Align::CENTER);
+    float theta = rDist(gen) * 2 * M_PI;
+    float r = (rDist(gen) * .25 + .25) * mPos->rect.minDim();
+    float dx = r * cosf(theta), dy = r * sinf(theta);
+
+    auto data = getData();
+    data.poisoned = false;
+    auto fb = ComponentFactory<WizardFireball>::New(
+        SDL_FPoint{c.x + dx, c.y + dy}, mTargetId, data);
+    fb->launch(SDL_FPoint{c.x + dx + dx, c.y + dy + dy});
+
+    return fb;
 }
 
 WizardFireball::Data WizardFireball::getData() const {

@@ -63,3 +63,12 @@ void PowerFireball::addFireball(const Data& data) {
 }
 
 void PowerFireball::applyTimeEffect(const Number& effect) { mPower ^= effect; }
+
+// RobotFireballList
+void RobotFireballList::init() {
+    FireballList<PowerFireball>::init();
+
+    mUpdateSub =
+        ServiceSystem::Get<UpdateService, UpdateObservable>()->subscribe(
+            [this](Time dt) { onUpdate(dt); });
+}

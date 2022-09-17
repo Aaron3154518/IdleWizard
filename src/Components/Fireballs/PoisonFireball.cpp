@@ -49,7 +49,7 @@ bool PoisonFireball::onUpdate(Time dt) {
 
     return Fireball::onUpdate(dt);
 }
-void PoisonFireball::onRender(TextureBuilder& tex) {
+void PoisonFireball::draw(TextureBuilder& tex) {
     for (auto& bubble : mBubbles) {
         switch (bubble.type) {
             case BubbleType::A:
@@ -63,7 +63,7 @@ void PoisonFireball::onRender(TextureBuilder& tex) {
         }
     }
 
-    Fireball::onRender(tex);
+    Fireball::draw(tex);
 }
 
 void PoisonFireball::onDeath() {

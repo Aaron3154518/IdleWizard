@@ -48,7 +48,7 @@ class PoisonWizard : public WizardBase {
     UpgradeList::SubscriptionPtr mCatGainUp1, mCatGainUp2;
     WizardSystem::WizardEventObservable::IdSubscriptionPtr mT1ResetSub;
 
-    FireballListPtr<PoisonFireball> mFireballs;
+    PoisonFireballListPtr mFireballs;
     std::vector<GlobPtr> mGlobs;
 };
 

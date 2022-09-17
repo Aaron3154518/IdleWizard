@@ -63,7 +63,7 @@ class PowerWizard : public WizardBase {
     UpgradeList::SubscriptionPtr mPowerDisplay, mPowerUp, mTimeWarpUp;
 
     PowerFireballPtr mFreezeFireball;
-    FireballListPtr<PowerFireball> mFireballs;
+    PowerFireballListPtr mFireballs;
     std::unordered_map<WizardId, int> mTargets;
 };
 

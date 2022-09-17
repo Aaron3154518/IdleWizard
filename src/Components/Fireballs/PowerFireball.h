@@ -65,4 +65,14 @@ class PowerFireball : public Fireball {
 
 typedef std::unique_ptr<PowerFireball> PowerFireballPtr;
 
+typedef FireballList<PowerFireball> PowerFireballList;
+typedef std::unique_ptr<PowerFireballList> PowerFireballListPtr;
+
+class RobotFireballList : public PowerFireballList {
+   private:
+    void init();
+};
+
+typedef std::unique_ptr<RobotFireballList> RobotFireballListPtr;
+
 #endif

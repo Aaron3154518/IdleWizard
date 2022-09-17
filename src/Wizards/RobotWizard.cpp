@@ -49,11 +49,11 @@ void RobotWizard::Portals::setActive(bool active) {
 }
 
 // RobotWizard
-RobotWizard::RobotWizard()
-    : WizardBase(ROBOT_WIZARD),
-      mFireballs(ComponentFactory<FireballList<PowerFireball>>::New()) {}
+RobotWizard::RobotWizard() : WizardBase(ROBOT_WIZARD) {}
 
 void RobotWizard::init() {
+    mFireballs = ComponentFactory<RobotFireballList>::New();
+
     mImg.set(RobotWizardDefs::IMG);
     mImg.setDest(IMG_RECT);
     mPos->rect = mImg.getDest();

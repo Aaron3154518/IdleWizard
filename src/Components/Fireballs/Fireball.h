@@ -30,6 +30,8 @@ class Fireball : public Component {
     Fireball(SDL_FPoint c, WizardId target);
     virtual ~Fireball() = default;
 
+    virtual void draw(TextureBuilder& tex);
+
     void launch(SDL_FPoint target);
 
     float getSize() const;
@@ -48,7 +50,6 @@ class Fireball : public Component {
     virtual void init();
 
     virtual bool onUpdate(Time dt);
-    virtual void onRender(TextureBuilder& tex);
     virtual void onDeath();
 
     WizardId mTargetId;
@@ -123,10 +124,12 @@ class FireballList : public FireballListImpl {
     };
 
    public:
+    virtual ~FireballList() = default;
+
     iterator begin() { return iterator(mFireballs.begin()); }
     iterator end() { return iterator(mFireballs.end()); }
 
-    void push_back(std::unique_ptr<T> fb) {
+    virtual void push_back(std::unique_ptr<T> fb) {
         mFireballs.push_back(std::move(fb));
     }
 

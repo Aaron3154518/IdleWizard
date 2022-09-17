@@ -6,6 +6,8 @@
 #include <Components/Fireballs/Fireball.h>
 #include <Wizards/Definitions/WizardDefs.h>
 
+#include <random>
+
 class WizardFireball : public Fireball {
     friend class WizardFireballList;
 
@@ -26,7 +28,8 @@ class WizardFireball : public Fireball {
 
     WizardFireball(SDL_FPoint c, WizardId target, const Data& data);
 
-    std::unique_ptr<WizardFireball> clone() const;
+    void draw(TextureBuilder& tex);
+
     Data getData() const;
 
     const Number& getPower() const;
@@ -42,10 +45,11 @@ class WizardFireball : public Fireball {
    private:
     void init();
 
-    void onRender(TextureBuilder& tex);
     void onDeath();
     void onFireRingHit(const Number& effect);
     void onCatalystHit(const Number& effect);
+
+    std::unique_ptr<WizardFireball> split();
 
     void subscribeToGlob(
         std::function<void(std::unique_ptr<WizardFireball>)> push_back);
@@ -57,6 +61,9 @@ class WizardFireball : public Fireball {
     float mSizeSum;
 
     RenderData mOuterImg;
+
+    std::mt19937 gen = std::mt19937(rand());
+    std::uniform_real_distribution<float> rDist;
 
     FireRing::HitObservable::SubscriptionPtr mFireRingSub;
     CatalystRing::HitObservable::SubscriptionPtr mCatalystHitSub;

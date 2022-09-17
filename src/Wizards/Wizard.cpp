@@ -1,11 +1,11 @@
 #include "Wizard.h"
 
 // Wizard
-Wizard::Wizard()
-    : WizardBase(WIZARD),
-      mFireballs(ComponentFactory<WizardFireballList>::New()) {}
+Wizard::Wizard() : WizardBase(WIZARD) {}
 
 void Wizard::init() {
+    mFireballs = ComponentFactory<WizardFireballList>::New();
+
     mImg.set(WizardDefs::IMG);
     mImg.setDest(IMG_RECT);
     mPos->rect = mImg.getDest();
@@ -222,6 +222,10 @@ void Wizard::onRender(SDL_Renderer* r) {
         mPowWizTimerSub->get<TimerObservable::DATA>().isActive()) {
         mPowBkgrnd.setDest(mPos->rect);
         tex.draw(mPowBkgrnd);
+    }
+
+    if (mFreezeFireball) {
+        mFreezeFireball->draw(tex);
     }
 
     WizardBase::onRender(r);

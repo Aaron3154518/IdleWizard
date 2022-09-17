@@ -1,11 +1,11 @@
 #include "PowerWizard.h"
 
 // PowerWizard
-PowerWizard::PowerWizard()
-    : WizardBase(POWER_WIZARD),
-      mFireballs(ComponentFactory<FireballList<PowerFireball>>::New()) {}
+PowerWizard::PowerWizard() : WizardBase(POWER_WIZARD) {}
 
 void PowerWizard::init() {
+    mFireballs = ComponentFactory<PowerFireballList>::New();
+
     mImg.set(PowerWizardDefs::IMG);
     mImg.setDest(IMG_RECT);
     mPos->rect = mImg.getDest();
@@ -175,7 +175,15 @@ void PowerWizard::setParamTriggers() {
         }));
 }
 
-void PowerWizard::onRender(SDL_Renderer* r) { WizardBase::onRender(r); }
+void PowerWizard::onRender(SDL_Renderer* r) {
+    TextureBuilder tex;
+
+    if (mFreezeFireball) {
+        mFreezeFireball->draw(tex);
+    }
+
+    WizardBase::onRender(r);
+}
 
 void PowerWizard::onHide(bool hide) {
     WizardBase::onHide(hide);

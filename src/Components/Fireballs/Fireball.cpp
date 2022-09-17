@@ -70,7 +70,7 @@ bool Fireball::onUpdate(Time dt) {
 
     return true;
 }
-void Fireball::onRender(TextureBuilder& tex) { tex.draw(mImg); }
+void Fireball::draw(TextureBuilder& tex) { tex.draw(mImg); }
 void Fireball::onDeath() {}
 
 void Fireball::launch(SDL_FPoint target) {
@@ -152,6 +152,6 @@ void FireballListImpl::onUpdate(Time dt) {
 void FireballListImpl::onRender(SDL_Renderer* renderer) {
     TextureBuilder tex;
     for (auto& fb : mFireballs) {
-        fb->onRender(tex);
+        fb->draw(tex);
     }
 }

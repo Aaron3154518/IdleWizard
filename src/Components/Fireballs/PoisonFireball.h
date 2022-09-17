@@ -40,6 +40,8 @@ class PoisonFireball : public Fireball {
    public:
     PoisonFireball(SDL_FPoint c, WizardId target, const Data& data);
 
+    void draw(TextureBuilder& tex);
+
     const Number& getPower() const;
     void setPower(const Number& pow);
 
@@ -52,7 +54,6 @@ class PoisonFireball : public Fireball {
     void init();
 
     bool onUpdate(Time dt);
-    void onRender(TextureBuilder& tex);
 
     void onDeath();
 
@@ -67,5 +68,8 @@ class PoisonFireball : public Fireball {
 };
 
 typedef std::unique_ptr<PoisonFireball> PoisonFireballPtr;
+
+typedef FireballList<PoisonFireball> PoisonFireballList;
+typedef std::unique_ptr<PoisonFireballList> PoisonFireballListPtr;
 
 #endif

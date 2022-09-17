@@ -19,7 +19,7 @@ class WizardFireball : public Fireball {
     struct Data {
         Number power;
         float sizeFactor = 1, speed = 1;
-        bool boosted = false;
+        bool boosted = false, poisoned = false;
     };
 
     WizardFireball(SDL_FPoint c, WizardId target, const Data& data);
@@ -31,18 +31,24 @@ class WizardFireball : public Fireball {
 
     void applyTimeEffect(const Number& effect);
 
+    void setInnerImg(const RenderTextureCPtr& img);
+    void setOuterImg(const RenderTextureCPtr& img);
+
    private:
     void init();
 
+    void onRender(TextureBuilder& tex);
     void onDeath();
     void onFireRingHit(const Number& effect);
     void onCatalystHit(const Number& effect);
 
     Number mPower;
 
-    bool mHitFireRing = false, mPowerWizBoosted = false;
+    bool mHitFireRing = false, mBoosted = false, mPoisoned = false;
 
     float mSizeSum;
+
+    RenderData mOuterImg;
 
     FireRing::HitObservable::SubscriptionPtr mFireRingSub;
     CatalystRing::HitObservable::SubscriptionPtr mCatalystHitSub;

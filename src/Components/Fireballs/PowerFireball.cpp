@@ -7,13 +7,15 @@ PowerFireball::GetHitObservable() {
 }
 
 PowerFireball::PowerFireball(SDL_FPoint c, WizardId target, const Data& data)
-    : Fireball(c, target, data.speed, PowerWizardDefs::FB_IMG),
+    : Fireball(c, target),
       mSrc(data.src),
       mTarget(target),
       mSizeSum(data.sizeFactor),
       mPower(data.power),
       mDuration(data.duration) {
     setSize(data.sizeFactor);
+    setSpeed(data.speed);
+    setImg(IconSystem::Get(PowerWizardDefs::FB_IMG));
 }
 
 void PowerFireball::init() {
@@ -33,7 +35,7 @@ void PowerFireball::init() {
 void PowerFireball::onDeath() { GetHitObservable()->next(mTargetId, *this); }
 
 PowerFireball::Data PowerFireball::getData() const {
-    return {mPower, mDuration, mSize, mMaxSpeed / MAX_SPEED};
+    return {mPower, mDuration, mSize, mSpeed};
 }
 
 WizardId PowerFireball::getTarget() const { return mTarget; }

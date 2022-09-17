@@ -7,12 +7,13 @@ PoisonFireball::GetHitObservable() {
 }
 
 PoisonFireball::PoisonFireball(SDL_FPoint c, WizardId target, const Data& data)
-    : Fireball(c, target, data.speed, PoisonWizardDefs::GLOB_IMG),
+    : Fireball(c, target),
       mSizeSum(data.sizeFactor),
       mPower(data.power),
       mDuration(data.duration) {
     setSize(data.sizeFactor);
-
+    setSpeed(data.speed);
+    setImg(IconSystem::Get(PoisonWizardDefs::GLOB_IMG));
     mBubbleAImg.set(IconSystem::Get(PoisonWizardDefs::BUBBLE1_IMG));
     mBubbleBImg.set(IconSystem::Get(PoisonWizardDefs::BUBBLE2_IMG));
 }

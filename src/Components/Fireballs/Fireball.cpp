@@ -7,20 +7,11 @@ const Rect Fireball::IMG_RECT(0, 0, 40, 40);
 
 constexpr int FIREBALL_BASE_ROT_DEG = -45;
 
-Fireball::Fireball(SDL_FPoint c, WizardId target, float maxSpeedMult,
-                   const std::string& img)
-    : Fireball(c, target, maxSpeedMult, AnimationData{img}) {}
-Fireball::Fireball(SDL_FPoint c, WizardId target, float maxSpeedMult,
-                   const AnimationData& img)
+Fireball::Fireball(SDL_FPoint c, WizardId target)
     : mPos(std::make_shared<UIComponent>(Rect(), Elevation::PROJECTILES)),
-      mTargetId(target),
-      mMaxSpeed(MAX_SPEED * maxSpeedMult) {
-    mImg.set(IconSystem::Get(img));
-    Rect imgR = IMG_RECT;
-    imgR.setPos(c.x, c.y, Rect::Align::CENTER);
-    mImg.setDest(imgR);
+      mTargetId(target) {
+    mImg.setDest(Rect(c.x, c.y, 0, 0));
     mPos->rect = mImg.getDest();
-    setSize(1);
 }
 
 void Fireball::init() {
@@ -42,9 +33,9 @@ bool Fireball::onUpdate(Time dt) {
         return false;
     }
 
-    d = fminf(d / 2, mMaxSpeed);
-    float v_squared =
-        fmaxf(mV.x * mV.x + mV.y * mV.y, mMaxSpeed * mMaxSpeed / 4);
+    float maxSpeed = mSpeed * MAX_SPEED;
+    d = fminf(d / 2, maxSpeed);
+    float v_squared = fmaxf(mV.x * mV.x + mV.y * mV.y, maxSpeed * maxSpeed / 4);
     float frac = v_squared / (d * d);
     mA.x = dx * frac;
     mA.y = dy * frac;
@@ -56,8 +47,8 @@ bool Fireball::onUpdate(Time dt) {
 
     // Cap speed
     float mag = sqrtf(mV.x * mV.x + mV.y * mV.y);
-    if (mag > mMaxSpeed) {
-        frac = mMaxSpeed / mag;
+    if (mag > maxSpeed) {
+        frac = maxSpeed / mag;
         mV.x *= frac;
         mV.y *= frac;
     }
@@ -85,7 +76,7 @@ void Fireball::onDeath() {}
 void Fireball::launch(SDL_FPoint target) {
     // Start at half max speed
     float dx = target.x - mPos->rect.cX(), dy = target.y - mPos->rect.cY();
-    float frac = mMaxSpeed / 3 / sqrtf(dx * dx + dy * dy);
+    float frac = mSpeed * MAX_SPEED / 3 / sqrtf(dx * dx + dy * dy);
     mV.x = dx * frac;
     mV.y = dy * frac;
 }
@@ -100,8 +91,8 @@ void Fireball::setSize(float size) {
     mPos->rect = mImg.getDest();
 }
 
-float Fireball::getSpeed() const { return mMaxSpeed; }
-void Fireball::setSpeed(float speed) { mMaxSpeed = speed; }
+float Fireball::getSpeed() const { return mSpeed; }
+void Fireball::setSpeed(float speed) { mSpeed = speed; }
 
 void Fireball::setPos(float x, float y) {
     Rect imgR = mImg.getRect();

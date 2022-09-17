@@ -61,8 +61,8 @@ class Wizard : public WizardBase {
 
     WizardFireball::Data newFireballData();
 
-    void shootFireball();
-    void shootFireball(SDL_FPoint launch);
+    void shootFireball(const WizardFireball::Data& data);
+    void shootFireball(const WizardFireball::Data& data, SDL_FPoint launch);
 
     void setPos(float x, float y);
 

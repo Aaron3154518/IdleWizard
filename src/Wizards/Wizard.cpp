@@ -255,10 +255,11 @@ void Wizard::onT1Reset() {
 bool Wizard::onTimer(Timer& timer) {
     ParameterSystem::Params<WIZARD> params;
 
-    shootFireball();
+    shootFireball(newFireballData());
     float Multi = params[WizardParams::MultiUp].get().toFloat();
     if (rDist(gen) < Multi) {
         shootFireball(
+            newFireballData(),
             SDL_FPoint{(rDist(gen) - .5f) * mPos->rect.w() + mPos->rect.cX(),
                        (rDist(gen) - .5f) * mPos->rect.h() + mPos->rect.cY()});
     }
@@ -314,7 +315,11 @@ void Wizard::onPowFireballHit(const PowerFireball& fireball) {
         Timer(mPowWizBoosts.front().second.toFloat()));
 }
 
-void Wizard::onGlobHit() { shootFireball(); }
+void Wizard::onGlobHit() {
+    auto data = newFireballData();
+    data.poisoned = true;
+    shootFireball(data);
+}
 
 bool Wizard::onPowWizTimer(Timer& timer) {
     auto powerWizEffect =
@@ -353,8 +358,7 @@ void Wizard::onTimeWarp() {
     }
 }
 
-void Wizard::shootFireball() {
-    auto data = newFireballData();
+void Wizard::shootFireball(const WizardFireball::Data& data) {
     if (!ParameterSystem::Param(State::TimeWizFrozen).get()) {
         mFireballs->push_back(ComponentFactory<WizardFireball>::New(
             SDL_FPoint{mPos->rect.cX(), mPos->rect.cY()}, mTarget, data));
@@ -368,9 +372,10 @@ void Wizard::shootFireball() {
     }
 }
 
-void Wizard::shootFireball(SDL_FPoint launch) {
+void Wizard::shootFireball(const WizardFireball::Data& data,
+                           SDL_FPoint launch) {
     size_t size = mFireballs->size();
-    shootFireball();
+    shootFireball(data);
     if (size != mFireballs->size()) {
         mFireballs->back().launch(launch);
     }

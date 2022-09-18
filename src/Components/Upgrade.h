@@ -3,7 +3,7 @@
 
 #include <RenderSystem/RenderSystem.h>
 #include <Systems/ParameterSystem/ParameterAccess.h>
-#include <Systems/WizardSystem.h>
+#include <Systems/WizardSystem/WizardObservables.h>
 #include <Wizards/Money.h>
 
 #include <array>

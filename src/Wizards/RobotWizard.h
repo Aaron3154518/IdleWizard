@@ -11,7 +11,7 @@
 #include <Systems/IconSystem.h>
 #include <Systems/ParameterSystem/ParameterAccess.h>
 #include <Systems/ParameterSystem/WizardParameters.h>
-#include <Systems/WizardSystem.h>
+#include <Systems/WizardSystem/WizardObservables.h>
 #include <Wizards/Definitions/CrystalDefs.h>
 #include <Wizards/Definitions/RobotWizardDefs.h>
 #include <Wizards/Definitions/TimeWizardDefs.h>

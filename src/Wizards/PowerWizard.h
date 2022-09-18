@@ -13,7 +13,8 @@
 #include <Systems/IconSystem.h>
 #include <Systems/ParameterSystem/ParameterAccess.h>
 #include <Systems/ParameterSystem/WizardParameters.h>
-#include <Systems/WizardSystem.h>
+#include <Systems/WizardSystem/WizardEvents.h>
+#include <Systems/WizardSystem/WizardObservables.h>
 #include <Utils/AnimationData.h>
 #include <Wizards/Definitions/PowerWizardDefs.h>
 #include <Wizards/Definitions/TimeWizardDefs.h>

@@ -13,6 +13,7 @@
 #include <ServiceSystem/UpdateServices/TimerService.h>
 #include <Systems/ParameterSystem/ParameterAccess.h>
 #include <Systems/TimeSystem.h>
+#include <Systems/WizardSystem/WizardObservables.h>
 #include <Utils/Number.h>
 
 #include <random>
@@ -76,9 +77,9 @@ class HitObservable : public HitObservableBase, public Component {
     std::uniform_real_distribution<float> rDist;
 };
 
-class Service : public ::Service<HitObservable> {};
-
 std::shared_ptr<HitObservable> GetHitObservable();
+
+class Service : public ::Service<HitObservable> {};
 }  // namespace CatalystRing
 
 #endif

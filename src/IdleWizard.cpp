@@ -2,7 +2,7 @@
 
 #include <Components/Upgrade.h>
 #include <GameSystem.h>
-#include <Systems/WizardSystem.h>
+#include <Systems/WizardSystem/WizardObservables.h>
 #include <Wizards/Catalyst.h>
 #include <Wizards/Crystal.h>
 #include <Wizards/PoisonWizard.h>

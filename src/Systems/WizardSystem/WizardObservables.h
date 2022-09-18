@@ -1,5 +1,5 @@
-#ifndef WIZARD_SYSTEM_H
-#define WIZARD_SYSTEM_H
+#ifndef WIZARD_OBSERVABLES_H
+#define WIZARD_OBSERVABLES_H
 
 #include <RenderSystem/RenderTypes.h>
 #include <ServiceSystem/Observable.h>
@@ -31,25 +31,8 @@ const Rect& GetWizardPos(WizardId id);
 
 std::shared_ptr<WizardPosObservable> GetWizardPosObservable();
 
-enum Event : uint8_t {
-    NoReset = 0,
-    ResetT1,
-    ResetT2,
-
-    TimeWarp,
-};
-
-typedef TargetSystem::TargetObservable<Event> WizardEventObservableBase;
-class WizardEventObservable : public WizardEventObservableBase {
-   public:
-    void next(Event e);
-};
-
-std::shared_ptr<WizardEventObservable> GetWizardEventObservable();
-
-class WizardService
-    : public Service<HideObservable, WizardEventObservable,
-                     WizardImageObservable, WizardPosObservable> {};
+class WizardDataService : public Service<HideObservable, WizardImageObservable,
+                                         WizardPosObservable> {};
 }  // namespace WizardSystem
 
 #endif

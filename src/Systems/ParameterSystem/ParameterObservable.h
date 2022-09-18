@@ -3,7 +3,7 @@
 
 #include <ServiceSystem/Observable.h>
 #include <Systems/ParameterSystem/WizardStates.h>
-#include <Systems/WizardSystem.h>
+#include <Systems/WizardSystem/WizardEvents.h>
 #include <Utils/Number.h>
 
 #include <initializer_list>

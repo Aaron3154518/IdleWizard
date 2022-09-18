@@ -15,7 +15,7 @@
 #include <Systems/ParameterSystem/ParameterObservable.h>
 #include <Systems/TargetSystem.h>
 #include <Systems/TimeSystem.h>
-#include <Systems/WizardSystem.h>
+#include <Systems/WizardSystem/WizardObservables.h>
 #include <Wizards/WizardIds.h>
 
 #include <memory>

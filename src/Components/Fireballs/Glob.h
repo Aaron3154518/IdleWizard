@@ -12,7 +12,7 @@
 #include <ServiceSystem/EventServices/ResizeService.h>
 #include <ServiceSystem/ServiceSystem.h>
 #include <Systems/TimeSystem.h>
-#include <Systems/WizardSystem.h>
+#include <Systems/WizardSystem/WizardObservables.h>
 #include <Utils/AnimationData.h>
 #include <Utils/Time.h>
 #include <Wizards/Definitions/PoisonWizardDefs.h>

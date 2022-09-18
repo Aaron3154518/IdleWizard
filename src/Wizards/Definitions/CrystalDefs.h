@@ -4,7 +4,7 @@
 #include <RenderSystem/RenderTypes.h>
 #include <ServiceSystem/UpdateServices/TimerService.h>
 #include <Systems/ParameterSystem/ParameterAccess.h>
-#include <Systems/WizardSystem.h>
+#include <Systems/WizardSystem/WizardObservables.h>
 #include <Wizards/WizardIds.h>
 
 #include <string>

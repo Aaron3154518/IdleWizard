@@ -1,5 +1,7 @@
 #include "WizardFireball.h"
 
+#include <Systems/WizardSystem/MagicObservables.h>
+
 // WizardFireball
 std::shared_ptr<WizardFireball::HitObservable>
 WizardFireball::GetHitObservable() {
@@ -54,7 +56,7 @@ void WizardFireball::onFireRingHit(const Number& effect) {
 }
 
 void WizardFireball::onCatalystHit() {
-    GetHitObservable()->next(CATALYST, *this);
+    WizardSystem::GetCatalystMagicObservable()->next(*this);
 }
 
 void WizardFireball::subscribeToGlob(

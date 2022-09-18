@@ -34,6 +34,8 @@ void Catalyst::init() {
 void Catalyst::setSubscriptions() {
     mWizFireballSub = WizardFireball::GetHitObservable()->subscribe(
         [this](const WizardFireball& f) { onWizFireballHit(f); }, mId);
+    mMagicSub = WizardSystem::GetCatalystMagicObservable()->subscribe(
+        [this](const Number& amnt) { onMagic(amnt); });
     attachSubToVisibility(mWizFireballSub);
 }
 void Catalyst::setUpgrades() {
@@ -164,13 +166,9 @@ void Catalyst::setParamTriggers() {
 }
 
 void Catalyst::onWizFireballHit(const WizardFireball& fireball) {
-    ParameterSystem::Params<CATALYST> params;
-    auto magic = params[CatalystParams::Magic];
-    Number gain = calcGain(fireball.getPower());
-    magic.set(max(
-        0, min(magic.get() + gain, params[CatalystParams::Capacity].get())));
-    mMessages->addMessage(mPos->rect, "+" + gain.toString(), RED);
+    WizardSystem::GetCatalystMagicObservable()->next(fireball);
 
+    ParameterSystem::Params<CATALYST> params;
     bool buffed = fireball.isBoosted(), poisoned = fireball.isPoisoned();
     if (buffed || poisoned) {
         if (buffed) {
@@ -185,6 +183,14 @@ void Catalyst::onWizFireballHit(const WizardFireball& fireball) {
         auto cnt = params[CatalystParams::FBRegCnt];
         cnt.set(cnt.get() + 1);
     }
+}
+
+void Catalyst::onMagic(const Number& amnt) {
+    ParameterSystem::Params<CATALYST> params;
+    auto magic = params[CatalystParams::Magic];
+    magic.set(max(
+        0, min(magic.get() + amnt, params[CatalystParams::Capacity].get())));
+    mMessages->addMessage(mPos->rect, "+" + amnt.toString(), RED);
 }
 
 void Catalyst::onRender(SDL_Renderer* r) {
@@ -213,21 +219,6 @@ Number Catalyst::calcRange() {
     ParameterSystem::Params<CATALYST> params;
     return params[CatalystParams::BaseRange].get() *
            params[CatalystParams::RangeUp].get();
-}
-
-Number Catalyst::calcGain(Number magic) {
-    ParameterSystem::Params<CATALYST> params;
-    ParameterSystem::Params<POISON_WIZARD> poiParams;
-
-    if (poiParams[PoisonWizardParams::CatGainUp2Lvl].get() > 0) {
-        magic ^= poiParams[PoisonWizardParams::CatGainUp2].get();
-    } else {
-        magic.logTen();
-    }
-
-    magic *= poiParams[PoisonWizardParams::CatGainUp1].get();
-
-    return magic;
 }
 
 Number Catalyst::calcFbCntEffect() {

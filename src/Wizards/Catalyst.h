@@ -12,6 +12,7 @@
 #include <Systems/IconSystem.h>
 #include <Systems/ParameterSystem/ParameterAccess.h>
 #include <Systems/ParameterSystem/WizardParameters.h>
+#include <Systems/WizardSystem/MagicObservables.h>
 #include <Systems/WizardSystem/WizardObservables.h>
 #include <Wizards/Definitions/CatalystDefs.h>
 #include <Wizards/Message.h>
@@ -33,10 +34,10 @@ class Catalyst : public WizardBase {
 
     void onRender(SDL_Renderer* r);
     void onWizFireballHit(const WizardFireball& fireball);
+    void onMagic(const Number& amnt);
 
     Number calcMagicEffect();
     Number calcRange();
-    Number calcGain(Number magic);
     Number calcFbCntEffect();
     void drawMagic();
     void drawFbCounts();
@@ -46,6 +47,7 @@ class Catalyst : public WizardBase {
 
     TimeSystem::TimerObservable::SubscriptionPtr mAnimTimerSub;
     WizardFireball::HitObservable::IdSubscriptionPtr mWizFireballSub;
+    WizardSystem::CatalystMagicObservable::SubscriptionPtr mMagicSub;
     UpgradeList::SubscriptionPtr mMagicEffectDisplay, mRangeUp, mZapCntUp,
         mShardUp;
 

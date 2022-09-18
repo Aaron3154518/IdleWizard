@@ -9,19 +9,18 @@
 #include <memory>
 
 namespace WizardSystem {
-typedef ForwardObservable<void(const Number&), void(const WizardFireball&)>
-    MagicObservableBase;
+typedef ForwardObservable<void(const Number&)> MagicObservableBase;
 
-class CrystalMagicObservable : public MagicObservableBase {};
+class CatalystMagicObservable : public MagicObservableBase {
+   public:
+    using MagicObservableBase::next;
 
-std::shared_ptr<CrystalMagicObservable> GetCrystalMagicObservable();
-
-class CatalystMagicObservable : public MagicObservableBase {};
+    void next(const WizardFireball& fb);
+};
 
 std::shared_ptr<CatalystMagicObservable> GetCatalystMagicObservable();
 
-class MagicService
-    : public Service<CrystalMagicObservable, CatalystMagicObservable> {};
+class MagicService : public Service<CatalystMagicObservable> {};
 }  // namespace WizardSystem
 
 #endif

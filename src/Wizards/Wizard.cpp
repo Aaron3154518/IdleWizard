@@ -55,24 +55,23 @@ void Wizard::setUpgrades() {
     dUp->setImage(mId);
     dUp->setEffects(
         {params[WizardParams::Power], params[WizardParams::FBSpeed],
-         params[WizardParams::FBSpeedEffect], params[WizardParams::Speed]},
+         params[WizardParams::FBSpeedEffect], params[WizardParams::Speed],
+         params[WizardParams::Crit]},
         {}, []() -> TextUpdateData {
             ParameterSystem::Params<WIZARD> params;
             std::stringstream ss;
             std::vector<RenderTextureCPtr> imgs;
             ss << "Power: "
-               << UpgradeDefaults::MultiplicativeEffect(
+               << UpgradeDefaults::MultiplicativeEffectText(
                       params[WizardParams::Power].get())
-                      .text
                << "\nFire Rate: " << params[WizardParams::Speed].get()
                << "/s\n{i} Speed: "
-               << UpgradeDefaults::MultiplicativeEffect(
+               << UpgradeDefaults::MultiplicativeEffectText(
                       params[WizardParams::FBSpeed].get())
-                      .text
                << ", {b}Power : "
-               << UpgradeDefaults::MultiplicativeEffect(
+               << UpgradeDefaults::MultiplicativeEffectText(
                       params[WizardParams::FBSpeedEffect].get())
-                      .text;
+               << "\nCrit Power: " << params[WizardParams::Crit].get();
             imgs.push_back(IconSystem::Get(WizardDefs::FB_IMG));
             return {ss.str(), imgs};
         });
@@ -467,12 +466,11 @@ WizardFireball::Data Wizard::newFireballData() {
         frac = std::numeric_limits<float>::min();
     }
     frac = (frac ^ params[WizardParams::CritSpread].get()).toFloat() + .5;
+    Number crit = params[WizardParams::Crit].get() * frac;
     if (states[State::BoughtRoboWizCritUp].get()) {
-        power ^= params[WizardParams::Crit].get() * frac;
-    } else {
-        power *= params[WizardParams::Crit].get() * frac;
+        crit.powTen();
     }
-    return {power, powf(frac, .25), speed, !mPowWizBoosts.empty()};
+    return {power * crit, powf(frac, .25), speed, !mPowWizBoosts.empty()};
 }
 
 void Wizard::setPos(float x, float y) {

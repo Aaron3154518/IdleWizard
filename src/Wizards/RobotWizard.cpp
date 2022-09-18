@@ -93,7 +93,7 @@ void RobotWizard::setUpgrades() {
         std::make_shared<Unlockable>(states[State::BoughtRoboWizCritUp]);
     uUp->setImage("");
     uUp->setDescription(
-        {"{i} crit is exponential instead of multiplicative\nUnlocks new {i} "
+        {"{i} crit is *10^crit instead of *crit\nUnlocks new {i} "
          "crit upgrade",
          {IconSystem::Get(WizardDefs::FB_IMG),
           IconSystem::Get(WizardDefs::IMG)}});

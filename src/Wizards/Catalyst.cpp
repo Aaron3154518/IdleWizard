@@ -252,10 +252,10 @@ void Catalyst::drawFbCounts() {
     std::stringstream ss;
     ss << params[CatalystParams::FBRegCnt].get() << "{i}";
     if (states[State::BoughtPowerWizard].get()) {
-        ss << " " << params[CatalystParams::FBBuffCnt].get() << "{i}";
+        ss << "\n" << params[CatalystParams::FBBuffCnt].get() << "{i}";
     }
     if (states[State::BoughtPoisonWizard].get()) {
-        ss << " " << params[CatalystParams::FBPoisCnt].get() << "{i}";
+        ss << "\n" << params[CatalystParams::FBPoisCnt].get() << "{i}";
     }
     mFbCntText->setText(ss.str(), mPos->rect.W());
 }

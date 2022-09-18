@@ -452,6 +452,8 @@ Number Wizard::calcCritSpread() {
 
 WizardFireball::Data Wizard::newFireballData() {
     ParameterSystem::Params<WIZARD> params;
+    ParameterSystem::States states;
+
     Number power = params[WizardParams::Power].get() *
                    params[WizardParams::FBSpeedEffect].get();
     float speed = params[WizardParams::FBSpeed].get().toFloat();
@@ -465,8 +467,12 @@ WizardFireball::Data Wizard::newFireballData() {
         frac = std::numeric_limits<float>::min();
     }
     frac = (frac ^ params[WizardParams::CritSpread].get()).toFloat() + .5;
-    return {power * (params[WizardParams::Crit].get() * frac), powf(frac, .25),
-            speed, !mPowWizBoosts.empty()};
+    if (states[State::BoughtRoboWizCritUp].get()) {
+        power ^= params[WizardParams::Crit].get() * frac;
+    } else {
+        power *= params[WizardParams::Crit].get() * frac;
+    }
+    return {power, powf(frac, .25), speed, !mPowWizBoosts.empty()};
 }
 
 void Wizard::setPos(float x, float y) {

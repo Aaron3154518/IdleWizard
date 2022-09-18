@@ -180,7 +180,9 @@ enum N : param_t {
 };
 }  // namespace PoisonWizardParams
 namespace RobotWizardParams {
-enum B : param_t {};
+enum B : param_t {
+    WizCritUpCost = 0,
+};
 
 enum N : param_t {};
 }  // namespace RobotWizardParams

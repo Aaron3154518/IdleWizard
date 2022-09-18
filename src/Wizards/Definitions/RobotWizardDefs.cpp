@@ -10,7 +10,9 @@ const AnimationData IMG{"res/wizards/robot_ss.png", 6, 100},
 void setDefaults() {
     using WizardSystem::Event;
 
-    ParameterSystem::Params<CRYSTAL> params;
+    ParameterSystem::Params<ROBOT_WIZARD> params;
+
+    params[RobotWizardParams::WizCritUpCost]->init(Number(1, 20));
 
     ParameterSystem::States states;
 }

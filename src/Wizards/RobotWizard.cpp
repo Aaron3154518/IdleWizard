@@ -86,8 +86,20 @@ void RobotWizard::setSubscriptions() {
     attachSubToVisibility(mUpTimerSub);
 }
 void RobotWizard::setUpgrades() {
-    ParameterSystem::Params<POISON_WIZARD> params;
+    ParameterSystem::Params<ROBOT_WIZARD> params;
     ParameterSystem::States states;
+
+    UnlockablePtr uUp =
+        std::make_shared<Unlockable>(states[State::BoughtRoboWizCritUp]);
+    uUp->setImage("");
+    uUp->setDescription(
+        {"{i} crit is exponential instead of multiplicative\nUnlocks new {i} "
+         "crit upgrade",
+         {IconSystem::Get(WizardDefs::FB_IMG),
+          IconSystem::Get(WizardDefs::IMG)}});
+    uUp->setCost(UpgradeDefaults::CRYSTAL_MAGIC,
+                 params[RobotWizardParams::WizCritUpCost]);
+    mWizCritUp = mUpgrades->subscribe(uUp);
 }
 void RobotWizard::setParamTriggers() {
     ParameterSystem::Params<ROBOT_WIZARD> params;

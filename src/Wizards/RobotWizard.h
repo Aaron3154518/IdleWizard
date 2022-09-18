@@ -73,7 +73,7 @@ class RobotWizard : public WizardBase {
     PowerFireball::HitObservable::IdSubscriptionPtr mPowFireballHitSub;
     TimeSystem::UpdateObservable::SubscriptionPtr mMoveUpdateSub;
     TimeSystem::TimerObservable::SubscriptionPtr mUpTimerSub;
-    UpgradeList::SubscriptionPtr mTODO;
+    UpgradeList::SubscriptionPtr mWizCritUp;
 };
 
 #endif

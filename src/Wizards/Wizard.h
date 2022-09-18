@@ -76,7 +76,7 @@ class Wizard : public WizardBase {
     WizardSystem::WizardEventObservable::IdSubscriptionPtr mT1ResetSub,
         mTimeWarpSub;
     UpgradeList::SubscriptionPtr mPowerDisplay, mTargetUp, mPowerUp, mMultiUp,
-        mCritUp;
+        mCritUp, mRoboCritUp;
     Glob::HitObservable::SubscriptionPtr mGlobHitSub;
 
     // Pairs of effect, duration

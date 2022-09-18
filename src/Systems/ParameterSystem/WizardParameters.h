@@ -20,8 +20,9 @@ enum B : param_t {
     PowerWizEffect,
 
     PowerUpLvl,
-    CritUpLvl,
     MultiUpLvl,
+    CritUpLvl,
+    RoboCritUpLvl,
 };
 
 enum N : param_t {
@@ -35,6 +36,8 @@ enum N : param_t {
     CritSpread,
     CritSpreadUp,
     CritUpCost,
+    RoboCritUp,
+    RoboCritUpCost,
 
     Speed,
     FBSpeed,

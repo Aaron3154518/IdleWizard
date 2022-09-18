@@ -112,7 +112,7 @@ void Wizard::setUpgrades() {
     up = std::make_shared<Upgrade>(params[WizardParams::CritUpLvl], 10);
     up->setImage(WizardDefs::CRIT_UP_IMG);
     up->setDescription(
-        {"Multiplies critical hit amount *1.1 and increases chance for "
+        {"Multiplies critical hit power *1.1 and increases chance for "
          "higher crits"});
     up->setCost(UpgradeDefaults::CRYSTAL_MAGIC,
                 params[WizardParams::CritUpCost]);
@@ -133,6 +133,21 @@ void Wizard::setUpgrades() {
     mParamSubs.push_back(params[WizardParams::CritSpreadUp].subscribeTo(
         up->level(), [](const Number& lvl) { return .95 ^ lvl; }));
     mCritUp = mUpgrades->subscribe(up);
+
+    // Robo Crit Upgrade
+    up = std::make_shared<Upgrade>(params[WizardParams::RoboCritUpLvl], 10);
+    up->setImage("");
+    up->setDescription({"Multiplies critical hit power *1.15"});
+    up->setCost(UpgradeDefaults::CRYSTAL_MAGIC,
+                params[WizardParams::RoboCritUpCost]);
+    up->setEffects(params[WizardParams::RoboCritUp],
+                   UpgradeDefaults::MultiplicativeEffect);
+    mParamSubs.push_back(params[WizardParams::RoboCritUpCost].subscribeTo(
+        up->level(),
+        [](const Number& lvl) { return Number(1, 20) * (11 ^ lvl); }));
+    mParamSubs.push_back(params[WizardParams::RoboCritUp].subscribeTo(
+        up->level(), [](const Number& lvl) { return 1.15 ^ lvl; }));
+    mRoboCritUp = mUpgrades->subscribe(up);
 
     // Multi Upgrade
     up = std::make_shared<Upgrade>(params[WizardParams::MultiUpLvl], 20);
@@ -183,12 +198,14 @@ void Wizard::setParamTriggers() {
         params[WizardParams::Speed].subscribe([this]() { calcTimer(); }));
 
     mParamSubs.push_back(params[WizardParams::Crit].subscribeTo(
-        {params[WizardParams::BaseCrit, WizardParams::CritUp]}, {},
-        [this]() { return calcCrit(); }));
+        {params[WizardParams::BaseCrit], params[WizardParams::CritUp],
+         params[WizardParams::RoboCritUp]},
+        {states[State::BoughtRoboWizCritUp]}, [this]() { return calcCrit(); }));
 
     mParamSubs.push_back(params[WizardParams::CritSpread].subscribeTo(
-        {params[WizardParams::BaseCritSpread, WizardParams::CritSpreadUp]}, {},
-        [this]() { return calcCritSpread(); }));
+        {params[WizardParams::BaseCritSpread],
+         params[WizardParams::CritSpreadUp]},
+        {}, [this]() { return calcCritSpread(); }));
 
     mParamSubs.push_back(states[State::TimeWizFrozen].subscribe(
         [this](bool val) { onTimeFreeze(val); }));
@@ -212,6 +229,9 @@ void Wizard::setParamTriggers() {
             ParameterSystem::States states;
             mTargetUp->setActive(states[State::BoughtCatalyst].get());
         }));
+
+    mParamSubs.push_back(states[State::BoughtRoboWizCritUp].subscribe(
+        [this](bool bought) { mRoboCritUp->setActive(bought); }));
 }
 
 void Wizard::onRender(SDL_Renderer* r) {
@@ -439,8 +459,14 @@ void Wizard::calcTimer() {
 
 Number Wizard::calcCrit() {
     ParameterSystem::Params<WIZARD> params;
-    return params[WizardParams::BaseCrit].get() +
-           params[WizardParams::CritUp].get();
+    ParameterSystem::States states;
+    Number crit = (params[WizardParams::BaseCrit].get() +
+                   params[WizardParams::CritUp].get()) *
+                  params[WizardParams::RoboCritUp].get();
+    if (states[State::BoughtRoboWizCritUp].get()) {
+        crit.powTen();
+    }
+    return crit;
 }
 
 Number Wizard::calcCritSpread() {
@@ -466,11 +492,8 @@ WizardFireball::Data Wizard::newFireballData() {
         frac = std::numeric_limits<float>::min();
     }
     frac = (frac ^ params[WizardParams::CritSpread].get()).toFloat() + .5;
-    Number crit = params[WizardParams::Crit].get() * frac;
-    if (states[State::BoughtRoboWizCritUp].get()) {
-        crit.powTen();
-    }
-    return {power * crit, powf(frac, .25), speed, !mPowWizBoosts.empty()};
+    return {power * params[WizardParams::Crit].get() * frac, powf(frac, .25),
+            speed, !mPowWizBoosts.empty()};
 }
 
 void Wizard::setPos(float x, float y) {

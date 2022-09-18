@@ -33,9 +33,10 @@ void setDefaults() {
     params[WizardParams::BaseCrit]->init(1);
     params[WizardParams::PowerWizEffect]->init(1, Event::ResetT1);
 
-    params[WizardParams::CritUpLvl]->init(Event::ResetT1);
-    params[WizardParams::MultiUpLvl]->init(Event::ResetT1);
     params[WizardParams::PowerUpLvl]->init(Event::ResetT1);
+    params[WizardParams::MultiUpLvl]->init(Event::ResetT1);
+    params[WizardParams::CritUpLvl]->init(Event::ResetT1);
+    params[WizardParams::RoboCritUpLvl]->init(Event::ResetT1);
 
     ParameterSystem::States states;
     states[State::WizBoosted]->init(false, Event::ResetT1);

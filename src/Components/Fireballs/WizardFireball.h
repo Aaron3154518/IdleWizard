@@ -50,7 +50,7 @@ class WizardFireball : public Fireball {
 
     void onDeath();
     void onFireRingHit(const Number& effect);
-    void onCatalystHit(const Number& effect);
+    void onCatalystHit();
 
     std::unique_ptr<WizardFireball> split();
 

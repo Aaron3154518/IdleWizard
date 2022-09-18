@@ -25,7 +25,7 @@ HitObservable::HitObservable()
 }
 
 HitObservable::SubscriptionPtr HitObservable::subscribe(
-    std::function<void(const Number&)> func, UIComponentPtr pos) {
+    std::function<void()> func, UIComponentPtr pos) {
     return HitObservableBase::subscribe(func, pos, 0);
 }
 
@@ -70,9 +70,8 @@ void HitObservable::onTimerUpdate(Time dt, Timer& timer) {
             int idx = (int)(rDist(gen) * inRange.size());
             auto sub = inRange.at(idx).lock();
             if (sub) {
-                ParameterSystem::Params<CATALYST> params;
                 sub->get<ZAP_CNT>()++;
-                sub->get<FUNC>()(params[CatalystParams::MagicEffect].get());
+                sub->get<FUNC>()();
                 Rect fBallRect = sub->get<DATA>()->rect;
                 mZaps.push_back(std::move(ComponentFactory<Zap>::New(
                     SDL_Point{fBallRect.CX(), fBallRect.CY()}, mCircle.c)));

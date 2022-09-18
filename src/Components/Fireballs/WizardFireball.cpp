@@ -28,7 +28,7 @@ void WizardFireball::init() {
             [this](const Number& e) { onFireRingHit(e); }, mPos);
     }
     mCatalystHitSub = CatalystRing::GetHitObservable()->subscribe(
-        [this](const Number& e) { onCatalystHit(e); }, mPos);
+        [this]() { onCatalystHit(); }, mPos);
 }
 
 void WizardFireball::draw(TextureBuilder& tex) {
@@ -53,10 +53,8 @@ void WizardFireball::onFireRingHit(const Number& effect) {
     setSize(mSize * 1.15);
 }
 
-void WizardFireball::onCatalystHit(const Number& effect) {
-    mPower *= effect;
-
-    setSize(mSize * 1.1);
+void WizardFireball::onCatalystHit() {
+    GetHitObservable()->next(CATALYST, *this);
 }
 
 void WizardFireball::subscribeToGlob(

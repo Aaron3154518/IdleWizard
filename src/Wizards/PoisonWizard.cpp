@@ -40,7 +40,7 @@ void PoisonWizard::setUpgrades() {
         {"{i} gains a % of best {i} over time\n{i} will increase the %",
          {IconSystem::Get(CrystalDefs::IMG),
           Money::GetMoneyIcon(UpgradeDefaults::CRYSTAL_MAGIC),
-          IconSystem::Get(WizardDefs::FB_IMG)}});
+          IconSystem::Get(WizardDefs::FB_POISON_IMG)}});
     uUp->setCost(UpgradeDefaults::CRYSTAL_SHARDS,
                  params[PoisonWizardParams::CrysPoisonUpCost]);
     uUp->setEffects(

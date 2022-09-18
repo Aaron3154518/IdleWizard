@@ -1,14 +1,19 @@
 #include "WizardDefs.h"
 
+constexpr int FB_FRAMES = 6, FB_MSPF = 75;
+
 namespace WizardDefs {
 const AnimationData IMG{"res/wizards/wizard_ss.png", 5, 150},
     POWER_BKGRND{"res/wizards/power_effect_bkgrnd_ss.png", 6, 100},
-    FB_IMG{"res/projectiles/fireball_ss.png", 6, 75},
-    FB_INNER_IMG{"res/projectiles/fb_inner_ss.png", 6, 75},
-    FB_OUTER_IMG{"res/projectiles/fb_outer_ss.png", 6, 75},
-    FB_OUTER_BUFFED_IMG{"res/projectiles/fb_outer_buffed_ss.png", 6, 75},
-    FB_INNER_POISON_IMG{"res/projectiles/fb_inner_poison_ss.png", 6, 75};
-// FB_POW_IMG{"res/projectiles/fireball_buffed_ss.png", 6, 75};
+    FB_IMG{"res/projectiles/fireball_ss.png", FB_FRAMES, FB_MSPF},
+    FB_BUFFED_IMG{"res/projectiles/fireball_buffed_ss.png", FB_FRAMES, FB_MSPF},
+    FB_POISON_IMG{"res/projectiles/fireball_poison_ss.png", FB_FRAMES, FB_MSPF},
+    FB_INNER_IMG{"res/projectiles/fb_inner_ss.png", FB_FRAMES, FB_MSPF},
+    FB_OUTER_IMG{"res/projectiles/fb_outer_ss.png", FB_FRAMES, FB_MSPF},
+    FB_OUTER_BUFFED_IMG{"res/projectiles/fb_outer_buffed_ss.png", FB_FRAMES,
+                        FB_MSPF},
+    FB_INNER_POISON_IMG{"res/projectiles/fb_inner_poison_ss.png", FB_FRAMES,
+                        FB_MSPF};
 
 const std::string POWER_UP_IMG = "res/upgrades/fireball_upgrade.png";
 const std::string MULTI_UP_IMG = "res/upgrades/multi_upgrade.png";

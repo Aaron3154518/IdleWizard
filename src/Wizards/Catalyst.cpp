@@ -15,9 +15,15 @@ void Catalyst::init() {
     WizardSystem::GetWizardImageObservable()->next(mId, mImg);
 
     mMagicText->setFont(FONT);
+    mMagicText->setImgs({Money::GetMoneyIcon(params[CatalystParams::Magic])});
     mMagicRender.set(mMagicText);
     mMagicRender.setFit(RenderData::FitMode::Texture);
     mMagicRender.setFitAlign(Rect::Align::CENTER, Rect::Align::TOP_LEFT);
+
+    mFbCntText->setFont(FONT);
+    mFbCntRender.set(mFbCntText);
+    mFbCntRender.setFit(RenderData::FitMode::Texture);
+    mFbCntRender.setFitAlign(Rect::Align::CENTER, Rect::Align::TOP_LEFT);
 
     mRange = CircleShape(PURPLE).setDashed(50);
 
@@ -106,6 +112,7 @@ void Catalyst::setUpgrades() {
 }
 void Catalyst::setParamTriggers() {
     ParameterSystem::Params<CATALYST> params;
+    ParameterSystem::States states;
 
     mParamSubs.push_back(params[CatalystParams::MagicEffect].subscribeTo(
         {params[CatalystParams::Magic]}, {},
@@ -123,6 +130,28 @@ void Catalyst::setParamTriggers() {
     mParamSubs.push_back(ParameterSystem::subscribe(
         {params[CatalystParams::Magic], params[CatalystParams::Capacity]}, {},
         [this]() { drawMagic(); }));
+
+    mParamSubs.push_back(ParameterSystem::subscribe(
+        {params[CatalystParams::FBRegCnt], params[CatalystParams::FBBuffCnt],
+         params[CatalystParams::FBPoisCnt]},
+        {}, [this]() { drawFbCounts(); }));
+
+    mParamSubs.push_back(ParameterSystem::subscribe(
+        {},
+        {states[State::BoughtPowerWizard], states[State::BoughtPoisonWizard]},
+        [this, states]() {
+            std::vector<RenderTextureCPtr> imgs = {
+                IconSystem::Get(WizardDefs::FB_IMG)};
+            if (states[State::BoughtPowerWizard].get()) {
+                imgs.push_back(IconSystem::Get(WizardDefs::FB_BUFFED_IMG));
+            }
+            if (states[State::BoughtPoisonWizard].get()) {
+                imgs.push_back(IconSystem::Get(WizardDefs::FB_POISON_IMG));
+            }
+            mFbCntText->setImgs(imgs);
+
+            drawFbCounts();
+        }));
 
     mParamSubs.push_back(ParameterSystem::Param(State::BoughtCatalyst)
                              .subscribe([this](bool bought) {
@@ -167,7 +196,12 @@ void Catalyst::onRender(SDL_Renderer* r) {
 
     mMessages->draw(tex);
 
+    mMagicRender.setDest(
+        Rect(mPos->rect.x(), mPos->rect.y2(), mPos->rect.w(), FONT.h));
     tex.draw(mMagicRender);
+    mFbCntRender.setDest(Rect(mPos->rect.x(), mMagicRender.getDest().y2(),
+                              mPos->rect.w(), FONT.h));
+    tex.draw(mFbCntRender);
 }
 
 Number Catalyst::calcMagicEffect() {
@@ -206,25 +240,24 @@ Number Catalyst::calcFbCntEffect() {
 void Catalyst::drawMagic() {
     ParameterSystem::Params<CATALYST> params;
     std::stringstream ss;
-    std::vector<RenderTextureCPtr> imgs = {
-        Money::GetMoneyIcon(params[CatalystParams::Magic]),
-        IconSystem::Get(WizardDefs::FB_IMG)};
-
     ss << "{i} " << params[CatalystParams::Magic].get() << "/{b}"
-       << params[CatalystParams::Capacity].get() << "\n"
-       << params[CatalystParams::FBRegCnt].get() << "{i}";
-    Number cnt = params[CatalystParams::FBBuffCnt].get();
-    if (cnt > 0) {
-        ss << " " << cnt << "{i}";
-        imgs.push_back(IconSystem::Get(WizardDefs::FB_BUFFED_IMG));
-    }
-    cnt = params[CatalystParams::FBPoisCnt].get();
-    if (cnt > 0) {
-        ss << " " << cnt << "{i}";
-        imgs.push_back(IconSystem::Get(WizardDefs::FB_POISON_IMG));
-    }
+       << params[CatalystParams::Capacity].get();
     mMagicText->setText(ss.str(), mPos->rect.W());
-    mMagicText->setImgs(imgs);
+}
+
+void Catalyst::drawFbCounts() {
+    ParameterSystem::Params<CATALYST> params;
+    ParameterSystem::States states;
+
+    std::stringstream ss;
+    ss << params[CatalystParams::FBRegCnt].get() << "{i}";
+    if (states[State::BoughtPowerWizard].get()) {
+        ss << " " << params[CatalystParams::FBBuffCnt].get() << "{i}";
+    }
+    if (states[State::BoughtPoisonWizard].get()) {
+        ss << " " << params[CatalystParams::FBPoisCnt].get() << "{i}";
+    }
+    mFbCntText->setText(ss.str(), mPos->rect.W());
 }
 
 void Catalyst::updateRange() {
@@ -237,9 +270,6 @@ void Catalyst::updateRange() {
 
 void Catalyst::setPos(float x, float y) {
     WizardBase::setPos(x, y);
-
-    mMagicRender.setDest(
-        Rect(mPos->rect.x(), mPos->rect.y2(), mPos->rect.w(), FONT.h));
 
     mRange.setCenter({mPos->rect.CX(), mPos->rect.CY()});
     CatalystRing::GetHitObservable()->setPos(mRange.get());

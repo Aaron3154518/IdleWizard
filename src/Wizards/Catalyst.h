@@ -39,6 +39,7 @@ class Catalyst : public WizardBase {
     Number calcGain(Number magic);
     Number calcFbCntEffect();
     void drawMagic();
+    void drawFbCounts();
     void updateRange();
 
     void setPos(float x, float y);
@@ -51,8 +52,9 @@ class Catalyst : public WizardBase {
     MessageHandlerPtr mMessages;
 
     CircleShape mRange;
-    TextDataPtr mMagicText = std::make_shared<TextData>();
-    RenderData mMagicRender;
+    TextDataPtr mMagicText = std::make_shared<TextData>(),
+                mFbCntText = std::make_shared<TextData>();
+    RenderData mMagicRender, mFbCntRender;
 };
 
 #endif

@@ -38,7 +38,7 @@ struct UpgradeCost {
 };
 
 namespace UpgradeDefaults {
-extern const ParameterSystem::BaseValue CRYSTAL_MAGIC, CRYSTAL_SHARDS;
+extern const ParameterSystem::BaseValue CRYSTAL_MAGIC, CRYSTAL_SHARDS, CATALYST_MAGIC;
 
 std::string NoEffectText(const Number& effect);
 TextUpdateData NoEffect(const Number& effect);

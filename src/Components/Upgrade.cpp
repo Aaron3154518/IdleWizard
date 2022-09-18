@@ -26,10 +26,10 @@ ParameterSystem::ParameterSubscriptionPtr UpgradeCost::subscribe(
 
 // UpgradeDefaults
 namespace UpgradeDefaults {
-const ParameterSystem::BaseValue CRYSTAL_MAGIC =
-    ParameterSystem::Param<CRYSTAL>(CrystalParams::Magic);
-const ParameterSystem::BaseValue CRYSTAL_SHARDS =
-    ParameterSystem::Param<CRYSTAL>(CrystalParams::Shards);
+const ParameterSystem::BaseValue
+    CRYSTAL_MAGIC = ParameterSystem::Param<CRYSTAL>(CrystalParams::Magic),
+    CRYSTAL_SHARDS = ParameterSystem::Param<CRYSTAL>(CrystalParams::Shards),
+    CATALYST_MAGIC = ParameterSystem::Param<CATALYST>(CatalystParams::Magic);
 
 std::string NoEffectText(const Number& effect) { return effect.toString(); }
 TextUpdateData NoEffect(const Number& effect) { return {NoEffectText(effect)}; }

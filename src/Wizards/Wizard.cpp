@@ -167,17 +167,18 @@ void Wizard::setUpgrades() {
 }
 void Wizard::setParamTriggers() {
     ParameterSystem::Params<WIZARD> params;
-    ParameterSystem::Params<CRYSTAL> crystalParams;
-    ParameterSystem::Params<CATALYST> catalystParams;
+    ParameterSystem::Params<CRYSTAL> crysParams;
+    ParameterSystem::Params<CATALYST> catParams;
     ParameterSystem::Params<TIME_WIZARD> timeParams;
     ParameterSystem::States states;
 
     mParamSubs.push_back(params[WizardParams::Power].subscribeTo(
         {params[WizardParams::BasePower], params[WizardParams::PowerUp],
          params[WizardParams::Speed], params[WizardParams::PowerWizEffect],
-         crystalParams[CrystalParams::MagicEffect],
-         crystalParams[CrystalParams::WizardCntEffect],
-         catalystParams[CatalystParams::MagicEffect]},
+         crysParams[CrystalParams::MagicEffect],
+         crysParams[CrystalParams::WizardCntEffect],
+         catParams[CatalystParams::MagicEffect],
+         catParams[CatalystParams::FBCntEffect]},
         {}, [this]() { return calcPower(); }));
 
     mParamSubs.push_back(params[WizardParams::Speed].subscribeTo(
@@ -406,15 +407,16 @@ void Wizard::shootFireball(const WizardFireball::Data& data,
 
 Number Wizard::calcPower() {
     ParameterSystem::Params<WIZARD> params;
-    ParameterSystem::Params<CRYSTAL> crystalParams;
-    ParameterSystem::Params<CATALYST> catalystParams;
+    ParameterSystem::Params<CRYSTAL> crysParams;
+    ParameterSystem::Params<CATALYST> catParams;
 
     return (params[WizardParams::BasePower].get() +
             params[WizardParams::PowerUp].get()) *
            params[WizardParams::PowerWizEffect].get() *
-           crystalParams[CrystalParams::MagicEffect].get() *
-           crystalParams[CrystalParams::WizardCntEffect].get() *
-           catalystParams[CatalystParams::MagicEffect].get() *
+           crysParams[CrystalParams::MagicEffect].get() *
+           crysParams[CrystalParams::WizardCntEffect].get() *
+           catParams[CatalystParams::MagicEffect].get() *
+           catParams[CatalystParams::FBCntEffect].get() *
            max(1, params[WizardParams::Speed].get() * 16 / 1000);
 }
 

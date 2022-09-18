@@ -80,6 +80,10 @@ enum B : param_t {
     Magic = 0,
     Capacity,
 
+    FBRegCnt,
+    FBBuffCnt,
+    FBPoisCnt,
+
     BaseRange,
 
     RangeUpLvl,
@@ -90,6 +94,7 @@ enum B : param_t {
 
 enum N : param_t {
     MagicEffect = 0,
+    FBCntEffect,
 
     Range,
     RangeUpCost,

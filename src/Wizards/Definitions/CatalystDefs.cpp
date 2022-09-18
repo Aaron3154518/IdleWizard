@@ -12,6 +12,11 @@ void setDefaults() {
 
     params[CatalystParams::Magic]->init(Number(1, 10));
     params[CatalystParams::Capacity]->init(Number(1, 10));
+
+    params[CatalystParams::FBRegCnt]->init(0, Event::ResetT1);
+    params[CatalystParams::FBBuffCnt]->init(0, Event::ResetT1);
+    params[CatalystParams::FBPoisCnt]->init(0, Event::ResetT1);
+
     params[CatalystParams::BaseRange]->init(1.25);
 
     params[CatalystParams::ShardGainUpCost]->init(2);

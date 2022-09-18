@@ -14,8 +14,7 @@ void Catalyst::init() {
     mPos->rect = mImg.getDest();
     WizardSystem::GetWizardImageObservable()->next(mId, mImg);
 
-    mMagicText->setFont(FONT).setImgs(
-        {Money::GetMoneyIcon(params[CatalystParams::Magic])});
+    mMagicText->setFont(FONT);
     mMagicRender.set(mMagicText);
     mMagicRender.setFit(RenderData::FitMode::Texture);
     mMagicRender.setFitAlign(Rect::Align::CENTER, Rect::Align::TOP_LEFT);
@@ -44,12 +43,16 @@ void Catalyst::setUpgrades() {
             ParameterSystem::Params<CATALYST> params;
 
             std::stringstream ss;
-            ss << "Multiplier: "
-               << UpgradeDefaults::MultiplicativeEffect(
+            ss << "{i} Multiplier: "
+               << UpgradeDefaults::MultiplicativeEffectText(
                       params[CatalystParams::MagicEffect].get())
-                      .text
+               << "\n{i} Multiplier: "
+               << UpgradeDefaults::MultiplicativeEffectText(
+                      params[CatalystParams::FBCntEffect].get())
                << "\nRange: " << params[CatalystParams::Range].get();
-            return {ss.str()};
+            return {ss.str(),
+                    {Money::GetMoneyIcon(UpgradeDefaults::CATALYST_MAGIC),
+                     IconSystem::Get(WizardDefs::FB_IMG)}};
         });
     mMagicEffectDisplay = mUpgrades->subscribe(dUp);
 
@@ -112,6 +115,11 @@ void Catalyst::setParamTriggers() {
         {params[CatalystParams::BaseRange], params[CatalystParams::RangeUp]},
         {}, [this]() { return calcRange(); }));
 
+    mParamSubs.push_back(params[CatalystParams::FBCntEffect].subscribeTo(
+        {params[CatalystParams::FBRegCnt], params[CatalystParams::FBBuffCnt],
+         params[CatalystParams::FBPoisCnt]},
+        {}, [this]() { return calcFbCntEffect(); }));
+
     mParamSubs.push_back(ParameterSystem::subscribe(
         {params[CatalystParams::Magic], params[CatalystParams::Capacity]}, {},
         [this]() { drawMagic(); }));
@@ -133,6 +141,21 @@ void Catalyst::onWizFireballHit(const WizardFireball& fireball) {
     magic.set(max(
         0, min(magic.get() + gain, params[CatalystParams::Capacity].get())));
     mMessages->addMessage(mPos->rect, "+" + gain.toString(), RED);
+
+    bool buffed = fireball.isBoosted(), poisoned = fireball.isPoisoned();
+    if (buffed || poisoned) {
+        if (buffed) {
+            auto cnt = params[CatalystParams::FBBuffCnt];
+            cnt.set(cnt.get() + 1);
+        }
+        if (poisoned) {
+            auto cnt = params[CatalystParams::FBPoisCnt];
+            cnt.set(cnt.get() + 1);
+        }
+    } else {
+        auto cnt = params[CatalystParams::FBRegCnt];
+        cnt.set(cnt.get() + 1);
+    }
 }
 
 void Catalyst::onRender(SDL_Renderer* r) {
@@ -173,12 +196,35 @@ Number Catalyst::calcGain(Number magic) {
     return magic;
 }
 
+Number Catalyst::calcFbCntEffect() {
+    ParameterSystem::Params<CATALYST> params;
+    return (params[CatalystParams::FBRegCnt].get() + 1) *
+           ((params[CatalystParams::FBPoisCnt].get() + 1).sqrt() ^
+            (params[CatalystParams::FBBuffCnt].get() + 10).logTen());
+}
+
 void Catalyst::drawMagic() {
     ParameterSystem::Params<CATALYST> params;
     std::stringstream ss;
-    ss << "{i} " << params[CatalystParams::Magic].get().toString() << "/{b}"
-       << params[CatalystParams::Capacity].get().toString();
+    std::vector<RenderTextureCPtr> imgs = {
+        Money::GetMoneyIcon(params[CatalystParams::Magic]),
+        IconSystem::Get(WizardDefs::FB_IMG)};
+
+    ss << "{i} " << params[CatalystParams::Magic].get() << "/{b}"
+       << params[CatalystParams::Capacity].get() << "\n"
+       << params[CatalystParams::FBRegCnt].get() << "{i}";
+    Number cnt = params[CatalystParams::FBBuffCnt].get();
+    if (cnt > 0) {
+        ss << " " << cnt << "{i}";
+        imgs.push_back(IconSystem::Get(WizardDefs::FB_BUFFED_IMG));
+    }
+    cnt = params[CatalystParams::FBPoisCnt].get();
+    if (cnt > 0) {
+        ss << " " << cnt << "{i}";
+        imgs.push_back(IconSystem::Get(WizardDefs::FB_POISON_IMG));
+    }
     mMagicText->setText(ss.str(), mPos->rect.W());
+    mMagicText->setImgs(imgs);
 }
 
 void Catalyst::updateRange() {

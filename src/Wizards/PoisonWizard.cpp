@@ -30,7 +30,32 @@ void PoisonWizard::setSubscriptions() {
 }
 void PoisonWizard::setUpgrades() {
     ParameterSystem::Params<POISON_WIZARD> params;
+    ParameterSystem::Params<CRYSTAL> cryParams;
     ParameterSystem::States states;
+
+    UnlockablePtr uUp =
+        std::make_shared<Unlockable>(states[State::CrysPoisonActive]);
+    uUp->setImage("");
+    uUp->setDescription(
+        {"{i} gains a % of best {i} over time\n{i} will increase the %",
+         {IconSystem::Get(CrystalDefs::IMG),
+          Money::GetMoneyIcon(UpgradeDefaults::CRYSTAL_MAGIC),
+          IconSystem::Get(WizardDefs::FB_IMG)}});
+    uUp->setCost(UpgradeDefaults::CRYSTAL_SHARDS,
+                 params[PoisonWizardParams::CrysPoisonUpCost]);
+    uUp->setEffects(
+        {cryParams[CrystalParams::PoisonMagic],
+         cryParams[CrystalParams::PoisonRate]},
+        {uUp->level()}, [states, cryParams]() -> TextUpdateData {
+            std::stringstream ss;
+            ss << UpgradeDefaults::PercentEffectText(
+                      cryParams[CrystalParams::PoisonRate].get())
+               << " * " << cryParams[CrystalParams::PoisonMagic].get()
+               << "{i}/s";
+            return {ss.str(),
+                    {Money::GetMoneyIcon(UpgradeDefaults::CRYSTAL_MAGIC)}};
+        });
+    mCrysPoisonUp = mUpgrades->subscribe(uUp);
 
     UpgradePtr up = std::make_shared<Upgrade>(
         params[PoisonWizardParams::CatGainUp1Lvl], 10);
@@ -57,7 +82,7 @@ void PoisonWizard::setUpgrades() {
     up->setEffects(
         params[PoisonWizardParams::CatGainUp2],
         [](const Number& effect) -> TextUpdateData {
-            return {"log(x) -> x" + UpgradeDefaults::PowerEffect(effect).text};
+            return {"log(x) -> x" + UpgradeDefaults::PowerEffectText(effect)};
         });
     mParamSubs.push_back(params[PoisonWizardParams::CatGainUp2Cost].subscribeTo(
         up->level(),
@@ -138,13 +163,8 @@ void PoisonWizard::calcTimer() {
 
 void PoisonWizard::shootFireball() {
     auto data = newFireballData();
-    float rand = rDist(gen) * 3;
     mFireballs->push_back(ComponentFactory<PoisonFireball>::New(
-        SDL_FPoint{mPos->rect.cX(), mPos->rect.cY()},
-        rand < 3   ? CRYSTAL
-        : rand < 2 ? CATALYST
-                   : ROBOT_WIZARD,
-        data));
+        SDL_FPoint{mPos->rect.cX(), mPos->rect.cY()}, ROBOT_WIZARD, data));
 
     for (int i = 0; i < 25; i++) {
         float theta = rDist(gen) * 2 * M_PI;

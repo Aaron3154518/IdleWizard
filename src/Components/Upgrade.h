@@ -40,10 +40,15 @@ struct UpgradeCost {
 namespace UpgradeDefaults {
 extern const ParameterSystem::BaseValue CRYSTAL_MAGIC, CRYSTAL_SHARDS;
 
+std::string NoEffectText(const Number& effect);
 TextUpdateData NoEffect(const Number& effect);
+std::string AdditiveEffectText(const Number& effect);
 TextUpdateData AdditiveEffect(const Number& effect);
+std::string MultiplicativeEffectText(const Number& effect);
 TextUpdateData MultiplicativeEffect(const Number& effect);
+std::string PercentEffectText(const Number& effect);
 TextUpdateData PercentEffect(const Number& effect);
+std::string PowerEffectText(const Number& effect);
 TextUpdateData PowerEffect(const Number& effect);
 
 ParameterSystem::ParameterSubscriptionPtr subscribeT1UpCost(

@@ -14,7 +14,9 @@
 #include <Systems/ParameterSystem/WizardParameters.h>
 #include <Systems/WizardSystem.h>
 #include <Wizards/Definitions/CatalystDefs.h>
+#include <Wizards/Definitions/CrystalDefs.h>
 #include <Wizards/Definitions/PoisonWizardDefs.h>
+#include <Wizards/Definitions/WizardDefs.h>
 #include <Wizards/Money.h>
 #include <Wizards/WizardBase.h>
 #include <Wizards/WizardIds.h>
@@ -45,7 +47,7 @@ class PoisonWizard : public WizardBase {
 
     TimerObservable::SubscriptionPtr mFireballTimerSub;
     TimeSystem::TimerObservable::SubscriptionPtr mAnimTimerSub;
-    UpgradeList::SubscriptionPtr mCatGainUp1, mCatGainUp2;
+    UpgradeList::SubscriptionPtr mCrysPoisonUp, mCatGainUp1, mCatGainUp2;
     WizardSystem::WizardEventObservable::IdSubscriptionPtr mT1ResetSub;
 
     PoisonFireballListPtr mFireballs;

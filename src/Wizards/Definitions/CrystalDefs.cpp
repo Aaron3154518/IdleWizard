@@ -18,9 +18,10 @@ void setDefaults() {
 
     ParameterSystem::Params<CRYSTAL> params;
 
-    // Default 0
     params[CrystalParams::Magic]->init(0, Event::ResetT1);
     params[CrystalParams::Shards]->init(0, Event::ResetT2);
+    params[CrystalParams::PoisonMagic]->init(0, Event::ResetT1);
+    params[CrystalParams::PoisonRate]->init(1, Event::ResetT1);
 
     params[CrystalParams::WizardCntUpCost]->init(Number(1, 4));
     params[CrystalParams::GlowUpCost]->init(Number(1, 11));
@@ -32,12 +33,12 @@ void setDefaults() {
     ParameterSystem::States states;
 
     states[State::ResetT1]->init(false);
-    states[State::CrysGlowActive]->init(false, Event::ResetT1);
-    states[State::CrysPoisoned]->init(false, Event::ResetT1);
+    states[State::CrysPoisonActive]->init(false, Event::ResetT1);
     states[State::BoughtCrysWizCntUp]->init(false, Event::ResetT1);
     states[State::BoughtCrysGlowUp]->init(false, Event::ResetT1);
     states[State::BoughtPowerWizard]->init(false, Event::ResetT1);
     states[State::BoughtTimeWizard]->init(false, Event::ResetT1);
+    states[State::CrysGlowActive]->init(false, Event::ResetT2);
     states[State::BoughtCatalyst]->init(false, Event::ResetT2);
     states[State::BoughtPoisonWizard]->init(false, Event::ResetT2);
     states[State::BoughtRobotWizard]->init(false, Event::ResetT2);

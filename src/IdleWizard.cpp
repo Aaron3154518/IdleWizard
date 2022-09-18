@@ -65,7 +65,7 @@ int main(int argc, char* argv[]) {
                     UpgradeDefaults::CRYSTAL_SHARDS);
                 GetWizardUpgrades(CRYSTAL)->maxAll(
                     UpgradeDefaults::CRYSTAL_SHARDS);
-                cryParams[CrystalParams::Shards].set(2000);
+                cryParams[CrystalParams::Shards].set(Number(1, 10));
             case Start::Fracture:
                 states[State::BoughtPowerWizard].set(true);
                 states[State::BoughtTimeWizard].set(true);

@@ -31,18 +31,31 @@ const ParameterSystem::BaseValue CRYSTAL_MAGIC =
 const ParameterSystem::BaseValue CRYSTAL_SHARDS =
     ParameterSystem::Param<CRYSTAL>(CrystalParams::Shards);
 
-TextUpdateData NoEffect(const Number& effect) { return {effect.toString()}; }
+std::string NoEffectText(const Number& effect) { return effect.toString(); }
+TextUpdateData NoEffect(const Number& effect) { return {NoEffectText(effect)}; }
+std::string AdditiveEffectText(const Number& effect) {
+    return "+" + effect.toString();
+}
 TextUpdateData AdditiveEffect(const Number& effect) {
-    return {"+" + effect.toString()};
+    return {AdditiveEffectText(effect)};
+}
+std::string MultiplicativeEffectText(const Number& effect) {
+    return effect.toString() + "x";
 }
 TextUpdateData MultiplicativeEffect(const Number& effect) {
-    return {effect.toString() + "x"};
+    return {MultiplicativeEffectText(effect)};
+}
+std::string PercentEffectText(const Number& effect) {
+    return (effect * 100).toString() + "%";
 }
 TextUpdateData PercentEffect(const Number& effect) {
-    return {(effect * 100).toString() + "%"};
+    return {PercentEffectText(effect)};
+}
+std::string PowerEffectText(const Number& effect) {
+    return "^" + effect.toString();
 }
 TextUpdateData PowerEffect(const Number& effect) {
-    return {"^" + effect.toString()};
+    return {PowerEffectText(effect)};
 }
 
 ParameterSystem::ParameterSubscriptionPtr subscribeT1UpCost(

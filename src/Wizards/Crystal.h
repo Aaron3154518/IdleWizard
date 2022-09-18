@@ -50,7 +50,6 @@ class Crystal : public WizardBase {
     void onT1Reset();
     void onWizFireballHit(const WizardFireball& fireball);
     void onPowFireballHit(const PowerFireball& fireball);
-    void onPoisFireballHit(const PoisonFireball& fireball);
     bool onGlowTimer(Timer& t);
     bool onGlowFinishTimer(Timer& t, const Number& magic);
     bool onPoisonTimer(Timer& t);
@@ -71,11 +70,9 @@ class Crystal : public WizardBase {
     void setPos(float x, float y);
 
     TimeSystem::TimerObservable::SubscriptionPtr mAnimTimerSub, mGlowTimerSub,
-        mGlowFinishTimerSub, mGlowAnimTimerSub, mPoisonTimerSub,
-        mPoisonEffectTimerSub;
+        mGlowFinishTimerSub, mGlowAnimTimerSub, mPoisonTimerSub;
     WizardFireball::HitObservable::IdSubscriptionPtr mWizFireballHitSub;
     PowerFireball::HitObservable::IdSubscriptionPtr mPowFireballHitSub;
-    PoisonFireball::HitObservable::IdSubscriptionPtr mPoisFireballHitSub;
     WizardSystem::WizardEventObservable::IdSubscriptionPtr mT1ResetSub;
     UpgradeList::SubscriptionPtr mMagicEffectDisplay, mWizCntUp, mGlowUp,
         mPowWizBuy, mTimeWizBuy, mCatalystBuy, mPoisWizBuy, mRobotBuy;
@@ -83,7 +80,7 @@ class Crystal : public WizardBase {
     MessageHandlerPtr mMessages;
 
     bool mGlowFinishing = false;
-    Number mGlowMagic, mPoisonMagic;
+    Number mGlowMagic;
     std::vector<std::unique_ptr<FireRing>> mFireRings;
     std::unique_ptr<FractureButton> mFractureBtn;
 

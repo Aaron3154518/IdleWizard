@@ -92,6 +92,9 @@ WizardFireball::Data WizardFireball::getData() const {
     return {mPower, mSize, mSpeed, mBoosted, mPoisoned};
 }
 
+bool WizardFireball::isBoosted() const { return mBoosted; }
+bool WizardFireball::isPoisoned() const { return mPoisoned; }
+
 const Number& WizardFireball::getPower() const { return mPower; }
 void WizardFireball::setPower(const Number& pow) { mPower = pow; }
 

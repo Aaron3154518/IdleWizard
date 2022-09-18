@@ -43,8 +43,6 @@ void Crystal::setSubscriptions() {
         [this](const WizardFireball& f) { onWizFireballHit(f); }, mId);
     mPowFireballHitSub = PowerFireball::GetHitObservable()->subscribe(
         [this](const PowerFireball& f) { onPowFireballHit(f); }, mId);
-    mPoisFireballHitSub = PoisonFireball::GetHitObservable()->subscribe(
-        [this](const PoisonFireball& f) { onPoisFireballHit(f); }, mId);
     mAnimTimerSub = TimeSystem::GetTimerObservable()->subscribe(
         [this](Timer& t) {
             mImg->nextFrame();
@@ -63,14 +61,13 @@ void Crystal::setSubscriptions() {
             return true;
         },
         CrystalDefs::GLOW_EFFECT_IMG);
-    mPoisonEffectTimerSub = TimeSystem::GetTimerObservable()->subscribe(
+    mPoisonTimerSub = TimeSystem::GetTimerObservable()->subscribe(
         [this](Timer& t) { return onPoisonTimer(t); }, Timer(500));
     mT1ResetSub = WizardSystem::GetWizardEventObservable()->subscribe(
         [this]() { onT1Reset(); }, WizardSystem::Event::ResetT1);
     attachSubToVisibility(mWizFireballHitSub);
     attachSubToVisibility(mPowFireballHitSub);
-    attachSubToVisibility(mPoisFireballHitSub);
-    attachSubToVisibility(mPoisonEffectTimerSub);
+    attachSubToVisibility(mPoisonTimerSub);
 }
 void Crystal::setUpgrades() {
     ParameterSystem::Params<CRYSTAL> params;
@@ -246,14 +243,16 @@ void Crystal::setParamTriggers() {
 
     mParamSubs.push_back(ParameterSystem::subscribe(
         {params[CrystalParams::Magic], params[CrystalParams::T1ResetCost]}, {},
-        [this]() {
-            ParameterSystem::Params<CRYSTAL> params;
+        [this, params]() {
             mFractureBtn->setHidden(params[CrystalParams::Magic].get() <
                                     params[CrystalParams::T1ResetCost].get());
         }));
 
-    mParamSubs.push_back(states[State::CrysPoisoned].subscribe(
-        [this](bool poisoned) { mPoisonEffectTimerSub->setActive(poisoned); }));
+    mParamSubs.push_back(states[State::CrysPoisonActive].subscribe(
+        [this, params](bool poisoned) {
+            mPoisonTimerSub->setActive(poisoned);
+            params[CrystalParams::PoisonMagic].set(0);
+        }));
 }
 
 void Crystal::onRender(SDL_Renderer* r) {
@@ -317,7 +316,6 @@ void Crystal::onT1Reset() {
     mGlowFinishing = false;
     mGlowFinishTimerSub.reset();
     mGlowAnimTimerSub.reset();
-    mPoisonTimerSub.reset();
 }
 
 void Crystal::onWizFireballHit(const WizardFireball& fireball) {
@@ -329,6 +327,13 @@ void Crystal::onWizFireballHit(const WizardFireball& fireball) {
         addMagic(MagicSource::Fireball, fireball.getPower(),
                  CrystalDefs::MSG_COLOR);
     }
+
+    if (fireball.isPoisoned() &&
+        ParameterSystem::Param(State::CrysPoisonActive).get()) {
+        auto poisonRate =
+            ParameterSystem::Param<CRYSTAL>(CrystalParams::PoisonRate);
+        poisonRate.set(poisonRate.get() + .5);
+    }
 }
 
 void Crystal::onPowFireballHit(const PowerFireball& fireball) {
@@ -339,23 +344,6 @@ void Crystal::onPowFireballHit(const PowerFireball& fireball) {
             [this](Timer& t) { return onGlowTimer(t); },
             Timer(fireball.getDuration().toFloat()));
         states[State::CrysGlowActive].set(true);
-    }
-}
-
-void Crystal::onPoisFireballHit(const PoisonFireball& fireball) {
-    auto poisoned = ParameterSystem::Param(State::CrysPoisoned);
-    if (!poisoned.get()) {
-        mPoisonMagic = 0;
-        mPoisonTimerSub = TimeSystem::GetTimerObservable()->subscribe(
-            [this, poisoned](Timer& t) {
-                poisoned.set(false);
-                return false;
-            },
-            Timer(fireball.getDuration().toInt()));
-        poisoned.set(true);
-    } else {
-        Timer& t = mPoisonTimerSub->get<TimeSystem::TimerObservable::DATA>();
-        t.timer = std::max(t.timer, fireball.getDuration().toInt());
     }
 }
 
@@ -389,13 +377,20 @@ bool Crystal::onGlowFinishTimer(Timer& t, const Number& magic) {
 }
 
 bool Crystal::onPoisonTimer(Timer& t) {
-    ParameterSystem::Params<POISON_WIZARD> params;
+    if (ParameterSystem::Param(State::CrysPoisonActive).get()) {
+        auto poisonMagic =
+            ParameterSystem::Param<CRYSTAL>(CrystalParams::PoisonMagic);
+        auto poisonRate =
+            ParameterSystem::Param<CRYSTAL>(CrystalParams::PoisonRate);
+        auto poisonDecay = ParameterSystem::Param<POISON_WIZARD>(
+            PoisonWizardParams::PoisonDecay);
 
-    if (mPoisonMagic > 0) {
         float s = (float)t.length / 1000;
-        addMagic(MagicSource::Poison, mPoisonMagic * s,
+        addMagic(MagicSource::Poison, poisonMagic.get() * poisonRate.get() * s,
                  CrystalDefs::POISON_MSG_COLOR);
-        mPoisonMagic *= params[PoisonWizardParams::PoisonDecay].get() ^ s;
+        if (poisonRate.get() > 1) {
+            poisonRate.set(max(1, poisonRate.get() * (poisonDecay.get() ^ s)));
+        }
     }
 
     return true;
@@ -465,11 +460,15 @@ void Crystal::addMagic(MagicSource source, const Number& amnt,
     auto magic = ParameterSystem::Param<CRYSTAL>(CrystalParams::Magic);
     magic.set(magic.get() + amnt);
     mMessages->addMessage(mPos->rect, "+" + amnt.toString(), msgColor);
+
+    auto poisonMagic =
+        ParameterSystem::Param<CRYSTAL>(CrystalParams::PoisonMagic);
     switch (source) {
         case MagicSource::Fireball:
         case MagicSource::Glow:
-            if (ParameterSystem::Param(State::CrysPoisoned).get()) {
-                mPoisonMagic += amnt;
+            if (ParameterSystem::Param(State::CrysPoisonActive).get() &&
+                amnt > poisonMagic.get()) {
+                poisonMagic.set(amnt);
             }
             break;
     };

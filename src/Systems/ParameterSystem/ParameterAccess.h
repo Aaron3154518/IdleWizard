@@ -172,16 +172,20 @@ ParameterSubscriptionPtr subscribe(
 // Provides easy access to params from one wizard
 template <WizardId id>
 struct Params {
-    BaseValue operator[](WizardBaseType<id> key) { return Param<id>(key); }
+    BaseValue operator[](WizardBaseType<id> key) const {
+        return Param<id>(key);
+    }
 
-    NodeValue operator[](WizardNodeType<id> key) { return Param<id>(key); }
+    NodeValue operator[](WizardNodeType<id> key) const {
+        return Param<id>(key);
+    }
 };
 
 // Provides easy access to state params
 struct States {
-    BaseState operator[](State::B key);
+    BaseState operator[](State::B key) const;
 
-    NodeState operator[](State::N key);
+    NodeState operator[](State::N key) const;
 };
 }  // namespace ParameterSystem
 

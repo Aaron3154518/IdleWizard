@@ -32,6 +32,9 @@ class WizardFireball : public Fireball {
 
     Data getData() const;
 
+    bool isBoosted() const;
+    bool isPoisoned() const;
+
     const Number& getPower() const;
     void setPower(const Number& pow);
 

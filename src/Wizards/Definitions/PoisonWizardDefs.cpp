@@ -13,6 +13,7 @@ void setDefaults() {
 
     params[PoisonWizardParams::BaseSpeed]->init(.125);
     params[PoisonWizardParams::PoisonDecay]->init(.95);
+    params[PoisonWizardParams::CrysPoisonUpCost]->init(Number(1, 5));
 
     ParameterSystem::States states;
 }

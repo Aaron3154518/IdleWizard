@@ -48,6 +48,8 @@ namespace CrystalParams {
 enum B : param_t {
     Magic = 0,
     Shards,
+    PoisonMagic,
+    PoisonRate,
 
     WizardCntUpCost,
     GlowUpCost,
@@ -164,6 +166,8 @@ enum B : param_t {
 
     CatGainUp1Lvl,
     CatGainUp2Lvl,
+
+    CrysPoisonUpCost,
 };
 
 enum N : param_t {

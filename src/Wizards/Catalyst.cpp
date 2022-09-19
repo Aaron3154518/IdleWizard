@@ -212,7 +212,7 @@ void Catalyst::onRender(SDL_Renderer* r) {
 
 Number Catalyst::calcMagicEffect() {
     ParameterSystem::Params<CATALYST> params;
-    return (params[CatalystParams::Magic].get() + 1).logTen() * 2 + 1;
+    return (params[CatalystParams::Magic].get() ^ .5) + 1;
 }
 
 Number Catalyst::calcRange() {

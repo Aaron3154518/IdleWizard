@@ -23,6 +23,8 @@ void setDefaults() {
 
     params[CatalystParams::RangeUpLvl]->init(Event::ResetT2);
     params[CatalystParams::ZapCntUpLvl]->init(Event::ResetT2);
+    params[CatalystParams::GainUp1Lvl]->init(Event::ResetT2);
+    params[CatalystParams::GainUp2Lvl]->init(Event::ResetT2);
 
     ParameterSystem::States states;
 

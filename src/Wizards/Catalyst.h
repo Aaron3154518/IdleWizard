@@ -49,7 +49,7 @@ class Catalyst : public WizardBase {
     WizardFireball::HitObservable::IdSubscriptionPtr mWizFireballSub;
     WizardSystem::CatalystMagicObservable::SubscriptionPtr mMagicSub;
     UpgradeList::SubscriptionPtr mMagicEffectDisplay, mRangeUp, mZapCntUp,
-        mShardUp;
+        mShardUp, mGainUp1, mGainUp2;
 
     MessageHandlerPtr mMessages;
 

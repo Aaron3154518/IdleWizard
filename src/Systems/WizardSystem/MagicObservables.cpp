@@ -4,17 +4,16 @@ namespace WizardSystem {
 // CatalystMagicObservable
 void CatalystMagicObservable::next(const WizardFireball& fb) {
     ParameterSystem::Params<CATALYST> params;
-    ParameterSystem::Params<POISON_WIZARD> poiParams;
 
     Number magic = fb.getPower();
 
-    if (poiParams[PoisonWizardParams::CatGainUp2Lvl].get() > 0) {
-        magic ^= poiParams[PoisonWizardParams::CatGainUp2].get();
+    if (params[CatalystParams::GainUp2Lvl].get() > 0) {
+        magic ^= params[CatalystParams::GainUp2].get();
     } else {
         magic.logTen();
     }
 
-    magic *= poiParams[PoisonWizardParams::CatGainUp1].get();
+    magic *= params[CatalystParams::GainUp1].get();
 
     next(magic);
 }

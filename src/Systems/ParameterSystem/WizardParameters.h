@@ -88,6 +88,8 @@ enum B : param_t {
 
     RangeUpLvl,
     ZapCntUpLvl,
+    GainUp1Lvl,
+    GainUp2Lvl,
 
     ShardGainUpCost,
 };
@@ -102,6 +104,11 @@ enum N : param_t {
 
     ZapCnt,
     ZapCntUpCost,
+
+    GainUp1,
+    GainUp1Cost,
+    GainUp2,
+    GainUp2Cost,
 
     ShardGainUp,
 };
@@ -172,19 +179,11 @@ enum B : param_t {
 
     PoisonDecay,
 
-    CatGainUp1Lvl,
-    CatGainUp2Lvl,
-
     CrysPoisonUpCost,
 };
 
 enum N : param_t {
     Speed = 0,
-
-    CatGainUp1,
-    CatGainUp1Cost,
-    CatGainUp2,
-    CatGainUp2Cost,
 };
 }  // namespace PoisonWizardParams
 namespace RobotWizardParams {

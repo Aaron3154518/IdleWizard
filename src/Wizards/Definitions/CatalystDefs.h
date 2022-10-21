@@ -14,6 +14,10 @@ namespace CatalystDefs {
 extern const unsigned int MSPF, NUM_FRAMES;
 extern const AnimationData IMG;
 
+extern const ParameterSystem::BaseValue REG_FB_CNT, POW_FB_CNT, POI_FB_CNT;
+enum FBCntUpBuyType { Reg = 0, Pow, Poi };
+extern const std::vector<ParameterSystem::BaseValue> FB_CNT_TYPES;
+
 void setDefaults();
 }  // namespace CatalystDefs
 

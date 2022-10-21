@@ -141,6 +141,12 @@ void UpgradeBase::setDescription(const TextUpdateData& data) {
 void UpgradeBase::setEffect(const TextUpdateData& data) {
     updateDesc(DescType::Effect, data);
 }
+void UpgradeBase::setEffectText(const std::string& text) {
+    updateDescText(DescType::Effect, text);
+}
+void UpgradeBase::setEffectImgs(const std::vector<RenderTextureCPtr>& imgs) {
+    updateDescImgs(DescType::Effect, imgs);
+}
 
 void UpgradeBase::drawIcon(TextureBuilder& tex, const Rect& r) {
     mImg.setDest(r);
@@ -177,7 +183,15 @@ void UpgradeBase::drawDescription(TextureBuilder tex, SDL_FPoint offset) {
 }
 
 void UpgradeBase::updateDesc(DescType type, const TextUpdateData& text) {
-    mDescText[type].text->setText(text.text, GetDescWidth()).setImgs(text.imgs);
+    updateDescText(type, text.text);
+    updateDescImgs(type, text.imgs);
+}
+void UpgradeBase::updateDescText(DescType type, const std::string& text) {
+    mDescText[type].text->setText(text, GetDescWidth());
+}
+void UpgradeBase::updateDescImgs(DescType type,
+                                 const std::vector<RenderTextureCPtr>& imgs) {
+    mDescText[type].text->setImgs(imgs);
 }
 
 // Cost

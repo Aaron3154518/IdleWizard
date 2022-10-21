@@ -24,6 +24,12 @@ RenderTextureCPtr GetMoneyIcon(const ParameterSystem::ValueParam& param) {
                 case CatalystParams::Magic:
                     data = CATALYST_MAGIC;
                     break;
+                case CatalystParams::FBRegCnt:
+                    return IconSystem::Get(WizardDefs::FB_IMG);
+                case CatalystParams::FBPowCnt:
+                    return IconSystem::Get(PowerWizardDefs::FB_IMG);
+                case CatalystParams::FBPoiCnt:
+                    return IconSystem::Get(PoisonWizardDefs::GLOB_IMG);
             };
             break;
     };

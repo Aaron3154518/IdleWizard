@@ -81,8 +81,8 @@ enum B : param_t {
     Capacity,
 
     FBRegCnt,
-    FBBuffCnt,
-    FBPoisCnt,
+    FBPowCnt,
+    FBPoiCnt,
 
     BaseRange,
 
@@ -90,13 +90,17 @@ enum B : param_t {
     ZapCntUpLvl,
     GainUp1Lvl,
     GainUp2Lvl,
+    FBCntLvl,
 
     ShardGainUpCost,
 };
 
 enum N : param_t {
     MagicEffect = 0,
+
     FBCntEffect,
+    FBCntMaxLvl,
+    FBCntUpCost,
 
     Range,
     RangeUpCost,

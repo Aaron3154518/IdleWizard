@@ -38,7 +38,8 @@ struct UpgradeCost {
 };
 
 namespace UpgradeDefaults {
-extern const ParameterSystem::BaseValue CRYSTAL_MAGIC, CRYSTAL_SHARDS, CATALYST_MAGIC;
+extern const ParameterSystem::BaseValue CRYSTAL_MAGIC, CRYSTAL_SHARDS,
+    CATALYST_MAGIC;
 
 std::string NoEffectText(const Number& effect);
 TextUpdateData NoEffect(const Number& effect);
@@ -76,6 +77,8 @@ class UpgradeBase {
     void setImage(const std::string& file);
     void setDescription(const TextUpdateData& data);
     void setEffect(const TextUpdateData& data);
+    void setEffectText(const std::string& text);
+    void setEffectImgs(const std::vector<RenderTextureCPtr>& imgs);
 
     void drawIcon(TextureBuilder& tex, const Rect& r);
     void drawDescription(TextureBuilder tex, SDL_FPoint offset = {0, 0});
@@ -113,6 +116,9 @@ class UpgradeBase {
     };
 
     void updateDesc(DescType type, const TextUpdateData& text);
+    void updateDescText(DescType type, const std::string& text);
+    void updateDescImgs(DescType type,
+                        const std::vector<RenderTextureCPtr>& imgs);
 
     std::unique_ptr<UpgradeCost> mCost;
     ParameterSystem::ParameterSubscriptionPtr mCostSub, mEffectSub;

@@ -46,7 +46,8 @@ void Catalyst::setUpgrades() {
     DisplayPtr dUp = std::make_shared<Display>();
     dUp->setImage(WIZ_IMGS.at(mId));
     dUp->setEffects(
-        {params[CatalystParams::MagicEffect], params[CatalystParams::Range]},
+        {params[CatalystParams::MagicEffect],
+         params[CatalystParams::FBCntEffect], params[CatalystParams::Range]},
         {}, []() -> TextUpdateData {
             ParameterSystem::Params<CATALYST> params;
 
@@ -130,7 +131,7 @@ void Catalyst::setUpgrades() {
         up->level(), [](const Number& lvl) { return 2 ^ lvl; }));
     mGainUp1 = mUpgrades->subscribe(up);
 
-    // Boost catalyst gain
+    // Boost catalyst gain 2
     up = std::make_shared<Upgrade>(params[CatalystParams::GainUp2Lvl], 5);
     up->setImage("");
     up->setDescription(
@@ -148,6 +149,56 @@ void Catalyst::setUpgrades() {
     mParamSubs.push_back(params[CatalystParams::GainUp2].subscribeTo(
         up->level(), [](const Number& lvl) { return lvl / 10; }));
     mGainUp2 = mUpgrades->subscribe(up);
+
+    // Fireball count upgrade
+    up = std::make_shared<Upgrade>(params[CatalystParams::FBCntLvl],
+                                   params[CatalystParams::FBCntMaxLvl]);
+    up->setImage("");
+    up->setDescription({"Hitting {i} with {i} boosts {i} power",
+                        {IconSystem::Get(CatalystDefs::IMG),
+                         IconSystem::Get(WizardDefs::FB_IMG),
+                         IconSystem::Get(WizardDefs::IMG)}});
+    mParamSubs.push_back(params[CatalystParams::FBCntMaxLvl].subscribeTo(
+        states[State::BoughtPoisonWizard], [](bool bought) {
+            return CatalystDefs::FB_CNT_TYPES.size() - (bought ? 1 : 2);
+        }));
+    mParamSubs.push_back(params[CatalystParams::FBCntUpCost].subscribeTo(
+        up->level(), [up, params](const Number& lvl) {
+            up->setCost(CatalystDefs::FB_CNT_TYPES.at(lvl.toInt()),
+                        params[CatalystParams::FBCntUpCost]);
+            switch (lvl.toInt()) {
+                case CatalystDefs::FBCntUpBuyType::Reg:
+                    return 1000;
+                case CatalystDefs::FBCntUpBuyType::Pow:
+                    return 100;
+                case CatalystDefs::FBCntUpBuyType::Poi:
+                    return 50;
+            };
+            return 0;
+        }));
+    mParamSubs.push_back(ParameterSystem::subscribe(
+        {CatalystDefs::REG_FB_CNT, CatalystDefs::POW_FB_CNT,
+         CatalystDefs::POI_FB_CNT, up->level()},
+        {}, [up]() {
+            int lvl = up->level().get().toInt();
+            std::stringstream ss;
+            for (int i = 0; i < lvl; i++) {
+                if (i > 0) {
+                    ss << "\n";
+                }
+                ss << CatalystDefs::FB_CNT_TYPES.at(i + 1).get() << "{i}";
+            }
+            up->setEffectText(ss.str());
+        }));
+    mParamSubs.push_back(up->level().subscribe([up](const Number& lvl) {
+        std::vector<RenderTextureCPtr> imgs;
+        for (int i = 0; i < lvl; i++) {
+            imgs.push_back(
+                Money::GetMoneyIcon(CatalystDefs::FB_CNT_TYPES.at(i + 1)));
+        }
+        up->setEffectImgs(imgs);
+    }));
+    mFbCountUp = mUpgrades->subscribe(up);
 }
 void Catalyst::setParamTriggers() {
     ParameterSystem::Params<CATALYST> params;
@@ -160,10 +211,9 @@ void Catalyst::setParamTriggers() {
     mParamSubs.push_back(params[CatalystParams::Range].subscribeTo(
         {params[CatalystParams::BaseRange], params[CatalystParams::RangeUp]},
         {}, [this]() { return calcRange(); }));
-
     mParamSubs.push_back(params[CatalystParams::FBCntEffect].subscribeTo(
-        {params[CatalystParams::FBRegCnt], params[CatalystParams::FBBuffCnt],
-         params[CatalystParams::FBPoisCnt]},
+        {CatalystDefs::REG_FB_CNT, CatalystDefs::POW_FB_CNT,
+         CatalystDefs::POI_FB_CNT, params[CatalystParams::FBCntLvl]},
         {}, [this]() { return calcFbCntEffect(); }));
 
     mParamSubs.push_back(ParameterSystem::subscribe(
@@ -171,8 +221,8 @@ void Catalyst::setParamTriggers() {
         [this]() { drawMagic(); }));
 
     mParamSubs.push_back(ParameterSystem::subscribe(
-        {params[CatalystParams::FBRegCnt], params[CatalystParams::FBBuffCnt],
-         params[CatalystParams::FBPoisCnt]},
+        {CatalystDefs::REG_FB_CNT, CatalystDefs::POW_FB_CNT,
+         CatalystDefs::POI_FB_CNT},
         {}, [this]() { drawFbCounts(); }));
 
     mParamSubs.push_back(ParameterSystem::subscribe(
@@ -180,12 +230,12 @@ void Catalyst::setParamTriggers() {
         {states[State::BoughtPowerWizard], states[State::BoughtPoisonWizard]},
         [this, states]() {
             std::vector<RenderTextureCPtr> imgs = {
-                IconSystem::Get(WizardDefs::FB_IMG)};
+                Money::GetMoneyIcon(CatalystDefs::REG_FB_CNT)};
             if (states[State::BoughtPowerWizard].get()) {
-                imgs.push_back(IconSystem::Get(WizardDefs::FB_BUFFED_IMG));
+                imgs.push_back(Money::GetMoneyIcon(CatalystDefs::POW_FB_CNT));
             }
             if (states[State::BoughtPoisonWizard].get()) {
-                imgs.push_back(IconSystem::Get(WizardDefs::FB_POISON_IMG));
+                imgs.push_back(Money::GetMoneyIcon(CatalystDefs::POI_FB_CNT));
             }
             mFbCntText->setImgs(imgs);
 
@@ -215,15 +265,15 @@ void Catalyst::onWizFireballHit(const WizardFireball& fireball) {
     bool buffed = fireball.isBoosted(), poisoned = fireball.isPoisoned();
     if (buffed || poisoned) {
         if (buffed) {
-            auto cnt = params[CatalystParams::FBBuffCnt];
+            auto cnt = CatalystDefs::POW_FB_CNT;
             cnt.set(cnt.get() + 1);
         }
         if (poisoned) {
-            auto cnt = params[CatalystParams::FBPoisCnt];
+            auto cnt = CatalystDefs::POI_FB_CNT;
             cnt.set(cnt.get() + 1);
         }
     } else {
-        auto cnt = params[CatalystParams::FBRegCnt];
+        auto cnt = CatalystDefs::REG_FB_CNT;
         cnt.set(cnt.get() + 1);
     }
 }
@@ -266,9 +316,18 @@ Number Catalyst::calcRange() {
 
 Number Catalyst::calcFbCntEffect() {
     ParameterSystem::Params<CATALYST> params;
-    return (params[CatalystParams::FBRegCnt].get() + 1) *
-           ((params[CatalystParams::FBPoisCnt].get() + 1).sqrt() ^
-            (params[CatalystParams::FBBuffCnt].get() + 10).logTen());
+    Number reg_effect = 1, pow_effect = 1, poi_effect = 1;
+    int lvl = params[CatalystParams::FBCntLvl].get().toInt();
+    if (lvl > CatalystDefs::FBCntUpBuyType::Reg) {
+        reg_effect = CatalystDefs::REG_FB_CNT.get() + 1;
+        if (lvl > CatalystDefs::FBCntUpBuyType::Pow) {
+            pow_effect = (CatalystDefs::POW_FB_CNT.get() + 10).logTen();
+            if (lvl > CatalystDefs::FBCntUpBuyType::Poi) {
+                poi_effect = (CatalystDefs::POI_FB_CNT.get() + 1).sqrt();
+            }
+        }
+    }
+    return reg_effect * ((poi_effect * pow_effect) ^ pow_effect);
 }
 
 void Catalyst::drawMagic() {
@@ -284,12 +343,12 @@ void Catalyst::drawFbCounts() {
     ParameterSystem::States states;
 
     std::stringstream ss;
-    ss << params[CatalystParams::FBRegCnt].get() << "{i}";
+    ss << CatalystDefs::REG_FB_CNT.get() << "{i}";
     if (states[State::BoughtPowerWizard].get()) {
-        ss << "\n" << params[CatalystParams::FBBuffCnt].get() << "{i}";
+        ss << "\n" << CatalystDefs::POW_FB_CNT.get() << "{i}";
     }
     if (states[State::BoughtPoisonWizard].get()) {
-        ss << "\n" << params[CatalystParams::FBPoisCnt].get() << "{i}";
+        ss << "\n" << CatalystDefs::POI_FB_CNT.get() << "{i}";
     }
     mFbCntText->setText(ss.str(), mPos->rect.W());
 }

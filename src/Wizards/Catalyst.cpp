@@ -20,11 +20,6 @@ void Catalyst::init() {
     mMagicRender.setFit(RenderData::FitMode::Texture);
     mMagicRender.setFitAlign(Rect::Align::CENTER, Rect::Align::TOP_LEFT);
 
-    mFbCntText->setFont(FONT);
-    mFbCntRender.set(mFbCntText);
-    mFbCntRender.setFit(RenderData::FitMode::Texture);
-    mFbCntRender.setFitAlign(Rect::Align::CENTER, Rect::Align::TOP_LEFT);
-
     mRange = CircleShape(PURPLE).setDashed(50);
 
     setPos(mPos->rect.cX(), mPos->rect.cY());
@@ -184,7 +179,7 @@ void Catalyst::setUpgrades() {
             std::stringstream ss;
             for (int i = 0; i < lvl; i++) {
                 if (i > 0) {
-                    ss << "\n";
+                    ss << " | ";
                 }
                 ss << CatalystDefs::FB_CNT_TYPES.at(i + 1).get() << "{i}";
             }
@@ -219,28 +214,6 @@ void Catalyst::setParamTriggers() {
     mParamSubs.push_back(ParameterSystem::subscribe(
         {params[CatalystParams::Magic], params[CatalystParams::Capacity]}, {},
         [this]() { drawMagic(); }));
-
-    mParamSubs.push_back(ParameterSystem::subscribe(
-        {CatalystDefs::REG_FB_CNT, CatalystDefs::POW_FB_CNT,
-         CatalystDefs::POI_FB_CNT},
-        {}, [this]() { drawFbCounts(); }));
-
-    mParamSubs.push_back(ParameterSystem::subscribe(
-        {},
-        {states[State::BoughtPowerWizard], states[State::BoughtPoisonWizard]},
-        [this, states]() {
-            std::vector<RenderTextureCPtr> imgs = {
-                Money::GetMoneyIcon(CatalystDefs::REG_FB_CNT)};
-            if (states[State::BoughtPowerWizard].get()) {
-                imgs.push_back(Money::GetMoneyIcon(CatalystDefs::POW_FB_CNT));
-            }
-            if (states[State::BoughtPoisonWizard].get()) {
-                imgs.push_back(Money::GetMoneyIcon(CatalystDefs::POI_FB_CNT));
-            }
-            mFbCntText->setImgs(imgs);
-
-            drawFbCounts();
-        }));
 
     mParamSubs.push_back(ParameterSystem::Param(State::BoughtCatalyst)
                              .subscribe([this](bool bought) {
@@ -298,9 +271,6 @@ void Catalyst::onRender(SDL_Renderer* r) {
     mMagicRender.setDest(
         Rect(mPos->rect.x(), mPos->rect.y2(), mPos->rect.w(), FONT.h));
     tex.draw(mMagicRender);
-    mFbCntRender.setDest(Rect(mPos->rect.x(), mMagicRender.getDest().y2(),
-                              mPos->rect.w(), FONT.h));
-    tex.draw(mFbCntRender);
 }
 
 Number Catalyst::calcMagicEffect() {
@@ -336,21 +306,6 @@ void Catalyst::drawMagic() {
     ss << "{i} " << params[CatalystParams::Magic].get() << "/{b}"
        << params[CatalystParams::Capacity].get();
     mMagicText->setText(ss.str(), mPos->rect.W());
-}
-
-void Catalyst::drawFbCounts() {
-    ParameterSystem::Params<CATALYST> params;
-    ParameterSystem::States states;
-
-    std::stringstream ss;
-    ss << CatalystDefs::REG_FB_CNT.get() << "{i}";
-    if (states[State::BoughtPowerWizard].get()) {
-        ss << "\n" << CatalystDefs::POW_FB_CNT.get() << "{i}";
-    }
-    if (states[State::BoughtPoisonWizard].get()) {
-        ss << "\n" << CatalystDefs::POI_FB_CNT.get() << "{i}";
-    }
-    mFbCntText->setText(ss.str(), mPos->rect.W());
 }
 
 void Catalyst::updateRange() {

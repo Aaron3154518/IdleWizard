@@ -68,12 +68,25 @@ void Catalyst::setUpgrades() {
                         {IconSystem::Get(WizardDefs::FB_IMG)}});
     up->setCost(UpgradeDefaults::CRYSTAL_MAGIC,
                 params[CatalystParams::ZapCntUpCost]);
-    up->setEffects(params[CatalystParams::ZapCnt], UpgradeDefaults::NoEffect);
+    up->setEffects(params[CatalystParams::ZapCntUp], UpgradeDefaults::NoEffect);
     mParamSubs.push_back(params[CatalystParams::ZapCntUpCost].subscribeTo(
         up->level(), [](const Number& lvl) { return 10 ^ (10 * (lvl + 1)); }));
-    mParamSubs.push_back(params[CatalystParams::ZapCnt].subscribeTo(
+    mParamSubs.push_back(params[CatalystParams::ZapCntUp].subscribeTo(
         up->level(), [](const Number& lvl) { return 1 + lvl; }));
     mZapCntUp = mUpgrades->subscribe(up);
+
+    // Num zappers
+    up = std::make_shared<Upgrade>(params[CatalystParams::ZapperUpLvl], 4);
+    up->setImage("");
+    up->setDescription({"Increases number and charge rate of zaps"});
+    up->setCost(UpgradeDefaults::CRYSTAL_SHARDS,
+                params[CatalystParams::ZapperUpCost]);
+    up->setEffects(params[CatalystParams::ZapperUp], UpgradeDefaults::NoEffect);
+    mParamSubs.push_back(params[CatalystParams::ZapperUp].subscribeTo(
+        up->level(), [](const Number& lvl) { return 1 + lvl; }));
+    mParamSubs.push_back(params[CatalystParams::ZapperUpCost].subscribeTo(
+        up->level(), [](const Number& lvl) { return lvl * (lvl + 1); }));
+    mZapperCntUp = mUpgrades->subscribe(up);
 
     // Zap range
     up = std::make_shared<Upgrade>(params[CatalystParams::RangeUpLvl], 5);

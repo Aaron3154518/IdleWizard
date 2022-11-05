@@ -34,6 +34,7 @@ void setDefaults() {
 
     params[CatalystParams::RangeUpLvl]->init(Event::ResetT2);
     params[CatalystParams::ZapCntUpLvl]->init(Event::ResetT2);
+    params[CatalystParams::ZapperUpLvl]->init(Event::ResetT2);
     params[CatalystParams::GainUp1Lvl]->init(Event::ResetT2);
     params[CatalystParams::GainUp2Lvl]->init(Event::ResetT2);
     params[CatalystParams::FBCntLvl]->init(Event::ResetT2);

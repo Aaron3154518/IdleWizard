@@ -88,6 +88,7 @@ enum B : param_t {
 
     RangeUpLvl,
     ZapCntUpLvl,
+    ZapperUpLvl,
     GainUp1Lvl,
     GainUp2Lvl,
     FBCntLvl,
@@ -106,8 +107,10 @@ enum N : param_t {
     RangeUpCost,
     RangeUp,
 
-    ZapCnt,
+    ZapCntUp,
     ZapCntUpCost,
+    ZapperUp,
+    ZapperUpCost,
 
     GainUp1,
     GainUp1Cost,

@@ -67,8 +67,9 @@ class HitObservable : public HitObservableBase, public Component {
     RenderObservable::SubscriptionPtr mRenderSub;
     TimeSystem::TimerObservable::SubscriptionPtr mTimerSub;
     WizardSystem::HideObservable::IdSubscriptionPtr mCatHideSub;
+    ParameterSystem::ParameterSubscriptionPtr mNumZapsSub;
 
-    bool mReady = false;
+    int mReady, mMaxZaps;
 
     std::vector<std::unique_ptr<Zap>> mZaps;
 

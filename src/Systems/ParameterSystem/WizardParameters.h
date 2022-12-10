@@ -190,6 +190,7 @@ enum B : param_t {
     CrysPoisonUpCost,
 
     PoisonFbUpLvl,
+    GlobCntUpLvl,
 };
 
 enum N : param_t {
@@ -199,6 +200,8 @@ enum N : param_t {
 
     PoisonFbUp,
     PoisonFbUpCost,
+    GlobCntUp,
+    GlobCntCost,
 };
 }  // namespace PoisonWizardParams
 namespace RobotWizardParams {

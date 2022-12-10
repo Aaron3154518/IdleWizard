@@ -75,6 +75,20 @@ void PoisonWizard::setUpgrades() {
     mParamSubs.push_back(params[PoisonWizardParams::PoisonFbUp].subscribeTo(
         up->level(), [](const Number& lvl) { return lvl / 10; }));
     mPoisonFbUp = mUpgrades->subscribe(up);
+
+    up = std::make_shared<Upgrade>(params[PoisonWizardParams::GlobCntUpLvl], 3);
+    up->setImage("");
+    up->setDescription({"Increases {i} count by +2",
+                        {IconSystem::Get(PoisonWizardDefs::GLOB_IMG)}});
+    up->setCost(UpgradeDefaults::CRYSTAL_SHARDS,
+                params[PoisonWizardParams::GlobCntCost]);
+    up->setEffects(params[PoisonWizardParams::GlobCntUp],
+                   UpgradeDefaults::AdditiveEffect);
+    mParamSubs.push_back(params[PoisonWizardParams::GlobCntCost].subscribeTo(
+        up->level(), [](const Number& lvl) { return 50 * (1.5 ^ lvl); }));
+    mParamSubs.push_back(params[PoisonWizardParams::GlobCntUp].subscribeTo(
+        up->level(), [](const Number& lvl) { return 2 * lvl; }));
+    mGlobCntUp = mUpgrades->subscribe(up);
 }
 void PoisonWizard::setParamTriggers() {
     ParameterSystem::Params<POISON_WIZARD> params;
@@ -88,8 +102,9 @@ void PoisonWizard::setParamTriggers() {
         params[PoisonWizardParams::Speed].subscribe([this]() { calcTimer(); }));
 
     mParamSubs.push_back(params[PoisonWizardParams::GlobCnt].subscribeTo(
-        {params[PoisonWizardParams::BaseGlobCnt]}, {},
-        [this]() { return calcBlobCount(); }));
+        {params[PoisonWizardParams::BaseGlobCnt],
+         params[PoisonWizardParams::GlobCntUp]},
+        {}, [this]() { return calcBlobCount(); }));
 
     mParamSubs.push_back(
         states[State::BoughtPoisonWizard].subscribe([this](bool bought) {
@@ -144,7 +159,8 @@ void PoisonWizard::calcTimer() {
 }
 Number PoisonWizard::calcBlobCount() {
     ParameterSystem::Params<POISON_WIZARD> params;
-    return params[PoisonWizardParams::BaseGlobCnt].get();
+    return params[PoisonWizardParams::BaseGlobCnt].get() +
+           params[PoisonWizardParams::GlobCntUp].get();
 }
 
 void PoisonWizard::shootFireball() {

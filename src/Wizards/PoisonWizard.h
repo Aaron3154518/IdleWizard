@@ -48,7 +48,7 @@ class PoisonWizard : public WizardBase {
 
     TimerObservable::SubscriptionPtr mFireballTimerSub;
     TimeSystem::TimerObservable::SubscriptionPtr mAnimTimerSub;
-    UpgradeList::SubscriptionPtr mCrysPoisonUp, mPoisonFbUp;
+    UpgradeList::SubscriptionPtr mCrysPoisonUp, mPoisonFbUp, mGlobCntUp;
     WizardSystem::WizardEventObservable::IdSubscriptionPtr mT1ResetSub;
 
     PoisonFireballListPtr mFireballs;

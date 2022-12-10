@@ -17,6 +17,7 @@ void setDefaults() {
 
     params[PoisonWizardParams::CrysPoisonUpCost]->init(Number(1, 5));
     params[PoisonWizardParams::PoisonFbUpLvl]->init(Event::ResetT2);
+    params[PoisonWizardParams::GlobCntUpLvl]->init(Event::ResetT2);
 
     ParameterSystem::States states;
 }

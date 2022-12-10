@@ -183,6 +183,7 @@ enum N : param_t {
 namespace PoisonWizardParams {
 enum B : param_t {
     BaseSpeed = 0,
+    BaseGlobCnt,
 
     PoisonDecay,
 
@@ -193,6 +194,7 @@ enum B : param_t {
 
 enum N : param_t {
     Speed = 0,
+    GlobCnt,
     BasePoisonRate,
 
     PoisonFbUp,

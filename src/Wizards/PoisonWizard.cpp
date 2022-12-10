@@ -87,6 +87,10 @@ void PoisonWizard::setParamTriggers() {
     mParamSubs.push_back(
         params[PoisonWizardParams::Speed].subscribe([this]() { calcTimer(); }));
 
+    mParamSubs.push_back(params[PoisonWizardParams::GlobCnt].subscribeTo(
+        {params[PoisonWizardParams::BaseGlobCnt]}, {},
+        [this]() { return calcBlobCount(); }));
+
     mParamSubs.push_back(
         states[State::BoughtPoisonWizard].subscribe([this](bool bought) {
             WizardSystem::GetHideObservable()->next(mId, !bought);
@@ -138,13 +142,20 @@ void PoisonWizard::calcTimer() {
     timer.length = fmax(1000 / div, 16);
     timer.timer *= timer.length / prevLen;
 }
+Number PoisonWizard::calcBlobCount() {
+    ParameterSystem::Params<POISON_WIZARD> params;
+    return params[PoisonWizardParams::BaseGlobCnt].get();
+}
 
 void PoisonWizard::shootFireball() {
+    ParameterSystem::Params<POISON_WIZARD> params;
+
     auto data = newFireballData();
     mFireballs->push_back(ComponentFactory<PoisonFireball>::New(
         SDL_FPoint{mPos->rect.cX(), mPos->rect.cY()}, ROBOT_WIZARD, data));
 
-    for (int i = 0; i < 25; i++) {
+    Number cnt = params[PoisonWizardParams::GlobCnt].get();
+    for (int i = 0; i < cnt; i++) {
         float theta = rDist(gen) * 2 * M_PI;
         mGlobs.push_back(ComponentFactory<Glob>::New(
             mPos->rect.getPos(Rect::Align::CENTER),

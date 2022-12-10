@@ -40,6 +40,7 @@ class PoisonWizard : public WizardBase {
 
     Number calcSpeed();
     void calcTimer();
+    Number calcBlobCount();
 
     PoisonFireball::Data newFireballData();
 

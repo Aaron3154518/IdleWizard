@@ -187,10 +187,16 @@ enum B : param_t {
     PoisonDecay,
 
     CrysPoisonUpCost,
+
+    PoisonFbUpLvl,
 };
 
 enum N : param_t {
     Speed = 0,
+    BasePoisonRate,
+
+    PoisonFbUp,
+    PoisonFbUpCost,
 };
 }  // namespace PoisonWizardParams
 namespace RobotWizardParams {

@@ -332,7 +332,9 @@ void Crystal::onWizFireballHit(const WizardFireball& fireball) {
         ParameterSystem::Param(State::CrysPoisonActive).get()) {
         auto poisonRate =
             ParameterSystem::Param<CRYSTAL>(CrystalParams::PoisonRate);
-        poisonRate.set(poisonRate.get() + .5);
+        poisonRate.set(poisonRate.get() + ParameterSystem::Param<POISON_WIZARD>(
+                                              PoisonWizardParams::PoisonFbUp)
+                                              .get());
     }
 }
 
@@ -378,18 +380,24 @@ bool Crystal::onGlowFinishTimer(Timer& t, const Number& magic) {
 
 bool Crystal::onPoisonTimer(Timer& t) {
     if (ParameterSystem::Param(State::CrysPoisonActive).get()) {
-        auto poisonMagic =
-            ParameterSystem::Param<CRYSTAL>(CrystalParams::PoisonMagic);
-        auto poisonRate =
-            ParameterSystem::Param<CRYSTAL>(CrystalParams::PoisonRate);
-        auto poisonDecay = ParameterSystem::Param<POISON_WIZARD>(
-            PoisonWizardParams::PoisonDecay);
+        ParameterSystem::Params<CRYSTAL> params;
+        ParameterSystem::Params<POISON_WIZARD> poiParams;
+
+        auto poisonRateParam = params[CrystalParams::PoisonRate];
+        Number poisonRate = poisonRateParam.get();
+        Number poisonMagic = params[CrystalParams::PoisonMagic].get();
+        Number basePoisonRate =
+            poiParams[PoisonWizardParams::BasePoisonRate].get();
+        Number poisonDecay = poiParams[PoisonWizardParams::PoisonDecay].get();
 
         float s = (float)t.length / 1000;
-        addMagic(MagicSource::Poison, poisonMagic.get() * poisonRate.get() * s,
+        addMagic(MagicSource::Poison, poisonMagic * poisonRate * s,
                  CrystalDefs::POISON_MSG_COLOR);
-        if (poisonRate.get() > 1) {
-            poisonRate.set(max(1, poisonRate.get() * (poisonDecay.get() ^ s)));
+        if (poisonRate > basePoisonRate) {
+            poisonRateParam.set(
+                max(basePoisonRate, poisonRate * (poisonDecay ^ s)));
+        } else if (poisonRate < basePoisonRate) {
+            poisonRateParam.set(basePoisonRate);
         }
     }
 

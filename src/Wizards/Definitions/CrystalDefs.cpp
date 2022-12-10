@@ -21,7 +21,7 @@ void setDefaults() {
     params[CrystalParams::Magic]->init(0, Event::ResetT1);
     params[CrystalParams::Shards]->init(0, Event::ResetT2);
     params[CrystalParams::PoisonMagic]->init(0, Event::ResetT1);
-    params[CrystalParams::PoisonRate]->init(1, Event::ResetT1);
+    params[CrystalParams::PoisonRate]->init(0, Event::ResetT1);
 
     params[CrystalParams::WizardCntUpCost]->init(Number(1, 4));
     params[CrystalParams::GlowUpCost]->init(Number(1, 11));

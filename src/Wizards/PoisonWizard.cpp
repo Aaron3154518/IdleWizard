@@ -38,10 +38,9 @@ void PoisonWizard::setUpgrades() {
         std::make_shared<Unlockable>(states[State::CrysPoisonActive]);
     uUp->setImage("");
     uUp->setDescription(
-        {"{i} gains a % of best {i} over time\n{i} will increase the %",
+        {"{i} gains 10% of best {i} over time",
          {IconSystem::Get(CrystalDefs::IMG),
-          Money::GetMoneyIcon(UpgradeDefaults::CRYSTAL_MAGIC),
-          IconSystem::Get(WizardDefs::FB_POISON_IMG)}});
+          Money::GetMoneyIcon(UpgradeDefaults::CRYSTAL_MAGIC)}});
     uUp->setCost(UpgradeDefaults::CRYSTAL_SHARDS,
                  params[PoisonWizardParams::CrysPoisonUpCost]);
     uUp->setEffects(
@@ -51,12 +50,31 @@ void PoisonWizard::setUpgrades() {
             std::stringstream ss;
             ss << UpgradeDefaults::PercentEffectText(
                       cryParams[CrystalParams::PoisonRate].get())
-               << " * " << cryParams[CrystalParams::PoisonMagic].get()
+               << " of " << cryParams[CrystalParams::PoisonMagic].get()
                << "{i}/s";
             return {ss.str(),
                     {Money::GetMoneyIcon(UpgradeDefaults::CRYSTAL_MAGIC)}};
         });
+    mParamSubs.push_back(params[PoisonWizardParams::BasePoisonRate].subscribeTo(
+        uUp->level(), [](const bool& bought) { return bought ? 0.1 : 0; }));
     mCrysPoisonUp = mUpgrades->subscribe(uUp);
+
+    UpgradePtr up =
+        std::make_shared<Upgrade>(params[PoisonWizardParams::PoisonFbUpLvl], 5);
+    up->setImage("");
+    up->setDescription({"{i} increase the {i} gain rate by +10%/lvl",
+                        {IconSystem::Get(WizardDefs::FB_POISON_IMG),
+                         Money::GetMoneyIcon(UpgradeDefaults::CRYSTAL_MAGIC)}});
+    up->setCost(UpgradeDefaults::CRYSTAL_MAGIC,
+                params[PoisonWizardParams::PoisonFbUpCost]);
+    up->setEffects(params[PoisonWizardParams::PoisonFbUp],
+                   UpgradeDefaults::PercentEffect);
+    mParamSubs.push_back(params[PoisonWizardParams::PoisonFbUpCost].subscribeTo(
+        up->level(),
+        [](const Number& lvl) { return Number(1, 15) * (4.5 ^ lvl); }));
+    mParamSubs.push_back(params[PoisonWizardParams::PoisonFbUp].subscribeTo(
+        up->level(), [](const Number& lvl) { return lvl / 10; }));
+    mPoisonFbUp = mUpgrades->subscribe(up);
 }
 void PoisonWizard::setParamTriggers() {
     ParameterSystem::Params<POISON_WIZARD> params;

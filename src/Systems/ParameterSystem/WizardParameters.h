@@ -188,6 +188,7 @@ enum B : param_t {
     PoisonDecay,
 
     CrysPoisonUpCost,
+    CatPoisonUpCost,
 
     PoisonFbUpLvl,
     GlobCntUpLvl,

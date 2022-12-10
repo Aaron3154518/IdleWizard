@@ -42,15 +42,19 @@ class PoisonWizard : public WizardBase {
     void calcTimer();
     Number calcBlobCount();
 
+    void setTargets();
+
     PoisonFireball::Data newFireballData();
 
     void shootFireball();
 
     TimerObservable::SubscriptionPtr mFireballTimerSub;
     TimeSystem::TimerObservable::SubscriptionPtr mAnimTimerSub;
-    UpgradeList::SubscriptionPtr mCrysPoisonUp, mPoisonFbUp, mGlobCntUp;
+    UpgradeList::SubscriptionPtr mCrysPoisonUp, mPoisonFbUp, mGlobCntUp,
+        mCatPoisUp;
     WizardSystem::WizardEventObservable::IdSubscriptionPtr mT1ResetSub;
 
+    std::vector<WizardId> mTargets;
     PoisonFireballListPtr mFireballs;
     std::vector<GlobPtr> mGlobs;
 };

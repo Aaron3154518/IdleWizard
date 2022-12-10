@@ -59,6 +59,7 @@ void PoisonWizard::setUpgrades() {
         uUp->level(), [](const bool& bought) { return bought ? 0.1 : 0; }));
     mCrysPoisonUp = mUpgrades->subscribe(uUp);
 
+    // Increase poison gain from poison fbs
     UpgradePtr up =
         std::make_shared<Upgrade>(params[PoisonWizardParams::PoisonFbUpLvl], 5);
     up->setImage("");
@@ -76,6 +77,7 @@ void PoisonWizard::setUpgrades() {
         up->level(), [](const Number& lvl) { return lvl / 10; }));
     mPoisonFbUp = mUpgrades->subscribe(up);
 
+    // Increase globs fired
     up = std::make_shared<Upgrade>(params[PoisonWizardParams::GlobCntUpLvl], 3);
     up->setImage("");
     up->setDescription({"Increases {i} count by +2",
@@ -89,6 +91,21 @@ void PoisonWizard::setUpgrades() {
     mParamSubs.push_back(params[PoisonWizardParams::GlobCntUp].subscribeTo(
         up->level(), [](const Number& lvl) { return 2 * lvl; }));
     mGlobCntUp = mUpgrades->subscribe(up);
+
+    // Shoot poison ball at catalyst
+    uUp = std::make_shared<Unlockable>(states[State::BoughtPoisWizCatPois]);
+    uUp->setImage("");
+    uUp->setDescription(
+        {"Fires {i} at {i} to grant poison effect. {i} zaps convert {i} into "
+         "{i}",
+         {IconSystem::Get(PoisonWizardDefs::GLOB_IMG),
+          IconSystem::Get(CatalystDefs::IMG),
+          IconSystem::Get(CatalystDefs::IMG),
+          IconSystem::Get(WizardDefs::FB_IMG),
+          IconSystem::Get(WizardDefs::FB_POISON_IMG)}});
+    uUp->setCost(UpgradeDefaults::CATALYST_MAGIC,
+                 params[PoisonWizardParams::CatPoisonUpCost]);
+    mCatPoisUp = mUpgrades->subscribe(uUp);
 }
 void PoisonWizard::setParamTriggers() {
     ParameterSystem::Params<POISON_WIZARD> params;
@@ -110,6 +127,9 @@ void PoisonWizard::setParamTriggers() {
         states[State::BoughtPoisonWizard].subscribe([this](bool bought) {
             WizardSystem::GetHideObservable()->next(mId, !bought);
         }));
+
+    mParamSubs.push_back(ParameterSystem::subscribe(
+        {}, {states[State::BoughtPoisWizCatPois]}, [this]() { setTargets(); }));
 }
 
 void PoisonWizard::onRender(SDL_Renderer* r) {
@@ -163,12 +183,24 @@ Number PoisonWizard::calcBlobCount() {
            params[PoisonWizardParams::GlobCntUp].get();
 }
 
+void PoisonWizard::setTargets() {
+    ParameterSystem::States states;
+
+    mTargets.clear();
+    if (states[State::BoughtPoisWizCatPois].get()) {
+        mTargets.push_back(CATALYST);
+    }
+}
+
 void PoisonWizard::shootFireball() {
     ParameterSystem::Params<POISON_WIZARD> params;
 
-    auto data = newFireballData();
-    mFireballs->push_back(ComponentFactory<PoisonFireball>::New(
-        SDL_FPoint{mPos->rect.cX(), mPos->rect.cY()}, ROBOT_WIZARD, data));
+    if (!mTargets.empty()) {
+        auto data = newFireballData();
+        mFireballs->push_back(ComponentFactory<PoisonFireball>::New(
+            SDL_FPoint{mPos->rect.cX(), mPos->rect.cY()},
+            mTargets.at((int)(rDist(gen) * mTargets.size())), data));
+    }
 
     Number cnt = params[PoisonWizardParams::GlobCnt].get();
     for (int i = 0; i < cnt; i++) {

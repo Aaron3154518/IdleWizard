@@ -50,8 +50,8 @@ class PoisonWizard : public WizardBase {
 
     TimerObservable::SubscriptionPtr mFireballTimerSub;
     TimeSystem::TimerObservable::SubscriptionPtr mAnimTimerSub;
-    UpgradeList::SubscriptionPtr mCrysPoisonUp, mPoisonFbUp, mGlobCntUp,
-        mCatPoisUp;
+    UpgradeList::SubscriptionPtr mShardMultUp, mCrysPoisonUp, mPoisonFbUp,
+        mGlobCntUp, mCatPoisUp;
     WizardSystem::WizardEventObservable::IdSubscriptionPtr mT1ResetSub;
 
     std::vector<WizardId> mTargets;

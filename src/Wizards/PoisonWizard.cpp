@@ -33,6 +33,25 @@ void PoisonWizard::setUpgrades() {
     ParameterSystem::Params<CRYSTAL> cryParams;
     ParameterSystem::States states;
 
+    // Shard multiplier
+    UpgradePtr up = std::make_shared<Upgrade>(
+        params[PoisonWizardParams::ShardMultUpLvl], 5);
+    up->setImage("");
+    up->setDescription({"Triple {i} gain",
+                        {Money::GetMoneyIcon(UpgradeDefaults::CRYSTAL_MAGIC)}});
+    up->setCost(UpgradeDefaults::CRYSTAL_MAGIC,
+                params[PoisonWizardParams::ShardMultUpCost]);
+    up->setEffects(params[PoisonWizardParams::ShardMultUp],
+                   UpgradeDefaults::MultiplicativeEffect);
+    mParamSubs.push_back(
+        params[PoisonWizardParams::ShardMultUpCost].subscribeTo(
+            up->level(), [](const Number& lvl) {
+                return Number(1, 20 + 10 * lvl.toInt());
+            }));
+    mParamSubs.push_back(params[PoisonWizardParams::ShardMultUp].subscribeTo(
+        up->level(), [](const Number& lvl) { return 3 ^ lvl; }));
+    mShardMultUp = mUpgrades->subscribe(up);
+
     // Poison gain
     UnlockablePtr uUp =
         std::make_shared<Unlockable>(states[State::CrysPoisonActive]);
@@ -60,7 +79,7 @@ void PoisonWizard::setUpgrades() {
     mCrysPoisonUp = mUpgrades->subscribe(uUp);
 
     // Increase poison gain from poison fbs
-    UpgradePtr up =
+    up =
         std::make_shared<Upgrade>(params[PoisonWizardParams::PoisonFbUpLvl], 5);
     up->setImage("");
     up->setDescription({"{i} increase the {i} gain rate by +10%/lvl",

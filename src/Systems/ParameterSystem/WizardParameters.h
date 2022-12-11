@@ -192,6 +192,7 @@ enum B : param_t {
     CatPoisonUpCost,
     CatPoisCntUp,
 
+    ShardMultUpLvl,
     PoisonFbUpLvl,
     GlobCntUpLvl,
 };
@@ -201,6 +202,8 @@ enum N : param_t {
     GlobCnt,
     BasePoisonRate,
 
+    ShardMultUp,
+    ShardMultUpCost,
     PoisonFbUp,
     PoisonFbUpCost,
     GlobCntUp,

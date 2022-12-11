@@ -167,6 +167,7 @@ void Crystal::setUpgrades() {
 void Crystal::setParamTriggers() {
     ParameterSystem::Params<CRYSTAL> params;
     ParameterSystem::Params<CATALYST> catParams;
+    ParameterSystem::Params<POISON_WIZARD> poiParams;
     ParameterSystem::States states;
 
     mParamSubs.push_back(params[CrystalParams::MagicEffect].subscribeTo(
@@ -174,7 +175,8 @@ void Crystal::setParamTriggers() {
         [this]() { return calcMagicEffect(); }));
 
     mParamSubs.push_back(params[CrystalParams::ShardGain].subscribeTo(
-        {params[CrystalParams::Magic], catParams[CatalystParams::ShardGainUp]},
+        {params[CrystalParams::Magic], catParams[CatalystParams::ShardGainUp],
+         poiParams[PoisonWizardParams::ShardMultUp]},
         {}, [this]() { return calcShardGain(); }));
 
     mParamSubs.push_back(params[CrystalParams::NumWizards].subscribeTo(
@@ -412,10 +414,13 @@ Number Crystal::calcMagicEffect() {
 Number Crystal::calcShardGain() {
     ParameterSystem::Params<CRYSTAL> params;
     ParameterSystem::Params<CATALYST> catParams;
+    ParameterSystem::Params<POISON_WIZARD> poiParams;
+
     Number shards = ((params[CrystalParams::Magic].get() + 1).logTen() - 14) *
-                    catParams[CatalystParams::ShardGainUp].get();
+                    catParams[CatalystParams::ShardGainUp].get() *
+                    poiParams[PoisonWizardParams::ShardMultUp].get();
     if (shards < 1) {
-        shards = 0;
+        return 0;
     }
     return shards;
 }

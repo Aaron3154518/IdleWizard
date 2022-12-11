@@ -53,7 +53,7 @@ class WizardFireball : public Fireball {
 
     std::unique_ptr<WizardFireball> split();
 
-    void subscribeToGlob(
+    void setOnPoisoned(
         std::function<void(std::unique_ptr<WizardFireball>)> push_back);
 
     Number mPower;
@@ -70,6 +70,8 @@ class WizardFireball : public Fireball {
     FireRing::HitObservable::SubscriptionPtr mFireRingSub;
     CatalystRing::HitObservable::SubscriptionPtr mCatalystHitSub;
     Glob::HitObservable::SubscriptionPtr mGlobHitSub;
+
+    std::function<void()> mOnPoisoned;
 };
 
 typedef std::unique_ptr<WizardFireball> WizardFireballPtr;

@@ -13,7 +13,8 @@ WizardFireball::WizardFireball(SDL_FPoint c, WizardId target, const Data& data)
       mSizeSum(data.sizeFactor),
       mPower(data.power),
       mBoosted(data.boosted),
-      mPoisoned(data.poisoned) {
+      mPoisoned(data.poisoned),
+      mOnPoisoned([]() {}) {
     setSize(data.sizeFactor);
     setSpeed(data.speed);
     updateImage();
@@ -28,6 +29,8 @@ void WizardFireball::init() {
     }
     mCatalystHitSub = CatalystRing::GetHitObservable()->subscribe(
         [this](bool b) { onCatalystHit(b); }, mPos);
+    mGlobHitSub =
+        Glob::GetHitObservable()->subscribe([this]() { mOnPoisoned(); }, mPos);
 }
 
 void WizardFireball::draw(TextureBuilder& tex) {
@@ -54,24 +57,21 @@ void WizardFireball::onFireRingHit(const Number& effect) {
 
 void WizardFireball::onCatalystHit(bool poisoned) {
     WizardSystem::GetCatalystMagicObservable()->next(*this);
-    if (poisoned && !isPoisoned()) {
-        mPoisoned = true;
-        updateImage();
+    if (poisoned) {
+        mOnPoisoned();
     }
 }
 
-void WizardFireball::subscribeToGlob(
+void WizardFireball::setOnPoisoned(
     std::function<void(WizardFireballPtr)> push_back) {
-    mGlobHitSub = Glob::GetHitObservable()->subscribe(
-        [this, push_back]() {
-            if (!mPoisoned) {
-                mPoisoned = true;
-                updateImage();
-            } else {
-                push_back(split());
-            }
-        },
-        mPos);
+    mOnPoisoned = [this, push_back]() {
+        if (!mPoisoned) {
+            mPoisoned = true;
+            updateImage();
+        } else {
+            push_back(split());
+        }
+    };
 }
 
 std::unique_ptr<WizardFireball> WizardFireball::split() {
@@ -129,7 +129,7 @@ void WizardFireball::applyTimeEffect(const Number& effect) { mPower ^= effect; }
 
 // WizardFireballList
 void WizardFireballList::push_back(WizardFireballPtr fb) {
-    fb->subscribeToGlob(
+    fb->setOnPoisoned(
         [this](WizardFireballPtr fb) { push_back(std::move(fb)); });
     FireballList::push_back(std::move(fb));
 }

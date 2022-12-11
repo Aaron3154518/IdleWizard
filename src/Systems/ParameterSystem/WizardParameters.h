@@ -83,6 +83,7 @@ enum B : param_t {
     FBRegCnt,
     FBPowCnt,
     FBPoiCnt,
+    CatRingPoisCnt,
 
     BaseRange,
 
@@ -189,6 +190,7 @@ enum B : param_t {
 
     CrysPoisonUpCost,
     CatPoisonUpCost,
+    CatPoisCntUp,
 
     PoisonFbUpLvl,
     GlobCntUpLvl,

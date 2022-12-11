@@ -2,6 +2,7 @@
 #define CATALYST_H
 
 #include <Components/CatalystRing.h>
+#include <Components/Fireballs/PoisonFireball.h>
 #include <Components/Fireballs/WizardFireball.h>
 #include <Components/Upgrade.h>
 #include <RenderSystem/AssetManager.h>
@@ -34,6 +35,7 @@ class Catalyst : public WizardBase {
 
     void onRender(SDL_Renderer* r);
     void onWizFireballHit(const WizardFireball& fireball);
+    void onPoisFireballHit(const PoisonFireball& fireball);
     void onMagic(const Number& amnt);
 
     Number calcMagicEffect();
@@ -46,6 +48,7 @@ class Catalyst : public WizardBase {
 
     TimeSystem::TimerObservable::SubscriptionPtr mAnimTimerSub;
     WizardFireball::HitObservable::IdSubscriptionPtr mWizFireballSub;
+    PoisonFireball::HitObservable::IdSubscriptionPtr mPoisFireballSub;
     WizardSystem::CatalystMagicObservable::SubscriptionPtr mMagicSub;
     UpgradeList::SubscriptionPtr mMagicEffectDisplay, mRangeUp, mZapCntUp,
         mZapperCntUp, mShardUp, mGainUp1, mGainUp2, mFbCountUp;

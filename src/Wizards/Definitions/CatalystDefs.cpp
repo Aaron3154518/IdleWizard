@@ -27,6 +27,7 @@ void setDefaults() {
     params[CatalystParams::FBRegCnt]->init(0, Event::ResetT1);
     params[CatalystParams::FBPowCnt]->init(0, Event::ResetT1);
     params[CatalystParams::FBPoiCnt]->init(0, Event::ResetT1);
+    params[CatalystParams::CatRingPoisCnt]->init(0, Event::ResetT1);
 
     params[CatalystParams::BaseRange]->init(1.25);
 

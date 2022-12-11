@@ -19,7 +19,7 @@
 #include <random>
 
 namespace CatalystRing {
-typedef Observable<void(), UIComponentPtr, int> HitObservableBase;
+typedef Observable<void(bool), UIComponentPtr, int> HitObservableBase;
 class HitObservable : public HitObservableBase, public Component {
     friend class Catalyst;
 
@@ -47,6 +47,8 @@ class HitObservable : public HitObservableBase, public Component {
     HitObservable();
 
     SubscriptionPtr subscribe(std::function<void()> func, UIComponentPtr pos);
+    SubscriptionPtr subscribe(std::function<void(bool)> func,
+                              UIComponentPtr pos);
 
     void setPos(const CircleData& circle);
 

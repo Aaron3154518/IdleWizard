@@ -16,10 +16,7 @@ WizardFireball::WizardFireball(SDL_FPoint c, WizardId target, const Data& data)
       mPoisoned(data.poisoned) {
     setSize(data.sizeFactor);
     setSpeed(data.speed);
-    setInnerImg(IconSystem::Get(data.poisoned ? WizardDefs::FB_INNER_POISON_IMG
-                                              : WizardDefs::FB_INNER_IMG));
-    setOuterImg(IconSystem::Get(data.boosted ? WizardDefs::FB_OUTER_BUFFED_IMG
-                                             : WizardDefs::FB_OUTER_IMG));
+    updateImage();
 }
 
 void WizardFireball::init() {
@@ -30,7 +27,7 @@ void WizardFireball::init() {
             [this](const Number& e) { onFireRingHit(e); }, mPos);
     }
     mCatalystHitSub = CatalystRing::GetHitObservable()->subscribe(
-        [this]() { onCatalystHit(); }, mPos);
+        [this](bool b) { onCatalystHit(b); }, mPos);
 }
 
 void WizardFireball::draw(TextureBuilder& tex) {
@@ -55,8 +52,12 @@ void WizardFireball::onFireRingHit(const Number& effect) {
     setSize(mSize * 1.15);
 }
 
-void WizardFireball::onCatalystHit() {
+void WizardFireball::onCatalystHit(bool poisoned) {
     WizardSystem::GetCatalystMagicObservable()->next(*this);
+    if (poisoned && !isPoisoned()) {
+        mPoisoned = true;
+        updateImage();
+    }
 }
 
 void WizardFireball::subscribeToGlob(
@@ -65,7 +66,7 @@ void WizardFireball::subscribeToGlob(
         [this, push_back]() {
             if (!mPoisoned) {
                 mPoisoned = true;
-                setInnerImg(IconSystem::Get(WizardDefs::FB_INNER_POISON_IMG));
+                updateImage();
             } else {
                 push_back(split());
             }
@@ -98,12 +99,11 @@ bool WizardFireball::isPoisoned() const { return mPoisoned; }
 const Number& WizardFireball::getPower() const { return mPower; }
 void WizardFireball::setPower(const Number& pow) { mPower = pow; }
 
-void WizardFireball::setInnerImg(const RenderTextureCPtr& img) {
-    Fireball::setImg(img);
-}
-
-void WizardFireball::setOuterImg(const RenderTextureCPtr& img) {
-    mOuterImg.set(img);
+void WizardFireball::updateImage() {
+    Fireball::setImg(IconSystem::Get(mPoisoned ? WizardDefs::FB_INNER_POISON_IMG
+                                               : WizardDefs::FB_INNER_IMG));
+    mOuterImg.set(IconSystem::Get(mBoosted ? WizardDefs::FB_OUTER_BUFFED_IMG
+                                           : WizardDefs::FB_OUTER_IMG));
 }
 
 void WizardFireball::addFireball(const Data& data) {
@@ -116,12 +116,12 @@ void WizardFireball::addFireball(const Data& data) {
     if (data.boosted && !mBoosted) {
         mBoosted = true;
         mFireRingSub.reset();
-        setOuterImg(IconSystem::Get(WizardDefs::FB_OUTER_BUFFED_IMG));
+        updateImage();
     }
 
     if (data.poisoned && !mPoisoned) {
         mPoisoned = true;
-        setInnerImg(IconSystem::Get(WizardDefs::FB_INNER_POISON_IMG));
+        updateImage();
     }
 }
 

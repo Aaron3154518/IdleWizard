@@ -42,15 +42,14 @@ class WizardFireball : public Fireball {
 
     void applyTimeEffect(const Number& effect);
 
-    void setInnerImg(const RenderTextureCPtr& img);
-    void setOuterImg(const RenderTextureCPtr& img);
+    void updateImage();
 
    private:
     void init();
 
     void onDeath();
     void onFireRingHit(const Number& effect);
-    void onCatalystHit();
+    void onCatalystHit(bool poisoned);
 
     std::unique_ptr<WizardFireball> split();
 

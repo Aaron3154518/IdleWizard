@@ -26,6 +26,10 @@ HitObservable::HitObservable()
 
 HitObservable::SubscriptionPtr HitObservable::subscribe(
     std::function<void()> func, UIComponentPtr pos) {
+    return subscribe([func](bool b) { func(); }, pos);
+}
+HitObservable::SubscriptionPtr HitObservable::subscribe(
+    std::function<void(bool)> func, UIComponentPtr pos) {
     return HitObservableBase::subscribe(func, pos, 0);
 }
 
@@ -67,7 +71,7 @@ void HitObservable::onRender(SDL_Renderer* r) {
 }
 
 bool HitObservable::onTimer(Timer& timer) {
-    mReady == std::min(++mReady, mMaxZaps);
+    mReady = std::min(++mReady, mMaxZaps);
     return true;
 }
 
@@ -78,13 +82,21 @@ void HitObservable::onTimerUpdate(Time dt, Timer& timer) {
             int idx = (int)(rDist(gen) * inRange.size());
             auto sub = inRange.at(idx).lock();
             if (sub) {
+                auto poisCntParam = ParameterSystem::Param<CATALYST>(
+                    CatalystParams::CatRingPoisCnt);
+                int poisCnt = poisCntParam.get().toInt();
+
                 sub->get<ZAP_CNT>()++;
-                sub->get<FUNC>()();
+                sub->get<FUNC>()(poisCnt > 0);
                 Rect fBallRect = sub->get<DATA>()->rect;
                 mZaps.push_back(std::move(ComponentFactory<Zap>::New(
                     SDL_Point{fBallRect.CX(), fBallRect.CY()}, mCircle.c)));
+
+                if (poisCnt > 0) {
+                    poisCntParam.set(poisCnt - 1);
+                }
+                mReady--;
             }
-            mReady--;
         }
     }
 }

@@ -29,6 +29,8 @@ void Catalyst::init() {
 void Catalyst::setSubscriptions() {
     mWizFireballSub = WizardFireball::GetHitObservable()->subscribe(
         [this](const WizardFireball& f) { onWizFireballHit(f); }, mId);
+    mPoisFireballSub = PoisonFireball::GetHitObservable()->subscribe(
+        [this](const PoisonFireball& f) { onPoisFireballHit(f); }, mId);
     mMagicSub = WizardSystem::GetCatalystMagicObservable()->subscribe(
         [this](const Number& amnt) { onMagic(amnt); });
     attachSubToVisibility(mWizFireballSub);
@@ -262,6 +264,15 @@ void Catalyst::onWizFireballHit(const WizardFireball& fireball) {
         auto cnt = CatalystDefs::REG_FB_CNT;
         cnt.set(cnt.get() + 1);
     }
+}
+void Catalyst::onPoisFireballHit(const PoisonFireball& fireball) {
+    auto poisCnt =
+        ParameterSystem::Param<CATALYST>(CatalystParams::CatRingPoisCnt);
+    Number poisCntUp =
+        ParameterSystem::Param<POISON_WIZARD>(PoisonWizardParams::CatPoisCntUp)
+            .get();
+
+    poisCnt.set(poisCnt.get() + poisCntUp);
 }
 
 void Catalyst::onMagic(const Number& amnt) {

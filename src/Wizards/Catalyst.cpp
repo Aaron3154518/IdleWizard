@@ -165,8 +165,12 @@ void Catalyst::setUpgrades() {
                                    params[CatalystParams::FBCntMaxLvl]);
     up->setImage("");
     mParamSubs.push_back(params[CatalystParams::FBCntMaxLvl].subscribeTo(
-        states[State::BoughtPoisonWizard], [](bool bought) {
-            return CatalystDefs::FB_CNT_TYPES.size() - (bought ? 1 : 2);
+        {},
+        {states[State::BoughtPoisonWizard], states[State::BoughtRobotWizard]},
+        [states]() {
+            return states[State::BoughtRobotWizard].get()    ? 3
+                   : states[State::BoughtPoisonWizard].get() ? 2
+                                                             : 1;
         }));
     mParamSubs.push_back(params[CatalystParams::FBCntUpCost].subscribeTo(
         up->level(), [up, params](const Number& lvl) {
@@ -196,35 +200,33 @@ void Catalyst::setUpgrades() {
             }
             up->setEffectText(ss.str());
         }));
-    mParamSubs.push_back(up->level().subscribe([up](const Number& l) {
-        int lvl = l.toInt();
-        int maxLvl =
-            ParameterSystem::Param<CATALYST>(CatalystParams::FBCntMaxLvl)
-                .get()
-                .toInt();
+    mParamSubs.push_back(ParameterSystem::subscribe(
+        {up->level(), params[CatalystParams::FBCntMaxLvl]}, {}, [up, params]() {
+            int lvl = up->level().get().toInt();
+            int maxLvl = params[CatalystParams::FBCntMaxLvl].get().toInt();
 
-        std::vector<RenderTextureCPtr> imgs;
-        std::stringstream desc_str;
-        desc_str << "Hitting {i} with {i}";
-        for (int i = 0; i < lvl; i++) {
-            if (i < maxLvl - 1) {
-                desc_str << ",{i}";
+            std::vector<RenderTextureCPtr> imgs;
+            std::stringstream desc_str;
+            desc_str << "Hitting {i} with {i}";
+            for (int i = 0; i < lvl; i++) {
+                if (i < maxLvl - 1) {
+                    desc_str << ",{i}";
+                }
+                imgs.push_back(
+                    Money::GetMoneyIcon(CatalystDefs::FB_CNT_TYPES.at(i + 1)));
             }
-            imgs.push_back(
-                Money::GetMoneyIcon(CatalystDefs::FB_CNT_TYPES.at(i + 1)));
-        }
-        desc_str << " boosts {i} power";
-        up->setEffectImgs(imgs);
+            desc_str << " boosts {i} power";
+            up->setEffectImgs(imgs);
 
-        imgs.insert(imgs.begin(), IconSystem::Get(CatalystDefs::IMG));
-        if (lvl < maxLvl) {
-            imgs.push_back(
-                Money::GetMoneyIcon(CatalystDefs::FB_CNT_TYPES.at(lvl + 1)));
-        }
-        imgs.push_back(IconSystem::Get(WizardDefs::IMG));
+            imgs.insert(imgs.begin(), IconSystem::Get(CatalystDefs::IMG));
+            if (lvl < maxLvl) {
+                imgs.push_back(Money::GetMoneyIcon(
+                    CatalystDefs::FB_CNT_TYPES.at(lvl + 1)));
+            }
+            imgs.push_back(IconSystem::Get(WizardDefs::IMG));
 
-        up->setDescription({desc_str.str(), imgs});
-    }));
+            up->setDescription({desc_str.str(), imgs});
+        }));
     mFbCountUp = mUpgrades->subscribe(up);
 }
 void Catalyst::setParamTriggers() {
@@ -331,10 +333,10 @@ Number Catalyst::calcFbCntEffect() {
     int lvl = params[CatalystParams::FBCntLvl].get().toInt();
     if (lvl > CatalystDefs::FBCntUpBuyType::Reg) {
         reg_effect = CatalystDefs::REG_FB_CNT.get() + 1;
-        if (lvl > CatalystDefs::FBCntUpBuyType::Pow) {
-            pow_effect = (CatalystDefs::POW_FB_CNT.get() + 10).logTen();
-            if (lvl > CatalystDefs::FBCntUpBuyType::Poi) {
-                poi_effect = (CatalystDefs::POI_FB_CNT.get() + 1).sqrt();
+        if (lvl > CatalystDefs::FBCntUpBuyType::Poi) {
+            poi_effect = (CatalystDefs::POI_FB_CNT.get() + 1).sqrt();
+            if (lvl > CatalystDefs::FBCntUpBuyType::Pow) {
+                pow_effect = (CatalystDefs::POW_FB_CNT.get() + 10).logTen();
             }
         }
     }

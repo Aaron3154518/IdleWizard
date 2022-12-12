@@ -14,7 +14,7 @@ const ParameterSystem::BaseValue REG_FB_CNT = ParameterSystem::Param<CATALYST>(
 
 const std::vector<ParameterSystem::BaseValue> FB_CNT_TYPES = {
     ParameterSystem::Param<CATALYST>(CatalystParams::Magic), REG_FB_CNT,
-    POW_FB_CNT, POI_FB_CNT};
+    POI_FB_CNT, POW_FB_CNT};
 
 void setDefaults() {
     using WizardSystem::Event;

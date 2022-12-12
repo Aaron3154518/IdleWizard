@@ -1,6 +1,11 @@
 #include "Upgrade.h"
 
-// Cost
+// UpgradeSnapshot
+bool UpgradeSnapshot::operator!=(const UpgradeSnapshot& rhs) const {
+    return mMaxLvl != rhs.mMaxLvl;
+}
+
+// UpgradeCost
 UpgradeCost::UpgradeCost(ParameterSystem::BaseValue money,
                          ParameterSystem::ValueParam cost)
     : mMoney(money), mCost(cost) {}
@@ -123,6 +128,8 @@ void UpgradeBase::max(bool free) {
 }
 
 void UpgradeBase::_max() {}
+
+UpgradeSnapshot UpgradeBase::getSnapshot() const { return {0}; }
 
 void UpgradeBase::setImage(WizardId id) {
     mWizImgSub = WizardSystem::GetWizardImageObservable()->subscribe(
@@ -257,6 +264,8 @@ Unlockable::Unlockable(ParameterSystem::BaseState level) : mLevel(level) {
         [this](bool val) { updateDesc(DescType::Cost, getCostText()); });
 }
 
+UpgradeSnapshot Unlockable::getSnapshot() const { return {1}; }
+
 UpgradeBase::Status Unlockable::_status() {
     if (mLevel.get()) {
         return BOUGHT;
@@ -297,6 +306,8 @@ Upgrade::Upgrade(ParameterSystem::BaseValue level,
         updateDesc(DescType::Cost, getCostText());
     });
 }
+
+UpgradeSnapshot Upgrade::getSnapshot() const { return {mMaxLevel}; }
 
 Upgrade::Status Upgrade::_status() {
     if (mMaxLevel == 0) {

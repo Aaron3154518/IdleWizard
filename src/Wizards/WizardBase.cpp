@@ -33,7 +33,7 @@ void WizardBase::init() {
         []() {}, mPos, mDrag);
     mStarTimerSub =
         ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
-            [this](Timer& t) { return onStarTimer(t); }, Timer(150));
+            [this](Timer& t) { return onStarTimer(t); }, Timer(250));
     mStarAnimSub = TimeSystem::GetTimerObservable()->subscribe(
         [this](Timer& t) {
             mStar->nextFrame();
@@ -90,12 +90,12 @@ void WizardBase::onClick(Event::MouseButton b, bool clicked) {
 
 bool WizardBase::onStarTimer(Timer& t) {
     if (mShowStar) {
-        mActiveUps = mUpgrades->getActive();
+        mActiveUps = mUpgrades->getSnapshot();
     } else {
-        auto active = mUpgrades->getActive();
-        for (auto upSub : active) {
-            auto it = mActiveUps.find(upSub);
-            if (it == mActiveUps.end()) {
+        auto active = mUpgrades->getSnapshot();
+        for (auto pair : active) {
+            auto it = mActiveUps.find(pair.first);
+            if (it == mActiveUps.end() || it->second != pair.second) {
                 showStar();
                 break;
             }

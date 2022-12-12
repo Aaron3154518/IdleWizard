@@ -20,7 +20,7 @@
 
 #include <memory>
 #include <random>
-#include <unordered_set>
+#include <unordered_map>
 
 class WizardBase : public Component {
    public:
@@ -69,7 +69,7 @@ class WizardBase : public Component {
     std::list<ParameterSystem::ParameterSubscriptionPtr> mParamSubs;
 
     UpgradeListPtr mUpgrades = std::make_shared<UpgradeList>();
-    std::unordered_set<void*> mActiveUps;
+    UpgradeActiveList mActiveUps;
 
     std::mt19937 gen = std::mt19937(rand());
     std::uniform_real_distribution<float> rDist;

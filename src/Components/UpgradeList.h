@@ -25,6 +25,8 @@
 #include <unordered_set>
 #include <vector>
 
+typedef std::unordered_map<void*, UpgradeSnapshot> UpgradeActiveList;
+
 // For managing multiple upgrades
 typedef Observable<UpgradeBasePtr> UpgradeListBase;
 
@@ -40,7 +42,7 @@ class UpgradeList : public UpgradeListBase {
 
     void draw(TextureBuilder tex, float scroll, SDL_Point offset = {0, 0});
 
-    std::unordered_set<void*> getActive() const;
+    UpgradeActiveList getSnapshot() const;
 
     bool canBuyOne(ParameterSystem::BaseValue money, Number max = -1);
     Number upgradeAll(ParameterSystem::BaseValue money, Number max = -1);

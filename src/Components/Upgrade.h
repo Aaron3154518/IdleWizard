@@ -16,6 +16,12 @@ struct TextUpdateData {
     std::vector<RenderTextureCPtr> imgs;
 };
 
+struct UpgradeSnapshot {
+    bool operator!=(const UpgradeSnapshot& rhs) const;
+
+    unsigned int mMaxLvl;
+};
+
 struct UpgradeCost {
    public:
     UpgradeCost(ParameterSystem::BaseValue money,
@@ -72,6 +78,8 @@ class UpgradeBase {
     Status status(bool free = false);
     void buy(bool free = false);
     void max(bool free = false);
+
+    virtual UpgradeSnapshot getSnapshot() const;
 
     void setImage(WizardId id);
     void setImage(const std::string& file);
@@ -177,6 +185,8 @@ class Unlockable : public Display {
    public:
     Unlockable(ParameterSystem::BaseState level);
 
+    UpgradeSnapshot getSnapshot() const;
+
     TextUpdateData getCostText() const;
 
     ParameterSystem::BaseState level() const;
@@ -204,6 +214,8 @@ class Upgrade : public Display {
     Upgrade(ParameterSystem::BaseValue level, unsigned int maxLevel);
     Upgrade(ParameterSystem::BaseValue level,
             ParameterSystem::ValueParam maxLevel);
+
+    UpgradeSnapshot getSnapshot() const;
 
     TextUpdateData getCostText() const;
 

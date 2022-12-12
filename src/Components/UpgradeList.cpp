@@ -207,12 +207,12 @@ void UpgradeList::computeRects() {
     }
 }
 
-std::unordered_set<void*> UpgradeList::getActive() const {
-    std::unordered_set<void*> set;
+UpgradeActiveList UpgradeList::getSnapshot() const {
+    UpgradeActiveList list;
     for (auto sub : *this) {
-        set.insert(sub.get());
+        list[sub.get()] = {sub->get<DATA>()->getSnapshot()};
     }
-    return set;
+    return list;
 }
 
 bool UpgradeList::canBuyOne(ParameterSystem::BaseValue money, Number max) {

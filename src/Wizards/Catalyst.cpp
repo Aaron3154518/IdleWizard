@@ -164,10 +164,6 @@ void Catalyst::setUpgrades() {
     up = std::make_shared<Upgrade>(params[CatalystParams::FBCntLvl],
                                    params[CatalystParams::FBCntMaxLvl]);
     up->setImage("");
-    up->setDescription({"Hitting {i} with {i} boosts {i} power",
-                        {IconSystem::Get(CatalystDefs::IMG),
-                         IconSystem::Get(WizardDefs::FB_IMG),
-                         IconSystem::Get(WizardDefs::IMG)}});
     mParamSubs.push_back(params[CatalystParams::FBCntMaxLvl].subscribeTo(
         states[State::BoughtPoisonWizard], [](bool bought) {
             return CatalystDefs::FB_CNT_TYPES.size() - (bought ? 1 : 2);
@@ -200,13 +196,34 @@ void Catalyst::setUpgrades() {
             }
             up->setEffectText(ss.str());
         }));
-    mParamSubs.push_back(up->level().subscribe([up](const Number& lvl) {
+    mParamSubs.push_back(up->level().subscribe([up](const Number& l) {
+        int lvl = l.toInt();
+        int maxLvl =
+            ParameterSystem::Param<CATALYST>(CatalystParams::FBCntMaxLvl)
+                .get()
+                .toInt();
+
         std::vector<RenderTextureCPtr> imgs;
+        std::stringstream desc_str;
+        desc_str << "Hitting {i} with {i}";
         for (int i = 0; i < lvl; i++) {
+            if (i < maxLvl - 1) {
+                desc_str << ",{i}";
+            }
             imgs.push_back(
                 Money::GetMoneyIcon(CatalystDefs::FB_CNT_TYPES.at(i + 1)));
         }
+        desc_str << " boosts {i} power";
         up->setEffectImgs(imgs);
+
+        imgs.insert(imgs.begin(), IconSystem::Get(CatalystDefs::IMG));
+        if (lvl < maxLvl) {
+            imgs.push_back(
+                Money::GetMoneyIcon(CatalystDefs::FB_CNT_TYPES.at(lvl + 1)));
+        }
+        imgs.push_back(IconSystem::Get(WizardDefs::IMG));
+
+        up->setDescription({desc_str.str(), imgs});
     }));
     mFbCountUp = mUpgrades->subscribe(up);
 }

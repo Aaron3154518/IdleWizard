@@ -31,6 +31,7 @@ void setDefaults() {
     params[CatalystParams::BaseRange]->init(1.25);
 
     params[CatalystParams::ShardGainUpCost]->init(2);
+    params[CatalystParams::MultUpCost]->init(100);
 
     params[CatalystParams::RangeUpLvl]->init(Event::ResetT2);
     params[CatalystParams::ZapCntUpLvl]->init(Event::ResetT2);

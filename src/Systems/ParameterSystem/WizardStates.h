@@ -11,6 +11,7 @@ enum B : param_t {
     BoughtCrysGlowUp,
 
     BoughtCatShardMult,
+    BoughtCatMultUp,
 
     BoughtPoisWizCatPois,
 

@@ -228,6 +228,26 @@ void Catalyst::setUpgrades() {
             up->setDescription({desc_str.str(), imgs});
         }));
     mFbCountUp = mUpgrades->subscribe(up);
+
+    // Catalyst multiplier upgrade
+    uUp = std::make_shared<Unlockable>(states[State::BoughtCatMultUp]);
+    uUp->setImage("");
+    uUp->setDescription(
+        {"Increase {i} multiplier from {i} ^ log({i})",
+         {Money::GetMoneyIcon(UpgradeDefaults::CRYSTAL_MAGIC),
+          IconSystem::Get(CatalystDefs::IMG),
+          Money::GetMoneyIcon(UpgradeDefaults::CATALYST_MAGIC)}});
+    uUp->setCost(UpgradeDefaults::CRYSTAL_SHARDS,
+                 params[CatalystParams::MultUpCost]);
+    uUp->setEffects(params[CatalystParams::MultUp],
+                    UpgradeDefaults::PowerEffect);
+    mParamSubs.push_back(params[CatalystParams::MultUp].subscribeTo(
+        {params[CatalystParams::Magic]}, {uUp->level()}, [params, states]() {
+            return states[State::BoughtCatMultUp].get()
+                       ? (params[CatalystParams::Magic].get() + 10).logTen()
+                       : 1;
+        }));
+    mCatMultUp = mUpgrades->subscribe(uUp);
 }
 void Catalyst::setParamTriggers() {
     ParameterSystem::Params<CATALYST> params;
@@ -235,7 +255,7 @@ void Catalyst::setParamTriggers() {
     ParameterSystem::States states;
 
     mParamSubs.push_back(params[CatalystParams::MagicEffect].subscribeTo(
-        {params[CatalystParams::Magic]}, {},
+        {params[CatalystParams::Magic], params[CatalystParams::MultUp]}, {},
         [this]() { return calcMagicEffect(); }));
 
     mParamSubs.push_back(params[CatalystParams::Capacity].subscribeTo(
@@ -323,7 +343,9 @@ void Catalyst::onRender(SDL_Renderer* r) {
 
 Number Catalyst::calcMagicEffect() {
     ParameterSystem::Params<CATALYST> params;
-    return (params[CatalystParams::Magic].get() ^ .5) + 1;
+
+    return (params[CatalystParams::Magic].get() + 1) ^
+           (.5 * params[CatalystParams::MultUp].get());
 }
 
 Number Catalyst::calcRange() {

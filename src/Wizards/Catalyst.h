@@ -51,7 +51,7 @@ class Catalyst : public WizardBase {
     PoisonFireball::HitObservable::IdSubscriptionPtr mPoisFireballSub;
     WizardSystem::CatalystMagicObservable::SubscriptionPtr mMagicSub;
     UpgradeList::SubscriptionPtr mMagicEffectDisplay, mRangeUp, mZapCntUp,
-        mZapperCntUp, mShardUp, mGainUp1, mGainUp2, mFbCountUp;
+        mZapperCntUp, mShardUp, mGainUp1, mGainUp2, mFbCountUp, mCatMultUp;
 
     MessageHandlerPtr mMessages;
 

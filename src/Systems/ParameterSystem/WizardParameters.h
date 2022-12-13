@@ -95,6 +95,7 @@ enum B : param_t {
     FBCntLvl,
 
     ShardGainUpCost,
+    MultUpCost,
 };
 
 enum N : param_t {
@@ -120,6 +121,7 @@ enum N : param_t {
     GainUp2Cost,
 
     ShardGainUp,
+    MultUp,
 };
 }  // namespace CatalystParams
 namespace PowerWizardParams {

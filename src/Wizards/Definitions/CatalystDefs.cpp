@@ -22,7 +22,6 @@ void setDefaults() {
     ParameterSystem::Params<CATALYST> params;
 
     params[CatalystParams::Magic]->init(Number(1, 10));
-    params[CatalystParams::Capacity]->init(Number(1, 10));
 
     params[CatalystParams::FBRegCnt]->init(0, Event::ResetT1);
     params[CatalystParams::FBPowCnt]->init(0, Event::ResetT1);

@@ -51,6 +51,7 @@ namespace CrystalParams {
 enum B : param_t {
     Magic = 0,
     Shards,
+    BestMagic,
     PoisonMagic,
     PoisonRate,
 
@@ -78,7 +79,6 @@ enum N : param_t {
 namespace CatalystParams {
 enum B : param_t {
     Magic = 0,
-    Capacity,
 
     FBRegCnt,
     FBPowCnt,
@@ -99,6 +99,7 @@ enum B : param_t {
 
 enum N : param_t {
     MagicEffect = 0,
+    Capacity,
 
     FBCntEffect,
     FBCntMaxLvl,

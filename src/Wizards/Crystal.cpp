@@ -170,6 +170,14 @@ void Crystal::setParamTriggers() {
     ParameterSystem::Params<POISON_WIZARD> poiParams;
     ParameterSystem::States states;
 
+    mParamSubs.push_back(
+        params[CrystalParams::Magic].subscribe([params](const Number& magic) {
+            auto bestMagic = params[CrystalParams::BestMagic];
+            if (magic > bestMagic.get()) {
+                bestMagic.set(magic);
+            }
+        }));
+
     mParamSubs.push_back(params[CrystalParams::MagicEffect].subscribeTo(
         {params[CrystalParams::Magic]}, {},
         [this]() { return calcMagicEffect(); }));
@@ -253,7 +261,6 @@ void Crystal::setParamTriggers() {
     mParamSubs.push_back(states[State::CrysPoisonActive].subscribe(
         [this, params](bool poisoned) {
             mPoisonTimerSub->setActive(poisoned);
-            params[CrystalParams::PoisonMagic].set(0);
         }));
 }
 
@@ -479,8 +486,7 @@ void Crystal::addMagic(MagicSource source, const Number& amnt,
     switch (source) {
         case MagicSource::Fireball:
         case MagicSource::Glow:
-            if (ParameterSystem::Param(State::CrysPoisonActive).get() &&
-                amnt > poisonMagic.get()) {
+            if (amnt > poisonMagic.get()) {
                 poisonMagic.set(amnt);
             }
             break;

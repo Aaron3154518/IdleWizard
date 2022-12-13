@@ -231,11 +231,16 @@ void Catalyst::setUpgrades() {
 }
 void Catalyst::setParamTriggers() {
     ParameterSystem::Params<CATALYST> params;
+    ParameterSystem::Params<CRYSTAL> cryParams;
     ParameterSystem::States states;
 
     mParamSubs.push_back(params[CatalystParams::MagicEffect].subscribeTo(
         {params[CatalystParams::Magic]}, {},
         [this]() { return calcMagicEffect(); }));
+
+    mParamSubs.push_back(params[CatalystParams::Capacity].subscribeTo(
+        cryParams[CrystalParams::BestMagic],
+        [](const Number& magic) { return (magic ^ 0.2) / 10; }));
 
     mParamSubs.push_back(params[CatalystParams::Range].subscribeTo(
         {params[CatalystParams::BaseRange], params[CatalystParams::RangeUp]},

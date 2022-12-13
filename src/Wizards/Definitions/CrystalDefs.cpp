@@ -20,6 +20,7 @@ void setDefaults() {
 
     params[CrystalParams::Magic]->init(0, Event::ResetT1);
     params[CrystalParams::Shards]->init(0, Event::ResetT2);
+    params[CrystalParams::BestMagic]->init(0, Event::ResetT2);
     params[CrystalParams::PoisonMagic]->init(0, Event::ResetT1);
     params[CrystalParams::PoisonRate]->init(0, Event::ResetT1);
 

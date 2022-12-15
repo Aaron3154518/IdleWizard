@@ -210,6 +210,15 @@ void TimeWizard::setParamTriggers() {
             }
         }));
 
+    mParamSubs.push_back(
+        states[State::BoughtTimeWizard].subscribe([this](bool bought) {
+            WizardSystem::GetHideObservable()->next(mId, !bought);
+        }));
+
+    mParamSubs.push_back(states[State::TimeWizFrozen].subscribe(
+        [this](bool frozen) { onFreezeChange(frozen); }));
+
+    // Upgrade unlock constraints
     mParamSubs.push_back(ParameterSystem::subscribe(
         {params[TimeWizardParams::SpeedUpLvl]}, {states[State::BoughtSecondT1]},
         [this]() {
@@ -219,14 +228,6 @@ void TimeWizard::setParamTriggers() {
                         .get() > 0 &&
                 ParameterSystem::Param(State::BoughtSecondT1).get());
         }));
-
-    mParamSubs.push_back(
-        states[State::BoughtTimeWizard].subscribe([this](bool bought) {
-            WizardSystem::GetHideObservable()->next(mId, !bought);
-        }));
-
-    mParamSubs.push_back(states[State::TimeWizFrozen].subscribe(
-        [this](bool frozen) { onFreezeChange(frozen); }));
 }
 
 bool TimeWizard::onCostTimer(Timer& timer) {

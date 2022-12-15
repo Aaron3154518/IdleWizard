@@ -157,9 +157,6 @@ void PowerWizard::setParamTriggers() {
             WizardSystem::GetHideObservable()->next(mId, !bought);
         }));
 
-    mParamSubs.push_back(states[State::BoughtSecondT1].subscribe(
-        [this](bool bought) { mTimeWarpUp->setActive(bought); }));
-
     mParamSubs.push_back(
         states[State::TimeWarpEnabled].subscribe([this](bool enabled) {
             if (!enabled) {
@@ -173,6 +170,10 @@ void PowerWizard::setParamTriggers() {
                 }
             }
         }));
+
+    // Upgrade unlock constraints
+    mParamSubs.push_back(states[State::BoughtSecondT1].subscribe(
+        [this](bool bought) { mTimeWarpUp->setActive(bought); }));
 }
 
 void PowerWizard::onRender(SDL_Renderer* r) {

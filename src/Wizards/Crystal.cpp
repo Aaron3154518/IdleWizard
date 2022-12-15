@@ -228,28 +228,9 @@ void Crystal::setParamTriggers() {
                    states[State::BoughtTimeWizard].get();
         }));
 
-    mParamSubs.push_back(states[State::BoughtFirstT1].subscribe(
-        [this](bool val) { mWizCntUp->setActive(val); }));
-
     mParamSubs.push_back(params[CrystalParams::T1CostMult].subscribeTo(
         states[State::BoughtSecondT1],
         [](bool val) { return val ? Number(1, 3) : 1; }));
-
-    mParamSubs.push_back(ParameterSystem::subscribe(
-        {}, {states[State::BoughtSecondT1], states[State::BoughtCrysWizCntUp]},
-        [this]() {
-            ParameterSystem::States states;
-            mGlowUp->setActive(states[State::BoughtSecondT1].get() &&
-                               states[State::BoughtCrysWizCntUp].get());
-        }));
-
-    mParamSubs.push_back(states[State::ResetT1].subscribe([this](bool val) {
-        mCatalystBuy->setActive(val);
-        mPoisWizBuy->setActive(val);
-    }));
-
-    mParamSubs.push_back(states[State::BoughtCatalyst].subscribe(
-        [this](bool bought) { mRobotBuy->setActive(bought); }));
 
     mParamSubs.push_back(ParameterSystem::subscribe(
         {params[CrystalParams::Magic], params[CrystalParams::T1ResetCost]}, {},
@@ -258,6 +239,22 @@ void Crystal::setParamTriggers() {
                                     params[CrystalParams::T1ResetCost].get());
         }));
 
+    // Upgrade unlock constraints
+    mParamSubs.push_back(ParameterSystem::subscribe(
+        {}, {states[State::BoughtSecondT1], states[State::BoughtCrysWizCntUp]},
+        [this]() {
+            ParameterSystem::States states;
+            mGlowUp->setActive(states[State::BoughtSecondT1].get() &&
+                               states[State::BoughtCrysWizCntUp].get());
+        }));
+    mParamSubs.push_back(states[State::ResetT1].subscribe([this](bool val) {
+        mCatalystBuy->setActive(val);
+        mPoisWizBuy->setActive(val);
+    }));
+    mParamSubs.push_back(states[State::BoughtFirstT1].subscribe(
+        [this](bool val) { mWizCntUp->setActive(val); }));
+    mParamSubs.push_back(states[State::BoughtCatalyst].subscribe(
+        [this](bool bought) { mRobotBuy->setActive(bought); }));
     mParamSubs.push_back(states[State::BoughtPoisonWizard].subscribe(
         [this, params](bool bought) { mPoisonTimerSub->setActive(bought); }));
 }

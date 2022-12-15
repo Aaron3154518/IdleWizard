@@ -219,18 +219,16 @@ void Wizard::setParamTriggers() {
             return val ? 10 : 5;
         }));
 
+    // Upgrade unlock constraints
     mParamSubs.push_back(states[State::BoughtPowerWizard].subscribe(
         [this](bool val) { mCritUp->setActive(val); }));
-
     mParamSubs.push_back(states[State::BoughtTimeWizard].subscribe(
         [this](bool val) { mMultiUp->setActive(val); }));
-
     mParamSubs.push_back(ParameterSystem::subscribe(
         {}, {states[State::BoughtCatalyst]}, [this]() {
             ParameterSystem::States states;
             mTargetUp->setActive(states[State::BoughtCatalyst].get());
         }));
-
     mParamSubs.push_back(states[State::BoughtRoboWizCritUp].subscribe(
         [this](bool bought) { mRoboCritUp->setActive(bought); }));
 }

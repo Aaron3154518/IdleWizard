@@ -300,18 +300,17 @@ void Catalyst::setParamTriggers() {
     mParamSubs.push_back(ParameterSystem::subscribe(
         {params[CatalystParams::Range]}, {}, [this]() { updateRange(); }));
 
+    // Upgrade unlock constraints
     mParamSubs.push_back(
         params[CatalystParams::GainUp1Lvl].subscribe([this](const Number& lvl) {
             mGainUp2->setActive(mGainUp1->get<UpgradeList::DATA>()->status() ==
                                 Upgrade::BOUGHT);
         }));
-
     mParamSubs.push_back(
         states[State::BoughtPoisonWizard].subscribe([this](bool bought) {
             mZapCntUp->setActive(bought);
             mZapperCntUp->setActive(bought);
         }));
-
     mParamSubs.push_back(states[State::BoughtCatShardMult].subscribe(
         [this](bool bought) { mMultUp->setActive(bought); }));
 }

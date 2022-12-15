@@ -31,31 +31,19 @@ typedef std::unordered_map<void*, UpgradeSnapshot> UpgradeActiveList;
 typedef Observable<UpgradeBasePtr> UpgradeListBase;
 
 class UpgradeList : public UpgradeListBase {
+    friend class UpgradeScroller;
+    friend class UpgradeProgressBar;
+
    public:
     enum : size_t { DATA };
 
     int size() const;
-
-    void onClick(SDL_Point mouse);
-    RenderObservable::SubscriptionPtr onHover(SDL_Point mouse,
-                                              SDL_Point relMouse);
-
-    void draw(TextureBuilder tex, float scroll, SDL_Point offset = {0, 0});
 
     UpgradeActiveList getSnapshot() const;
 
     bool canBuyOne(ParameterSystem::BaseValue money, Number max = -1);
     Number upgradeAll(ParameterSystem::BaseValue money, Number max = -1);
     void maxAll(ParameterSystem::BaseValue money);
-
-   private:
-    void computeRects();
-
-    int mCount;
-    double mScroll;
-    Rect mRect;
-    std::vector<std::pair<Rect, SubscriptionWPtr>> mBackRects, mFrontRects;
-    std::vector<std::pair<bool, int>> mIdxMap;
 };
 typedef std::shared_ptr<UpgradeList> UpgradeListPtr;
 
@@ -68,18 +56,94 @@ const UpgradeListPtr& GetWizardUpgrades(WizardId id);
 std::shared_ptr<WizardUpgradesObservable> GetWizardUpgradesObservable();
 
 // For setting current UpgradeObservable
-class UpgradeListObservable : public ForwardObservable<void(UpgradeListPtr)> {};
+class UpgradeListObservable
+    : public ForwardObservable<void(UpgradeListPtr),
+                               void(UpgradeListPtr,
+                                    ParameterSystem::ValueParam)> {};
 
 class UpgradeService
     : public Service<UpgradeListObservable, WizardUpgradesObservable> {};
 
-// For displaying current UpgradeObservable
-class UpgradeScroller : public Component {
-   public:
-    UpgradeScroller();
+namespace UpgradeRendering {}  // namespace UpgradeRendering
 
-    const static SDL_Color BKGRND;
-    const static Rect RECT;
+// Handles rendering upgrade lists
+class UpgradeRenderer {
+   public:
+    virtual void onClick(SDL_Point mouse);
+    virtual RenderObservable::SubscriptionPtr onHover(SDL_Point mouse,
+                                                      SDL_Point relMouse);
+
+    virtual void draw(TextureBuilder tex, float scroll,
+                      SDL_Point offset = {0, 0});
+
+    virtual float minScroll() const;
+    virtual float maxScroll() const;
+
+   private:
+};
+
+typedef std::unique_ptr<UpgradeRenderer> UpgradeRendererPtr;
+
+// Renders upgrades as elliptical scroller
+class UpgradeScroller : public UpgradeRenderer {
+   public:
+    UpgradeScroller(UpgradeListPtr upgrades);
+
+    void onClick(SDL_Point mouse);
+    RenderObservable::SubscriptionPtr onHover(SDL_Point mouse,
+                                              SDL_Point relMouse);
+
+    void draw(TextureBuilder tex, float scroll, SDL_Point offset = {0, 0});
+
+    float maxScroll() const;
+
+   private:
+    void computeRects();
+
+    const UpgradeListPtr mUpgrades;
+
+    int mCount = -1;
+    float mScroll = 0;
+    SDL_Point mDim = {0, 0};
+    std::vector<std::pair<Rect, UpgradeList::SubscriptionWPtr>> mBackRects,
+        mFrontRects;
+    std::vector<std::pair<bool, int>> mIdxMap;
+};
+
+// Renders upgrades as progressbar
+class UpgradeProgressBar : public UpgradeRenderer {
+   public:
+    typedef std::pair<float, UpgradeList::SubscriptionWPtr> UpgradeCost;
+
+    UpgradeProgressBar(UpgradeListPtr upgrades,
+                       ParameterSystem::ValueParam val);
+
+    RenderObservable::SubscriptionPtr onHover(SDL_Point mouse,
+                                              SDL_Point relMouse);
+
+    void draw(TextureBuilder tex, float scroll, SDL_Point offset = {0, 0});
+
+    float maxScroll() const;
+
+   private:
+    static float toValue(const Number& val);
+
+    const UpgradeListPtr mUpgrades;
+    const ParameterSystem::ValueParam mValParam;
+
+    float mScrollMargin = 0;
+    Rect mBounds;
+
+    std::vector<UpgradeCost> mCostVals;
+};
+
+// Manages upgrade display
+class UpgradeDisplay : public Component {
+   public:
+    static const SDL_Color BKGRND;
+    static const Rect RECT;
+
+    UpgradeDisplay();
 
    private:
     void init();
@@ -93,9 +157,9 @@ class UpgradeScroller : public Component {
     void onHover(SDL_Point mouse);
     void onMouseLeave();
     void onSetUpgrades(UpgradeListPtr list);
+    void onSetUpgrades(UpgradeListPtr list, ParameterSystem::ValueParam val);
 
     void scroll(float dScroll);
-    float maxScroll() const;
 
     float mScroll = 0, mScrollV = 0;
     TextureBuilder mTex;
@@ -104,7 +168,7 @@ class UpgradeScroller : public Component {
     UIComponentPtr mPos;
     DragComponentPtr mDrag;
 
-    UpgradeListPtr mUpgrades;
+    UpgradeRendererPtr mUpRenderer;
 
     ResizeObservable::SubscriptionPtr mResizeSub;
     UpdateObservable::SubscriptionPtr mUpdateSub;

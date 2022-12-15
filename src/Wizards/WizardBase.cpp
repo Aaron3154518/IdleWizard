@@ -83,8 +83,7 @@ void WizardBase::onRender(SDL_Renderer* r) {
 void WizardBase::onClick(Event::MouseButton b, bool clicked) {
     if (clicked) {
         mShowStar = false;
-        ServiceSystem::Get<UpgradeService, UpgradeListObservable>()->next(
-            mUpgrades);
+        showUpgrades();
     }
 }
 
@@ -118,6 +117,11 @@ void WizardBase::onHide(bool hide) {
     if (!mHidden) {
         mActiveUps.clear();
     }
+}
+
+void WizardBase::showUpgrades() {
+    ServiceSystem::Get<UpgradeService, UpgradeListObservable>()->next(
+        mUpgrades);
 }
 
 void WizardBase::setPos(float x, float y) {

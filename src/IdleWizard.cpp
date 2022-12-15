@@ -32,8 +32,8 @@ int main(int argc, char* argv[]) {
     RobotWizardDefs::setDefaults();
 
     // Create Components
-    std::unique_ptr<UpgradeScroller> upgradeScroller =
-        ComponentFactory<UpgradeScroller>::New();
+    std::unique_ptr<UpgradeDisplay> upgradeDisplay =
+        ComponentFactory<UpgradeDisplay>::New();
     std::unique_ptr<Wizard> wizard = ComponentFactory<Wizard>::New();
     std::unique_ptr<Crystal> catalyst = ComponentFactory<Crystal>::New();
     std::unique_ptr<Catalyst> crystal = ComponentFactory<Catalyst>::New();

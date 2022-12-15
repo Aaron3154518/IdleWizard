@@ -46,6 +46,8 @@ class WizardBase : public Component {
     bool onStarTimer(Timer& t);
     virtual void onHide(bool hide);
 
+    virtual void showUpgrades();
+
     virtual void setPos(float x, float y);
 
     void showStar();

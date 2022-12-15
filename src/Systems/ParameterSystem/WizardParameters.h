@@ -215,7 +215,20 @@ enum N : param_t {
 }  // namespace PoisonWizardParams
 namespace RobotWizardParams {
 enum B : param_t {
-    WizCritUpCost = 0,
+    ShardAmnt = 0,
+
+    U1,
+    U2,
+    U3,
+    U4,
+    U5,
+    U6,
+    U7,
+    U8,
+    U9,
+    U10,
+
+    WizCritUpCost,
 };
 
 enum N : param_t {};

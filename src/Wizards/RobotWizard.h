@@ -57,6 +57,8 @@ class RobotWizard : public WizardBase {
     void onHide(bool hide);
     void onPowFireballHit(const PowerFireball& fireball);
 
+    void showUpgrades();
+
     void upgradeTarget();
 
     WizardId mTarget = WizardId::size;
@@ -74,6 +76,7 @@ class RobotWizard : public WizardBase {
     TimeSystem::UpdateObservable::SubscriptionPtr mMoveUpdateSub;
     TimeSystem::TimerObservable::SubscriptionPtr mUpTimerSub;
     UpgradeList::SubscriptionPtr mWizCritUp;
+    std::vector<UpgradeList::SubscriptionPtr> mUps;
 };
 
 #endif

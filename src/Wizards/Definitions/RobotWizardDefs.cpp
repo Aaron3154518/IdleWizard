@@ -12,6 +12,8 @@ void setDefaults() {
 
     ParameterSystem::Params<ROBOT_WIZARD> params;
 
+    params[RobotWizardParams::ShardAmnt]->init(0, Event::ResetT2);
+
     params[RobotWizardParams::WizCritUpCost]->init(Number(1, 20));
 
     ParameterSystem::States states;

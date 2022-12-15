@@ -97,9 +97,28 @@ void RobotWizard::setUpgrades() {
          "crit upgrade",
          {IconSystem::Get(WizardDefs::FB_IMG),
           IconSystem::Get(WizardDefs::IMG)}});
-    uUp->setCost(UpgradeDefaults::CRYSTAL_MAGIC,
+    uUp->setCost(UpgradeDefaults::CRYSTAL_SHARDS,
                  params[RobotWizardParams::WizCritUpCost]);
     mWizCritUp = mUpgrades->subscribe(uUp);
+
+    using RobotWizardParams::B;
+    params[B::U1]->init(0);
+    params[B::U2]->init(0.1);
+    params[B::U3]->init(0.5);
+    params[B::U4]->init(1);
+    params[B::U5]->init(5);
+    params[B::U6]->init(100);
+    params[B::U7]->init(100);
+    params[B::U8]->init(Number(1, 10));
+    params[B::U9]->init(Number(1, 5));
+    params[B::U10]->init(Number(5, 15));
+    for (auto p : {B::U1, B::U2, B::U3, B::U4, B::U5, B::U6, B::U7, B::U8,
+                   B::U9, B::U10}) {
+        uUp = std::make_shared<Unlockable>(states[State::BoughtRobotWizard]);
+        uUp->setImage(p == B::U7 ? RobotWizardDefs::IMG.file : "");
+        uUp->setCost(UpgradeDefaults::CRYSTAL_SHARDS, params[p]);
+        mUps.push_back(mUpgrades->subscribe(uUp));
+    }
 }
 void RobotWizard::setParamTriggers() {
     ParameterSystem::Params<ROBOT_WIZARD> params;
@@ -269,6 +288,19 @@ void RobotWizard::onPowFireballHit(const PowerFireball& fireball) {
         fireball.getDuration() > it->second.duration) {
         mStoredFireballs[target] = fireball.getData();
         mStoredFireballs[target].src = ROBOT_WIZARD;
+    }
+}
+
+void RobotWizard::showUpgrades() {
+    ServiceSystem::Get<UpgradeService, UpgradeListObservable>()->next(
+        mUpgrades,
+        ParameterSystem::Param<ROBOT_WIZARD>(RobotWizardParams::ShardAmnt));
+
+    auto p = ParameterSystem::Param<ROBOT_WIZARD>(RobotWizardParams::ShardAmnt);
+    if (p.get() == 0) {
+        p.set(0.1);
+    } else {
+        p.set(p.get() * 3);
     }
 }
 

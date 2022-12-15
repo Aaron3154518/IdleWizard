@@ -34,7 +34,6 @@ void setDefaults() {
     ParameterSystem::States states;
 
     states[State::ResetT1]->init(false);
-    states[State::CrysPoisonActive]->init(false, Event::ResetT1);
     states[State::BoughtCrysWizCntUp]->init(false, Event::ResetT1);
     states[State::BoughtCrysGlowUp]->init(false, Event::ResetT1);
     states[State::BoughtPowerWizard]->init(false, Event::ResetT1);

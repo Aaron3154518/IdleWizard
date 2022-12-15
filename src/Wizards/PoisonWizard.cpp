@@ -33,6 +33,27 @@ void PoisonWizard::setUpgrades() {
     ParameterSystem::Params<CRYSTAL> cryParams;
     ParameterSystem::States states;
 
+    // Poison gain
+    DisplayPtr dUp = std::make_shared<Display>();
+    dUp->setImage(mId);
+    dUp->setDescription(
+        {"{i} gains % of best {i} gain over time",
+         {IconSystem::Get(CrystalDefs::IMG),
+          Money::GetMoneyIcon(UpgradeDefaults::CRYSTAL_MAGIC)}});
+    dUp->setEffects(
+        {cryParams[CrystalParams::PoisonMagic],
+         cryParams[CrystalParams::PoisonRate]},
+        {}, [states, cryParams]() -> TextUpdateData {
+            std::stringstream ss;
+            ss << UpgradeDefaults::PercentEffectText(
+                      cryParams[CrystalParams::PoisonRate].get())
+               << " of " << cryParams[CrystalParams::PoisonMagic].get()
+               << "{i}/s";
+            return {ss.str(),
+                    {Money::GetMoneyIcon(UpgradeDefaults::CRYSTAL_MAGIC)}};
+        });
+    mPoisonDisplay = mUpgrades->subscribe(dUp);
+
     // Shard multiplier
     UpgradePtr up = std::make_shared<Upgrade>(
         params[PoisonWizardParams::ShardMultUpLvl], 5);
@@ -51,32 +72,6 @@ void PoisonWizard::setUpgrades() {
     mParamSubs.push_back(params[PoisonWizardParams::ShardMultUp].subscribeTo(
         up->level(), [](const Number& lvl) { return 3 ^ lvl; }));
     mShardMultUp = mUpgrades->subscribe(up);
-
-    // Poison gain
-    UnlockablePtr uUp =
-        std::make_shared<Unlockable>(states[State::CrysPoisonActive]);
-    uUp->setImage("");
-    uUp->setDescription(
-        {"{i} gains 10% of best {i} over time",
-         {IconSystem::Get(CrystalDefs::IMG),
-          Money::GetMoneyIcon(UpgradeDefaults::CRYSTAL_MAGIC)}});
-    uUp->setCost(UpgradeDefaults::CRYSTAL_SHARDS,
-                 params[PoisonWizardParams::CrysPoisonUpCost]);
-    uUp->setEffects(
-        {cryParams[CrystalParams::PoisonMagic],
-         cryParams[CrystalParams::PoisonRate]},
-        {uUp->level()}, [states, cryParams]() -> TextUpdateData {
-            std::stringstream ss;
-            ss << UpgradeDefaults::PercentEffectText(
-                      cryParams[CrystalParams::PoisonRate].get())
-               << " of " << cryParams[CrystalParams::PoisonMagic].get()
-               << "{i}/s";
-            return {ss.str(),
-                    {Money::GetMoneyIcon(UpgradeDefaults::CRYSTAL_MAGIC)}};
-        });
-    mParamSubs.push_back(params[PoisonWizardParams::BasePoisonRate].subscribeTo(
-        uUp->level(), [](const bool& bought) { return bought ? 0.1 : 0; }));
-    mCrysPoisonUp = mUpgrades->subscribe(uUp);
 
     // Increase poison gain from poison fbs
     up =
@@ -112,7 +107,8 @@ void PoisonWizard::setUpgrades() {
     mGlobCntUp = mUpgrades->subscribe(up);
 
     // Shoot poison ball at catalyst
-    uUp = std::make_shared<Unlockable>(states[State::BoughtPoisWizCatPois]);
+    UnlockablePtr uUp =
+        std::make_shared<Unlockable>(states[State::BoughtPoisWizCatPois]);
     uUp->setImage("");
     uUp->setDescription(
         {"Fires {i} at {i} to grant poison effect. {i} zaps convert {i} into "

@@ -147,6 +147,7 @@ class UpgradeBase {
 typedef std::shared_ptr<UpgradeBase> UpgradeBasePtr;
 
 // Upgrade that receives no interaction
+// TODO: Don't need this class
 class Display : public UpgradeBase {
    public:
     virtual ~Display() = default;

@@ -13,9 +13,9 @@ void setDefaults() {
 
     params[PoisonWizardParams::BaseSpeed]->init(.125);
     params[PoisonWizardParams::BaseGlobCnt]->init(5);
+    params[PoisonWizardParams::BasePoisonRate]->init(0.1);
     params[PoisonWizardParams::PoisonDecay]->init(.95);
 
-    params[PoisonWizardParams::CrysPoisonUpCost]->init(Number(1, 5));
     params[PoisonWizardParams::CatPoisonUpCost]->init(Number(1, 4));
     params[PoisonWizardParams::CatPoisCntUp]->init(5);
 

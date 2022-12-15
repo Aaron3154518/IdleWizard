@@ -258,10 +258,8 @@ void Crystal::setParamTriggers() {
                                     params[CrystalParams::T1ResetCost].get());
         }));
 
-    mParamSubs.push_back(states[State::CrysPoisonActive].subscribe(
-        [this, params](bool poisoned) {
-            mPoisonTimerSub->setActive(poisoned);
-        }));
+    mParamSubs.push_back(states[State::BoughtPoisonWizard].subscribe(
+        [this, params](bool bought) { mPoisonTimerSub->setActive(bought); }));
 }
 
 void Crystal::onRender(SDL_Renderer* r) {
@@ -338,7 +336,7 @@ void Crystal::onWizFireballHit(const WizardFireball& fireball) {
     }
 
     if (fireball.isPoisoned() &&
-        ParameterSystem::Param(State::CrysPoisonActive).get()) {
+        ParameterSystem::Param(State::BoughtPoisonWizard).get()) {
         auto poisonRate =
             ParameterSystem::Param<CRYSTAL>(CrystalParams::PoisonRate);
         poisonRate.set(poisonRate.get() + ParameterSystem::Param<POISON_WIZARD>(
@@ -388,26 +386,23 @@ bool Crystal::onGlowFinishTimer(Timer& t, const Number& magic) {
 }
 
 bool Crystal::onPoisonTimer(Timer& t) {
-    if (ParameterSystem::Param(State::CrysPoisonActive).get()) {
-        ParameterSystem::Params<CRYSTAL> params;
-        ParameterSystem::Params<POISON_WIZARD> poiParams;
+    ParameterSystem::Params<CRYSTAL> params;
+    ParameterSystem::Params<POISON_WIZARD> poiParams;
 
-        auto poisonRateParam = params[CrystalParams::PoisonRate];
-        Number poisonRate = poisonRateParam.get();
-        Number poisonMagic = params[CrystalParams::PoisonMagic].get();
-        Number basePoisonRate =
-            poiParams[PoisonWizardParams::BasePoisonRate].get();
-        Number poisonDecay = poiParams[PoisonWizardParams::PoisonDecay].get();
+    auto poisonRateParam = params[CrystalParams::PoisonRate];
+    Number poisonRate = poisonRateParam.get();
+    Number poisonMagic = params[CrystalParams::PoisonMagic].get();
+    Number basePoisonRate = poiParams[PoisonWizardParams::BasePoisonRate].get();
+    Number poisonDecay = poiParams[PoisonWizardParams::PoisonDecay].get();
 
-        float s = (float)t.length / 1000;
-        addMagic(MagicSource::Poison, poisonMagic * poisonRate * s,
-                 CrystalDefs::POISON_MSG_COLOR);
-        if (poisonRate > basePoisonRate) {
-            poisonRateParam.set(
-                max(basePoisonRate, poisonRate * (poisonDecay ^ s)));
-        } else if (poisonRate < basePoisonRate) {
-            poisonRateParam.set(basePoisonRate);
-        }
+    float s = (float)t.length / 1000;
+    addMagic(MagicSource::Poison, poisonMagic * poisonRate * s,
+             CrystalDefs::POISON_MSG_COLOR);
+    if (poisonRate > basePoisonRate) {
+        poisonRateParam.set(
+            max(basePoisonRate, poisonRate * (poisonDecay ^ s)));
+    } else if (poisonRate < basePoisonRate) {
+        poisonRateParam.set(basePoisonRate);
     }
 
     return true;

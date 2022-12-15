@@ -121,7 +121,8 @@ enum N : param_t {
     GainUp2Cost,
 
     ShardGainUp,
-    MultUp,
+    CatMultUp,
+    ShardMultUp,
 };
 }  // namespace CatalystParams
 namespace PowerWizardParams {

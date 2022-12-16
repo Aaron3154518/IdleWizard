@@ -303,8 +303,17 @@ void Crystal::onClick(Event::MouseButton b, bool clicked) {
         param.set(param.get() * 3);
         param = ParameterSystem::Param<CRYSTAL>(CrystalParams::Shards);
         param.set(param.get() * 3);
+
+        auto p =
+            ParameterSystem::Param<ROBOT_WIZARD>(RobotWizardParams::ShardAmnt);
+        if (p.get() == 0) {
+            p.set(0.1);
+        } else {
+            p.set(p.get() * 3);
+        }
     }
     _addMagic = clicked;
+
     WizardBase::onClick(b, clicked);
 }
 

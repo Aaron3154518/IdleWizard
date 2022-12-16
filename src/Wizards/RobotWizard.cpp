@@ -298,13 +298,6 @@ void RobotWizard::showUpgrades() {
     ServiceSystem::Get<UpgradeService, UpgradeListObservable>()->next(
         mUpgrades, UpgradeDefaults::CRYSTAL_SHARDS,
         ParameterSystem::Param<ROBOT_WIZARD>(RobotWizardParams::ShardAmnt));
-
-    auto p = ParameterSystem::Param<ROBOT_WIZARD>(RobotWizardParams::ShardAmnt);
-    if (p.get() == 0) {
-        p.set(0.1);
-    } else {
-        p.set(p.get() * 3);
-    }
 }
 
 void RobotWizard::upgradeTarget() {

@@ -321,12 +321,12 @@ void UpgradeProgressBar::draw(TextureBuilder tex) {
     for (auto pair : mRects) {
         auto up = pair.second.lock();
         if (up) {
-            up->get<UpgradeList::DATA>()->drawIcon(tex, pair.first);
+            up->get<UpgradeList::DATA>()->drawIcon(tex, pair.first,
+                                                   mRs.get().r1);
         }
     }
 
     tex.draw(mPb);
-
     tex.draw(mRs);
 }
 
@@ -336,8 +336,10 @@ void UpgradeProgressBar::update(Rect pos, float scroll) {
     // Get upgrades with log costs
     std::vector<UpgradeCost> upCosts;
     for (auto sub : *mUpgrades) {
-        Number cost = sub->get<UpgradeList::DATA>()->getCost()->getCost();
-        upCosts.push_back(std::make_pair(cost, sub));
+        auto& cost = sub->get<UpgradeList::DATA>()->getCost();
+        if (cost) {
+            upCosts.push_back(std::make_pair(cost->getCost(), sub));
+        }
     }
 
     // Sort by increasing cost
@@ -346,18 +348,18 @@ void UpgradeProgressBar::update(Rect pos, float scroll) {
                          return lhs.first < rhs.first;
                      });
 
+    if (upCosts.empty()) {
+        return;
+    }
+
     // Collect data on unlocked
     Number currVal = mValParam.get();
-    mNextCost = 0;
+    mNextCost = upCosts.back().first;
     for (mUnlocked = 0; mUnlocked < upCosts.size(); mUnlocked++) {
         if (currVal < upCosts.at(mUnlocked).first) {
             mNextCost = upCosts.at(mUnlocked).first;
             break;
         }
-    }
-
-    if (upCosts.empty()) {
-        return;
     }
 
     int marginX = Upgrade::GetDescWidth() / 2;

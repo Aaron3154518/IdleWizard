@@ -88,7 +88,8 @@ class UpgradeBase {
     void setEffectText(const std::string& text);
     void setEffectImgs(const std::vector<RenderTextureCPtr>& imgs);
 
-    void drawIcon(TextureBuilder& tex, const Rect& r);
+    void drawIcon(TextureBuilder& tex, const Rect& r,
+                  const Rect& bounds = Rect());
     void drawDescription(TextureBuilder tex, SDL_FPoint offset = {0, 0});
 
     static int GetDescWidth();

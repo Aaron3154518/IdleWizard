@@ -155,8 +155,10 @@ void UpgradeBase::setEffectImgs(const std::vector<RenderTextureCPtr>& imgs) {
     updateDescImgs(DescType::Effect, imgs);
 }
 
-void UpgradeBase::drawIcon(TextureBuilder& tex, const Rect& r) {
+void UpgradeBase::drawIcon(TextureBuilder& tex, const Rect& r,
+                           const Rect& bounds) {
     mImg.setDest(r);
+    mImg.setBoundary(bounds);
     tex.draw(mImg);
 }
 

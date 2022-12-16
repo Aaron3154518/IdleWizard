@@ -262,9 +262,10 @@ void UpgradeScroller::update(Rect pos, float scroll) {
 const int UpgradeProgressBar::BUCKET_W = 100;
 
 UpgradeProgressBar::UpgradeProgressBar(UpgradeListPtr upgrades,
+                                       ParameterSystem::BaseValue money,
                                        ParameterSystem::ValueParam val)
-    : UpgradeRenderer(upgrades), mValParam(val) {
-    mPb.set(WHITE, BLACK);
+    : UpgradeRenderer(upgrades), mMoneyParam(money), mValParam(val) {
+    mPb.set(BLUE, {200, 200, 200, 255});
 }
 
 RenderObservable::SubscriptionPtr UpgradeProgressBar::onHover(
@@ -290,13 +291,15 @@ RenderObservable::SubscriptionPtr UpgradeProgressBar::onHover(
         SDL_FPoint pos{(float)mouse.x, mPb.dest.y2() + (mouse.y - relMouse.y)};
         // Construct description string
         std::stringstream ss;
-        ss << "Current: " << mValParam.get() << "\nNext: " << mNextCost
-           << "\nUnlocked: " << mUnlocked << "/" << mUpgrades->size();
+        ss << "Current: " << mValParam.get() << "{i}\nNext: " << mNextCost
+           << "{i}\nUnlocked: " << mUnlocked << "/" << mUpgrades->size();
         std::string desc = ss.str();
+        std::vector<RenderTextureCPtr> imgs = {
+            Money::GetMoneyIcon(mMoneyParam), Money::GetMoneyIcon(mMoneyParam)};
         return ServiceSystem::Get<RenderService, RenderObservable>()->subscribe(
-            [pos, desc](SDL_Renderer* r) {
+            [pos, desc, imgs](SDL_Renderer* r) {
                 Display u;
-                u.setDescription({desc});
+                u.setDescription({desc, imgs});
                 u.drawDescription(TextureBuilder(), pos);
             },
             std::make_shared<UIComponent>(Rect(), Elevation::OVERLAYS));
@@ -433,8 +436,9 @@ void UpgradeDisplay::init() {
     mUpgradeSub =
         ServiceSystem::Get<UpgradeService, UpgradeListObservable>()->subscribe(
             [this](UpgradeListPtr us) { onSetUpgrades(us); },
-            [this](UpgradeListPtr us, ParameterSystem::ValueParam val) {
-                onSetUpgrades(us, val);
+            [this](UpgradeListPtr us, ParameterSystem::BaseValue money,
+                   ParameterSystem::ValueParam val) {
+                onSetUpgrades(us, money, val);
             });
 }
 
@@ -517,9 +521,11 @@ void UpgradeDisplay::onSetUpgrades(UpgradeListPtr upgrades) {
                          : nullptr);
 }
 void UpgradeDisplay::onSetUpgrades(UpgradeListPtr upgrades,
+                                   ParameterSystem::BaseValue money,
                                    ParameterSystem::ValueParam val) {
-    setUpgrades(upgrades ? std::make_unique<UpgradeProgressBar>(upgrades, val)
-                         : nullptr);
+    setUpgrades(upgrades
+                    ? std::make_unique<UpgradeProgressBar>(upgrades, money, val)
+                    : nullptr);
 }
 
 void UpgradeDisplay::scroll(float dScroll) {

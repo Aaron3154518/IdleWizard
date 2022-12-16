@@ -296,7 +296,7 @@ void RobotWizard::onPowFireballHit(const PowerFireball& fireball) {
 
 void RobotWizard::showUpgrades() {
     ServiceSystem::Get<UpgradeService, UpgradeListObservable>()->next(
-        mUpgrades,
+        mUpgrades, UpgradeDefaults::CRYSTAL_SHARDS,
         ParameterSystem::Param<ROBOT_WIZARD>(RobotWizardParams::ShardAmnt));
 
     auto p = ParameterSystem::Param<ROBOT_WIZARD>(RobotWizardParams::ShardAmnt);

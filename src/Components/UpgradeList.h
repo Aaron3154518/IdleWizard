@@ -67,7 +67,7 @@ std::shared_ptr<WizardUpgradesObservable> GetWizardUpgradesObservable();
 // For setting current UpgradeObservable
 class UpgradeListObservable
     : public ForwardObservable<void(UpgradeListPtr),
-                               void(UpgradeListPtr,
+                               void(UpgradeListPtr, ParameterSystem::BaseValue,
                                     ParameterSystem::ValueParam)> {};
 
 class UpgradeService
@@ -129,6 +129,7 @@ class UpgradeProgressBar : public UpgradeRenderer {
     const static int BUCKET_W;
 
     UpgradeProgressBar(UpgradeListPtr upgrades,
+                       ParameterSystem::BaseValue money,
                        ParameterSystem::ValueParam val);
 
     RenderObservable::SubscriptionPtr onHover(SDL_Point mouse,
@@ -141,6 +142,7 @@ class UpgradeProgressBar : public UpgradeRenderer {
 
     static float toValue(const Number& val);
 
+    const ParameterSystem::BaseValue mMoneyParam;
     const ParameterSystem::ValueParam mValParam;
 
     Number mNextCost;
@@ -173,7 +175,8 @@ class UpgradeDisplay : public Component {
     bool onTimer(Time& timer);
     void setUpgrades(UpgradeRendererPtr upRenderer);
     void onSetUpgrades(UpgradeListPtr list);
-    void onSetUpgrades(UpgradeListPtr list, ParameterSystem::ValueParam val);
+    void onSetUpgrades(UpgradeListPtr list, ParameterSystem::BaseValue money,
+                       ParameterSystem::ValueParam val);
 
     void scroll(float dScroll);
 

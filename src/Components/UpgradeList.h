@@ -39,11 +39,20 @@ class UpgradeList : public UpgradeListBase {
 
     int size() const;
 
+    float getScroll() const;
+    void setScroll(float scroll);
+    bool isOpen() const;
+    void setOpen(bool open);
+
     UpgradeActiveList getSnapshot() const;
 
     bool canBuyOne(ParameterSystem::BaseValue money, Number max = -1);
     Number upgradeAll(ParameterSystem::BaseValue money, Number max = -1);
     void maxAll(ParameterSystem::BaseValue money);
+
+   private:
+    float mScroll = 0;
+    bool mOpen = false;
 };
 typedef std::shared_ptr<UpgradeList> UpgradeListPtr;
 
@@ -64,22 +73,31 @@ class UpgradeListObservable
 class UpgradeService
     : public Service<UpgradeListObservable, WizardUpgradesObservable> {};
 
-namespace UpgradeRendering {}  // namespace UpgradeRendering
-
 // Handles rendering upgrade lists
 class UpgradeRenderer {
    public:
+    UpgradeRenderer(UpgradeListPtr upgrades);
+    virtual ~UpgradeRenderer() = default;
+
     virtual void onClick(SDL_Point mouse);
     virtual RenderObservable::SubscriptionPtr onHover(SDL_Point mouse,
                                                       SDL_Point relMouse);
 
-    virtual void draw(TextureBuilder tex, float scroll,
-                      SDL_Point offset = {0, 0});
+    virtual void draw(TextureBuilder tex);
+    virtual void update(Rect pos, float scroll);
 
     virtual float minScroll() const;
     virtual float maxScroll() const;
 
-   private:
+    void open(Rect pos, float scroll);
+    void close(float scroll);
+
+    float getScroll() const;
+
+   protected:
+    const UpgradeListPtr mUpgrades;
+
+    float mMinScroll = 0, mMaxScroll = 0;
 };
 
 typedef std::unique_ptr<UpgradeRenderer> UpgradeRendererPtr;
@@ -87,24 +105,17 @@ typedef std::unique_ptr<UpgradeRenderer> UpgradeRendererPtr;
 // Renders upgrades as elliptical scroller
 class UpgradeScroller : public UpgradeRenderer {
    public:
-    UpgradeScroller(UpgradeListPtr upgrades);
+    using UpgradeRenderer::UpgradeRenderer;
 
     void onClick(SDL_Point mouse);
     RenderObservable::SubscriptionPtr onHover(SDL_Point mouse,
                                               SDL_Point relMouse);
 
-    void draw(TextureBuilder tex, float scroll, SDL_Point offset = {0, 0});
-
-    float maxScroll() const;
+    void draw(TextureBuilder tex);
 
    private:
-    void computeRects();
+    void update(Rect pos, float scroll);
 
-    const UpgradeListPtr mUpgrades;
-
-    int mCount = -1;
-    float mScroll = 0;
-    SDL_Point mDim = {0, 0};
     std::vector<std::pair<Rect, UpgradeList::SubscriptionWPtr>> mBackRects,
         mFrontRects;
     std::vector<std::pair<bool, int>> mIdxMap;
@@ -113,7 +124,9 @@ class UpgradeScroller : public UpgradeRenderer {
 // Renders upgrades as progressbar
 class UpgradeProgressBar : public UpgradeRenderer {
    public:
-    typedef std::pair<float, UpgradeList::SubscriptionWPtr> UpgradeCost;
+    typedef std::pair<Number, UpgradeList::SubscriptionWPtr> UpgradeCost;
+
+    const static int BUCKET_W;
 
     UpgradeProgressBar(UpgradeListPtr upgrades,
                        ParameterSystem::ValueParam val);
@@ -121,20 +134,21 @@ class UpgradeProgressBar : public UpgradeRenderer {
     RenderObservable::SubscriptionPtr onHover(SDL_Point mouse,
                                               SDL_Point relMouse);
 
-    void draw(TextureBuilder tex, float scroll, SDL_Point offset = {0, 0});
-
-    float maxScroll() const;
+    void draw(TextureBuilder tex);
 
    private:
+    void update(Rect pos, float scroll);
+
     static float toValue(const Number& val);
 
-    const UpgradeListPtr mUpgrades;
     const ParameterSystem::ValueParam mValParam;
 
-    float mScrollMargin = 0;
-    Rect mBounds;
+    Number mNextCost;
+    int mUnlocked = 0;
+    RectShape mRs;
+    ProgressBar mPb;
 
-    std::vector<UpgradeCost> mCostVals;
+    std::vector<std::pair<Rect, UpgradeList::SubscriptionWPtr>> mRects;
 };
 
 // Manages upgrade display
@@ -156,6 +170,8 @@ class UpgradeDisplay : public Component {
     void onDragStart();
     void onHover(SDL_Point mouse);
     void onMouseLeave();
+    bool onTimer(Time& timer);
+    void setUpgrades(UpgradeRendererPtr upRenderer);
     void onSetUpgrades(UpgradeListPtr list);
     void onSetUpgrades(UpgradeListPtr list, ParameterSystem::ValueParam val);
 
@@ -176,6 +192,7 @@ class UpgradeDisplay : public Component {
     MouseObservable::SubscriptionPtr mMouseSub;
     DragObservable::SubscriptionPtr mDragSub;
     HoverObservable::SubscriptionPtr mHoverSub;
+    TimerObservable::SubscriptionPtr mTimerSub;
     UpgradeListObservable::SubscriptionPtr mUpgradeSub;
 };
 

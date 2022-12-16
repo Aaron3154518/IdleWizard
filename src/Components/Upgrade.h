@@ -91,6 +91,8 @@ class UpgradeBase {
     void drawIcon(TextureBuilder& tex, const Rect& r);
     void drawDescription(TextureBuilder tex, SDL_FPoint offset = {0, 0});
 
+    static int GetDescWidth();
+
     const static SDL_Color DESC_BKGRND;
     const static FontData DESC_FONT;
 
@@ -132,8 +134,6 @@ class UpgradeBase {
     ParameterSystem::ParameterSubscriptionPtr mCostSub, mEffectSub;
 
    private:
-    static int GetDescWidth();
-
     RenderData mImg;
     struct DescText {
         TextDataPtr text;

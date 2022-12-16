@@ -83,7 +83,9 @@ void WizardBase::onRender(SDL_Renderer* r) {
 void WizardBase::onClick(Event::MouseButton b, bool clicked) {
     if (clicked) {
         mShowStar = false;
-        showUpgrades();
+        if (!mUpgrades->isOpen()) {
+            showUpgrades();
+        }
     }
 }
 

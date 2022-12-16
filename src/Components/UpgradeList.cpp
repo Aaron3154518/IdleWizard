@@ -3,6 +3,11 @@
 // UpgradeList
 int UpgradeList::size() const { return getNumActive(); }
 
+float UpgradeList::getScroll() const { return mScroll; }
+void UpgradeList::setScroll(float scroll) { mScroll = scroll; }
+bool UpgradeList::isOpen() const { return mOpen; }
+void UpgradeList::setOpen(bool open) { mOpen = open; }
+
 UpgradeActiveList UpgradeList::getSnapshot() const {
     UpgradeActiveList list;
     for (auto sub : *this) {
@@ -65,22 +70,33 @@ std::shared_ptr<WizardUpgradesObservable> GetWizardUpgradesObservable() {
 }
 
 // UpgradeRenderer
+UpgradeRenderer::UpgradeRenderer(UpgradeListPtr upgrades)
+    : mUpgrades(upgrades) {}
+
 void UpgradeRenderer::onClick(SDL_Point mouse) {}
 RenderObservable::SubscriptionPtr UpgradeRenderer::onHover(SDL_Point mouse,
                                                            SDL_Point relMouse) {
     return nullptr;
 }
 
-void UpgradeRenderer::draw(TextureBuilder tex, float scroll, SDL_Point offset) {
+void UpgradeRenderer::draw(TextureBuilder tex) {}
+void UpgradeRenderer::update(Rect pos, float scroll) {}
+
+float UpgradeRenderer::minScroll() const { return mMinScroll; }
+float UpgradeRenderer::maxScroll() const { return mMaxScroll; }
+
+void UpgradeRenderer::open(Rect pos, float scroll) {
+    mUpgrades->setOpen(true);
+    update(pos, scroll);
+}
+void UpgradeRenderer::close(float scroll) {
+    mUpgrades->setOpen(false);
+    mUpgrades->setScroll(scroll);
 }
 
-float UpgradeRenderer::minScroll() const { return 0; }
-float UpgradeRenderer::maxScroll() const { return 0; }
+float UpgradeRenderer::getScroll() const { return mUpgrades->getScroll(); }
 
 // UpgradeScroller
-UpgradeScroller::UpgradeScroller(UpgradeListPtr upgrades)
-    : mUpgrades(upgrades) {}
-
 void UpgradeScroller::onClick(SDL_Point mouse) {
     for (auto& vec : {mFrontRects, mBackRects}) {
         for (auto pair : vec) {
@@ -120,35 +136,8 @@ RenderObservable::SubscriptionPtr UpgradeScroller::onHover(SDL_Point mouse,
     return nullptr;
 }
 
-void UpgradeScroller::draw(TextureBuilder tex, float scroll, SDL_Point offset) {
-    bool recompute = false;
-    if (mUpgrades->getNumActive() != mCount) {
-        mCount = mUpgrades->getNumActive();
-        recompute = true;
-    }
-    if (mScroll != scroll) {
-        mScroll = scroll;
-        recompute = true;
-    }
-    SDL_Point dim = tex.getTextureSize();
-    if (mDim.x != dim.x || mDim.y != dim.y) {
-        mDim = dim;
-        recompute = true;
-    }
-    if (recompute) {
-        computeRects();
-    } else {
-        // Upgrade order may have changed so reassign to rects
-        int i = 0;
-        for (auto sub : *mUpgrades) {
-            auto map = mIdxMap.at(i++);
-            (map.first ? mFrontRects : mBackRects).at(map.second).second = sub;
-        }
-    }
-
-    auto drawUpgrade = [this, &tex, offset](Rect r,
-                                            UpgradeList::SubscriptionPtr sub) {
-        r.move(offset.x, offset.y);
+void UpgradeScroller::draw(TextureBuilder tex) {
+    auto drawUpgrade = [this, &tex](Rect r, UpgradeList::SubscriptionPtr sub) {
         RectShape rd;
         if (!sub) {
             rd.mColor = WHITE;
@@ -183,29 +172,26 @@ void UpgradeScroller::draw(TextureBuilder tex, float scroll, SDL_Point offset) {
     }
 }
 
-float UpgradeScroller::maxScroll() const {
-    if (mDim.x * mDim.y == 0) {
-        return 0;
-    }
-    return mDim.x * (mUpgrades ? mUpgrades->size() - 1 : 0) /
-           floor(mDim.x * 2 / mDim.y);
-}
-
-void UpgradeScroller::computeRects() {
+void UpgradeScroller::update(Rect pos, float scroll) {
     mUpgrades->prune();
 
-    const float w = mDim.y / 2;
-    float a = (mDim.x - w) / 2;
-    float b = (mDim.y - w) / 2;
+    mMaxScroll = pos.empty()
+                     ? 0
+                     : pos.w() * (mUpgrades ? mUpgrades->size() - 1 : 0) /
+                           floor(pos.w() * 2 / pos.h());
+
+    const float w = pos.h() / 2;
+    float a = (pos.w() - w) / 2;
+    float b = (pos.h() - w) / 2;
 
     const float TWO_PI = 2 * M_PI;
     const float HALF_PI = M_PI / 2;
-    const int NUM_STEPS = floor(mDim.x / w);
+    const int NUM_STEPS = floor(pos.w() / w);
     const float STEP = M_PI / NUM_STEPS;
     const float ERR = 1e-5;
 
     // Compute total scroll angle
-    float scrollAngle = mScroll * TWO_PI / (mDim.x * 2);
+    float scrollAngle = scroll * TWO_PI / (pos.w() * 2);
     // Check number of steps passed, Use .5 - ERR so we don't round up at .5
     int baseIdx = floor(scrollAngle / STEP + .5 - ERR);
     // Constrain scroll angle to [0, 2PI)
@@ -220,8 +206,8 @@ void UpgradeScroller::computeRects() {
         minTheta = HALF_PI - STEP + minTheta;
     }
 
-    float cX = mDim.x / 2;
-    float cY = mDim.y / 2 - w / 4;
+    float cX = pos.w() / 2;
+    float cY = pos.h() / 2 - w / 4;
 
     int num = mUpgrades->getNumActive();
     std::vector<float> rectAngles(num);
@@ -233,7 +219,7 @@ void UpgradeScroller::computeRects() {
             float angle = fmod(minTheta + i * sign * STEP + TWO_PI, TWO_PI);
             int idx = baseIdx - (NUM_STEPS - i) * sign;
             if (idx >= 0 && idx < num) {
-                rectAngles[idx] = angle;
+                rectAngles.at(idx) = angle;
                 if (angle < M_PI) {
                     backLen++;
                 } else {
@@ -263,7 +249,7 @@ void UpgradeScroller::computeRects() {
     mIdxMap.resize(backLen + frontLen);
     int i = 0, bIdx = 0, fIdx = 0;
     for (auto sub : *mUpgrades) {
-        float angle = rectAngles[i];
+        float angle = rectAngles.at(i);
         bool back = angle < M_PI;
         mIdxMap.at(i) = std::make_pair(!back, back ? bIdx : fIdx);
         (back ? mBackRects.at(bIdx++) : mFrontRects.at(fIdx++)) =
@@ -273,82 +259,137 @@ void UpgradeScroller::computeRects() {
 }
 
 // UpgradeProgressBar
+const int UpgradeProgressBar::BUCKET_W = 100;
+
 UpgradeProgressBar::UpgradeProgressBar(UpgradeListPtr upgrades,
                                        ParameterSystem::ValueParam val)
-    : mUpgrades(upgrades), mValParam(val) {}
+    : UpgradeRenderer(upgrades), mValParam(val) {
+    mPb.set(WHITE, BLACK);
+}
 
 RenderObservable::SubscriptionPtr UpgradeProgressBar::onHover(
     SDL_Point mouse, SDL_Point relMouse) {
+    for (auto pair : mRects) {
+        if (SDL_PointInRect(&relMouse, pair.first)) {
+            auto weakSub = pair.second;
+            return ServiceSystem::Get<RenderService, RenderObservable>()
+                ->subscribe(
+                    [mouse, pair](SDL_Renderer* r) {
+                        auto sub = pair.second.lock();
+                        if (sub) {
+                            sub->get<UpgradeList::DATA>()->drawDescription(
+                                TextureBuilder(),
+                                pair.first.getPos(Rect::CENTER,
+                                                  Rect::BOT_RIGHT));
+                        }
+                    },
+                    std::make_shared<UIComponent>(Rect(), Elevation::OVERLAYS));
+        }
+    }
+    if (SDL_PointInRect(&relMouse, mPb.dest)) {
+        SDL_FPoint pos{(float)mouse.x, mPb.dest.y2() + (mouse.y - relMouse.y)};
+        // Construct description string
+        std::stringstream ss;
+        ss << "Current: " << mValParam.get() << "\nNext: " << mNextCost
+           << "\nUnlocked: " << mUnlocked << "/" << mUpgrades->size();
+        std::string desc = ss.str();
+        return ServiceSystem::Get<RenderService, RenderObservable>()->subscribe(
+            [pos, desc](SDL_Renderer* r) {
+                Display u;
+                u.setDescription({desc});
+                u.drawDescription(TextureBuilder(), pos);
+            },
+            std::make_shared<UIComponent>(Rect(), Elevation::OVERLAYS));
+    }
     return nullptr;
 }
 
-constexpr float VAL = 100;
+void UpgradeProgressBar::draw(TextureBuilder tex) {
+    for (auto pair : mRects) {
+        auto up = pair.second.lock();
+        if (up) {
+            up->get<UpgradeList::DATA>()->drawIcon(tex, pair.first);
+        }
+    }
 
-void UpgradeProgressBar::draw(TextureBuilder tex, float scroll,
-                              SDL_Point offset) {
+    tex.draw(mPb);
+
+    tex.draw(mRs);
+}
+
+void UpgradeProgressBar::update(Rect pos, float scroll) {
+    mRects.clear();
+
     // Get upgrades with log costs
-    mCostVals.clear();
+    std::vector<UpgradeCost> upCosts;
     for (auto sub : *mUpgrades) {
-        auto up = sub->get<UpgradeList::DATA>();
-        mCostVals.push_back(
-            std::make_pair(toValue(up->getCost()->getCost()), sub));
+        Number cost = sub->get<UpgradeList::DATA>()->getCost()->getCost();
+        upCosts.push_back(std::make_pair(cost, sub));
     }
 
     // Sort by increasing cost
-    std::stable_sort(mCostVals.begin(), mCostVals.end(),
+    std::stable_sort(upCosts.begin(), upCosts.end(),
                      [](const UpgradeCost& lhs, const UpgradeCost& rhs) {
                          return lhs.first < rhs.first;
                      });
 
-    SDL_Point dim = tex.getTextureSize();
-    int marginX = dim.x / 20;
-    int marginY = dim.y / 10;
-    mBounds = Rect(marginX, marginY, dim.x - marginX * 2, dim.y - marginY * 2);
-    float pbH = mBounds.h() / 5;
-    float upW = (mBounds.h() - pbH) / 2;
-    mScrollMargin = upW / 2;
+    // Collect data on unlocked
+    Number currVal = mValParam.get();
+    mNextCost = 0;
+    for (mUnlocked = 0; mUnlocked < upCosts.size(); mUnlocked++) {
+        if (currVal < upCosts.at(mUnlocked).first) {
+            mNextCost = upCosts.at(mUnlocked).first;
+            break;
+        }
+    }
 
-    scroll -= mScrollMargin;
-    float start = scroll / VAL;
+    if (upCosts.empty()) {
+        return;
+    }
+
+    int marginX = Upgrade::GetDescWidth() / 2;
+    int marginY = pos.h() / 10;
+    Rect bounds(marginX, marginY, pos.w() - marginX * 2, pos.h() - marginY * 2);
+    float pbH = bounds.h() / 5;
+    float upW = (bounds.h() - pbH) / 2;
+    float scrollMargin = upW / 2;
+
+    float maxCost = toValue(upCosts.back().first);
+
+    mMaxScroll =
+        upCosts.empty()
+            ? 0
+            : fmaxf(0, maxCost * BUCKET_W + scrollMargin * 2 - bounds.w());
+
+    scroll -= scrollMargin;
+    float start = scroll / BUCKET_W;
     float val_start = fmaxf(start, 0);
-    float end = start + mBounds.w() / VAL;
-    float val_end = fminf(end, mCostVals.back().first);
+    float end = start + bounds.w() / BUCKET_W;
+    float val_end = fminf(end, maxCost);
     float amnt = toValue(mValParam.get());
 
-    ProgressBar pb;
-    pb.set(Rect(mBounds.x() + VAL * (val_start - start), mBounds.y() + upW,
-                VAL * (val_end - val_start), pbH))
-        .set(WHITE, BLACK)
+    mRs.set(bounds, 2);
+    mPb.set(Rect(bounds.x() + BUCKET_W * (val_start - start), bounds.y() + upW,
+                 BUCKET_W * (val_end - val_start), pbH))
         .set(amnt - val_start, val_end - val_start);
-    tex.draw(pb);
 
-    RectShape rs;
-    rs.set(mBounds, 2);
-    tex.draw(rs);
-
-    for (int i = 0; i < mCostVals.size(); i++) {
-        auto& pair = mCostVals.at(i);
-        if (fabsf(pair.first - start) < mScrollMargin ||
-            fabsf(pair.first - end) < mScrollMargin) {
+    for (int i = 0; i < upCosts.size(); i++) {
+        auto& pair = upCosts.at(i);
+        float val = toValue(pair.first);
+        if (val >= end + scrollMargin) {
+            break;
+        }
+        if (val > start - scrollMargin) {
             auto upPtr = pair.second.lock();
             if (upPtr) {
                 Rect r(0, 0, upW, upW);
-                r.setPos(mBounds.x() + VAL * (pair.first - start),
-                         i % 2 == 0 ? mBounds.y() : mBounds.y2() - r.h(),
+                r.setPos(bounds.x() + BUCKET_W * (val - start),
+                         i % 2 == 0 ? bounds.y() : bounds.y2() - r.h(),
                          Rect::Align::CENTER, Rect::Align::TOP_LEFT);
-                auto up = upPtr->get<UpgradeList::DATA>();
-                up->drawIcon(tex, r);
+                mRects.push_back(std::make_pair(r, pair.second));
             }
         }
     }
-}
-
-float UpgradeProgressBar::maxScroll() const {
-    if (mCostVals.empty()) {
-        return 0;
-    }
-    return fmaxf(
-        0, mCostVals.back().first * VAL + mScrollMargin * 2 - mBounds.w());
 }
 
 float UpgradeProgressBar::toValue(const Number& val) {
@@ -403,6 +444,10 @@ void UpgradeDisplay::onResize(ResizeData data) {
 
     mTex = TextureBuilder(mPos->rect.W(), mPos->rect.H());
     mTexData.set(mTex.getTexture());
+
+    if (mUpRenderer) {
+        mUpRenderer->update(mPos->rect, mScroll);
+    }
 }
 void UpgradeDisplay::onUpdate(Time dt) {
     if (!mDrag->dragging) {
@@ -421,7 +466,7 @@ void UpgradeDisplay::onRender(SDL_Renderer* r) {
     mTex.draw(rect);
 
     if (mUpRenderer) {
-        mUpRenderer->draw(mTex, mScroll);
+        mUpRenderer->draw(mTex);
     }
 
     // Draw texture to screen
@@ -451,20 +496,37 @@ void UpgradeDisplay::onHover(SDL_Point mouse) {
     }
 }
 void UpgradeDisplay::onMouseLeave() { mUpDescRenderSub.reset(); }
+bool UpgradeDisplay::onTimer(Time& timer) {
+    if (mUpRenderer) {
+        mUpRenderer->update(mPos->rect, mScroll);
+    }
+    return true;
+}
+void UpgradeDisplay::setUpgrades(UpgradeRendererPtr upRenderer) {
+    if (mUpRenderer) {
+        mUpRenderer->close(mScroll);
+    }
+    mUpRenderer = std::move(upRenderer);
+    if (mUpRenderer) {
+        mUpRenderer->open(mPos->rect, mUpRenderer->minScroll());
+        scroll(mUpRenderer->getScroll() - mScroll);
+    }
+}
 void UpgradeDisplay::onSetUpgrades(UpgradeListPtr upgrades) {
-    mUpRenderer =
-        upgrades ? std::make_unique<UpgradeScroller>(upgrades) : nullptr;
-    scroll(0);
+    setUpgrades(upgrades ? std::make_unique<UpgradeScroller>(upgrades)
+                         : nullptr);
 }
 void UpgradeDisplay::onSetUpgrades(UpgradeListPtr upgrades,
                                    ParameterSystem::ValueParam val) {
-    mUpRenderer = upgrades ? std::make_unique<UpgradeProgressBar>(upgrades, val)
-                           : nullptr;
-    scroll(0);
+    setUpgrades(upgrades ? std::make_unique<UpgradeProgressBar>(upgrades, val)
+                         : nullptr);
 }
 
 void UpgradeDisplay::scroll(float dScroll) {
     float maxScroll = mUpRenderer ? mUpRenderer->maxScroll() : 0;
     float minScroll = mUpRenderer ? mUpRenderer->minScroll() : 0;
     mScroll = fmax(fmin(mScroll + dScroll, maxScroll), minScroll);
+    if (mUpRenderer) {
+        mUpRenderer->update(mPos->rect, mScroll);
+    }
 }

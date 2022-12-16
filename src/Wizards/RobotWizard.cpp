@@ -112,10 +112,13 @@ void RobotWizard::setUpgrades() {
     params[B::U8]->init(Number(1, 10));
     params[B::U9]->init(Number(1, 5));
     params[B::U10]->init(Number(5, 15));
+    int i = 0;
     for (auto p : {B::U1, B::U2, B::U3, B::U4, B::U5, B::U6, B::U7, B::U8,
                    B::U9, B::U10}) {
-        uUp = std::make_shared<Unlockable>(states[State::BoughtRobotWizard]);
+        uUp = std::make_shared<Unlockable>(states[State::BoughtRoboWizCritUp]);
         uUp->setImage(p == B::U7 ? RobotWizardDefs::IMG.file : "");
+        uUp->setDescription({"{i} " + std::to_string(i++),
+                             {IconSystem::Get(RobotWizardDefs::IMG)}});
         uUp->setCost(UpgradeDefaults::CRYSTAL_SHARDS, params[p]);
         mUps.push_back(mUpgrades->subscribe(uUp));
     }

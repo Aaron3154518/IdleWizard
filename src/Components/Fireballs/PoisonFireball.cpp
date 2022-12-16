@@ -13,9 +13,9 @@ PoisonFireball::PoisonFireball(SDL_FPoint c, WizardId target, const Data& data)
       mDuration(data.duration) {
     setSize(data.sizeFactor);
     setSpeed(data.speed);
-    setImg(IconSystem::Get(PoisonWizardDefs::GLOB_IMG));
-    mBubbleAImg.set(IconSystem::Get(PoisonWizardDefs::BUBBLE1_IMG));
-    mBubbleBImg.set(IconSystem::Get(PoisonWizardDefs::BUBBLE2_IMG));
+    setImg(IconSystem::Get(PoisonWizardDefs::GLOB_IMG()));
+    mBubbleAImg.set(IconSystem::Get(PoisonWizardDefs::BUBBLE1_IMG()));
+    mBubbleBImg.set(IconSystem::Get(PoisonWizardDefs::BUBBLE2_IMG()));
 }
 
 void PoisonFireball::init() {

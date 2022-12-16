@@ -22,8 +22,6 @@ class PowerFireball : public Fireball {
 
     static std::shared_ptr<HitObservable> GetHitObservable();
 
-    static RenderTextureCPtr GetIcon();
-
    public:
     struct Data {
         Number power, duration;

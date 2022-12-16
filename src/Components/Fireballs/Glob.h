@@ -42,7 +42,6 @@ class Glob : public Component {
     void setPos(float x, float y);
 
     const static Rect IMG_RECT;
-    const static AnimationData IMG;
 
    protected:
     void init();

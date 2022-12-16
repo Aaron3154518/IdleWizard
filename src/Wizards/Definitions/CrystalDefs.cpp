@@ -9,9 +9,20 @@ const std::string WIZ_CNT_UP_IMG = "res/upgrades/wizard_count_upgrade.png",
                   CRYS_GLOW_UP_IMG = "res/upgrades/crystal_glow_upgrade.png",
                   FRACTURE_IMG = "res/upgrades/fracture.png";
 
-const AnimationData IMG{"res/wizards/crystal_ss.png", 13, 100},
-    GLOW_EFFECT_IMG{"res/wizards/crystal_glow_effect_ss.png", 4, 150},
-    GLOW_FINISH_IMG{"res/wizards/crystal_glow_finish_ss.png", 9, 125};
+const AnimationData& IMG() {
+    const static AnimationData IMG{"res/wizards/crystal_ss.png", 13, 100};
+    return IMG;
+}
+const AnimationData& GLOW_EFFECT_IMG() {
+    const static AnimationData GLOW_EFFECT_IMG{
+        "res/wizards/crystal_glow_effect_ss.png", 4, 150};
+    return GLOW_EFFECT_IMG;
+}
+const AnimationData& GLOW_FINISH_IMG() {
+    const static AnimationData GLOW_FINISH_IMG{
+        "res/wizards/crystal_glow_finish_ss.png", 9, 125};
+    return GLOW_FINISH_IMG;
+}
 
 void setDefaults() {
     using WizardSystem::Event;

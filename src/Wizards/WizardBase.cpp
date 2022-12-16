@@ -123,7 +123,7 @@ void WizardBase::onHide(bool hide) {
 
 void WizardBase::showUpgrades() {
     ServiceSystem::Get<UpgradeService, UpgradeListObservable>()->next(
-        mUpgrades);
+        mUpgrades, IconSystem::Get(Definitions::WIZ_IMG(mId)));
 }
 
 void WizardBase::setPos(float x, float y) {

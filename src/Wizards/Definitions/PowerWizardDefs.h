@@ -11,7 +11,8 @@
 #include <vector>
 
 namespace PowerWizardDefs {
-extern const AnimationData IMG, FB_IMG;
+const AnimationData& IMG();
+const AnimationData& FB_IMG();
 extern const std::string POWER_UP_IMG, TIME_WARP_UP_IMG;
 
 void setDefaults();

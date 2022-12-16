@@ -8,16 +8,16 @@ void Crystal::init() {
 
     ParameterSystem::Params<CRYSTAL> params;
 
-    mImg.set(CrystalDefs::IMG);
+    mImg.set(CrystalDefs::IMG());
     mImg.setDest(IMG_RECT);
     mPos->rect = mImg.getDest();
     WizardSystem::GetWizardImageObservable()->next(mId, mImg);
-    mGlowBkgrnd.set(CrystalDefs::GLOW_EFFECT_IMG);
+    mGlowBkgrnd.set(CrystalDefs::GLOW_EFFECT_IMG());
     SDL_Point imgDim = mImg.get()->getTextureDim(),
               glowDim = mGlowBkgrnd.get()->getTextureDim();
     mGlowBkgrnd.setDest(Rect(0, 0, mPos->rect.w() * glowDim.x / imgDim.x,
                              mPos->rect.h() * glowDim.y / imgDim.y));
-    mGlowFinishBkgrnd.set(CrystalDefs::GLOW_FINISH_IMG);
+    mGlowFinishBkgrnd.set(CrystalDefs::GLOW_FINISH_IMG());
     imgDim = mImg.get()->getTextureDim();
     glowDim = mGlowFinishBkgrnd.get()->getTextureDim();
     mGlowFinishBkgrnd.setDest(Rect(0, 0, mPos->rect.w() * glowDim.x / imgDim.x,
@@ -48,10 +48,10 @@ void Crystal::setSubscriptions() {
             mImg->nextFrame();
             WizardSystem::GetWizardImageObservable()->next(mId, mImg);
             t.length = mImg->getFrame() == 0 ? getAnimationDelay()
-                                             : CrystalDefs::IMG.frame_ms;
+                                             : CrystalDefs::IMG().frame_ms;
             return true;
         },
-        CrystalDefs::IMG);
+        CrystalDefs::IMG());
     mGlowAnimTimerSub = TimeSystem::GetTimerObservable()->subscribe(
         [this](Timer& t) {
             mGlowBkgrnd->nextFrame();
@@ -60,7 +60,7 @@ void Crystal::setSubscriptions() {
             }
             return true;
         },
-        CrystalDefs::GLOW_EFFECT_IMG);
+        CrystalDefs::GLOW_EFFECT_IMG());
     mPoisonTimerSub = TimeSystem::GetTimerObservable()->subscribe(
         [this](Timer& t) { return onPoisonTimer(t); }, Timer(500));
     mT1ResetSub = WizardSystem::GetWizardEventObservable()->subscribe(
@@ -102,9 +102,9 @@ void Crystal::setUpgrades() {
     uUp->setDescription(
         {"After begin struck by {i}, {i} will absorb {i}\nWhen the effect "
          "expires, their power will be multiplied",
-         {IconSystem::Get(PowerWizardDefs::IMG),
-          IconSystem::Get(CrystalDefs::IMG),
-          IconSystem::Get(WizardDefs::FB_IMG)}});
+         {IconSystem::Get(PowerWizardDefs::IMG()),
+          IconSystem::Get(CrystalDefs::IMG()),
+          IconSystem::Get(WizardDefs::FB_IMG())}});
     uUp->setCost(UpgradeDefaults::CRYSTAL_MAGIC,
                  params[CrystalParams::GlowUpCost]);
     uUp->setEffects(params[CrystalParams::GlowEffect],
@@ -117,8 +117,9 @@ void Crystal::setUpgrades() {
     uUp->setDescription(
         {"Power Wizard empowers {i} and overloads {i} for increased {i} "
          "power",
-         {IconSystem::Get(WizardDefs::IMG), IconSystem::Get(CrystalDefs::IMG),
-          IconSystem::Get(WizardDefs::FB_IMG)}});
+         {IconSystem::Get(WizardDefs::IMG()),
+          IconSystem::Get(CrystalDefs::IMG()),
+          IconSystem::Get(WizardDefs::FB_IMG())}});
     uUp->setCost(UpgradeDefaults::CRYSTAL_MAGIC,
                  params[CrystalParams::T1WizardCost]);
     mPowWizBuy = mUpgrades->subscribe(uUp);
@@ -129,7 +130,7 @@ void Crystal::setUpgrades() {
     uUp->setDescription(
         {"Time Wizard boosts {i} fire rate and freezes time for a "
          "massive power boost",
-         {IconSystem::Get(WizardDefs::IMG)}});
+         {IconSystem::Get(WizardDefs::IMG())}});
     uUp->setCost(UpgradeDefaults::CRYSTAL_MAGIC,
                  params[CrystalParams::T1WizardCost]);
     mTimeWizBuy = mUpgrades->subscribe(uUp);
@@ -139,7 +140,7 @@ void Crystal::setUpgrades() {
     uUp->setImage(WIZ_IMGS.at(CATALYST));
     uUp->setDescription(
         {"Catalyst stores magic and boosts {i} that pass nearby",
-         {IconSystem::Get(WizardDefs::FB_IMG)}});
+         {IconSystem::Get(WizardDefs::FB_IMG())}});
     uUp->setCost(UpgradeDefaults::CRYSTAL_SHARDS,
                  params[CrystalParams::CatalystCost]);
     mCatalystBuy = mUpgrades->subscribe(uUp);
@@ -150,7 +151,7 @@ void Crystal::setUpgrades() {
     uUp->setDescription(
         {"Poison wizard increases {i} effects and enables magic-over-time "
          "gains",
-         {IconSystem::Get(CrystalDefs::IMG)}});
+         {IconSystem::Get(CrystalDefs::IMG())}});
     uUp->setCost(UpgradeDefaults::CRYSTAL_SHARDS,
                  params[CrystalParams::PoisonWizCost]);
     mPoisWizBuy = mUpgrades->subscribe(uUp);
@@ -159,7 +160,7 @@ void Crystal::setUpgrades() {
     uUp = std::make_shared<Unlockable>(states[State::BoughtRobotWizard]);
     uUp->setImage(WIZ_IMGS.at(ROBOT_WIZARD));
     uUp->setDescription({"Robot automates upgrade purchases and {i} synergies",
-                         {IconSystem::Get(PowerWizardDefs::FB_IMG)}});
+                         {IconSystem::Get(PowerWizardDefs::FB_IMG())}});
     uUp->setCost(UpgradeDefaults::CRYSTAL_SHARDS,
                  params[CrystalParams::RobotCost]);
     mRobotBuy = mUpgrades->subscribe(uUp);
@@ -368,7 +369,7 @@ bool Crystal::onGlowTimer(Timer& t) {
     mGlowFinishing = true;
     mGlowFinishTimerSub = TimeSystem::GetTimerObservable()->subscribe(
         [this, magic](Timer& t) { return onGlowFinishTimer(t, magic); },
-        Timer(CrystalDefs::GLOW_FINISH_IMG.frame_ms));
+        Timer(CrystalDefs::GLOW_FINISH_IMG().frame_ms));
     return false;
 }
 

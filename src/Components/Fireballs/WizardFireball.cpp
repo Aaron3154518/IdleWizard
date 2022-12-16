@@ -100,10 +100,11 @@ const Number& WizardFireball::getPower() const { return mPower; }
 void WizardFireball::setPower(const Number& pow) { mPower = pow; }
 
 void WizardFireball::updateImage() {
-    Fireball::setImg(IconSystem::Get(mPoisoned ? WizardDefs::FB_INNER_POISON_IMG
-                                               : WizardDefs::FB_INNER_IMG));
-    mOuterImg.set(IconSystem::Get(mBoosted ? WizardDefs::FB_OUTER_BUFFED_IMG
-                                           : WizardDefs::FB_OUTER_IMG));
+    Fireball::setImg(IconSystem::Get(mPoisoned
+                                         ? WizardDefs::FB_INNER_POISON_IMG()
+                                         : WizardDefs::FB_INNER_IMG()));
+    mOuterImg.set(IconSystem::Get(mBoosted ? WizardDefs::FB_OUTER_BUFFED_IMG()
+                                           : WizardDefs::FB_OUTER_IMG()));
 }
 
 void WizardFireball::addFireball(const Data& data) {

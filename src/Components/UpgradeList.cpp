@@ -97,6 +97,11 @@ void UpgradeRenderer::close(float scroll) {
 float UpgradeRenderer::getScroll() const { return mUpgrades->getScroll(); }
 
 // UpgradeScroller
+UpgradeScroller::UpgradeScroller(UpgradeListPtr upgrades, RenderTextureCPtr img)
+    : UpgradeRenderer(upgrades) {
+    mImg.set(img);
+}
+
 void UpgradeScroller::onClick(SDL_Point mouse) {
     for (auto& vec : {mFrontRects, mBackRects}) {
         for (auto pair : vec) {
@@ -139,10 +144,9 @@ RenderObservable::SubscriptionPtr UpgradeScroller::onHover(SDL_Point mouse,
 void UpgradeScroller::draw(TextureBuilder tex) {
     auto drawUpgrade = [this, &tex](Rect r, UpgradeList::SubscriptionPtr sub) {
         RectShape rd;
-        if (!sub) {
-            rd.mColor = WHITE;
-            tex.draw(rd.set(r, 3));
-        } else {
+        rd.mColor = GRAY;
+        tex.draw(rd.set(r));
+        if (sub) {
             auto up = sub->get<UpgradeList::DATA>();
             switch (up->status()) {
                 case Upgrade::Status::BOUGHT:
@@ -167,6 +171,8 @@ void UpgradeScroller::draw(TextureBuilder tex) {
         drawUpgrade(pair.first, pair.second.lock());
     }
 
+    tex.draw(mImg);
+
     for (auto pair : mFrontRects) {
         drawUpgrade(pair.first, pair.second.lock());
     }
@@ -183,6 +189,10 @@ void UpgradeScroller::update(Rect pos, float scroll) {
     const float w = pos.h() / 2;
     float a = (pos.w() - w) / 2;
     float b = (pos.h() - w) / 2;
+
+    Rect imgR(0, 0, w * 2, w * 2);
+    imgR.setPos(pos.cX(), pos.cY(), Rect::Align::CENTER);
+    mImg.setDest(imgR);
 
     const float TWO_PI = 2 * M_PI;
     const float HALF_PI = M_PI / 2;
@@ -435,7 +445,9 @@ void UpgradeDisplay::init() {
         [this]() { onMouseLeave(); }, mPos);
     mUpgradeSub =
         ServiceSystem::Get<UpgradeService, UpgradeListObservable>()->subscribe(
-            [this](UpgradeListPtr us) { onSetUpgrades(us); },
+            [this](UpgradeListPtr us, RenderTextureCPtr img) {
+                onSetUpgrades(us, img);
+            },
             [this](UpgradeListPtr us, ParameterSystem::BaseValue money,
                    ParameterSystem::ValueParam val) {
                 onSetUpgrades(us, money, val);
@@ -516,8 +528,9 @@ void UpgradeDisplay::setUpgrades(UpgradeRendererPtr upRenderer) {
         scroll(mUpRenderer->getScroll() - mScroll);
     }
 }
-void UpgradeDisplay::onSetUpgrades(UpgradeListPtr upgrades) {
-    setUpgrades(upgrades ? std::make_unique<UpgradeScroller>(upgrades)
+void UpgradeDisplay::onSetUpgrades(UpgradeListPtr upgrades,
+                                   RenderTextureCPtr img) {
+    setUpgrades(upgrades ? std::make_unique<UpgradeScroller>(upgrades, img)
                          : nullptr);
 }
 void UpgradeDisplay::onSetUpgrades(UpgradeListPtr upgrades,

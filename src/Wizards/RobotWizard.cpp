@@ -6,8 +6,8 @@ RobotWizard::Portals::Portals()
           std::make_shared<UIComponent>(Rect(), Elevation::PORTAL_TOP)),
       mPortalBotPos(
           std::make_shared<UIComponent>(Rect(), Elevation::PORTAL_BOT)) {
-    mPortalTopImg.set(RobotWizardDefs::PORTAL_TOP);
-    mPortalBotImg.set(RobotWizardDefs::PORTAL_BOT);
+    mPortalTopImg.set(RobotWizardDefs::PORTAL_TOP());
+    mPortalBotImg.set(RobotWizardDefs::PORTAL_BOT());
 
     mPortalTimerSub =
         ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
@@ -19,7 +19,7 @@ RobotWizard::Portals::Portals()
                 }
                 return true;
             },
-            RobotWizardDefs::PORTAL_TOP.frame_ms);
+            RobotWizardDefs::PORTAL_TOP().frame_ms);
 
     mPortalTopPos->mouse = mPortalBotPos->mouse = false;
     mPortalTopRenderSub =
@@ -54,7 +54,7 @@ RobotWizard::RobotWizard() : WizardBase(ROBOT_WIZARD) {}
 void RobotWizard::init() {
     mFireballs = ComponentFactory<RobotFireballList>::New();
 
-    mImg.set(RobotWizardDefs::IMG);
+    mImg.set(RobotWizardDefs::IMG());
     mImg.setDest(IMG_RECT);
     mPos->rect = mImg.getDest();
     WizardSystem::GetWizardImageObservable()->next(mId, mImg);
@@ -73,7 +73,7 @@ void RobotWizard::setSubscriptions() {
                 WizardSystem::GetWizardImageObservable()->next(mId, mImg);
                 return true;
             },
-            RobotWizardDefs::IMG);
+            RobotWizardDefs::IMG());
     mPowFireballHitSub = PowerFireball::GetHitObservable()->subscribe(
         [this](const PowerFireball& f) { onPowFireballHit(f); }, mId);
     mMoveUpdateSub = TimeSystem::GetUpdateObservable()->subscribe(
@@ -95,8 +95,8 @@ void RobotWizard::setUpgrades() {
     uUp->setDescription(
         {"{i} crit is *10^crit instead of *crit\nUnlocks new {i} "
          "crit upgrade",
-         {IconSystem::Get(WizardDefs::FB_IMG),
-          IconSystem::Get(WizardDefs::IMG)}});
+         {IconSystem::Get(WizardDefs::FB_IMG()),
+          IconSystem::Get(WizardDefs::IMG())}});
     uUp->setCost(UpgradeDefaults::CRYSTAL_SHARDS,
                  params[RobotWizardParams::WizCritUpCost]);
     mWizCritUp = mUpgrades->subscribe(uUp);
@@ -116,9 +116,9 @@ void RobotWizard::setUpgrades() {
     for (auto p : {B::U1, B::U2, B::U3, B::U4, B::U5, B::U6, B::U7, B::U8,
                    B::U9, B::U10}) {
         uUp = std::make_shared<Unlockable>(states[State::BoughtRoboWizCritUp]);
-        uUp->setImage(p == B::U7 ? RobotWizardDefs::IMG.file : "");
+        uUp->setImage(p == B::U7 ? RobotWizardDefs::IMG().file : "");
         uUp->setDescription({"{i} " + std::to_string(i++),
-                             {IconSystem::Get(RobotWizardDefs::IMG)}});
+                             {IconSystem::Get(RobotWizardDefs::IMG())}});
         uUp->setCost(UpgradeDefaults::CRYSTAL_SHARDS, params[p]);
         mUps.push_back(mUpgrades->subscribe(uUp));
     }
@@ -236,7 +236,7 @@ void RobotWizard::onRender(SDL_Renderer* r) {
     TextureBuilder tex;
 
     RenderData fImg, wImg;
-    fImg.set(IconSystem::Get(PowerWizardDefs::FB_IMG));
+    fImg.set(IconSystem::Get(PowerWizardDefs::FB_IMG()));
     float w = IMG_RECT.minDim() / 3;
     Rect imgR(0, 0, w, w);
     for (WizardId id : {WIZARD, CRYSTAL, TIME_WIZARD}) {
@@ -244,17 +244,17 @@ void RobotWizard::onRender(SDL_Renderer* r) {
             case WIZARD:
                 imgR.setPos(mPos->rect.x(), mPos->rect.y2(),
                             Rect::Align::CENTER);
-                wImg.set(IconSystem::Get(WizardDefs::IMG));
+                wImg.set(IconSystem::Get(WizardDefs::IMG()));
                 break;
             case CRYSTAL:
                 imgR.setPos(mPos->rect.cX(), mPos->rect.y2(),
                             Rect::Align::CENTER, Rect::Align::TOP_LEFT);
-                wImg.set(IconSystem::Get(CrystalDefs::IMG));
+                wImg.set(IconSystem::Get(CrystalDefs::IMG()));
                 break;
             case TIME_WIZARD:
                 imgR.setPos(mPos->rect.x2(), mPos->rect.y2(),
                             Rect::Align::CENTER);
-                wImg.set(IconSystem::Get(TimeWizardDefs::IMG));
+                wImg.set(IconSystem::Get(TimeWizardDefs::IMG()));
                 break;
         }
 

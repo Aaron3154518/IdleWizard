@@ -11,7 +11,10 @@
 #include <vector>
 
 namespace PoisonWizardDefs {
-extern const AnimationData IMG, GLOB_IMG, BUBBLE1_IMG, BUBBLE2_IMG;
+const AnimationData& IMG();
+const AnimationData& GLOB_IMG();
+const AnimationData& BUBBLE1_IMG();
+const AnimationData& BUBBLE2_IMG();
 
 void setDefaults();
 }  // namespace PoisonWizardDefs

@@ -66,7 +66,7 @@ std::shared_ptr<WizardUpgradesObservable> GetWizardUpgradesObservable();
 
 // For setting current UpgradeObservable
 class UpgradeListObservable
-    : public ForwardObservable<void(UpgradeListPtr),
+    : public ForwardObservable<void(UpgradeListPtr, RenderTextureCPtr),
                                void(UpgradeListPtr, ParameterSystem::BaseValue,
                                     ParameterSystem::ValueParam)> {};
 
@@ -105,7 +105,7 @@ typedef std::unique_ptr<UpgradeRenderer> UpgradeRendererPtr;
 // Renders upgrades as elliptical scroller
 class UpgradeScroller : public UpgradeRenderer {
    public:
-    using UpgradeRenderer::UpgradeRenderer;
+    UpgradeScroller(UpgradeListPtr upgrades, RenderTextureCPtr img);
 
     void onClick(SDL_Point mouse);
     RenderObservable::SubscriptionPtr onHover(SDL_Point mouse,
@@ -115,6 +115,8 @@ class UpgradeScroller : public UpgradeRenderer {
 
    private:
     void update(Rect pos, float scroll);
+
+    RenderData mImg;
 
     std::vector<std::pair<Rect, UpgradeList::SubscriptionWPtr>> mBackRects,
         mFrontRects;
@@ -174,7 +176,7 @@ class UpgradeDisplay : public Component {
     void onMouseLeave();
     bool onTimer(Time& timer);
     void setUpgrades(UpgradeRendererPtr upRenderer);
-    void onSetUpgrades(UpgradeListPtr list);
+    void onSetUpgrades(UpgradeListPtr list, RenderTextureCPtr img);
     void onSetUpgrades(UpgradeListPtr list, ParameterSystem::BaseValue money,
                        ParameterSystem::ValueParam val);
 

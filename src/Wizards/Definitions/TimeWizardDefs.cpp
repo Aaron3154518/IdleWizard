@@ -1,8 +1,15 @@
 #include "TimeWizardDefs.h"
 
 namespace TimeWizardDefs {
-const AnimationData IMG{"res/wizards/time_wizard_ss.png", 8, 100},
-    FREEZE_IMG{"res/wizards/time_wizard_frozen_ss.png", 9, 100};
+const AnimationData& IMG() {
+    const static AnimationData IMG{"res/wizards/time_wizard_ss.png", 8, 100};
+    return IMG;
+}
+const AnimationData& FREEZE_IMG() {
+    const static AnimationData FREEZE_IMG{
+        "res/wizards/time_wizard_frozen_ss.png", 9, 100};
+    return FREEZE_IMG;
+}
 
 const std::string FREEZE_UP_IMG = "res/upgrades/time_freeze_upgrade.png",
                   SPEED_UP_IMG = "res/upgrades/speed_upgrade.png",

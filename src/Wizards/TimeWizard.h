@@ -74,7 +74,7 @@ class TimeWizard : public WizardBase {
 
     std::unique_ptr<TimeWizClock> mTClock;
 
-    AnimationData mImgAnimData = TimeWizardDefs::IMG;
+    AnimationData mImgAnimData;
 };
 
 #endif

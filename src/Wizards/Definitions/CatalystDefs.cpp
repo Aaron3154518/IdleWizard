@@ -3,7 +3,10 @@
 namespace CatalystDefs {
 const unsigned int MSPF = 150, NUM_FRAMES = 5;
 
-const AnimationData IMG{"res/wizards/catalyst.png", 1, 100};
+const AnimationData& IMG() {
+    const static AnimationData IMG{"res/wizards/catalyst.png", 1, 100};
+    return IMG;
+}
 
 const ParameterSystem::BaseValue REG_FB_CNT = ParameterSystem::Param<CATALYST>(
                                      CatalystParams::FBRegCnt),

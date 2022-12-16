@@ -6,7 +6,7 @@ PowerWizard::PowerWizard() : WizardBase(POWER_WIZARD) {}
 void PowerWizard::init() {
     mFireballs = ComponentFactory<PowerFireballList>::New();
 
-    mImg.set(PowerWizardDefs::IMG);
+    mImg.set(PowerWizardDefs::IMG());
     mImg.setDest(IMG_RECT);
     mPos->rect = mImg.getDest();
     WizardSystem::GetWizardImageObservable()->next(mId, mImg);
@@ -25,7 +25,7 @@ void PowerWizard::setSubscriptions() {
             WizardSystem::GetWizardImageObservable()->next(mId, mImg);
             return true;
         },
-        PowerWizardDefs::IMG);
+        PowerWizardDefs::IMG());
     mT1ResetSub = WizardSystem::GetWizardEventObservable()->subscribe(
         [this]() { onT1Reset(); }, WizardSystem::Event::ResetT1);
     mTargetHideSub = WizardSystem::GetHideObservable()->subscribeToAll(
@@ -59,7 +59,7 @@ void PowerWizard::setUpgrades() {
                << UpgradeDefaults::MultiplicativeEffect(
                       params[PowerWizardParams::FBSpeedEffect].get())
                       .text;
-            imgs.push_back(IconSystem::Get(PowerWizardDefs::FB_IMG));
+            imgs.push_back(IconSystem::Get(PowerWizardDefs::FB_IMG()));
             return {ss.str(), imgs};
         });
     mPowerDisplay = mUpgrades->subscribe(dUp);
@@ -69,7 +69,7 @@ void PowerWizard::setUpgrades() {
         std::make_shared<Upgrade>(params[PowerWizardParams::PowerUpLvl], 15);
     up->setImage(PowerWizardDefs::POWER_UP_IMG);
     up->setDescription({"Increase {i} power by *1.15",
-                        {IconSystem::Get(PowerWizardDefs::FB_IMG)}});
+                        {IconSystem::Get(PowerWizardDefs::FB_IMG())}});
     up->setCost(UpgradeDefaults::CRYSTAL_MAGIC,
                 params[PowerWizardParams::PowerUpCost]);
     up->setEffects(params[PowerWizardParams::PowerUp],
@@ -88,10 +88,10 @@ void PowerWizard::setUpgrades() {
         {"Unlocks time warp - {i} boosts {i}, speeding up all "
          "{i}\nSped up fireballs gain power based on {i} "
          "effect",
-         {IconSystem::Get(PowerWizardDefs::IMG),
-          IconSystem::Get(TimeWizardDefs::IMG),
-          IconSystem::Get(WizardDefs::FB_IMG),
-          IconSystem::Get(PowerWizardDefs::FB_IMG)}});
+         {IconSystem::Get(PowerWizardDefs::IMG()),
+          IconSystem::Get(TimeWizardDefs::IMG()),
+          IconSystem::Get(WizardDefs::FB_IMG()),
+          IconSystem::Get(PowerWizardDefs::FB_IMG())}});
     up->setCost(UpgradeDefaults::CRYSTAL_MAGIC,
                 params[PowerWizardParams::TimeWarpUpCost]);
     up->setEffects(
@@ -102,7 +102,7 @@ void PowerWizard::setUpgrades() {
                << ParameterSystem::Param<POWER_WIZARD>(
                       PowerWizardParams::TimeWarpUp)
                       .get();
-            return {ss.str(), {IconSystem::Get(PowerWizardDefs::FB_IMG)}};
+            return {ss.str(), {IconSystem::Get(PowerWizardDefs::FB_IMG())}};
         });
     mParamSubs.push_back(params[PowerWizardParams::TimeWarpUpCost].subscribeTo(
         up->level(),

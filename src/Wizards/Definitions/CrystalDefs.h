@@ -15,7 +15,9 @@ extern const Number T1_COST1, T1_COST2;
 extern const SDL_Color MSG_COLOR, GLOW_MSG_COLOR, POISON_MSG_COLOR;
 
 extern const std::string WIZ_CNT_UP_IMG, CRYS_GLOW_UP_IMG, FRACTURE_IMG;
-extern const AnimationData IMG, GLOW_EFFECT_IMG, GLOW_FINISH_IMG;
+const AnimationData& IMG();
+const AnimationData& GLOW_EFFECT_IMG();
+const AnimationData& GLOW_FINISH_IMG();
 
 void setDefaults();
 }  // namespace CrystalDefs

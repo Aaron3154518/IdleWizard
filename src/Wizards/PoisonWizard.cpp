@@ -6,7 +6,7 @@ PoisonWizard::PoisonWizard() : WizardBase(POISON_WIZARD) {}
 void PoisonWizard::init() {
     mFireballs = ComponentFactory<PoisonFireballList>::New();
 
-    mImg.set(PoisonWizardDefs::IMG);
+    mImg.set(PoisonWizardDefs::IMG());
     mImg.setDest(IMG_RECT);
     mPos->rect = mImg.getDest();
     WizardSystem::GetWizardImageObservable()->next(mId, mImg);
@@ -23,7 +23,7 @@ void PoisonWizard::setSubscriptions() {
             WizardSystem::GetWizardImageObservable()->next(mId, mImg);
             return true;
         },
-        PoisonWizardDefs::IMG);
+        PoisonWizardDefs::IMG());
     mT1ResetSub = WizardSystem::GetWizardEventObservable()->subscribe(
         [this]() { onT1Reset(); }, WizardSystem::Event::ResetT1);
     attachSubToVisibility(mFireballTimerSub);
@@ -38,7 +38,7 @@ void PoisonWizard::setUpgrades() {
     dUp->setImage(mId);
     dUp->setDescription(
         {"{i} gains % of best {i} gain over time",
-         {IconSystem::Get(CrystalDefs::IMG),
+         {IconSystem::Get(CrystalDefs::IMG()),
           Money::GetMoneyIcon(UpgradeDefaults::CRYSTAL_MAGIC)}});
     dUp->setEffects(
         {cryParams[CrystalParams::PoisonMagic],
@@ -78,7 +78,7 @@ void PoisonWizard::setUpgrades() {
         std::make_shared<Upgrade>(params[PoisonWizardParams::PoisonFbUpLvl], 5);
     up->setImage("");
     up->setDescription({"{i} increase the {i} gain rate by +10%/lvl",
-                        {IconSystem::Get(WizardDefs::FB_POISON_IMG),
+                        {IconSystem::Get(WizardDefs::FB_POISON_IMG()),
                          Money::GetMoneyIcon(UpgradeDefaults::CRYSTAL_MAGIC)}});
     up->setCost(UpgradeDefaults::CRYSTAL_MAGIC,
                 params[PoisonWizardParams::PoisonFbUpCost]);
@@ -95,7 +95,7 @@ void PoisonWizard::setUpgrades() {
     up = std::make_shared<Upgrade>(params[PoisonWizardParams::GlobCntUpLvl], 3);
     up->setImage("");
     up->setDescription({"Increases {i} count by +2",
-                        {IconSystem::Get(PoisonWizardDefs::GLOB_IMG)}});
+                        {IconSystem::Get(PoisonWizardDefs::GLOB_IMG())}});
     up->setCost(UpgradeDefaults::CRYSTAL_SHARDS,
                 params[PoisonWizardParams::GlobCntCost]);
     up->setEffects(params[PoisonWizardParams::GlobCntUp],
@@ -113,11 +113,11 @@ void PoisonWizard::setUpgrades() {
     uUp->setDescription(
         {"Fires {i} at {i} to grant poison effect. {i} zaps convert {i} into "
          "{i}",
-         {IconSystem::Get(PoisonWizardDefs::GLOB_IMG),
-          IconSystem::Get(CatalystDefs::IMG),
-          IconSystem::Get(CatalystDefs::IMG),
-          IconSystem::Get(WizardDefs::FB_IMG),
-          IconSystem::Get(WizardDefs::FB_POISON_IMG)}});
+         {IconSystem::Get(PoisonWizardDefs::GLOB_IMG()),
+          IconSystem::Get(CatalystDefs::IMG()),
+          IconSystem::Get(CatalystDefs::IMG()),
+          IconSystem::Get(WizardDefs::FB_IMG()),
+          IconSystem::Get(WizardDefs::FB_POISON_IMG())}});
     uUp->setCost(UpgradeDefaults::CATALYST_MAGIC,
                  params[PoisonWizardParams::CatPoisonUpCost]);
     mCatPoisUp = mUpgrades->subscribe(uUp);

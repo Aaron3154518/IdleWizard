@@ -6,12 +6,12 @@ Wizard::Wizard() : WizardBase(WIZARD) {}
 void Wizard::init() {
     mFireballs = ComponentFactory<WizardFireballList>::New();
 
-    mImg.set(WizardDefs::IMG);
+    mImg.set(WizardDefs::IMG());
     mImg.setDest(IMG_RECT);
     mPos->rect = mImg.getDest();
     WizardSystem::GetWizardImageObservable()->next(mId, mImg);
 
-    mPowBkgrnd.set(WizardDefs::POWER_BKGRND);
+    mPowBkgrnd.set(WizardDefs::POWER_BKGRND());
 
     WizardBase::init();
 }
@@ -27,13 +27,13 @@ void Wizard::setSubscriptions() {
             WizardSystem::GetWizardImageObservable()->next(mId, mImg);
             return true;
         },
-        WizardDefs::IMG);
+        WizardDefs::IMG());
     mPowBkAnimTimerSub = TimeSystem::GetTimerObservable()->subscribe(
         [this](Timer& t) {
             mPowBkgrnd->nextFrame();
             return true;
         },
-        WizardDefs::POWER_BKGRND);
+        WizardDefs::POWER_BKGRND());
     mT1ResetSub = WizardSystem::GetWizardEventObservable()->subscribe(
         [this]() { onT1Reset(); }, WizardSystem::Event::ResetT1);
     mTimeWarpSub = WizardSystem::GetWizardEventObservable()->subscribe(
@@ -72,7 +72,7 @@ void Wizard::setUpgrades() {
                << UpgradeDefaults::MultiplicativeEffectText(
                       params[WizardParams::FBSpeedEffect].get())
                << "\nCrit Power: " << params[WizardParams::Crit].get();
-            imgs.push_back(IconSystem::Get(WizardDefs::FB_IMG));
+            imgs.push_back(IconSystem::Get(WizardDefs::FB_IMG()));
             return {ss.str(), imgs};
         });
     mPowerDisplay = mUpgrades->subscribe(dUp);
@@ -153,7 +153,7 @@ void Wizard::setUpgrades() {
     up = std::make_shared<Upgrade>(params[WizardParams::MultiUpLvl], 20);
     up->setImage(WizardDefs::MULTI_UP_IMG);
     up->setDescription({"Increase double {i} chance by +5%",
-                        {IconSystem::Get(WizardDefs::FB_IMG)}});
+                        {IconSystem::Get(WizardDefs::FB_IMG())}});
     up->setCost(UpgradeDefaults::CRYSTAL_MAGIC,
                 params[WizardParams::MultiUpCost]);
     up->setEffects(params[WizardParams::MultiUp],

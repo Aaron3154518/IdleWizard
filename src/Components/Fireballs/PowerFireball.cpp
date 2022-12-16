@@ -15,7 +15,7 @@ PowerFireball::PowerFireball(SDL_FPoint c, WizardId target, const Data& data)
       mDuration(data.duration) {
     setSize(data.sizeFactor);
     setSpeed(data.speed);
-    setImg(IconSystem::Get(PowerWizardDefs::FB_IMG));
+    setImg(IconSystem::Get(PowerWizardDefs::FB_IMG()));
 }
 
 void PowerFireball::init() {

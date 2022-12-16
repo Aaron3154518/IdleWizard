@@ -3,9 +3,19 @@
 namespace RobotWizardDefs {
 const std::vector<WizardId> TARGETS{CRYSTAL, WIZARD, POWER_WIZARD, TIME_WIZARD};
 
-const AnimationData IMG{"res/wizards/robot_ss.png", 6, 100},
-    PORTAL_TOP{"res/wizards/portal_top.png", 6, 150},
-    PORTAL_BOT{"res/wizards/portal_bottom.png", 6, 150};
+const AnimationData& IMG() {
+    const static AnimationData IMG{"res/wizards/robot_ss.png", 6, 100};
+    return IMG;
+}
+const AnimationData& PORTAL_TOP() {
+    const static AnimationData PORTAL_TOP{"res/wizards/portal_top.png", 6, 150};
+    return PORTAL_TOP;
+}
+const AnimationData& PORTAL_BOT() {
+    const static AnimationData PORTAL_BOT{"res/wizards/portal_bottom.png", 6,
+                                          150};
+    return PORTAL_BOT;
+}
 
 void setDefaults() {
     using WizardSystem::Event;

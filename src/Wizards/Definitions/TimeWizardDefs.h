@@ -11,7 +11,8 @@
 #include <vector>
 
 namespace TimeWizardDefs {
-extern const AnimationData IMG, FREEZE_IMG;
+const AnimationData& IMG();
+const AnimationData& FREEZE_IMG();
 
 extern const std::string FREEZE_UP_IMG, SPEED_UP_IMG, FB_SPEED_UP_IMG,
     POW_SPEED_UP_IMG, ACTIVE_UP_IMG;

@@ -9,7 +9,7 @@ void Catalyst::init() {
     mMessages = ComponentFactory<MessageHandler>::New(FONT);
 
     ParameterSystem::Params<CATALYST> params;
-    mImg.set(CatalystDefs::IMG);
+    mImg.set(CatalystDefs::IMG());
     mImg.setDest(IMG_RECT);
     mPos->rect = mImg.getDest();
     WizardSystem::GetWizardImageObservable()->next(mId, mImg);
@@ -58,7 +58,7 @@ void Catalyst::setUpgrades() {
                << "\nRange: " << params[CatalystParams::Range].get();
             return {ss.str(),
                     {Money::GetMoneyIcon(UpgradeDefaults::CATALYST_MAGIC),
-                     IconSystem::Get(WizardDefs::FB_IMG)}};
+                     IconSystem::Get(WizardDefs::FB_IMG())}};
         });
     mMagicEffectDisplay = mUpgrades->subscribe(dUp);
 
@@ -67,7 +67,7 @@ void Catalyst::setUpgrades() {
         std::make_shared<Upgrade>(params[CatalystParams::GainUp1Lvl], 10);
     up->setImage("");
     up->setDescription(
-        {"Multiplies {i} gain *2", {IconSystem::Get(CatalystDefs::IMG)}});
+        {"Multiplies {i} gain *2", {IconSystem::Get(CatalystDefs::IMG())}});
     up->setCost(UpgradeDefaults::CRYSTAL_SHARDS,
                 params[CatalystParams::GainUp1Cost]);
     up->setEffects(params[CatalystParams::GainUp1],
@@ -82,7 +82,7 @@ void Catalyst::setUpgrades() {
     up = std::make_shared<Upgrade>(params[CatalystParams::GainUp2Lvl], 5);
     up->setImage("");
     up->setDescription(
-        {"Improves {i} gain formula", {IconSystem::Get(CatalystDefs::IMG)}});
+        {"Improves {i} gain formula", {IconSystem::Get(CatalystDefs::IMG())}});
     up->setCost(UpgradeDefaults::CRYSTAL_SHARDS,
                 params[CatalystParams::GainUp2Cost]);
     up->setEffects(
@@ -126,7 +126,7 @@ void Catalyst::setUpgrades() {
     uUp->setDescription(
         {"{i} multiplier to {i},{i} is increased based on log({i})",
          {
-             IconSystem::Get(CatalystDefs::IMG),
+             IconSystem::Get(CatalystDefs::IMG()),
              Money::GetMoneyIcon(UpgradeDefaults::CRYSTAL_MAGIC),
              Money::GetMoneyIcon(UpgradeDefaults::CRYSTAL_SHARDS),
              Money::GetMoneyIcon(UpgradeDefaults::CATALYST_MAGIC),
@@ -187,7 +187,7 @@ void Catalyst::setUpgrades() {
     up = std::make_shared<Upgrade>(params[CatalystParams::ZapCntUpLvl], 3);
     up->setImage("");
     up->setDescription({"Increases the number of times each {i} can be zapped",
-                        {IconSystem::Get(WizardDefs::FB_IMG)}});
+                        {IconSystem::Get(WizardDefs::FB_IMG())}});
     up->setCost(UpgradeDefaults::CRYSTAL_MAGIC,
                 params[CatalystParams::ZapCntUpCost]);
     up->setEffects(params[CatalystParams::ZapCntUp], UpgradeDefaults::NoEffect);
@@ -255,12 +255,12 @@ void Catalyst::setUpgrades() {
             desc_str << " boosts {i} power";
             up->setEffectImgs(imgs);
 
-            imgs.insert(imgs.begin(), IconSystem::Get(CatalystDefs::IMG));
+            imgs.insert(imgs.begin(), IconSystem::Get(CatalystDefs::IMG()));
             if (lvl < maxLvl) {
                 imgs.push_back(Money::GetMoneyIcon(
                     CatalystDefs::FB_CNT_TYPES.at(lvl + 1)));
             }
-            imgs.push_back(IconSystem::Get(WizardDefs::IMG));
+            imgs.push_back(IconSystem::Get(WizardDefs::IMG()));
 
             up->setDescription({desc_str.str(), imgs});
         }));

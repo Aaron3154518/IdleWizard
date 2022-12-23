@@ -48,6 +48,7 @@ enum : uint8_t {
     PROJECTILES,
     PORTAL_TOP,
     WIZARDS,
+    BOTS,
     OVERLAYS,
     WIZARD_OVERLAYS,
 };

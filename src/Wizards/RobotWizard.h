@@ -1,6 +1,7 @@
 #ifndef ROBOT_WIZARD_H
 #define ROBOT_WIZARD_H
 
+#include <Components/Bot.h>
 #include <Components/Fireballs/PowerFireball.h>
 #include <Components/Upgrade.h>
 #include <RenderSystem/AssetManager.h>
@@ -70,6 +71,7 @@ class RobotWizard : public WizardBase {
 
     std::unordered_map<WizardId, PowerFireball::Data> mStoredFireballs;
     RobotFireballListPtr mFireballs;
+    UpgradeBotPtr mUpBot;
 
     TimerObservable::SubscriptionPtr mAnimTimerSub, mWaitSub;
     PowerFireball::HitObservable::IdSubscriptionPtr mPowFireballHitSub;

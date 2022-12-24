@@ -78,7 +78,7 @@ void RobotWizard::setSubscriptions() {
     mPowFireballHitSub = PowerFireball::GetHitObservable()->subscribe(
         [this](const PowerFireball& f) { onPowFireballHit(f); }, mId);
     mMoveUpdateSub = TimeSystem::GetUpdateObservable()->subscribe(
-        [this](Time dt) { /*onMoveUpdate(dt);*/ });
+        [this](Time dt) { onMoveUpdate(dt); });
     mUpTimerSub = TimeSystem::GetTimerObservable()->subscribe(
         [this](Timer& t) { return onUpgradeTimer(t); }, Timer(1000));
 

@@ -1,6 +1,7 @@
 #ifndef BOT_H
 #define BOT_H
 
+#include <Components/UpgradeList.h>
 #include <RenderSystem/RenderTypes.h>
 #include <ServiceSystem/Component.h>
 #include <ServiceSystem/CoreServices/RenderService.h>
@@ -15,70 +16,60 @@
 #include <memory>
 #include <random>
 
-class Bot : public Component {
-   public:
-    Bot();
-
-    void move(float dx, float dy);
-    Rect getPos() const;
-
-   private:
-    void init();
-
-    void onRender(SDL_Renderer* r);
-
-    std::mt19937 gen = std::mt19937(rand());
-    std::uniform_real_distribution<float> rDist;
-
-    RenderAnimation mImg;
-    UIComponentPtr mPos;
-
-    RenderObservable::SubscriptionPtr mRenderSub;
-    TimeSystem::TimerObservable::SubscriptionPtr mAnimTimerSub;
-};
-
-typedef std::unique_ptr<Bot> BotPtr;
-
 namespace BotAi {
 struct HoverData {
     WizardId target;
     SDL_FPoint v{0, 0};
     float theta = 0;
 };
-void hover(Bot& bot, HoverData& data, Time dt);
+void hover(Rect& pos, HoverData& data, Time dt);
 
 struct BeelineData {
     WizardId target;
 };
-bool beeline(Bot& bot, BeelineData& data, Time dt);
-
-struct DrainData {
-    ParameterSystem::BaseValuePtr source;
-    Number goal, rate_per_s, amnt;
-};
-bool drain(DrainData& data, Time dt);
+bool beeline(Rect& pos, BeelineData& data, Time dt);
 }  // namespace BotAi
 
 class UpgradeBot : public Component {
    public:
+    UpgradeBot();
+
+    void setPos(float x, float y);
+
    private:
     void init();
 
+    void onRender(SDL_Renderer* r);
     void onUpdate(Time dt);
+    bool onUpgradeTimer(Timer& t);
+
+    void checkUpgrades();
 
     enum AiMode {
-        Hover = 0,
+        HoverRobot = 0,
+        HoverCrystal,
         Drain,
+        Upgrade,
+        Waiting,
+        Paused,
     };
-    AiMode mAiMode = AiMode::Hover;
+    AiMode mAiMode = AiMode::HoverRobot;
 
-    BotPtr mBot;
-    BotAi::HoverData mHoverAiData;
-    BotAi::BeelineData mBeelineAiData;
-    BotAi::DrainData mDrainAiData;
+    UIComponentPtr mPos;
+    RenderAnimation mImg;
+    ProgressBar mPBar;
 
+    BotAi::HoverData mHoverData, mHoverCrystalData;
+    BotAi::BeelineData mBeelineData;
+
+    ParameterSystem::BaseValue mSource = UpgradeDefaults::CRYSTAL_MAGIC;
+    Number mAmnt, mCap = 1000, mRate = 10;
+    int mNextTargetIdx = 0;
+
+    RenderObservable::SubscriptionPtr mRenderSub;
     TimeSystem::UpdateObservable::SubscriptionPtr mUpdateSub;
-    TimeSystem::TimerObservable::SubscriptionPtr mTimerSub;
+    TimeSystem::TimerObservable::SubscriptionPtr mAnimTimerSub, mUpTimerSub,
+        mPauseTimerSub;
 };
 
 typedef std::unique_ptr<UpgradeBot> UpgradeBotPtr;

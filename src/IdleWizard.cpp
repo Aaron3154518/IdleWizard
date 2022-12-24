@@ -61,10 +61,11 @@ int main(int argc, char* argv[]) {
             case Start::T2:
                 states[State::ResetT1].set(true);
 
-                GetWizardUpgrades(CRYSTAL)->maxAll(
-                    UpgradeDefaults::CRYSTAL_SHARDS);
-                GetWizardUpgrades(CRYSTAL)->maxAll(
-                    UpgradeDefaults::CRYSTAL_SHARDS);
+                // GetWizardUpgrades(CRYSTAL)->maxAll(
+                // UpgradeDefaults::CRYSTAL_SHARDS);
+                // GetWizardUpgrades(CRYSTAL)->maxAll(
+                // UpgradeDefaults::CRYSTAL_SHARDS);
+                states[State::BoughtRobotWizard].set(true);
                 cryParams[CrystalParams::Shards].set(Number(1, 10));
             case Start::Fracture:
                 states[State::BoughtPowerWizard].set(true);
@@ -73,8 +74,9 @@ int main(int argc, char* argv[]) {
                 cryParams[CrystalParams::Magic].set(
                     cryParams[CrystalParams::T1ResetCost].get());
 
-                for (WizardId id :
-                     {CRYSTAL, WIZARD, POWER_WIZARD, TIME_WIZARD}) {
+                for (WizardId id : {
+                         CRYSTAL,
+                     }) {  // WIZARD, POWER_WIZARD, TIME_WIZARD}) {
                     GetWizardUpgrades(id)->maxAll(
                         UpgradeDefaults::CRYSTAL_MAGIC);
                 }

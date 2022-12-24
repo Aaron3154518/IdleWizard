@@ -62,6 +62,8 @@ void RobotWizard::init() {
 
     WizardBase::init();
 
+    mUpBot->setPos(mPos->rect.cX(), mPos->rect.cY());
+
     mDragSub.reset();
 
     mTargetPos = {mPos->rect.cX(), mPos->rect.cY()};
@@ -302,6 +304,7 @@ void RobotWizard::showUpgrades() {
 }
 
 void RobotWizard::upgradeTarget() {
+    return;
     auto catMagic = ParameterSystem::Param<CATALYST>(CatalystParams::Magic);
     Number maxSpend = catMagic.get() / 10 + 1;
     Number spent = GetWizardUpgrades(mTarget)->upgradeAll(

@@ -54,6 +54,9 @@ RobotWizard::RobotWizard() : WizardBase(ROBOT_WIZARD) {}
 void RobotWizard::init() {
     mFireballs = ComponentFactory<RobotFireballList>::New();
     mUpBot = ComponentFactory<UpgradeBot>::New();
+    for (auto id : {WIZARD, CRYSTAL, TIME_WIZARD}) {
+        mSynBots[id] = ComponentFactory<SynergyBot>::New(id);
+    }
 
     mImg.set(RobotWizardDefs::IMG());
     mImg.setDest(IMG_RECT);

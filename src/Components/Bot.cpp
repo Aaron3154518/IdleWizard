@@ -2,13 +2,30 @@
 
 // BotAi
 namespace BotAi {
+HoverData randomHover() {
+    static std::mt19937 gen = std::mt19937(rand());
+    static std::uniform_real_distribution<float> rDist;
+
+    HoverData data;
+    data.theta = rDist(gen) * 2 * M_PI;
+    data.thetaSpd *= (rDist(gen) / 2) + .75;
+    data.thetaRadSpd *= rDist(gen) + .5;
+    data.thetaSpdSpd *= rDist(gen) + .5;
+    data.baseRad *= (rDist(gen) / 2) + .75;
+    data.deltaRad *= (rDist(gen) / 4) + .875;
+    data.baseSpd *= (rDist(gen) / 2) + .75;
+
+    return data;
+}
+
 void hover(Rect& pos, HoverData& data, Time dt) {
     float s = dt.s();
     Rect tRect = WizardSystem::GetWizardPosObservable()->get(data.target);
 
     // Oscillate speed and radius
-    float rad = 100 + 40 * (sinf(data.theta * 7 / 11) + .25);
-    float maxSpd = 75 * (sinf(data.theta * 7 / 19) + 1.5);
+    float rad = data.baseRad +
+                data.deltaRad * (sinf(data.theta * data.thetaRadSpd) + .25);
+    float maxSpd = data.baseSpd * (sinf(data.theta * data.thetaSpdSpd) + 1.5);
 
     float x = pos.cX(), y = pos.cY();
     float tX = tRect.cX(), tY = tRect.cY();
@@ -26,9 +43,9 @@ void hover(Rect& pos, HoverData& data, Time dt) {
     float mag_t = sqrtf(dx_t * dx_t + dy_t * dy_t);
 
     if (mag < rad * 1.1) {
-        data.theta += s * M_PI / 3;
+        data.theta += s * data.thetaSpd;
     } else {
-        maxSpd = 200;
+        maxSpd = 3 * data.baseSpd;
     }
 
     // Smooth speed transition
@@ -80,7 +97,8 @@ bool beeline(Rect& pos, BeelineData& data, Time dt) {
 
 // UpgradeBot
 UpgradeBot::UpgradeBot()
-    : mPos(std::make_shared<UIComponent>(Rect(0, 0, 60, 30), Elevation::BOTS)) {
+    : mHoverData(BotAi::randomHover()),
+      mPos(std::make_shared<UIComponent>(Rect(0, 0, 60, 30), Elevation::BOTS)) {
     mCap = Number(1, 2);
     mRate = Number(3, 3);
 
@@ -109,7 +127,7 @@ void UpgradeBot::init() {
             mImg->nextFrame();
             return true;
         },
-        RobotWizardDefs::IMG().frame_ms);
+        RobotWizardDefs::UP_BOT_IMG());
     mPauseTimerSub = TimeSystem::GetTimerObservable()->subscribe(
         [this](Timer& t) {
             switch (mAiMode) {
@@ -257,5 +275,51 @@ void UpgradeBot::addArrow(WizardId target, int cnt) {
 }
 
 void UpgradeBot::setPos(float x, float y) {
+    mPos->rect.setPos(x, y, Rect::Align::CENTER);
+}
+
+// SynergyBot
+SynergyBot::SynergyBot(WizardId id)
+    : mHoverData(BotAi::randomHover()),
+      mPos(std::make_shared<UIComponent>(Rect(0, 0, 60, 30), Elevation::BOTS)) {
+    mHoverData.target = id;
+    mBeelineData.target = CRYSTAL;
+}
+
+void SynergyBot::init() {
+    mImg.set(RobotWizardDefs::UP_BOT_IMG());
+    Rect r = WizardSystem::GetWizardPosObservable()->get(mHoverData.target);
+    mPos->rect.setPos(r.cX(), r.cY(), Rect::Align::CENTER);
+
+    mRenderSub =
+        ServiceSystem::Get<RenderService, RenderObservable>()->subscribe(
+            [this](SDL_Renderer* r) { onRender(r); }, mPos);
+    mUpdateSub = TimeSystem::GetUpdateObservable()->subscribe(
+        [this](Time dt) { onUpdate(dt); });
+    mAnimTimerSub = TimeSystem::GetTimerObservable()->subscribe(
+        [this](Timer& t) {
+            mImg->nextFrame();
+            return true;
+        },
+        RobotWizardDefs::UP_BOT_IMG());
+}
+
+void SynergyBot::onRender(SDL_Renderer* r) {
+    TextureBuilder tex;
+
+    mImg.setDest(mPos->rect);
+    tex.draw(mImg);
+}
+
+void SynergyBot::onUpdate(Time dt) {
+    switch (mAiMode) {
+        case AiMode::Hover:  // Hover around target
+            BotAi::hover(mPos->rect, mHoverData, dt);
+            mImg.setRotationRad(mHoverData.tilt);
+            break;
+    }
+}
+
+void SynergyBot::setPos(float x, float y) {
     mPos->rect.setPos(x, y, Rect::Align::CENTER);
 }

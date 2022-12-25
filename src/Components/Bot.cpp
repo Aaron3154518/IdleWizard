@@ -18,6 +18,10 @@ void hover(Rect& pos, HoverData& data, Time dt) {
     float dx = tX - x, dy = tY - y;
     float mag = sqrtf(dx * dx + dy * dy);
 
+    if (mag == 0) {
+        mag = 1;
+    }
+
     float dx_t = x_t - x, dy_t = y_t - y;
     float mag_t = sqrtf(dx_t * dx_t + dy_t * dy_t);
 
@@ -32,6 +36,16 @@ void hover(Rect& pos, HoverData& data, Time dt) {
     data.v.x = data.v.x * (1 - a) + (dx_t * maxSpd / mag_t) * a;
     data.v.y = data.v.y * (1 - a) + (dy_t * maxSpd / mag_t) * a;
     pos.move(data.v.x * s, data.v.y * s);
+
+    // Sprite tilt
+    float tilt =
+        copysignf(powf(1 / (1 + expf(-fabsf(data.v.x) / 40 + 1)), 2), data.v.x);
+    if (fabsf(tilt) < .1f) {
+        tilt = 0;
+    }
+    tilt *= M_PI / 4;
+    a = 1.f / 10;
+    data.tilt = data.tilt * (1 - a) + tilt * a;
 }
 
 bool beeline(Rect& pos, BeelineData& data, Time dt) {
@@ -42,12 +56,20 @@ bool beeline(Rect& pos, BeelineData& data, Time dt) {
     float tX = tRect.cX(), tY = tRect.cY();
     float dx = tX - x, dy = tY - y;
     float mag = sqrtf(dx * dx + dy * dy);
+    float vX = mag == 0 ? 0 : dx / mag;
 
-    if (mag == 0) {
+    // Sprite tilt
+    data.tilt = copysignf(powf(1 / (1 + expf(-fabsf(vX) * 3 + 1)), 2), vX);
+    if (fabsf(data.tilt) < .1f) {
+        data.tilt = 0;
+    }
+    data.tilt *= M_PI / 4;
+
+    if (mag < 1e-5) {
         return true;
     }
 
-    float mX = fabsf(dx) * s * 150 / mag;
+    float mX = fabsf(vX) * s * 150;
     float mY = fabsf(dy) * s * 150 / mag;
     pos.move(copysignf(fminf(fabs(dx), mX), dx),
              copysignf(fminf(fabs(dy), mY), dy));
@@ -58,9 +80,9 @@ bool beeline(Rect& pos, BeelineData& data, Time dt) {
 
 // UpgradeBot
 UpgradeBot::UpgradeBot()
-    : mPos(std::make_shared<UIComponent>(Rect(0, 0, 50, 50), Elevation::BOTS)) {
-    mCap = Number(1, 15);
-    mRate = Number(3, 14);
+    : mPos(std::make_shared<UIComponent>(Rect(0, 0, 60, 30), Elevation::BOTS)) {
+    mCap = Number(1, 2);
+    mRate = Number(3, 3);
 
     mHoverData.target = ROBOT_WIZARD;
     mHoverCrystalData.target = CRYSTAL;
@@ -68,7 +90,7 @@ UpgradeBot::UpgradeBot()
 }
 
 void UpgradeBot::init() {
-    mImg.set(RobotWizardDefs::IMG());
+    mImg.set(RobotWizardDefs::UP_BOT_IMG());
     Rect r = WizardSystem::GetWizardPosObservable()->get(mHoverData.target);
     mPos->rect.setPos(r.cX(), r.cY(), Rect::Align::CENTER);
     mPBar.set(RED, BLACK);
@@ -116,10 +138,12 @@ void UpgradeBot::onRender(SDL_Renderer* r) {
     mImg.setDest(mPos->rect);
     tex.draw(mImg);
 
-    Rect pbRect(mPos->rect.x(), mPos->rect.y2(), mPos->rect.w(),
-                mPos->rect.w() / 6);
-    mPBar.set((mAmnt / mCap).toFloat()).set(pbRect);
-    tex.draw(mPBar);
+    mPBar.set((mAmnt / mCap).toFloat());
+    if (mPBar.get().perc < 1) {
+        mPBar.set(Rect(mPos->rect.x(), mPos->rect.y2(), mPos->rect.w(),
+                       mPos->rect.h() / 4));
+        tex.draw(mPBar);
+    }
 
     for (auto& arrow : mArrows) {
         mArrowImg.setDest(arrow.rect);
@@ -144,12 +168,14 @@ void UpgradeBot::onUpdate(Time dt) {
     switch (mAiMode) {
         case AiMode::HoverRobot:  // Hover around robot when full
             BotAi::hover(mPos->rect, mHoverData, dt);
+            mImg.setRotationRad(mHoverData.tilt);
             if (mAmnt < mCap) {
                 mAiMode = AiMode::HoverCrystal;
             }
             break;
         case AiMode::HoverCrystal:  // Hover around crystal when not full
             BotAi::hover(mPos->rect, mHoverCrystalData, dt);
+            mImg.setRotationRad(mHoverCrystalData.tilt);
             if (mSource.get() > 0) {
                 mBeelineData.target = CRYSTAL;
                 mAiMode = AiMode::Drain;
@@ -174,6 +200,7 @@ void UpgradeBot::onUpdate(Time dt) {
                     mAiMode = AiMode::HoverRobot;
                 }
             }
+            mImg.setRotationRad(mBeelineData.tilt);
             break;
         case AiMode::Upgrade:  // Perform upgrade when available
             if (BotAi::beeline(mPos->rect, mBeelineData, dt)) {
@@ -186,13 +213,14 @@ void UpgradeBot::onUpdate(Time dt) {
                     .setLength(500, false);
                 mPauseTimerSub->setActive(true);
             }
+            mImg.setRotationRad(mBeelineData.tilt);
             break;
-        case AiMode::Waiting:  // Waitng to drain more
+        case AiMode::Waiting:  // Waiting to drain more
             if (mSource.get() > 0) {
                 mAiMode = AiMode::Drain;
             }
-            break;
         case AiMode::Paused:  // Pausing after upgrade
+            mImg.setRotationRad(0);
             break;
     }
 }

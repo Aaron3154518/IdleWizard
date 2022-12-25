@@ -7,6 +7,11 @@ const AnimationData& IMG() {
     const static AnimationData IMG{"res/wizards/robot_ss.png", 6, 100};
     return IMG;
 }
+const AnimationData& UP_BOT_IMG() {
+    const static AnimationData UP_BOT_IMG{"res/wizards/upgrade_bot_ss.png", 4,
+                                          80};
+    return UP_BOT_IMG;
+}
 const AnimationData& PORTAL_TOP() {
     const static AnimationData PORTAL_TOP{"res/wizards/portal_top.png", 6, 150};
     return PORTAL_TOP;

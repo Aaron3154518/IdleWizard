@@ -20,12 +20,13 @@ namespace BotAi {
 struct HoverData {
     WizardId target;
     SDL_FPoint v{0, 0};
-    float theta = 0;
+    float theta = 0, tilt = 0;
 };
 void hover(Rect& pos, HoverData& data, Time dt);
 
 struct BeelineData {
     WizardId target;
+    float tilt = 0;
 };
 bool beeline(Rect& pos, BeelineData& data, Time dt);
 }  // namespace BotAi

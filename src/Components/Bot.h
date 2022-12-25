@@ -34,6 +34,11 @@ class UpgradeBot : public Component {
    public:
     UpgradeBot();
 
+    struct Arrow {
+        RenderData mImg;
+        int mTimer;
+    };
+
     void setPos(float x, float y);
 
    private:
@@ -58,6 +63,10 @@ class UpgradeBot : public Component {
     UIComponentPtr mPos;
     RenderAnimation mImg;
     ProgressBar mPBar;
+    std::vector<Arrow> mArrows;
+
+    std::mt19937 gen = std::mt19937(rand());
+    std::uniform_real_distribution<float> rDist;
 
     BotAi::HoverData mHoverData, mHoverCrystalData;
     BotAi::BeelineData mBeelineData;

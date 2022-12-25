@@ -97,8 +97,8 @@ int main(int argc, char* argv[]) {
                 GetWizardUpgrades(CRYSTAL)->maxAll(
                     UpgradeDefaults::CRYSTAL_MAGIC);
             case Start::FirstT1:
-                GetWizardUpgrades(WIZARD)->maxAll(
-                    UpgradeDefaults::CRYSTAL_MAGIC);
+                // GetWizardUpgrades(WIZARD)->maxAll(
+                // UpgradeDefaults::CRYSTAL_MAGIC);
                 switch (t1Wiz) {
                     case POWER_WIZARD:
                         states[State::BoughtPowerWizard].set(true);

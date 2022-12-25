@@ -118,9 +118,28 @@ void UpgradeBot::onRender(SDL_Renderer* r) {
                 mPos->rect.w() / 6);
     mPBar.set((mAmnt / mCap).toFloat()).set(pbRect);
     tex.draw(mPBar);
+
+    for (auto& arrow : mArrows) {
+        tex.draw(arrow.mImg);
+    }
 }
 
 void UpgradeBot::onUpdate(Time dt) {
+    for (auto it = mArrows.begin(); it != mArrows.end(); ++it) {
+        it->mTimer -= dt.ms();
+        if (it->mTimer >= 200) {
+            Rect arrowRect = it->mImg.getDest();
+            arrowRect.move(0, -dt.s() * 150);
+            it->mImg.setDest(arrowRect);
+        }
+        if (it->mTimer <= 0) {
+            it = mArrows.erase(it);
+            if (it == mArrows.end()) {
+                break;
+            }
+        }
+    }
+
     switch (mAiMode) {
         case AiMode::HoverRobot:  // Hover around robot when full
             BotAi::hover(mPos->rect, mHoverData, dt);
@@ -163,6 +182,16 @@ void UpgradeBot::onUpdate(Time dt) {
                 mPauseTimerSub->get<TimeSystem::TimerObservable::DATA>()
                     .setLength(500, false);
                 mPauseTimerSub->setActive(true);
+                Arrow arrow;
+                arrow.mImg.set("res/upgrades/arrow.png");
+                Rect arrowRect(0, 0, 30, 40);
+                Rect tRect = WizardSystem::GetWizardPos(mBeelineData.target);
+                arrowRect.setPos(tRect.cX() + (rDist(gen) - .5) * 50,
+                                 tRect.cY() + rDist(gen) * 30,
+                                 Rect::Align::CENTER);
+                arrow.mImg.setDest(arrowRect);
+                arrow.mTimer = 500;
+                mArrows.push_back(arrow);
             }
             break;
         case AiMode::Waiting:  // Waitng to drain more

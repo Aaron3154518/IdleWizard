@@ -59,7 +59,7 @@ bool beeline(Rect& pos, BeelineData& data, Time dt) {
 // UpgradeBot
 UpgradeBot::UpgradeBot()
     : mPos(std::make_shared<UIComponent>(Rect(0, 0, 50, 50), Elevation::BOTS)) {
-    mCap = Number(1, 14);
+    mCap = Number(1, 15);
     mRate = Number(3, 14);
 
     mHoverData.target = ROBOT_WIZARD;
@@ -72,6 +72,8 @@ void UpgradeBot::init() {
     Rect r = WizardSystem::GetWizardPosObservable()->get(mHoverData.target);
     mPos->rect.setPos(r.cX(), r.cY(), Rect::Align::CENTER);
     mPBar.set(RED, BLACK);
+
+    mArrowImg.set("res/upgrades/arrow.png");
 
     mRenderSub =
         ServiceSystem::Get<RenderService, RenderObservable>()->subscribe(
@@ -120,19 +122,18 @@ void UpgradeBot::onRender(SDL_Renderer* r) {
     tex.draw(mPBar);
 
     for (auto& arrow : mArrows) {
-        tex.draw(arrow.mImg);
+        mArrowImg.setDest(arrow.rect);
+        tex.draw(mArrowImg);
     }
 }
 
 void UpgradeBot::onUpdate(Time dt) {
     for (auto it = mArrows.begin(); it != mArrows.end(); ++it) {
-        it->mTimer -= dt.ms();
-        if (it->mTimer >= 200) {
-            Rect arrowRect = it->mImg.getDest();
-            arrowRect.move(0, -dt.s() * 150);
-            it->mImg.setDest(arrowRect);
+        it->timer -= dt.ms();
+        if (it->timer >= 200) {
+            it->rect.move(0, -dt.s() * 150);
         }
-        if (it->mTimer <= 0) {
+        if (it->timer <= 0) {
             it = mArrows.erase(it);
             if (it == mArrows.end()) {
                 break;
@@ -177,21 +178,13 @@ void UpgradeBot::onUpdate(Time dt) {
         case AiMode::Upgrade:  // Perform upgrade when available
             if (BotAi::beeline(mPos->rect, mBeelineData, dt)) {
                 auto upgrades = GetWizardUpgrades(mBeelineData.target);
-                mAmnt -= upgrades->upgradeAll(mSource, mAmnt);
+                auto upRes = upgrades->upgradeAll(mSource, mAmnt);
+                mAmnt -= upRes.moneySpent;
+                addArrow(mBeelineData.target, upRes.levelCnt);
                 mAiMode = AiMode::Paused;
                 mPauseTimerSub->get<TimeSystem::TimerObservable::DATA>()
                     .setLength(500, false);
                 mPauseTimerSub->setActive(true);
-                Arrow arrow;
-                arrow.mImg.set("res/upgrades/arrow.png");
-                Rect arrowRect(0, 0, 30, 40);
-                Rect tRect = WizardSystem::GetWizardPos(mBeelineData.target);
-                arrowRect.setPos(tRect.cX() + (rDist(gen) - .5) * 50,
-                                 tRect.cY() + rDist(gen) * 30,
-                                 Rect::Align::CENTER);
-                arrow.mImg.setDest(arrowRect);
-                arrow.mTimer = 500;
-                mArrows.push_back(arrow);
             }
             break;
         case AiMode::Waiting:  // Waitng to drain more
@@ -222,6 +215,17 @@ void UpgradeBot::checkUpgrades() {
             break;
         }
     } while (mNextTargetIdx != currIdx);
+}
+
+void UpgradeBot::addArrow(WizardId target, int cnt) {
+    for (int i = 0; i < cnt; i++) {
+        Rect tRect = WizardSystem::GetWizardPos(target);
+        mArrows.push_back(
+            Arrow{Rect(0, 0, 30, 40), (int)(rDist(gen) * 250) + 500});
+        mArrows.back().rect.setPos(tRect.cX() + (rDist(gen) - .5) * 50,
+                                   tRect.cY() + rDist(gen) * 30,
+                                   Rect::Align::CENTER);
+    }
 }
 
 void UpgradeBot::setPos(float x, float y) {

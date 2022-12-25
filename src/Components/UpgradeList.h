@@ -46,8 +46,14 @@ class UpgradeList : public UpgradeListBase {
 
     UpgradeActiveList getSnapshot() const;
 
+    struct UpgradeResults {
+        Number moneySpent;
+        int levelCnt = 0;
+    };
+
     bool canBuyOne(ParameterSystem::BaseValue money, Number max = -1);
-    Number upgradeAll(ParameterSystem::BaseValue money, Number max = -1);
+    UpgradeResults upgradeAll(ParameterSystem::BaseValue money,
+                              Number max = -1);
     void maxAll(ParameterSystem::BaseValue money);
 
    private:

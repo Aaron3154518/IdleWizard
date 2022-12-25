@@ -35,8 +35,8 @@ class UpgradeBot : public Component {
     UpgradeBot();
 
     struct Arrow {
-        RenderData mImg;
-        int mTimer;
+        Rect rect;
+        int timer;
     };
 
     void setPos(float x, float y);
@@ -49,6 +49,8 @@ class UpgradeBot : public Component {
     bool onUpgradeTimer(Timer& t);
 
     void checkUpgrades();
+
+    void addArrow(WizardId target, int cnt);
 
     enum AiMode {
         HoverRobot = 0,
@@ -64,6 +66,7 @@ class UpgradeBot : public Component {
     RenderAnimation mImg;
     ProgressBar mPBar;
     std::vector<Arrow> mArrows;
+    RenderData mArrowImg;
 
     std::mt19937 gen = std::mt19937(rand());
     std::uniform_real_distribution<float> rDist;

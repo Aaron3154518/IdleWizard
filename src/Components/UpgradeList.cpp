@@ -32,23 +32,26 @@ bool UpgradeList::canBuyOne(ParameterSystem::BaseValue money, Number max) {
 
     return false;
 }
-Number UpgradeList::upgradeAll(ParameterSystem::BaseValue money, Number max) {
+UpgradeList::UpgradeResults UpgradeList::upgradeAll(
+    ParameterSystem::BaseValue money, Number max) {
+    UpgradeResults res;
+
     bool noMax = max < 0;
-    Number cost = 0;
 
     for (auto sub : *this) {
         auto& up = sub->get<DATA>();
         const auto& upCost = up->getCost();
         if (upCost && upCost->getMoneyParam() == money) {
             while (up->status(true) != Upgrade::Status::BOUGHT &&
-                   (noMax || cost + upCost->getCost() <= max)) {
-                cost += upCost->getCost();
+                   (noMax || res.moneySpent + upCost->getCost() <= max)) {
+                res.moneySpent += upCost->getCost();
+                res.levelCnt++;
                 up->buy(true);
             }
         }
     }
 
-    return cost;
+    return res;
 }
 void UpgradeList::maxAll(ParameterSystem::BaseValue money) {
     for (auto sub : *this) {

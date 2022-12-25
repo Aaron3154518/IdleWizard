@@ -307,7 +307,9 @@ void RobotWizard::upgradeTarget() {
     return;
     auto catMagic = ParameterSystem::Param<CATALYST>(CatalystParams::Magic);
     Number maxSpend = catMagic.get() / 10 + 1;
-    Number spent = GetWizardUpgrades(mTarget)->upgradeAll(
-        UpgradeDefaults::CRYSTAL_MAGIC, catMagic.get() / 10);
+    Number spent =
+        GetWizardUpgrades(mTarget)
+            ->upgradeAll(UpgradeDefaults::CRYSTAL_MAGIC, catMagic.get() / 10)
+            .moneySpent;
     catMagic.set(catMagic.get() - spent);
 }

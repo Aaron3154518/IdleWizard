@@ -43,7 +43,7 @@ void hover(Rect& pos, HoverData& data, Time dt) {
     float mag_t = sqrtf(dx_t * dx_t + dy_t * dy_t);
 
     if (mag < rad * 1.1) {
-        data.theta += s * data.thetaSpd;
+        data.theta = fmodf(data.theta + s * data.thetaSpd, 2 * M_PI);
     } else {
         maxSpd = 3 * data.baseSpd;
     }
@@ -110,7 +110,7 @@ UpgradeBot::UpgradeBot()
 void UpgradeBot::init() {
     mImg.set(RobotWizardDefs::UP_BOT_IMG());
     Rect r = WizardSystem::GetWizardPosObservable()->get(mHoverData.target);
-    mPos->rect.setPos(r.cX(), r.cY(), Rect::Align::CENTER);
+    setPos(r.cX(), r.cY());
     mPBar.set(RED, BLACK);
 
     mArrowImg.set("res/upgrades/arrow.png");
@@ -251,8 +251,9 @@ bool UpgradeBot::onUpgradeTimer(Timer& t) {
 void UpgradeBot::checkUpgrades() {
     int currIdx = mNextTargetIdx;
     do {
-        WizardId target = RobotWizardDefs::TARGETS.at(mNextTargetIdx);
-        mNextTargetIdx = (mNextTargetIdx + 1) % RobotWizardDefs::TARGETS.size();
+        WizardId target = RobotWizardDefs::UP_TARGETS.at(mNextTargetIdx);
+        mNextTargetIdx =
+            (mNextTargetIdx + 1) % RobotWizardDefs::UP_TARGETS.size();
         if (!WizardSystem::Hidden(target) &&
             GetWizardUpgrades(target)->canBuyOne(mSource, mAmnt)) {
             mAiMode = AiMode::Upgrade;
@@ -318,8 +319,16 @@ void SynergyBot::onUpdate(Time dt) {
             mImg.setRotationRad(mHoverData.tilt);
             break;
     }
+
+    GetSynergyBotPosObservable()->next(mHoverData.target, mPos->rect);
 }
 
 void SynergyBot::setPos(float x, float y) {
     mPos->rect.setPos(x, y, Rect::Align::CENTER);
+    GetSynergyBotPosObservable()->next(mHoverData.target, mPos->rect);
+}
+
+// SynergyBotPosObservable
+std::shared_ptr<SynergyBotPosObservable> GetSynergyBotPosObservable() {
+    return ServiceSystem::Get<SynergyBotService, SynergyBotPosObservable>();
 }

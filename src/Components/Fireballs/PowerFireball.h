@@ -1,6 +1,7 @@
 #ifndef POWER_WIZ_FIREBALL_H
 #define POWER_WIZ_FIREBALL_H
 
+#include <Components/Bot.h>
 #include <Components/FireRing.h>
 #include <Components/Fireballs/Fireball.h>
 #include <ServiceSystem/Observable.h>
@@ -10,6 +11,7 @@
 #include <Systems/TargetSystem.h>
 #include <Utils/Number.h>
 #include <Wizards/Definitions/PowerWizardDefs.h>
+#include <Wizards/Definitions/RobotWizardDefs.h>
 
 #include <memory>
 
@@ -48,17 +50,19 @@ class PowerFireball : public Fireball {
    private:
     void init();
 
-    void onFireRingHit(const Number& effect);
+    bool onUpdate(Time dt);
 
     void onDeath();
 
     // mTarget = actual target
-    WizardId mSrc, mTarget;
+    const WizardId mSrc, mTarget;
     int mFireballFreezeCnt = 1;
     float mSizeSum;
+    bool mCircle = false;
+    float mTheta = 0;
     Number mPower, mDuration;
 
-    ParameterSystem::ParameterSubscriptionPtr mRobotBoughtSub;
+    ParameterSystem::ParameterSubscriptionPtr mRobotBoughtSub, mSynActiveSub;
 };
 
 typedef std::unique_ptr<PowerFireball> PowerFireballPtr;

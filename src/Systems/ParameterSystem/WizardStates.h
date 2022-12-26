@@ -23,6 +23,10 @@ enum B : param_t {
     BoughtPoisonWizard,
     BoughtRobotWizard,
 
+    WizSynBotActive,
+    CrysSynBotActive,
+    TimeWizSynBotActive,
+
     WizBoosted,
 
     CrysGlowActive,

@@ -8,6 +8,7 @@
 #include <ServiceSystem/CoreServices/UpdateService.h>
 #include <Systems/IconSystem.h>
 #include <Systems/ParameterSystem/ParameterAccess.h>
+#include <Systems/TargetSystem.h>
 #include <Systems/TimeSystem.h>
 #include <Systems/WizardSystem/WizardObservables.h>
 #include <Wizards/Definitions/RobotWizardDefs.h>
@@ -119,5 +120,12 @@ class SynergyBot : public Component {
 };
 
 typedef std::unique_ptr<SynergyBot> SynergyBotPtr;
+
+typedef TargetSystem::TargetDataObservable<WizardId, Rect>
+    SynergyBotPosObservable;
+
+std::shared_ptr<SynergyBotPosObservable> GetSynergyBotPosObservable();
+
+class SynergyBotService : public Service<SynergyBotPosObservable> {};
 
 #endif

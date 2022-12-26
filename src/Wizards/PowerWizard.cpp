@@ -240,7 +240,7 @@ void PowerWizard::shootFireball() {
 void PowerWizard::shootFireball(SDL_FPoint target) {
     size_t size = mFireballs->size();
     shootFireball();
-    if (size != mFireballs->size()) {
+    if (size < mFireballs->size()) {
         mFireballs->back().launch(target);
     }
 }

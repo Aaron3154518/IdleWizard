@@ -21,6 +21,12 @@ PowerFireball::PowerFireball(SDL_FPoint c, WizardId target, const Data& data)
 void PowerFireball::init() {
     Fireball::init();
 
+    auto it = RobotWizardDefs::SYN_TARGETS.find(mTarget);
+    if (it != RobotWizardDefs::SYN_TARGETS.end()) {
+        mSynActiveSub =
+            it->second.subscribe([this](bool active) { mCircle = active; });
+    }
+
     switch (mSrc) {
         case POWER_WIZARD:
             mRobotBoughtSub = ParameterSystem::Param(State::ShootRobot)
@@ -30,6 +36,44 @@ void PowerFireball::init() {
                                   });
             break;
     };
+}
+
+bool PowerFireball::onUpdate(Time dt) {
+    if (!mCircle) {
+        return Fireball::onUpdate(dt);
+    }
+
+    Rect target = GetSynergyBotPosObservable()->get(mTarget);
+    float dx = target.cX() - mPos->rect.cX(),
+          dy = target.cY() - mPos->rect.cY();
+    float d = sqrtf(dx * dx + dy * dy);
+
+    if (d <= COLLIDE_ERR) {
+        onDeath();
+        return false;
+    }
+
+    target = WizardSystem::GetWizardPos(mTargetId);
+    dx = target.cX() - mPos->rect.cX();
+    dy = target.cY() - mPos->rect.cY();
+    d = sqrtf(dx * dx + dy * dy);
+    float diag = sqrtf(powf(target.halfW(), 2) + powf(target.halfH(), 2));
+
+    if (d >= diag) {
+        return Fireball::onUpdate(dt);
+    }
+
+    // Fireball::onUpdate(dt);
+    mTheta = fmodf(mTheta + dt.s() * M_PI / 4, 2 * M_PI);
+    float tx = diag * cosf(mTheta) + target.cX(),
+          ty = diag * sinf(mTheta) + target.cY();
+    setPos(tx, ty);
+    // dx = tx - mPos->rect.cX();
+    // dy = ty - mPos->rect.cY();
+    // d = sqrtf(dx * dx + dy * dy);
+    // float maxSpeed = mSpeed * MAX_SPEED;
+
+    return true;
 }
 
 void PowerFireball::onDeath() { GetHitObservable()->next(mTargetId, *this); }
@@ -68,6 +112,7 @@ void PowerFireball::applyTimeEffect(const Number& effect) { mPower ^= effect; }
 void RobotFireballList::init() {
     FireballList<PowerFireball>::init();
 
+    // Don't use time system
     mUpdateSub =
         ServiceSystem::Get<UpdateService, UpdateObservable>()->subscribe(
             [this](Time dt) { onUpdate(dt); });

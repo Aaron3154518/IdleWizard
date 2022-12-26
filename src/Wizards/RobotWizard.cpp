@@ -54,9 +54,6 @@ RobotWizard::RobotWizard() : WizardBase(ROBOT_WIZARD) {}
 void RobotWizard::init() {
     mFireballs = ComponentFactory<RobotFireballList>::New();
     mUpBot = ComponentFactory<UpgradeBot>::New();
-    for (auto id : {WIZARD, CRYSTAL, TIME_WIZARD}) {
-        mSynBots[id] = ComponentFactory<SynergyBot>::New(id);
-    }
 
     mImg.set(RobotWizardDefs::IMG());
     mImg.setDest(IMG_RECT);
@@ -177,6 +174,14 @@ void RobotWizard::setParamTriggers() {
             ParameterSystem::States states;
             return states[State::BoughtRobotWizard].get();
         }));
+
+    for (auto pair : RobotWizardDefs::SYN_TARGETS) {
+        WizardId id = pair.first;
+        mParamSubs.push_back(pair.second.subscribe([this, id](bool active) {
+            mSynBots[id] =
+                active ? ComponentFactory<SynergyBot>::New(id) : nullptr;
+        }));
+    }
 }
 
 void RobotWizard::onMoveUpdate(Time dt) {
@@ -221,8 +226,8 @@ bool RobotWizard::onUpgradeTimer(Timer& t) {
         Number cap =
             ParameterSystem::Param<CATALYST>(CatalystParams::Magic).get() * .1;
         do {
-            WizardId target = RobotWizardDefs::TARGETS.at(mTargetIdx);
-            mTargetIdx = (mTargetIdx + 1) % RobotWizardDefs::TARGETS.size();
+            WizardId target = RobotWizardDefs::UP_TARGETS.at(mTargetIdx);
+            mTargetIdx = (mTargetIdx + 1) % RobotWizardDefs::UP_TARGETS.size();
             if (!WizardSystem::Hidden(target) &&
                 GetWizardUpgrades(target)->canBuyOne(
                     UpgradeDefaults::CRYSTAL_MAGIC, cap)) {

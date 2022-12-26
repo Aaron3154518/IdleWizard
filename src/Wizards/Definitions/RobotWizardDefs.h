@@ -11,7 +11,9 @@
 #include <vector>
 
 namespace RobotWizardDefs {
-extern const std::vector<WizardId> TARGETS;
+extern const std::vector<WizardId> UP_TARGETS;
+extern const std::unordered_map<WizardId, ParameterSystem::StateParam>
+    SYN_TARGETS;
 
 const AnimationData& IMG();
 const AnimationData& UP_BOT_IMG();

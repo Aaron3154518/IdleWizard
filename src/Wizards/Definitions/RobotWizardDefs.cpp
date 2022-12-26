@@ -1,7 +1,13 @@
 #include "RobotWizardDefs.h"
 
 namespace RobotWizardDefs {
-const std::vector<WizardId> TARGETS{CRYSTAL, WIZARD, POWER_WIZARD, TIME_WIZARD};
+const std::vector<WizardId> UP_TARGETS{CRYSTAL, WIZARD, POWER_WIZARD,
+                                       TIME_WIZARD};
+const std::unordered_map<WizardId, ParameterSystem::StateParam> SYN_TARGETS = {
+    {CRYSTAL, ParameterSystem::Param(State::CrysSynBotActive)},
+    {WIZARD, ParameterSystem::Param(State::WizSynBotActive)},
+    {TIME_WIZARD, ParameterSystem::Param(State::TimeWizSynBotActive)},
+};
 
 const AnimationData& IMG() {
     const static AnimationData IMG{"res/wizards/robot_ss.png", 6, 100};
@@ -32,5 +38,9 @@ void setDefaults() {
     params[RobotWizardParams::WizCritUpCost]->init(Number(1, 20));
 
     ParameterSystem::States states;
+
+    states[State::CrysSynBotActive]->init(true);
+    states[State::WizSynBotActive]->init(true);
+    states[State::TimeWizSynBotActive]->init(true);
 }
 }  // namespace RobotWizardDefs

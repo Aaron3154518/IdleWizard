@@ -150,14 +150,8 @@ class SynergyBot : public Component {
 
 typedef std::unique_ptr<SynergyBot> SynergyBotPtr;
 
-typedef TargetSystem::TargetDataObservable<WizardId, Rect>
-    SynergyBotPosObservable;
-
-std::shared_ptr<SynergyBotPosObservable> GetSynergyBotPosObservable();
-
 std::shared_ptr<SynergyBot::HitObservable> GetSynergyBotHitObservable();
 
-class SynergyBotService
-    : public Service<SynergyBotPosObservable, SynergyBot::HitObservable> {};
+class SynergyBotService : public Service<SynergyBot::HitObservable> {};
 
 #endif

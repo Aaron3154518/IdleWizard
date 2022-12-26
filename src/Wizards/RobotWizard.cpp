@@ -77,16 +77,10 @@ void RobotWizard::setSubscriptions() {
                 return true;
             },
             RobotWizardDefs::IMG());
-    mPowFireballHitSub = PowerFireball::GetHitObservable()->subscribe(
-        [this](const PowerFireball& f) { onPowFireballHit(f); }, mId);
     mMoveUpdateSub = TimeSystem::GetUpdateObservable()->subscribe(
         [this](Time dt) { onMoveUpdate(dt); });
-    mUpTimerSub = TimeSystem::GetTimerObservable()->subscribe(
-        [this](Timer& t) { return onUpgradeTimer(t); }, Timer(1000));
 
-    attachSubToVisibility(mPowFireballHitSub);
     attachSubToVisibility(mMoveUpdateSub);
-    attachSubToVisibility(mUpTimerSub);
 }
 void RobotWizard::setUpgrades() {
     ParameterSystem::Params<ROBOT_WIZARD> params;
@@ -185,22 +179,11 @@ void RobotWizard::setParamTriggers() {
 }
 
 void RobotWizard::onMoveUpdate(Time dt) {
-    bool wizTarget = mTarget != WizardId::size;
-
-    if (wizTarget) {
-        Rect r = WizardSystem::GetWizardPos(mTarget);
-        mTargetPos = {r.cX(), r.cY()};
-    }
     float dx = mTargetPos.x - mPos->rect.cX(),
           dy = mTargetPos.y - mPos->rect.cY();
     float mag = sqrtf(dx * dx + dy * dy);
 
-    if (mag <= (wizTarget ? 50 : 10)) {
-        if (wizTarget) {
-            upgradeTarget();
-            mUpTimerSub->setActive(true);
-        }
-        mTarget = WizardId::size;
+    if (mag <= 1e-5) {
         mWaitSub =
             ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
                 [this](Timer& t) {
@@ -212,34 +195,12 @@ void RobotWizard::onMoveUpdate(Time dt) {
                     mMoveUpdateSub->setActive(true);
                     return false;
                 },
-                Timer(rDist(gen) * 4000 + 2500));
+                Timer(rDist(gen) * 6000 + 4000));
         mMoveUpdateSub->setActive(false);
     } else {
         float frac = 100 * dt.s() / mag;
         setPos(mPos->rect.cX() + dx * frac, mPos->rect.cY() + dy * frac);
     }
-}
-bool RobotWizard::onUpgradeTimer(Timer& t) {
-    if (mTarget == WizardId::size) {
-        mTarget = WizardId::size;
-        int currIdx = mTargetIdx;
-        Number cap =
-            ParameterSystem::Param<CATALYST>(CatalystParams::Magic).get() * .1;
-        do {
-            WizardId target = RobotWizardDefs::UP_TARGETS.at(mTargetIdx);
-            mTargetIdx = (mTargetIdx + 1) % RobotWizardDefs::UP_TARGETS.size();
-            if (!WizardSystem::Hidden(target) &&
-                GetWizardUpgrades(target)->canBuyOne(
-                    UpgradeDefaults::CRYSTAL_MAGIC, cap)) {
-                mTarget = target;
-                mWaitSub.reset();
-                mMoveUpdateSub->setActive(true);
-                mUpTimerSub->setActive(false);
-                break;
-            }
-        } while (mTargetIdx != currIdx);
-    }
-    return true;
 }
 void RobotWizard::onRender(SDL_Renderer* r) {
     WizardBase::onRender(r);
@@ -293,31 +254,9 @@ void RobotWizard::onHide(bool hide) {
         // mUpTimerSub->setActive(false);
     }
 }
-void RobotWizard::onPowFireballHit(const PowerFireball& fireball) {
-    WizardId target = fireball.getTarget();
-
-    auto it = mStoredFireballs.find(target);
-    if (it == mStoredFireballs.end() ||
-        fireball.getPower() > it->second.power ||
-        fireball.getDuration() > it->second.duration) {
-        mStoredFireballs[target] = fireball.getData();
-        mStoredFireballs[target].src = ROBOT_WIZARD;
-    }
-}
 
 void RobotWizard::showUpgrades() {
     ServiceSystem::Get<UpgradeService, UpgradeListObservable>()->next(
         mUpgrades, UpgradeDefaults::CRYSTAL_SHARDS,
         ParameterSystem::Param<ROBOT_WIZARD>(RobotWizardParams::ShardAmnt));
-}
-
-void RobotWizard::upgradeTarget() {
-    return;
-    auto catMagic = ParameterSystem::Param<CATALYST>(CatalystParams::Magic);
-    Number maxSpend = catMagic.get() / 10 + 1;
-    Number spent =
-        GetWizardUpgrades(mTarget)
-            ->upgradeAll(UpgradeDefaults::CRYSTAL_MAGIC, catMagic.get() / 10)
-            .moneySpent;
-    catMagic.set(catMagic.get() - spent);
 }

@@ -56,14 +56,11 @@ class RobotWizard : public WizardBase {
     void onRender(SDL_Renderer* r);
     void onResize(ResizeData data);
     void onHide(bool hide);
-    void onPowFireballHit(const PowerFireball& fireball);
 
     void showUpgrades();
 
     void upgradeTarget();
 
-    WizardId mTarget = WizardId::size;
-    int mTargetIdx = 0;
     SDL_FPoint mTargetPos;
 
     RenderAnimation mTpImg;
@@ -75,9 +72,7 @@ class RobotWizard : public WizardBase {
     std::unordered_map<WizardId, SynergyBotPtr> mSynBots;
 
     TimerObservable::SubscriptionPtr mAnimTimerSub, mWaitSub;
-    PowerFireball::HitObservable::IdSubscriptionPtr mPowFireballHitSub;
     TimeSystem::UpdateObservable::SubscriptionPtr mMoveUpdateSub;
-    TimeSystem::TimerObservable::SubscriptionPtr mUpTimerSub;
     UpgradeList::SubscriptionPtr mWizCritUp;
     std::vector<UpgradeList::SubscriptionPtr> mUps;
 };

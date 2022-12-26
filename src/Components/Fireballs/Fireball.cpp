@@ -19,9 +19,6 @@ void Fireball::init() {
 }
 
 void Fireball::onUpdate(Time dt) {
-    float sec = dt.s();
-    float aCoeff = sec * sec / 2;
-
     SDL_FPoint target =
         WizardSystem::GetWizardPos(mTargetId).getPos(Rect::Align::CENTER);
     float dx = target.x - mPos->rect.cX(), dy = target.y - mPos->rect.cY();
@@ -33,8 +30,19 @@ void Fireball::onUpdate(Time dt) {
         return;
     }
 
+    move(dt);
+}
+void Fireball::onDeath() { mDead = true; }
+
+void Fireball::move(Time dt) {
+    float sec = dt.s();
+    float aCoeff = sec * sec / 2;
     float maxSpeed = mSpeed * MAX_SPEED;
-    d = fminf(d / 2, maxSpeed);
+
+    SDL_FPoint target =
+        WizardSystem::GetWizardPos(mTargetId).getPos(Rect::Align::CENTER);
+    float dx = target.x - mPos->rect.cX(), dy = target.y - mPos->rect.cY();
+    float d = fminf(sqrtf(dx * dx + dy * dy) / 2, maxSpeed);
     float v_squared = fmaxf(mV.x * mV.x + mV.y * mV.y, maxSpeed * maxSpeed / 4);
     float frac = v_squared / (d * d);
     mA.x = dx * frac;
@@ -68,8 +76,8 @@ void Fireball::onUpdate(Time dt) {
     mImg.setDest(imgR);
     mPos->rect = mImg.getDest();
 }
+
 void Fireball::draw(TextureBuilder& tex) { tex.draw(mImg); }
-void Fireball::onDeath() { mDead = true; }
 
 void Fireball::launch(SDL_FPoint target) {
     // Start at half max speed

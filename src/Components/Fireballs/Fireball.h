@@ -54,6 +54,8 @@ class Fireball : public Component {
     virtual void onUpdate(Time dt);
     virtual void onDeath();
 
+    void move(Time dt);
+
     WizardId mTargetId;
 
     bool mDead = false;

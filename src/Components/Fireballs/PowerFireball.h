@@ -18,7 +18,6 @@
 struct PowerFireballData {
     Number power, duration;
     float sizeFactor = 1, speed = .65;
-    WizardId src = POWER_WIZARD;
 };
 
 class PowerFireball : public Fireball {
@@ -54,8 +53,6 @@ class PowerFireball : public Fireball {
 
     void onDeath();
 
-    // mTarget = actual target
-    const WizardId mSrc, mTarget;
     int mFireballFreezeCnt = 1;
     float mSizeSum;
     float mTheta = 0;

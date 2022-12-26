@@ -340,17 +340,20 @@ void SynergyBot::onUpdate(Time dt) {
     }
 
     GetSynergyBotHitObservable()->next(mTarget, mPos->rect);
-    GetSynergyBotPosObservable()->next(mTarget, mPos->rect);
 }
 
 void SynergyBot::onFbHit(const PowerFireballData& data) {
     std::cerr << "Wassup: " << data.power << std::endl;
+    // if (it == mStoredFireballs.end() ||
+    //     fireball.getPower() > it->second.power ||
+    //     fireball.getDuration() > it->second.duration) {
+    //     mStoredFireballs[target] = fireball.getData();
+    // }
 }
 
 void SynergyBot::setPos(float x, float y) {
     mPos->rect.setPos(x, y, Rect::Align::CENTER);
     GetSynergyBotHitObservable()->next(mTarget, mPos->rect);
-    GetSynergyBotPosObservable()->next(mTarget, mPos->rect);
 }
 
 // SynergyBot::HitObservable
@@ -385,10 +388,6 @@ std::vector<UIComponentCPtr> SynergyBot::HitObservable::getFbPosList(
 }
 
 // SynergyBotPosObservable
-std::shared_ptr<SynergyBotPosObservable> GetSynergyBotPosObservable() {
-    return ServiceSystem::Get<SynergyBotService, SynergyBotPosObservable>();
-}
-
 std::shared_ptr<SynergyBot::HitObservable> GetSynergyBotHitObservable() {
     return ServiceSystem::Get<SynergyBotService, SynergyBot::HitObservable>();
 }

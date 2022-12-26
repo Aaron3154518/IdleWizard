@@ -24,7 +24,7 @@ void PoisonFireball::init() {
     mGlobHitSub.reset();
 }
 
-bool PoisonFireball::onUpdate(Time dt) {
+void PoisonFireball::onUpdate(Time dt) {
     for (auto it = mBubbles.begin(); it != mBubbles.end();) {
         it->timer -= dt.ms();
         if (it->timer <= 0) {
@@ -47,7 +47,7 @@ bool PoisonFireball::onUpdate(Time dt) {
                             (int)(rDist(gen) * 750 + 250)});
     }
 
-    return Fireball::onUpdate(dt);
+    Fireball::onUpdate(dt);
 }
 void PoisonFireball::draw(TextureBuilder& tex) {
     for (auto& bubble : mBubbles) {
@@ -67,6 +67,8 @@ void PoisonFireball::draw(TextureBuilder& tex) {
 }
 
 void PoisonFireball::onDeath() {
+    Fireball::onDeath();
+
     GetHitObservable()->next(mTargetId, *this);
 
     mBubbles.clear();

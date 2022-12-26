@@ -19,20 +19,21 @@
 
 namespace BotAi {
 struct HoverData {
-    WizardId target;
-    SDL_FPoint v{0, 0};
+    SDL_FPoint target, v{0, 0};
     float theta = 0, tilt = 0;
     float thetaSpd = M_PI / 3, thetaRadSpd = 7 / 11, thetaSpdSpd = 7 / 19;
     float baseRad = 100, deltaRad = 40, baseSpd = 75;
 };
 HoverData randomHover();
 void hover(Rect& pos, HoverData& data, Time dt);
+void hover(Rect& pos, HoverData& data, WizardId target, Time dt);
 
 struct BeelineData {
-    WizardId target;
+    SDL_FPoint target;
     float tilt = 0;
 };
 bool beeline(Rect& pos, BeelineData& data, Time dt);
+bool beeline(Rect& pos, BeelineData& data, WizardId target, Time dt);
 }  // namespace BotAi
 
 class UpgradeBot : public Component {
@@ -76,6 +77,7 @@ class UpgradeBot : public Component {
     std::mt19937 gen = std::mt19937(rand());
     std::uniform_real_distribution<float> rDist;
 
+    WizardId mUpTarget;
     BotAi::HoverData mHoverData, mHoverCrystalData;
     BotAi::BeelineData mBeelineData;
 
@@ -91,8 +93,37 @@ class UpgradeBot : public Component {
 
 typedef std::unique_ptr<UpgradeBot> UpgradeBotPtr;
 
+// Forward declaration
+class PowerFireballData;
+
 class SynergyBot : public Component {
    public:
+    typedef TargetSystem::TargetObservable<WizardId, const PowerFireballData&>
+        HitObservableBase;
+    class HitObservable : public HitObservableBase {
+       public:
+        class FbObservable
+            : public Observable<WizardId, PowerFireballData(), UIComponentPtr> {
+            friend class HitObservable;
+        };
+        typedef FbObservable::SubscriptionPtr FbSubscriptionPtr;
+
+        enum { ID = 0, ON_HIT, POS };
+
+        FbSubscriptionPtr subscribeFb(WizardId id,
+                                      std::function<PowerFireballData()> onHit,
+                                      UIComponentPtr pos);
+
+        void next(WizardId id, Rect pos);
+
+        std::vector<UIComponentCPtr> getFbPosList(WizardId id);
+
+       private:
+        using HitObservableBase::next;
+
+        FbObservable mFbObservable;
+    };
+
     SynergyBot(WizardId id);
 
     void setPos(float x, float y);
@@ -102,21 +133,19 @@ class SynergyBot : public Component {
 
     void onRender(SDL_Renderer* r);
     void onUpdate(Time dt);
-
-    enum AiMode {
-        Hover = 0,
-    };
-    AiMode mAiMode = AiMode::Hover;
+    void onFbHit(const PowerFireballData& data);
 
     UIComponentPtr mPos;
     RenderAnimation mImg;
 
+    const WizardId mTarget;
     BotAi::HoverData mHoverData;
     BotAi::BeelineData mBeelineData;
 
     RenderObservable::SubscriptionPtr mRenderSub;
     TimeSystem::UpdateObservable::SubscriptionPtr mUpdateSub;
     TimeSystem::TimerObservable::SubscriptionPtr mAnimTimerSub;
+    HitObservable::IdSubscriptionPtr mFbHitSub;
 };
 
 typedef std::unique_ptr<SynergyBot> SynergyBotPtr;
@@ -126,6 +155,9 @@ typedef TargetSystem::TargetDataObservable<WizardId, Rect>
 
 std::shared_ptr<SynergyBotPosObservable> GetSynergyBotPosObservable();
 
-class SynergyBotService : public Service<SynergyBotPosObservable> {};
+std::shared_ptr<SynergyBot::HitObservable> GetSynergyBotHitObservable();
+
+class SynergyBotService
+    : public Service<SynergyBotPosObservable, SynergyBot::HitObservable> {};
 
 #endif

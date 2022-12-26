@@ -279,11 +279,11 @@ WizardId PowerWizard::getTarget() {
     return CRYSTAL;
 }
 
-PowerFireball::Data PowerWizard::newFireballData(WizardId target) {
+PowerFireballData PowerWizard::newFireballData(WizardId target) {
     ParameterSystem::Params<POWER_WIZARD> params;
     Number speedEffect = params[PowerWizardParams::FBSpeedEffect].get();
 
-    PowerFireball::Data data;
+    PowerFireballData data;
     switch (target) {
         case WIZARD:
             data.duration = params[PowerWizardParams::Duration].get();

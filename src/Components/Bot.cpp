@@ -1,5 +1,7 @@
 #include "Bot.h"
 
+#include <Components/Fireballs/PowerFireball.h>
+
 // BotAi
 namespace BotAi {
 HoverData randomHover() {
@@ -18,9 +20,13 @@ HoverData randomHover() {
     return data;
 }
 
+void hover(Rect& pos, HoverData& data, WizardId target, Time dt) {
+    data.target = WizardSystem::GetWizardPosObservable()->get(target).getPos(
+        Rect::Align::CENTER);
+    hover(pos, data, dt);
+}
 void hover(Rect& pos, HoverData& data, Time dt) {
     float s = dt.s();
-    Rect tRect = WizardSystem::GetWizardPosObservable()->get(data.target);
 
     // Oscillate speed and radius
     float rad = data.baseRad +
@@ -28,11 +34,10 @@ void hover(Rect& pos, HoverData& data, Time dt) {
     float maxSpd = data.baseSpd * (sinf(data.theta * data.thetaSpdSpd) + 1.5);
 
     float x = pos.cX(), y = pos.cY();
-    float tX = tRect.cX(), tY = tRect.cY();
-    float x_t = rad * cosf(data.theta) + tX,
-          y_t = rad / 3 * sinf(data.theta) + tY;
+    float x_t = rad * cosf(data.theta) + data.target.x,
+          y_t = rad / 3 * sinf(data.theta) + data.target.y;
 
-    float dx = tX - x, dy = tY - y;
+    float dx = data.target.x - x, dy = data.target.y - y;
     float mag = sqrtf(dx * dx + dy * dy);
 
     if (mag == 0) {
@@ -65,13 +70,16 @@ void hover(Rect& pos, HoverData& data, Time dt) {
     data.tilt = data.tilt * (1 - a) + tilt * a;
 }
 
+bool beeline(Rect& pos, BeelineData& data, WizardId target, Time dt) {
+    data.target = WizardSystem::GetWizardPosObservable()->get(target).getPos(
+        Rect::Align::CENTER);
+    return beeline(pos, data, dt);
+}
 bool beeline(Rect& pos, BeelineData& data, Time dt) {
     float s = dt.s();
-    Rect tRect = WizardSystem::GetWizardPosObservable()->get(data.target);
 
     float x = pos.cX(), y = pos.cY();
-    float tX = tRect.cX(), tY = tRect.cY();
-    float dx = tX - x, dy = tY - y;
+    float dx = data.target.x - x, dy = data.target.y - y;
     float mag = sqrtf(dx * dx + dy * dy);
     float vX = mag == 0 ? 0 : dx / mag;
 
@@ -101,15 +109,11 @@ UpgradeBot::UpgradeBot()
       mPos(std::make_shared<UIComponent>(Rect(0, 0, 60, 30), Elevation::BOTS)) {
     mCap = Number(1, 2);
     mRate = Number(3, 3);
-
-    mHoverData.target = ROBOT_WIZARD;
-    mHoverCrystalData.target = CRYSTAL;
-    mBeelineData.target = CRYSTAL;
 }
 
 void UpgradeBot::init() {
     mImg.set(RobotWizardDefs::UP_BOT_IMG());
-    Rect r = WizardSystem::GetWizardPosObservable()->get(mHoverData.target);
+    Rect r = WizardSystem::GetWizardPosObservable()->get(ROBOT_WIZARD);
     setPos(r.cX(), r.cY());
     mPBar.set(RED, BLACK);
 
@@ -185,22 +189,21 @@ void UpgradeBot::onUpdate(Time dt) {
 
     switch (mAiMode) {
         case AiMode::HoverRobot:  // Hover around robot when full
-            BotAi::hover(mPos->rect, mHoverData, dt);
+            BotAi::hover(mPos->rect, mHoverData, ROBOT_WIZARD, dt);
             mImg.setRotationRad(mHoverData.tilt);
             if (mAmnt < mCap) {
                 mAiMode = AiMode::HoverCrystal;
             }
             break;
         case AiMode::HoverCrystal:  // Hover around crystal when not full
-            BotAi::hover(mPos->rect, mHoverCrystalData, dt);
+            BotAi::hover(mPos->rect, mHoverCrystalData, CRYSTAL, dt);
             mImg.setRotationRad(mHoverCrystalData.tilt);
             if (mSource.get() > 0) {
-                mBeelineData.target = CRYSTAL;
                 mAiMode = AiMode::Drain;
             }
             break;
         case AiMode::Drain:  // Drain at crystal when magic available
-            if (BotAi::beeline(mPos->rect, mBeelineData, dt)) {
+            if (BotAi::beeline(mPos->rect, mBeelineData, CRYSTAL, dt)) {
                 Number avail = mSource.get();
 
                 if (avail == 0) {
@@ -221,11 +224,11 @@ void UpgradeBot::onUpdate(Time dt) {
             mImg.setRotationRad(mBeelineData.tilt);
             break;
         case AiMode::Upgrade:  // Perform upgrade when available
-            if (BotAi::beeline(mPos->rect, mBeelineData, dt)) {
-                auto upgrades = GetWizardUpgrades(mBeelineData.target);
+            if (BotAi::beeline(mPos->rect, mBeelineData, mUpTarget, dt)) {
+                auto upgrades = GetWizardUpgrades(mUpTarget);
                 auto upRes = upgrades->upgradeAll(mSource, mAmnt);
                 mAmnt -= upRes.moneySpent;
-                addArrow(mBeelineData.target, upRes.levelCnt);
+                addArrow(mUpTarget, upRes.levelCnt);
                 mAiMode = AiMode::Paused;
                 mPauseTimerSub->get<TimeSystem::TimerObservable::DATA>()
                     .setLength(500, false);
@@ -257,7 +260,7 @@ void UpgradeBot::checkUpgrades() {
         if (!WizardSystem::Hidden(target) &&
             GetWizardUpgrades(target)->canBuyOne(mSource, mAmnt)) {
             mAiMode = AiMode::Upgrade;
-            mBeelineData.target = target;
+            mUpTarget = target;
             mUpTimerSub->setActive(false);
             break;
         }
@@ -281,15 +284,14 @@ void UpgradeBot::setPos(float x, float y) {
 
 // SynergyBot
 SynergyBot::SynergyBot(WizardId id)
-    : mHoverData(BotAi::randomHover()),
+    : mTarget(id),
+      mHoverData(BotAi::randomHover()),
       mPos(std::make_shared<UIComponent>(Rect(0, 0, 60, 30), Elevation::BOTS)) {
-    mHoverData.target = id;
-    mBeelineData.target = CRYSTAL;
 }
 
 void SynergyBot::init() {
     mImg.set(RobotWizardDefs::UP_BOT_IMG());
-    Rect r = WizardSystem::GetWizardPosObservable()->get(mHoverData.target);
+    Rect r = WizardSystem::GetWizardPosObservable()->get(mTarget);
     mPos->rect.setPos(r.cX(), r.cY(), Rect::Align::CENTER);
 
     mRenderSub =
@@ -303,6 +305,8 @@ void SynergyBot::init() {
             return true;
         },
         RobotWizardDefs::UP_BOT_IMG());
+    mFbHitSub = GetSynergyBotHitObservable()->subscribe(
+        [this](const PowerFireballData& data) { onFbHit(data); }, mTarget);
 }
 
 void SynergyBot::onRender(SDL_Renderer* r) {
@@ -313,22 +317,78 @@ void SynergyBot::onRender(SDL_Renderer* r) {
 }
 
 void SynergyBot::onUpdate(Time dt) {
-    switch (mAiMode) {
-        case AiMode::Hover:  // Hover around target
-            BotAi::hover(mPos->rect, mHoverData, dt);
-            mImg.setRotationRad(mHoverData.tilt);
-            break;
+    auto fbVec = GetSynergyBotHitObservable()->getFbPosList(mTarget);
+    float minD = std::numeric_limits<float>::max();
+    SDL_FPoint target;
+    for (auto pos : fbVec) {
+        float dx = pos->rect.cX() - mPos->rect.cX(),
+              dy = pos->rect.cY() - mPos->rect.cY();
+        float d = sqrtf(dx * dx + dy * dy);
+        if (d < minD) {
+            minD = d;
+            target = pos->rect.getPos(Rect::Align::CENTER);
+        }
     }
 
-    GetSynergyBotPosObservable()->next(mHoverData.target, mPos->rect);
+    if (minD > 300) {  // Hover around target
+        BotAi::hover(mPos->rect, mHoverData, mTarget, dt);
+        mImg.setRotationRad(mHoverData.tilt);
+    } else {
+        mBeelineData.target = target;
+        BotAi::beeline(mPos->rect, mBeelineData, dt);
+        mImg.setRotationRad(mBeelineData.tilt);
+    }
+
+    GetSynergyBotHitObservable()->next(mTarget, mPos->rect);
+    GetSynergyBotPosObservable()->next(mTarget, mPos->rect);
+}
+
+void SynergyBot::onFbHit(const PowerFireballData& data) {
+    std::cerr << "Wassup: " << data.power << std::endl;
 }
 
 void SynergyBot::setPos(float x, float y) {
     mPos->rect.setPos(x, y, Rect::Align::CENTER);
-    GetSynergyBotPosObservable()->next(mHoverData.target, mPos->rect);
+    GetSynergyBotHitObservable()->next(mTarget, mPos->rect);
+    GetSynergyBotPosObservable()->next(mTarget, mPos->rect);
+}
+
+// SynergyBot::HitObservable
+SynergyBot::HitObservable::FbSubscriptionPtr
+SynergyBot::HitObservable::subscribeFb(WizardId id,
+                                       std::function<PowerFireballData()> onHit,
+                                       UIComponentPtr pos) {
+    return mFbObservable.subscribe(id, onHit, pos);
+}
+
+void SynergyBot::HitObservable::next(WizardId id, Rect pos) {
+    for (auto sub : mFbObservable) {
+        if (sub->get<ID>() == id) {
+            Rect fbPos = sub->get<POS>()->rect;
+            float dx = fbPos.cX() - pos.cX(), dy = fbPos.cY() - pos.cY();
+            if (sqrtf(dx * dx + dy * dy) < 1e-5) {
+                next(id, sub->get<ON_HIT>()());
+            }
+        }
+    }
+}
+
+std::vector<UIComponentCPtr> SynergyBot::HitObservable::getFbPosList(
+    WizardId id) {
+    std::vector<UIComponentCPtr> vec;
+    for (auto sub : mFbObservable) {
+        if (sub->get<ID>() == id) {
+            vec.push_back(sub->get<POS>());
+        }
+    }
+    return vec;
 }
 
 // SynergyBotPosObservable
 std::shared_ptr<SynergyBotPosObservable> GetSynergyBotPosObservable() {
     return ServiceSystem::Get<SynergyBotService, SynergyBotPosObservable>();
+}
+
+std::shared_ptr<SynergyBot::HitObservable> GetSynergyBotHitObservable() {
+    return ServiceSystem::Get<SynergyBotService, SynergyBot::HitObservable>();
 }

@@ -34,6 +34,8 @@ class Fireball : public Component {
 
     void launch(SDL_FPoint target);
 
+    bool isDead() const;
+
     float getSize() const;
     void setSize(float size);
 
@@ -49,11 +51,12 @@ class Fireball : public Component {
    protected:
     virtual void init();
 
-    virtual bool onUpdate(Time dt);
+    virtual void onUpdate(Time dt);
     virtual void onDeath();
 
     WizardId mTargetId;
 
+    bool mDead = false;
     float mSize = 1, mSpeed = 1;
     UIComponentPtr mPos;
     SDL_FPoint mV{0, 0}, mA{0, 0};

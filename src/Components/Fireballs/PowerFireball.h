@@ -15,6 +15,12 @@
 
 #include <memory>
 
+struct PowerFireballData {
+    Number power, duration;
+    float sizeFactor = 1, speed = .65;
+    WizardId src = POWER_WIZARD;
+};
+
 class PowerFireball : public Fireball {
    public:
     typedef TargetSystem::TargetObservable<WizardId, const PowerFireball&>
@@ -25,15 +31,9 @@ class PowerFireball : public Fireball {
     static std::shared_ptr<HitObservable> GetHitObservable();
 
    public:
-    struct Data {
-        Number power, duration;
-        float sizeFactor = 1, speed = .65;
-        WizardId src = POWER_WIZARD;
-    };
+    PowerFireball(SDL_FPoint c, WizardId target, const PowerFireballData& data);
 
-    PowerFireball(SDL_FPoint c, WizardId target, const Data& data);
-
-    Data getData() const;
+    PowerFireballData getData() const;
 
     const Number& getPower() const;
     void setPower(const Number& pow);
@@ -43,14 +43,14 @@ class PowerFireball : public Fireball {
 
     WizardId getTarget() const;
 
-    void addFireball(const Data& data);
+    void addFireball(const PowerFireballData& data);
 
     void applyTimeEffect(const Number& effect);
 
    private:
     void init();
 
-    bool onUpdate(Time dt);
+    void onUpdate(Time dt);
 
     void onDeath();
 
@@ -58,11 +58,11 @@ class PowerFireball : public Fireball {
     const WizardId mSrc, mTarget;
     int mFireballFreezeCnt = 1;
     float mSizeSum;
-    bool mCircle = false;
     float mTheta = 0;
     Number mPower, mDuration;
 
     ParameterSystem::ParameterSubscriptionPtr mRobotBoughtSub, mSynActiveSub;
+    SynergyBot::HitObservable::FbSubscriptionPtr mSynBotHitSub;
 };
 
 typedef std::unique_ptr<PowerFireball> PowerFireballPtr;

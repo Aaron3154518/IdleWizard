@@ -41,6 +41,8 @@ void WizardFireball::draw(TextureBuilder& tex) {
 }
 
 void WizardFireball::onDeath() {
+    Fireball::onDeath();
+
     mFireRingSub.reset();
     mCatalystHitSub.reset();
 

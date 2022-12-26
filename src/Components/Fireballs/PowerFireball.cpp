@@ -6,7 +6,8 @@ PowerFireball::GetHitObservable() {
     return ServiceSystem::Get<Service, HitObservable>();
 }
 
-PowerFireball::PowerFireball(SDL_FPoint c, WizardId target, const Data& data)
+PowerFireball::PowerFireball(SDL_FPoint c, WizardId target,
+                             const PowerFireballData& data)
     : Fireball(c, target),
       mSrc(data.src),
       mTarget(target),
@@ -21,10 +22,19 @@ PowerFireball::PowerFireball(SDL_FPoint c, WizardId target, const Data& data)
 void PowerFireball::init() {
     Fireball::init();
 
+    mSynBotHitSub = GetSynergyBotHitObservable()->subscribeFb(
+        mTarget,
+        [this]() -> PowerFireballData {
+            // TODO: Better separation of different deaths
+            Fireball::onDeath();
+            return getData();
+        },
+        mPos);
+
     auto it = RobotWizardDefs::SYN_TARGETS.find(mTarget);
     if (it != RobotWizardDefs::SYN_TARGETS.end()) {
-        mSynActiveSub =
-            it->second.subscribe([this](bool active) { mCircle = active; });
+        mSynActiveSub = it->second.subscribe(
+            [this](bool active) { mSynBotHitSub->setActive(active); });
     }
 
     switch (mSrc) {
@@ -38,9 +48,10 @@ void PowerFireball::init() {
     };
 }
 
-bool PowerFireball::onUpdate(Time dt) {
-    if (!mCircle) {
-        return Fireball::onUpdate(dt);
+void PowerFireball::onUpdate(Time dt) {
+    if (!mSynBotHitSub->isActive()) {
+        Fireball::onUpdate(dt);
+        return;
     }
 
     Rect target = GetSynergyBotPosObservable()->get(mTarget);
@@ -48,9 +59,9 @@ bool PowerFireball::onUpdate(Time dt) {
           dy = target.cY() - mPos->rect.cY();
     float d = sqrtf(dx * dx + dy * dy);
 
-    if (d <= COLLIDE_ERR) {
+    if (d <= COLLIDE_ERR && false) {
         onDeath();
-        return false;
+        return;
     }
 
     target = WizardSystem::GetWizardPos(mTargetId);
@@ -60,7 +71,8 @@ bool PowerFireball::onUpdate(Time dt) {
     float diag = sqrtf(powf(target.halfW(), 2) + powf(target.halfH(), 2));
 
     if (d >= diag) {
-        return Fireball::onUpdate(dt);
+        Fireball::onUpdate(dt);
+        return;
     }
 
     // Fireball::onUpdate(dt);
@@ -72,13 +84,15 @@ bool PowerFireball::onUpdate(Time dt) {
     // dy = ty - mPos->rect.cY();
     // d = sqrtf(dx * dx + dy * dy);
     // float maxSpeed = mSpeed * MAX_SPEED;
-
-    return true;
 }
 
-void PowerFireball::onDeath() { GetHitObservable()->next(mTargetId, *this); }
+void PowerFireball::onDeath() {
+    Fireball::onDeath();
 
-PowerFireball::Data PowerFireball::getData() const {
+    GetHitObservable()->next(mTargetId, *this);
+}
+
+PowerFireballData PowerFireball::getData() const {
     return {mPower, mDuration, mSize, mSpeed};
 }
 
@@ -92,7 +106,7 @@ void PowerFireball::setDuration(const Number& duration) {
     mDuration = duration;
 }
 
-void PowerFireball::addFireball(const Data& data) {
+void PowerFireball::addFireball(const PowerFireballData& data) {
     mFireballFreezeCnt++;
     mPower += data.power / mFireballFreezeCnt;
     switch (mTargetId) {

@@ -18,7 +18,7 @@ void Fireball::init() {
     launch(WizardSystem::GetWizardPos(mTargetId).getPos(Rect::Align::CENTER));
 }
 
-bool Fireball::onUpdate(Time dt) {
+void Fireball::onUpdate(Time dt) {
     float sec = dt.s();
     float aCoeff = sec * sec / 2;
 
@@ -30,7 +30,7 @@ bool Fireball::onUpdate(Time dt) {
     // Check in case we were moved onto the target
     if (d < COLLIDE_ERR) {
         onDeath();
-        return false;
+        return;
     }
 
     float maxSpeed = mSpeed * MAX_SPEED;
@@ -67,11 +67,9 @@ bool Fireball::onUpdate(Time dt) {
     imgR.move(moveX, moveY);
     mImg.setDest(imgR);
     mPos->rect = mImg.getDest();
-
-    return true;
 }
 void Fireball::draw(TextureBuilder& tex) { tex.draw(mImg); }
-void Fireball::onDeath() {}
+void Fireball::onDeath() { mDead = true; }
 
 void Fireball::launch(SDL_FPoint target) {
     // Start at half max speed
@@ -80,6 +78,8 @@ void Fireball::launch(SDL_FPoint target) {
     mV.x = dx * frac;
     mV.y = dy * frac;
 }
+
+bool Fireball::isDead() const { return mDead; }
 
 float Fireball::getSize() const { return mSize; }
 void Fireball::setSize(float size) {
@@ -141,10 +141,14 @@ void FireballListImpl::onResize(ResizeData data) {
 
 void FireballListImpl::onUpdate(Time dt) {
     for (auto it = mFireballs.begin(); it != mFireballs.end();) {
-        if ((*it)->onUpdate(dt)) {
-            ++it;
-        } else {
+        if (!(*it)->isDead()) {
+            (*it)->onUpdate(dt);
+        }
+
+        if ((*it)->isDead()) {
             it = mFireballs.erase(it);
+        } else {
+            ++it;
         }
     }
 }

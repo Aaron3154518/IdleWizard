@@ -53,7 +53,7 @@ class PoisonFireball : public Fireball {
    private:
     void init();
 
-    bool onUpdate(Time dt);
+    void onUpdate(Time dt);
 
     void onDeath();
 

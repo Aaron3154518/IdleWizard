@@ -69,7 +69,7 @@ class RobotWizard : public WizardBase {
     RenderAnimation mTpImg;
     std::unordered_map<WizardId, Portals> mPortals;
 
-    std::unordered_map<WizardId, PowerFireball::Data> mStoredFireballs;
+    std::unordered_map<WizardId, PowerFireballData> mStoredFireballs;
     RobotFireballListPtr mFireballs;
     UpgradeBotPtr mUpBot;
     std::unordered_map<WizardId, SynergyBotPtr> mSynBots;

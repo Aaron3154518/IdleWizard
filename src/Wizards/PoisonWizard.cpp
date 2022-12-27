@@ -144,7 +144,9 @@ void PoisonWizard::setParamTriggers() {
         }));
 
     mParamSubs.push_back(ParameterSystem::subscribe(
-        {}, {states[State::BoughtPoisWizCatPois]}, [this]() { setTargets(); }));
+        {},
+        {states[State::BoughtPoisWizCatPois], states[State::BoughtCatalyst]},
+        [this]() { setTargets(); }));
 }
 
 void PoisonWizard::onRender(SDL_Renderer* r) {
@@ -202,7 +204,8 @@ void PoisonWizard::setTargets() {
     ParameterSystem::States states;
 
     mTargets.clear();
-    if (states[State::BoughtPoisWizCatPois].get()) {
+    if (states[State::BoughtPoisWizCatPois].get() &&
+        states[State::BoughtCatalyst].get()) {
         mTargets.push_back(CATALYST);
     }
 }

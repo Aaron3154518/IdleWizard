@@ -94,10 +94,8 @@ bool beeline(Rect& pos, BeelineData& data, Time dt) {
         return true;
     }
 
-    float mX = fabsf(vX) * s * 150;
-    float mY = fabsf(dy) * s * 150 / mag;
-    pos.move(copysignf(fminf(fabs(dx), mX), dx),
-             copysignf(fminf(fabs(dy), mY), dy));
+    float frac = fminf(s * 150 / mag, 1);
+    pos.move(dx * frac, dy * frac);
 
     return false;
 }

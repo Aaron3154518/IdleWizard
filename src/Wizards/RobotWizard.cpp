@@ -199,7 +199,8 @@ void RobotWizard::onMoveUpdate(Time dt) {
         mMoveUpdateSub->setActive(false);
     } else {
         float frac = 100 * dt.s() / mag;
-        setPos(mPos->rect.cX() + dx * frac, mPos->rect.cY() + dy * frac);
+        setPos(mPos->rect.cX() + dx * fminf(frac, 1),
+               mPos->rect.cY() + dy * fminf(frac, 1));
     }
 }
 void RobotWizard::onRender(SDL_Renderer* r) {

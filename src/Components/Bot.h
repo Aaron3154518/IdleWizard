@@ -1,6 +1,7 @@
 #ifndef BOT_H
 #define BOT_H
 
+#include <Components/Fireballs/PowerFireball.h>
 #include <Components/UpgradeList.h>
 #include <RenderSystem/RenderTypes.h>
 #include <ServiceSystem/Component.h>
@@ -93,9 +94,6 @@ class UpgradeBot : public Component {
 
 typedef std::unique_ptr<UpgradeBot> UpgradeBotPtr;
 
-// Forward declaration
-class PowerFireballData;
-
 class SynergyBot : public Component {
    public:
     typedef TargetSystem::TargetObservable<WizardId, const PowerFireballData&>
@@ -133,7 +131,13 @@ class SynergyBot : public Component {
 
     void onRender(SDL_Renderer* r);
     void onUpdate(Time dt);
-    void onFbHit(const PowerFireballData& data);
+    bool onFbHit(const PowerFireball& fb);
+    void onTimeFreeze(bool frozen);
+
+    void resetFireball();
+
+    std::mt19937 gen = std::mt19937(rand());
+    std::uniform_real_distribution<float> rDist;
 
     UIComponentPtr mPos;
     RenderAnimation mImg;
@@ -142,10 +146,15 @@ class SynergyBot : public Component {
     BotAi::HoverData mHoverData;
     BotAi::BeelineData mBeelineData;
 
+    PowerFireballData mFireball;
+    PowerFireballListPtr mFireballs;
+
     RenderObservable::SubscriptionPtr mRenderSub;
     TimeSystem::UpdateObservable::SubscriptionPtr mUpdateSub;
     TimeSystem::TimerObservable::SubscriptionPtr mAnimTimerSub;
-    HitObservable::IdSubscriptionPtr mFbHitSub;
+    // HitObservable::IdSubscriptionPtr mFbHitSub;
+    PowerFireballList::HitObservable::SubscriptionPtr mFbHitSub;
+    ParameterSystem::ParameterSubscriptionPtr mFreezeSub;
 };
 
 typedef std::unique_ptr<SynergyBot> SynergyBotPtr;

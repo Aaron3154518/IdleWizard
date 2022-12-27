@@ -26,8 +26,6 @@ class FireRing : public Component {
     typedef Observable<void(const Number&), UIComponentPtr>
         FireballObservableBase;
     class FireballObservable : public FireballObservableBase {
-        friend class RingObservable;
-
        public:
         enum : uint8_t { FUNC = 0, DATA };
 
@@ -42,7 +40,7 @@ class FireRing : public Component {
         int mR;
     };
 
-    typedef FireballManager<FireRing::FireballObservable> HitObservable;
+    typedef FireballManager<FireballObservable> HitObservable;
 
     class Service : public ::Service<HitObservable> {};
 

@@ -290,6 +290,8 @@ SynergyBot::SynergyBot(WizardId id)
 }
 
 void SynergyBot::init() {
+    resetFireball();
+
     mImg.set(RobotWizardDefs::UP_BOT_IMG());
     Rect r = WizardSystem::GetWizardPosObservable()->get(mTarget);
     mPos->rect.setPos(r.cX(), r.cY(), Rect::Align::CENTER);
@@ -305,8 +307,11 @@ void SynergyBot::init() {
             return true;
         },
         RobotWizardDefs::UP_BOT_IMG());
-    mFbHitSub = GetSynergyBotHitObservable()->subscribe(
-        [this](const PowerFireballData& data) { onFbHit(data); }, mTarget);
+    mFbHitSub = PowerFireballList::GetHitObservable()->subscribe(
+        [this](const PowerFireball& fb) { return onFbHit(fb); }, mPos);
+
+    mFreezeSub = ParameterSystem::Param(State::TimeWizFrozen)
+                     .subscribe([this](bool frozen) { onTimeFreeze(frozen); });
 }
 
 void SynergyBot::onRender(SDL_Renderer* r) {
@@ -342,14 +347,48 @@ void SynergyBot::onUpdate(Time dt) {
     GetSynergyBotHitObservable()->next(mTarget, mPos->rect);
 }
 
-void SynergyBot::onFbHit(const PowerFireballData& data) {
-    std::cerr << "Wassup: " << data.power << std::endl;
-    // if (it == mStoredFireballs.end() ||
-    //     fireball.getPower() > it->second.power ||
-    //     fireball.getDuration() > it->second.duration) {
-    //     mStoredFireballs[target] = fireball.getData();
-    // }
+bool SynergyBot::onFbHit(const PowerFireball& fb) {
+    if (fb.getTargetId() != mTarget || fb.isFromBot()) {
+        return false;
+    }
+
+    auto data = fb.getData();
+    mFireball.power = max(mFireball.power, data.power);
+    mFireball.duration = max(mFireball.duration, data.duration);
+    mFireball.sizeFactor = fmaxf(mFireball.sizeFactor, data.sizeFactor);
+
+    return true;
 }
+
+void SynergyBot::onTimeFreeze(bool frozen) {
+    // Make sure we actually have a fireball
+    if (mFireball.power == 0) {
+        return;
+    }
+
+    // Make sure we have a valid target
+    if (frozen && mTarget != WIZARD) {
+        return;
+    }
+    if (!frozen && mTarget != CRYSTAL && mTarget != TIME_WIZARD) {
+        return;
+    }
+
+    Rect pos = WizardSystem::GetWizardPos(mTarget);
+    SDL_FPoint p{pos.cX() - (mPos->rect.w() * (rDist(gen) * .5f + .5f)),
+                 pos.cY() + (mPos->rect.h() * (rDist(gen) * 1.f - .5f))};
+    mFireballs->push_back(
+        ComponentFactory<PowerFireball>::New(p, mTarget, mFireball));
+    resetFireball();
+
+    // Setup portals
+    float w = mPos->rect.minDim();
+    Rect r(0, 0, w, w);
+    r.setPos(p.x, p.y, Rect::Align::CENTER);
+    // mPortals[it->first].start(r);
+}
+
+void SynergyBot::resetFireball() { mFireball = {0, 0}; }
 
 void SynergyBot::setPos(float x, float y) {
     mPos->rect.setPos(x, y, Rect::Align::CENTER);

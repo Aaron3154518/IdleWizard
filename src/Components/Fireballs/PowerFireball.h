@@ -1,7 +1,7 @@
 #ifndef POWER_WIZ_FIREBALL_H
 #define POWER_WIZ_FIREBALL_H
 
-#include <Components/Bot.h>
+// #include <Components/Bot.h>
 #include <Components/FireRing.h>
 #include <Components/Fireballs/Fireball.h>
 #include <ServiceSystem/Observable.h>
@@ -18,6 +18,7 @@
 struct PowerFireballData {
     Number power, duration;
     float sizeFactor = 1, speed = .65;
+    bool fromBot = false;
 };
 
 class PowerFireball : public Fireball {
@@ -40,7 +41,7 @@ class PowerFireball : public Fireball {
     const Number& getDuration() const;
     void setDuration(const Number& duration);
 
-    WizardId getTarget() const;
+    bool isFromBot() const;
 
     void addFireball(const PowerFireballData& data);
 
@@ -53,13 +54,13 @@ class PowerFireball : public Fireball {
 
     void onDeath();
 
+    const bool mFromBot;
     int mFireballFreezeCnt = 1;
     float mSizeSum;
-    float mTheta = 0;
     Number mPower, mDuration;
 
     ParameterSystem::ParameterSubscriptionPtr mRobotBoughtSub, mSynActiveSub;
-    SynergyBot::HitObservable::FbSubscriptionPtr mSynBotHitSub;
+    // SynergyBot::HitObservable::FbSubscriptionPtr mSynBotHitSub;
 };
 
 typedef std::unique_ptr<PowerFireball> PowerFireballPtr;

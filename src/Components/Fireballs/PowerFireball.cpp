@@ -1,17 +1,18 @@
 #include "PowerFireball.h"
 
-// PowerFireball
 std::shared_ptr<PowerFireball::HitObservable>
 PowerFireball::GetHitObservable() {
     return ServiceSystem::Get<Service, HitObservable>();
 }
 
+// PowerFireball
 PowerFireball::PowerFireball(SDL_FPoint c, WizardId target,
                              const PowerFireballData& data)
     : Fireball(c, target),
       mSizeSum(data.sizeFactor),
       mPower(data.power),
-      mDuration(data.duration) {
+      mDuration(data.duration),
+      mFromBot(data.fromBot) {
     setSize(data.sizeFactor);
     setSpeed(data.speed);
     setImg(IconSystem::Get(PowerWizardDefs::FB_IMG()));
@@ -20,28 +21,30 @@ PowerFireball::PowerFireball(SDL_FPoint c, WizardId target,
 void PowerFireball::init() {
     Fireball::init();
 
-    mSynBotHitSub = GetSynergyBotHitObservable()->subscribeFb(
-        mTargetId,
-        [this]() -> PowerFireballData {
-            // TODO: Better separation of different deaths
-            Fireball::onDeath();
-            return getData();
-        },
-        mPos);
-    mSynBotHitSub->setActive(false);
+    if (!mFromBot) {
+        // mSynBotHitSub = GetSynergyBotHitObservable()->subscribeFb(
+        //     mTargetId,
+        //     [this]() -> PowerFireballData {
+        //         // TODO: Better separation of different deaths
+        //         Fireball::onDeath();
+        //         return getData();
+        //     },
+        //     mPos);
+        // mSynBotHitSub->setActive(false);
 
-    auto it = RobotWizardDefs::SYN_TARGETS.find(mTargetId);
-    if (it != RobotWizardDefs::SYN_TARGETS.end()) {
-        mSynActiveSub = it->second.subscribe(
-            [this](bool active) { mSynBotHitSub->setActive(active); });
+        // auto it = RobotWizardDefs::SYN_TARGETS.find(mTargetId);
+        // if (it != RobotWizardDefs::SYN_TARGETS.end()) {
+        //     mSynActiveSub = it->second.subscribe(
+        //         [this](bool active) { mSynBotHitSub->setActive(active); });
+        // }
     }
 }
 
 void PowerFireball::onUpdate(Time dt) {
-    if (!mSynBotHitSub->isActive()) {
-        Fireball::onUpdate(dt);
-        return;
-    }
+    // if (!mSynBotHitSub || !mSynBotHitSub->isActive()) {
+    //     Fireball::onUpdate(dt);
+    //     return;
+    // }
 
     Rect target = WizardSystem::GetWizardPos(mTargetId);
     float dx = target.cX() - mPos->rect.cX(),
@@ -64,10 +67,8 @@ void PowerFireball::onDeath() {
 }
 
 PowerFireballData PowerFireball::getData() const {
-    return {mPower, mDuration, mSize, mSpeed};
+    return {mPower, mDuration, mSize, mSpeed, mFromBot};
 }
-
-WizardId PowerFireball::getTarget() const { return mTargetId; }
 
 const Number& PowerFireball::getPower() const { return mPower; }
 void PowerFireball::setPower(const Number& pow) { mPower = pow; }
@@ -76,6 +77,8 @@ const Number& PowerFireball::getDuration() const { return mDuration; }
 void PowerFireball::setDuration(const Number& duration) {
     mDuration = duration;
 }
+
+bool PowerFireball::isFromBot() const { return mFromBot; }
 
 void PowerFireball::addFireball(const PowerFireballData& data) {
     mFireballFreezeCnt++;

@@ -22,6 +22,8 @@
 
 class Fireball : public Component {
     friend class FireballListImpl;
+    template <class FbT>
+    friend class FireballList;
 
    public:
     const static Rect IMG_RECT;
@@ -42,6 +44,7 @@ class Fireball : public Component {
     float getSpeed() const;
     void setSpeed(float speed);
 
+    Rect getPos() const;
     void setPos(float x, float y);
 
     void setImg(const RenderTextureCPtr& img);
@@ -98,9 +101,9 @@ class FireballListImpl : public Component {
     FBVector mFireballs;
 };
 
-template <class T>
+template <class FbT>
 class FireballList : public FireballListImpl {
-    static_assert(std::is_base_of<Fireball, T>::value,
+    static_assert(std::is_base_of<Fireball, FbT>::value,
                   "FireballList template must inherit from Fireball");
 
     class iterator {
@@ -114,8 +117,8 @@ class FireballList : public FireballListImpl {
 
         bool operator!=(const iterator& rhs) { return mIt != rhs.mIt; }
 
-        T& operator*() {
-            T* ptr = static_cast<T*>(mIt->get());
+        FbT& operator*() {
+            FbT* ptr = static_cast<FbT*>(mIt->get());
             if (!ptr) {
                 throw std::runtime_error(
                     "FireballListImpl could not convert entry to correct "
@@ -129,26 +132,67 @@ class FireballList : public FireballListImpl {
     };
 
    public:
+    // This is just a list of people that want fb hits
+    typedef Observable<bool(const FbT&), UIComponentPtr> HitObservableBase;
+    class HitObservable : public HitObservableBase {
+       public:
+        enum { ON_HIT = 0, POS };
+
+        bool next(const FbT& fb) {
+            for (auto sub : *this) {
+                Rect fbPos = fb.getPos();
+                Rect tPos = sub->template get<POS>()->rect;
+                float dx = tPos.cX() - fbPos.cX(), dy = tPos.cY() - fbPos.cY();
+                if (sqrtf(dx * dx + dy * dy) < 1e-5) {
+                    return sub->template get<ON_HIT>()(fb);
+                }
+            }
+
+            return false;
+        }
+    };
+
+    static std::shared_ptr<HitObservable> GetHitObservable();
+
     virtual ~FireballList() = default;
 
     iterator begin() { return iterator(mFireballs.begin()); }
     iterator end() { return iterator(mFireballs.end()); }
 
-    virtual void push_back(std::unique_ptr<T> fb) {
+    virtual void push_back(std::unique_ptr<FbT> fb) {
         mFireballs.push_back(std::move(fb));
     }
 
-    T& back() {
+    FbT& back() {
         if (mFireballs.empty()) {
             throw std::runtime_error("FireballListImpl::back(): list is empty");
         }
         return *iterator(mFireballs.end() - 1);
     }
 
-   private:
+   protected:
+    virtual void onUpdate(Time dt) {
+        auto hitObs = GetHitObservable();
+        for (auto it = mFireballs.begin(); it != mFireballs.end();) {
+            if ((*it)->isDead() || hitObs->next(*iterator(it))) {
+                it = mFireballs.erase(it);
+            } else {
+                (*it)->onUpdate(dt);
+                ++it;
+            }
+        }
+    }
 };
 
-template <class T>
-using FireballListPtr = std::unique_ptr<FireballList<T>>;
+template <class FbT>
+class FireballService
+    : public Service<typename FireballList<FbT>::HitObservable> {};
+
+template <class FbT>
+inline std::shared_ptr<typename FireballList<FbT>::HitObservable>
+FireballList<FbT>::GetHitObservable() {
+    return ServiceSystem::Get<FireballService<FbT>,
+                              FireballList<FbT>::HitObservable>();
+}
 
 #endif

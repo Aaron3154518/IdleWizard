@@ -19,16 +19,16 @@ void Fireball::init() {
 }
 
 void Fireball::onUpdate(Time dt) {
-    SDL_FPoint target =
-        WizardSystem::GetWizardPos(mTargetId).getPos(Rect::Align::CENTER);
-    float dx = target.x - mPos->rect.cX(), dy = target.y - mPos->rect.cY();
-    float d = sqrtf(dx * dx + dy * dy);
+    // SDL_FPoint target =
+    //     WizardSystem::GetWizardPos(mTargetId).getPos(Rect::Align::CENTER);
+    // float dx = target.x - mPos->rect.cX(), dy = target.y - mPos->rect.cY();
+    // float d = sqrtf(dx * dx + dy * dy);
 
-    // Check in case we were moved onto the target
-    if (d < COLLIDE_ERR) {
-        onDeath();
-        return;
-    }
+    // // Check in case we were moved onto the target
+    // if (d < COLLIDE_ERR) {
+    //     onDeath();
+    //     return;
+    // }
 
     move(dt);
 }
@@ -102,6 +102,7 @@ void Fireball::setSize(float size) {
 float Fireball::getSpeed() const { return mSpeed; }
 void Fireball::setSpeed(float speed) { mSpeed = speed; }
 
+Rect Fireball::getPos() const { return mPos->rect; }
 void Fireball::setPos(float x, float y) {
     Rect imgR = mImg.getRect();
     imgR.setPos(x, y, Rect::Align::CENTER);
@@ -148,17 +149,17 @@ void FireballListImpl::onResize(ResizeData data) {
 }
 
 void FireballListImpl::onUpdate(Time dt) {
-    for (auto it = mFireballs.begin(); it != mFireballs.end();) {
-        if (!(*it)->isDead()) {
-            (*it)->onUpdate(dt);
-        }
+    //     for (auto it = mFireballs.begin(); it != mFireballs.end();) {
+    //         if (!(*it)->isDead()) {
+    //             (*it)->onUpdate(dt);
+    //         }
 
-        if ((*it)->isDead()) {
-            it = mFireballs.erase(it);
-        } else {
-            ++it;
-        }
-    }
+    //         if ((*it)->isDead()) {
+    //             it = mFireballs.erase(it);
+    //         } else {
+    //             ++it;
+    //         }
+    //     }
 }
 
 void FireballListImpl::onRender(SDL_Renderer* renderer) {
@@ -167,3 +168,5 @@ void FireballListImpl::onRender(SDL_Renderer* renderer) {
         fb->draw(tex);
     }
 }
+
+// FireballList::HitObservable

@@ -5,6 +5,7 @@
 #include <Wizards/WizardIds.h>
 
 #include <type_traits>
+#include <unordered_map>
 
 namespace TargetSystem {
 // Observable for triggering events for a specific type

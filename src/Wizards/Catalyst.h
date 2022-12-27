@@ -47,8 +47,8 @@ class Catalyst : public WizardBase {
     void setPos(float x, float y);
 
     TimeSystem::TimerObservable::SubscriptionPtr mAnimTimerSub;
-    WizardFireball::HitObservable::IdSubscriptionPtr mWizFireballSub;
-    PoisonFireball::HitObservable::IdSubscriptionPtr mPoisFireballSub;
+    WizardFireballList::HitObservable::SubscriptionPtr mWizFireballSub;
+    PoisonFireballList::HitObservable::SubscriptionPtr mPoisFireballSub;
     WizardSystem::CatalystMagicObservable::SubscriptionPtr mMagicSub;
     UpgradeList::SubscriptionPtr mMagicEffectDisplay, mRangeUp, mZapCntUp,
         mZapperCntUp, mShardUp, mGainUp1, mGainUp2, mFbCountUp, mMultUp;

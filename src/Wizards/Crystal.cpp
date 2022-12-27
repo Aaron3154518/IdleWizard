@@ -39,10 +39,18 @@ void Crystal::init() {
     setPos(screenDim.x / 2, screenDim.y / 2);
 }
 void Crystal::setSubscriptions() {
-    mWizFireballHitSub = WizardFireball::GetHitObservable()->subscribe(
-        [this](const WizardFireball& f) { onWizFireballHit(f); }, mId);
-    mPowFireballHitSub = PowerFireball::GetHitObservable()->subscribe(
-        [this](const PowerFireball& f) { onPowFireballHit(f); }, mId);
+    mWizFireballHitSub = WizardFireballList::GetHitObservable()->subscribe(
+        [this](const WizardFireball& fb) { onWizFireballHit(fb); },
+        [this](const WizardFireball& fb) {
+            return RobotWizardDefs::fireballFilter(fb, mId);
+        },
+        mPos);
+    mPowFireballHitSub = PowerFireballList::GetHitObservable()->subscribe(
+        [this](const PowerFireball& fb) { onPowFireballHit(fb); },
+        [this](const PowerFireball& fb) {
+            return RobotWizardDefs::powerFireballFilter(fb, mId);
+        },
+        mPos);
     mAnimTimerSub = TimeSystem::GetTimerObservable()->subscribe(
         [this](Timer& t) {
             mImg->nextFrame();

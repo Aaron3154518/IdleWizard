@@ -30,13 +30,6 @@ class PoisonFireball : public Fireball {
         int timer;
     };
 
-    typedef TargetSystem::TargetObservable<WizardId, const PoisonFireball&>
-        HitObservable;
-
-    class Service : public ::Service<HitObservable> {};
-
-    static std::shared_ptr<HitObservable> GetHitObservable();
-
    public:
     PoisonFireball(SDL_FPoint c, WizardId target, const Data& data);
 
@@ -54,8 +47,6 @@ class PoisonFireball : public Fireball {
     void init();
 
     void onUpdate(Time dt);
-
-    void onDeath();
 
     std::mt19937 gen = std::mt19937(rand());
     std::uniform_real_distribution<float> rDist;

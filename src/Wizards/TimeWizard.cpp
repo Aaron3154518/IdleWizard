@@ -32,9 +32,12 @@ void TimeWizard::setSubscriptions() {
             TimeWizardDefs::IMG());
     mT1ResetSub = WizardSystem::GetWizardEventObservable()->subscribe(
         [this]() { onT1Reset(); }, WizardSystem::Event::ResetT1);
-    mPowFireballHitSub = PowerFireball::GetHitObservable()->subscribe(
-        [this](const PowerFireball& fireball) { onPowFireballHit(fireball); },
-        mId);
+    mPowFireballHitSub = PowerFireballList::GetHitObservable()->subscribe(
+        [this](const PowerFireball& fb) { onPowFireballHit(fb); },
+        [this](const PowerFireball& fb) {
+            return RobotWizardDefs::powerFireballFilter(fb, mId);
+        },
+        mPos);
     mGlobHitSub =
         Glob::GetHitObservable()->subscribe([this]() { onGlobHit(); }, mPos);
     attachSubToVisibility(mCostTimerSub);

@@ -3,11 +3,6 @@
 #include <Systems/WizardSystem/MagicObservables.h>
 
 // WizardFireball
-std::shared_ptr<WizardFireball::HitObservable>
-WizardFireball::GetHitObservable() {
-    return ServiceSystem::Get<Service, HitObservable>();
-}
-
 WizardFireball::WizardFireball(SDL_FPoint c, WizardId target, const Data& data)
     : Fireball(c, target),
       mSizeSum(data.sizeFactor),
@@ -38,15 +33,6 @@ void WizardFireball::draw(TextureBuilder& tex) {
     mOuterImg.setDest(mImg.getRect());
     mOuterImg.setRotationDeg(mImg.getRotationDeg());
     tex.draw(mOuterImg);
-}
-
-void WizardFireball::onDeath() {
-    Fireball::onDeath();
-
-    mFireRingSub.reset();
-    mCatalystHitSub.reset();
-
-    GetHitObservable()->next(mTargetId, *this);
 }
 
 void WizardFireball::onFireRingHit(const Number& effect) {

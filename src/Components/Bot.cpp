@@ -304,7 +304,7 @@ void SynergyBot::init() {
         },
         RobotWizardDefs::UP_BOT_IMG());
     mFbHitSub = PowerFireballList::GetHitObservable()->subscribe(
-        [this](const PowerFireball& fb) { return onFbHit(fb); },
+        [this](const PowerFireball& fb) { onFbHit(fb); },
         [this](const PowerFireball& fb) { return fireballFilter(fb); }, mPos);
     mFbPosSub = PowerFireballList::GetPosObservable()->subscribe(
         [this](const PowerFireballList& list) { onFbPos(list); });
@@ -335,7 +335,7 @@ void SynergyBot::onUpdate(Time dt) {
     }
 }
 
-bool SynergyBot::onFbHit(const PowerFireball& fb) {
+void SynergyBot::onFbHit(const PowerFireball& fb) {
     auto data = fb.getData();
     if (mFireball) {
         auto currData = mFireball->getData();
@@ -345,8 +345,6 @@ bool SynergyBot::onFbHit(const PowerFireball& fb) {
     }
     mFireball =
         ComponentFactory<PowerFireball>::New(SDL_FPoint{}, mTarget, data);
-
-    return true;
 }
 
 void SynergyBot::onFbPos(const PowerFireballList& list) {

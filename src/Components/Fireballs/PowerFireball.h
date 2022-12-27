@@ -11,7 +11,6 @@
 #include <Systems/TargetSystem.h>
 #include <Utils/Number.h>
 #include <Wizards/Definitions/PowerWizardDefs.h>
-#include <Wizards/Definitions/RobotWizardDefs.h>
 
 #include <memory>
 
@@ -22,14 +21,6 @@ struct PowerFireballData {
 };
 
 class PowerFireball : public Fireball {
-   public:
-    typedef TargetSystem::TargetObservable<WizardId, const PowerFireball&>
-        HitObservable;
-
-    class Service : public ::Service<HitObservable> {};
-
-    static std::shared_ptr<HitObservable> GetHitObservable();
-
    public:
     PowerFireball(SDL_FPoint c, WizardId target, const PowerFireballData& data);
 
@@ -48,12 +39,6 @@ class PowerFireball : public Fireball {
     void applyTimeEffect(const Number& effect);
 
    private:
-    void init();
-
-    void onUpdate(Time dt);
-
-    void onDeath();
-
     const bool mFromBot;
     int mFireballFreezeCnt = 1;
     float mSizeSum;

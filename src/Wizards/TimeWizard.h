@@ -46,6 +46,7 @@ class TimeWizard : public WizardBase {
     void onT1Reset();
     void onFreezeChange(bool frozen);
     void onPowFireballHit(const PowerFireball& fireball);
+    bool powFireballFilter(const PowerFireball& fireball);
     void onGlobHit();
 
     Number calcFreezeEffect();
@@ -60,7 +61,7 @@ class TimeWizard : public WizardBase {
     bool mActive = false;
 
     WizardSystem::WizardEventObservable::IdSubscriptionPtr mT1ResetSub;
-    PowerFireball::HitObservable::IdSubscriptionPtr mPowFireballHitSub;
+    PowerFireballList::HitObservable::SubscriptionPtr mPowFireballHitSub;
     TimerObservable::SubscriptionPtr mCostTimerSub, mFreezeDelaySub,
         mFreezeTimerSub, mAnimTimerSub;
     UpgradeList::SubscriptionPtr mEffectDisplay, mActiveUp, mFBSpeedUp,

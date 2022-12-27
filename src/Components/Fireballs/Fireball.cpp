@@ -1,7 +1,7 @@
 #include "Fireball.h"
 
 // Fireball
-const int Fireball::COLLIDE_ERR = 10, Fireball::MAX_SPEED = 150;
+const int Fireball::MAX_SPEED = 150;
 
 const Rect Fireball::IMG_RECT(0, 0, 40, 40);
 
@@ -18,21 +18,7 @@ void Fireball::init() {
     launch(WizardSystem::GetWizardPos(mTargetId).getPos(Rect::Align::CENTER));
 }
 
-void Fireball::onUpdate(Time dt) {
-    // SDL_FPoint target =
-    //     WizardSystem::GetWizardPos(mTargetId).getPos(Rect::Align::CENTER);
-    // float dx = target.x - mPos->rect.cX(), dy = target.y - mPos->rect.cY();
-    // float d = sqrtf(dx * dx + dy * dy);
-
-    // // Check in case we were moved onto the target
-    // if (d < COLLIDE_ERR) {
-    //     onDeath();
-    //     return;
-    // }
-
-    move(dt);
-}
-void Fireball::onDeath() { mDead = true; }
+void Fireball::onUpdate(Time dt) { move(dt); }
 
 void Fireball::move(Time dt) {
     float sec = dt.s();
@@ -86,8 +72,6 @@ void Fireball::launch(SDL_FPoint target) {
     mV.x = dx * frac;
     mV.y = dy * frac;
 }
-
-bool Fireball::isDead() const { return mDead; }
 
 float Fireball::getSize() const { return mSize; }
 void Fireball::setSize(float size) {

@@ -72,7 +72,7 @@ class Wizard : public WizardBase {
     TimerObservable::SubscriptionPtr mFireballTimerSub;
     TimeSystem::TimerObservable::SubscriptionPtr mPowWizTimerSub, mAnimTimerSub,
         mPowBkAnimTimerSub;
-    PowerFireball::HitObservable::IdSubscriptionPtr mPowFireballHitSub;
+    PowerFireballList::HitObservable::SubscriptionPtr mPowFireballHitSub;
     WizardSystem::HideObservable::AllSubscriptionPtr mTargetHideSub;
     WizardSystem::WizardEventObservable::IdSubscriptionPtr mT1ResetSub,
         mTimeWarpSub;

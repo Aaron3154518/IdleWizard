@@ -1,5 +1,8 @@
 #include "RobotWizardDefs.h"
 
+#include <Components/Fireballs/Fireball.h>
+#include <Components/Fireballs/PowerFireball.h>
+
 namespace RobotWizardDefs {
 const std::vector<WizardId> UP_TARGETS{CRYSTAL, WIZARD, POWER_WIZARD,
                                        TIME_WIZARD};
@@ -28,6 +31,24 @@ const AnimationData& PORTAL_BOT() {
     return PORTAL_BOT;
 }
 
+bool powerFireballFilter(const PowerFireball& fb, WizardId id) {
+    if (fb.getTargetId() != id) {
+        return false;
+    }
+
+    // If synergy is active, fireball must be from bot
+    auto it = SYN_TARGETS.find(id);
+    if (it != SYN_TARGETS.end() && it->second.get() && !fb.isFromBot()) {
+        return false;
+    }
+
+    return true;
+}
+
+bool fireballFilter(const Fireball& fb, WizardId id) {
+    return fb.getTargetId() == id;
+}
+
 void setDefaults() {
     using WizardSystem::Event;
 
@@ -39,7 +60,7 @@ void setDefaults() {
 
     ParameterSystem::States states;
 
-    states[State::CrysSynBotActive]->init(true);
+    states[State::CrysSynBotActive]->init(false);
     states[State::WizSynBotActive]->init(true);
     states[State::TimeWizSynBotActive]->init(true);
 }

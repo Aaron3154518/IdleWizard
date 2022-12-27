@@ -105,7 +105,7 @@ class SynergyBot : public Component {
 
     void onRender(SDL_Renderer* r);
     void onUpdate(Time dt);
-    bool onFbHit(const PowerFireball& fb);
+    void onFbHit(const PowerFireball& fb);
     void onFbPos(const PowerFireballList& list);
     void onTimeFreeze(bool frozen);
 

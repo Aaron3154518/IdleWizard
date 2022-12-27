@@ -1,11 +1,6 @@
 #include "PoisonFireball.h"
 
 // PoisonFireball
-std::shared_ptr<PoisonFireball::HitObservable>
-PoisonFireball::GetHitObservable() {
-    return ServiceSystem::Get<Service, HitObservable>();
-}
-
 PoisonFireball::PoisonFireball(SDL_FPoint c, WizardId target, const Data& data)
     : Fireball(c, target),
       mSizeSum(data.sizeFactor),
@@ -64,14 +59,6 @@ void PoisonFireball::draw(TextureBuilder& tex) {
     }
 
     Fireball::draw(tex);
-}
-
-void PoisonFireball::onDeath() {
-    Fireball::onDeath();
-
-    GetHitObservable()->next(mTargetId, *this);
-
-    mBubbles.clear();
 }
 
 const Number& PoisonFireball::getPower() const { return mPower; }

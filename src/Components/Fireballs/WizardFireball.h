@@ -12,14 +12,6 @@ class WizardFireball : public Fireball {
     friend class WizardFireballList;
 
    public:
-    typedef TargetSystem::TargetObservable<WizardId, const WizardFireball&>
-        HitObservable;
-
-    class Service : public ::Service<HitObservable> {};
-
-    static std::shared_ptr<HitObservable> GetHitObservable();
-
-   public:
     struct Data {
         Number power;
         float sizeFactor = 1, speed = 1;
@@ -47,7 +39,6 @@ class WizardFireball : public Fireball {
    private:
     void init();
 
-    void onDeath();
     void onFireRingHit(const Number& effect);
     void onCatalystHit(bool poisoned);
 

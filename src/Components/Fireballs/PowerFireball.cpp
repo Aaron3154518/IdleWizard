@@ -1,10 +1,5 @@
 #include "PowerFireball.h"
 
-std::shared_ptr<PowerFireball::HitObservable>
-PowerFireball::GetHitObservable() {
-    return ServiceSystem::Get<Service, HitObservable>();
-}
-
 // PowerFireball
 PowerFireball::PowerFireball(SDL_FPoint c, WizardId target,
                              const PowerFireballData& data)
@@ -16,54 +11,6 @@ PowerFireball::PowerFireball(SDL_FPoint c, WizardId target,
     setSize(data.sizeFactor);
     setSpeed(data.speed);
     setImg(IconSystem::Get(PowerWizardDefs::FB_IMG()));
-}
-
-void PowerFireball::init() {
-    Fireball::init();
-
-    if (!mFromBot) {
-        // mSynBotHitSub = GetSynergyBotHitObservable()->subscribeFb(
-        //     mTargetId,
-        //     [this]() -> PowerFireballData {
-        //         // TODO: Better separation of different deaths
-        //         Fireball::onDeath();
-        //         return getData();
-        //     },
-        //     mPos);
-        // mSynBotHitSub->setActive(false);
-
-        // auto it = RobotWizardDefs::SYN_TARGETS.find(mTargetId);
-        // if (it != RobotWizardDefs::SYN_TARGETS.end()) {
-        //     mSynActiveSub = it->second.subscribe(
-        //         [this](bool active) { mSynBotHitSub->setActive(active); });
-        // }
-    }
-}
-
-void PowerFireball::onUpdate(Time dt) {
-    // if (!mSynBotHitSub || !mSynBotHitSub->isActive()) {
-    //     Fireball::onUpdate(dt);
-    //     return;
-    // }
-
-    Rect target = WizardSystem::GetWizardPos(mTargetId);
-    float dx = target.cX() - mPos->rect.cX(),
-          dy = target.cY() - mPos->rect.cY();
-    float d = sqrtf(dx * dx + dy * dy);
-    float diag = sqrtf(powf(target.halfW(), 2) + powf(target.halfH(), 2));
-
-    if (d >= diag) {
-        Fireball::onUpdate(dt);
-        return;
-    }
-
-    move(dt);
-}
-
-void PowerFireball::onDeath() {
-    Fireball::onDeath();
-
-    GetHitObservable()->next(mTargetId, *this);
 }
 
 PowerFireballData PowerFireball::getData() const {

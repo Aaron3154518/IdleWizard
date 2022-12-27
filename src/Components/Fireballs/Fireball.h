@@ -27,7 +27,7 @@ class Fireball : public Component {
 
    public:
     const static Rect IMG_RECT;
-    const static int COLLIDE_ERR, MAX_SPEED;
+    const static int MAX_SPEED;
 
     Fireball(SDL_FPoint c, WizardId target);
     virtual ~Fireball() = default;
@@ -35,8 +35,6 @@ class Fireball : public Component {
     virtual void draw(TextureBuilder& tex);
 
     void launch(SDL_FPoint target);
-
-    bool isDead() const;
 
     float getSize() const;
     void setSize(float size);
@@ -55,13 +53,11 @@ class Fireball : public Component {
     virtual void init();
 
     virtual void onUpdate(Time dt);
-    virtual void onDeath();
 
     void move(Time dt);
 
     WizardId mTargetId;
 
-    bool mDead = false;
     float mSize = 1, mSpeed = 1;
     UIComponentPtr mPos;
     SDL_FPoint mV{0, 0}, mA{0, 0};
@@ -157,7 +153,7 @@ class FireballList : public FireballListImpl {
 
    public:
     // Subscribe to collide with fireballs
-    typedef Observable<bool(const FbT&), bool(const FbT&), UIComponentPtr>
+    typedef Observable<void(const FbT&), bool(const FbT&), UIComponentPtr>
         HitObservableBase;
     class HitObservable : public HitObservableBase {
        public:
@@ -165,7 +161,7 @@ class FireballList : public FireballListImpl {
 
         using HitObservableBase::subscribe;
         typename HitObservableBase::SubscriptionPtr subscribe(
-            std::function<bool(const FbT&)> onHit, UIComponentPtr pos) {
+            std::function<void(const FbT&)> onHit, UIComponentPtr pos) {
             return subscribe(
                 onHit, []() { return true; }, pos);
         }
@@ -179,11 +175,12 @@ class FireballList : public FireballListImpl {
                 Rect fbPos = fb.getPos();
                 Rect tPos = sub->template get<POS>()->rect;
                 float dx = tPos.cX() - fbPos.cX(), dy = tPos.cY() - fbPos.cY();
-                if (sqrtf(dx * dx + dy * dy) > 1e-5) {
+                if (sqrtf(dx * dx + dy * dy) > 10) {
                     continue;
                 }
 
-                return sub->template get<ON_HIT>()(fb);
+                sub->template get<ON_HIT>()(fb);
+                return true;
             }
 
             return false;
@@ -227,7 +224,7 @@ class FireballList : public FireballListImpl {
     virtual void onUpdate(Time dt) {
         auto hitObs = GetHitObservable();
         for (auto it = mFireballs.begin(); it != mFireballs.end();) {
-            if ((*it)->isDead() || hitObs->next(*iterator(it))) {
+            if (hitObs->next(*iterator(it))) {
                 it = mFireballs.erase(it);
             } else {
                 (*it)->onUpdate(dt);

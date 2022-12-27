@@ -27,10 +27,18 @@ void Catalyst::init() {
     WizardBase::init();
 }
 void Catalyst::setSubscriptions() {
-    mWizFireballSub = WizardFireball::GetHitObservable()->subscribe(
-        [this](const WizardFireball& f) { onWizFireballHit(f); }, mId);
-    mPoisFireballSub = PoisonFireball::GetHitObservable()->subscribe(
-        [this](const PoisonFireball& f) { onPoisFireballHit(f); }, mId);
+    mWizFireballSub = WizardFireballList::GetHitObservable()->subscribe(
+        [this](const WizardFireball& fb) { onWizFireballHit(fb); },
+        [this](const WizardFireball& fb) {
+            return RobotWizardDefs::fireballFilter(fb, mId);
+        },
+        mPos);
+    mPoisFireballSub = PoisonFireballList::GetHitObservable()->subscribe(
+        [this](const PoisonFireball& fb) { onPoisFireballHit(fb); },
+        [this](const PoisonFireball& fb) {
+            return RobotWizardDefs::fireballFilter(fb, mId);
+        },
+        mPos);
     mMagicSub = WizardSystem::GetCatalystMagicObservable()->subscribe(
         [this](const Number& amnt) { onMagic(amnt); });
     attachSubToVisibility(mWizFireballSub);

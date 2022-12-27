@@ -50,6 +50,7 @@ class Crystal : public WizardBase {
     void onT1Reset();
     void onWizFireballHit(const WizardFireball& fireball);
     void onPowFireballHit(const PowerFireball& fireball);
+    bool powFireballFilter(const PowerFireball& fireball);
     bool onGlowTimer(Timer& t);
     bool onGlowFinishTimer(Timer& t, const Number& magic);
     bool onPoisonTimer(Timer& t);
@@ -71,8 +72,8 @@ class Crystal : public WizardBase {
 
     TimeSystem::TimerObservable::SubscriptionPtr mAnimTimerSub, mGlowTimerSub,
         mGlowFinishTimerSub, mGlowAnimTimerSub, mPoisonTimerSub;
-    WizardFireball::HitObservable::IdSubscriptionPtr mWizFireballHitSub;
-    PowerFireball::HitObservable::IdSubscriptionPtr mPowFireballHitSub;
+    WizardFireballList::HitObservable::SubscriptionPtr mWizFireballHitSub;
+    PowerFireballList::HitObservable::SubscriptionPtr mPowFireballHitSub;
     WizardSystem::WizardEventObservable::IdSubscriptionPtr mT1ResetSub;
     UpgradeList::SubscriptionPtr mMagicEffectDisplay, mWizCntUp, mGlowUp,
         mPowWizBuy, mTimeWizBuy, mCatalystBuy, mPoisWizBuy, mRobotBuy;

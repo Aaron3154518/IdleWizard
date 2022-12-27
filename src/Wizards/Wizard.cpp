@@ -19,8 +19,12 @@ void Wizard::setSubscriptions() {
     mFireballTimerSub =
         ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
             [this](Timer& t) { return onTimer(t); }, Timer(1000));
-    mPowFireballHitSub = PowerFireball::GetHitObservable()->subscribe(
-        [this](const PowerFireball& f) { onPowFireballHit(f); }, mId);
+    mPowFireballHitSub = PowerFireballList::GetHitObservable()->subscribe(
+        [this](const PowerFireball& fb) { onPowFireballHit(fb); },
+        [this](const PowerFireball& fb) {
+            return RobotWizardDefs::powerFireballFilter(fb, mId);
+        },
+        mPos);
     mAnimTimerSub = TimeSystem::GetTimerObservable()->subscribe(
         [this](Timer& t) {
             mImg->nextFrame();

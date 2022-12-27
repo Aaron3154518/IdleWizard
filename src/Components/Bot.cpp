@@ -290,8 +290,6 @@ SynergyBot::SynergyBot(WizardId id)
 }
 
 void SynergyBot::init() {
-    resetFireball();
-
     mImg.set(RobotWizardDefs::UP_BOT_IMG());
     Rect r = WizardSystem::GetWizardPosObservable()->get(mTarget);
     mPos->rect.setPos(r.cX(), r.cY(), Rect::Align::CENTER);
@@ -308,7 +306,10 @@ void SynergyBot::init() {
         },
         RobotWizardDefs::UP_BOT_IMG());
     mFbHitSub = PowerFireballList::GetHitObservable()->subscribe(
-        [this](const PowerFireball& fb) { return onFbHit(fb); }, mPos);
+        [this](const PowerFireball& fb) { return onFbHit(fb); },
+        [this](const PowerFireball& fb) { return fireballFilter(fb); }, mPos);
+    mFbPosSub = PowerFireballList::GetPosObservable()->subscribe(
+        [this](const PowerFireballList& list) { onFbPos(list); });
 
     mFreezeSub = ParameterSystem::Param(State::TimeWizFrozen)
                      .subscribe([this](bool frozen) { onTimeFreeze(frozen); });
@@ -317,52 +318,67 @@ void SynergyBot::init() {
 void SynergyBot::onRender(SDL_Renderer* r) {
     TextureBuilder tex;
 
+    if (mFireball) {
+        mFireball->setPos(mPos->rect.cX(), mPos->rect.y2());
+        mFireball->draw(tex);
+    }
+
     mImg.setDest(mPos->rect);
     tex.draw(mImg);
 }
 
 void SynergyBot::onUpdate(Time dt) {
-    auto fbVec = GetSynergyBotHitObservable()->getFbPosList(mTarget);
-    float minD = std::numeric_limits<float>::max();
-    SDL_FPoint target;
-    for (auto pos : fbVec) {
-        float dx = pos->rect.cX() - mPos->rect.cX(),
-              dy = pos->rect.cY() - mPos->rect.cY();
-        float d = sqrtf(dx * dx + dy * dy);
-        if (d < minD) {
-            minD = d;
-            target = pos->rect.getPos(Rect::Align::CENTER);
-        }
-    }
-
-    if (minD > 300) {  // Hover around target
-        BotAi::hover(mPos->rect, mHoverData, mTarget, dt);
-        mImg.setRotationRad(mHoverData.tilt);
-    } else {
-        mBeelineData.target = target;
+    if (mChase) {
         BotAi::beeline(mPos->rect, mBeelineData, dt);
         mImg.setRotationRad(mBeelineData.tilt);
+    } else {  // Hover around target
+        BotAi::hover(mPos->rect, mHoverData, mTarget, dt);
+        mImg.setRotationRad(mHoverData.tilt);
     }
-
-    GetSynergyBotHitObservable()->next(mTarget, mPos->rect);
 }
 
 bool SynergyBot::onFbHit(const PowerFireball& fb) {
-    if (fb.getTargetId() != mTarget || fb.isFromBot()) {
-        return false;
-    }
-
     auto data = fb.getData();
-    mFireball.power = max(mFireball.power, data.power);
-    mFireball.duration = max(mFireball.duration, data.duration);
-    mFireball.sizeFactor = fmaxf(mFireball.sizeFactor, data.sizeFactor);
+    if (mFireball) {
+        auto currData = mFireball->getData();
+        data.power = max(data.power, currData.power);
+        data.duration = max(data.duration, currData.duration);
+        data.sizeFactor = fmaxf(data.sizeFactor, currData.sizeFactor);
+    }
+    mFireball =
+        ComponentFactory<PowerFireball>::New(SDL_FPoint{}, mTarget, data);
 
     return true;
 }
 
+void SynergyBot::onFbPos(const PowerFireballList& list) {
+    float minD = std::numeric_limits<float>::max();
+    SDL_FPoint target;
+    for (auto& fb : list) {
+        if (!fireballFilter(fb)) {
+            continue;
+        }
+
+        SDL_FPoint fbPos = fb.getPos().getPos(Rect::Align::CENTER);
+        float dx = fbPos.x - mPos->rect.cX(), dy = fbPos.y - mPos->rect.cY();
+        float d = sqrtf(dx * dx + dy * dy);
+        if (d < minD) {
+            minD = d;
+            target = fbPos;
+        }
+    }
+
+    mChase = minD <= 300;
+    mBeelineData.target = target;
+}
+
+bool SynergyBot::fireballFilter(const PowerFireball& fb) const {
+    return fb.getTargetId() == mTarget && !fb.isFromBot();
+}
+
 void SynergyBot::onTimeFreeze(bool frozen) {
     // Make sure we actually have a fireball
-    if (mFireball.power == 0) {
+    if (!mFireball) {
         return;
     }
 
@@ -377,9 +393,7 @@ void SynergyBot::onTimeFreeze(bool frozen) {
     Rect pos = WizardSystem::GetWizardPos(mTarget);
     SDL_FPoint p{pos.cX() - (mPos->rect.w() * (rDist(gen) * .5f + .5f)),
                  pos.cY() + (mPos->rect.h() * (rDist(gen) * 1.f - .5f))};
-    mFireballs->push_back(
-        ComponentFactory<PowerFireball>::New(p, mTarget, mFireball));
-    resetFireball();
+    mFireballs->push_back(std::move(mFireball));
 
     // Setup portals
     float w = mPos->rect.minDim();
@@ -388,45 +402,6 @@ void SynergyBot::onTimeFreeze(bool frozen) {
     // mPortals[it->first].start(r);
 }
 
-void SynergyBot::resetFireball() { mFireball = {0, 0}; }
-
 void SynergyBot::setPos(float x, float y) {
     mPos->rect.setPos(x, y, Rect::Align::CENTER);
-    GetSynergyBotHitObservable()->next(mTarget, mPos->rect);
-}
-
-// SynergyBot::HitObservable
-SynergyBot::HitObservable::FbSubscriptionPtr
-SynergyBot::HitObservable::subscribeFb(WizardId id,
-                                       std::function<PowerFireballData()> onHit,
-                                       UIComponentPtr pos) {
-    return mFbObservable.subscribe(id, onHit, pos);
-}
-
-void SynergyBot::HitObservable::next(WizardId id, Rect pos) {
-    for (auto sub : mFbObservable) {
-        if (sub->get<ID>() == id) {
-            Rect fbPos = sub->get<POS>()->rect;
-            float dx = fbPos.cX() - pos.cX(), dy = fbPos.cY() - pos.cY();
-            if (sqrtf(dx * dx + dy * dy) < 1e-5) {
-                next(id, sub->get<ON_HIT>()());
-            }
-        }
-    }
-}
-
-std::vector<UIComponentCPtr> SynergyBot::HitObservable::getFbPosList(
-    WizardId id) {
-    std::vector<UIComponentCPtr> vec;
-    for (auto sub : mFbObservable) {
-        if (sub->get<ID>() == id) {
-            vec.push_back(sub->get<POS>());
-        }
-    }
-    return vec;
-}
-
-// SynergyBotPosObservable
-std::shared_ptr<SynergyBot::HitObservable> GetSynergyBotHitObservable() {
-    return ServiceSystem::Get<SynergyBotService, SynergyBot::HitObservable>();
 }

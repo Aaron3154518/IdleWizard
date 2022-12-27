@@ -96,32 +96,6 @@ typedef std::unique_ptr<UpgradeBot> UpgradeBotPtr;
 
 class SynergyBot : public Component {
    public:
-    typedef TargetSystem::TargetObservable<WizardId, const PowerFireballData&>
-        HitObservableBase;
-    class HitObservable : public HitObservableBase {
-       public:
-        class FbObservable
-            : public Observable<WizardId, PowerFireballData(), UIComponentPtr> {
-            friend class HitObservable;
-        };
-        typedef FbObservable::SubscriptionPtr FbSubscriptionPtr;
-
-        enum { ID = 0, ON_HIT, POS };
-
-        FbSubscriptionPtr subscribeFb(WizardId id,
-                                      std::function<PowerFireballData()> onHit,
-                                      UIComponentPtr pos);
-
-        void next(WizardId id, Rect pos);
-
-        std::vector<UIComponentCPtr> getFbPosList(WizardId id);
-
-       private:
-        using HitObservableBase::next;
-
-        FbObservable mFbObservable;
-    };
-
     SynergyBot(WizardId id);
 
     void setPos(float x, float y);
@@ -132,9 +106,10 @@ class SynergyBot : public Component {
     void onRender(SDL_Renderer* r);
     void onUpdate(Time dt);
     bool onFbHit(const PowerFireball& fb);
+    void onFbPos(const PowerFireballList& list);
     void onTimeFreeze(bool frozen);
 
-    void resetFireball();
+    bool fireballFilter(const PowerFireball& fb) const;
 
     std::mt19937 gen = std::mt19937(rand());
     std::uniform_real_distribution<float> rDist;
@@ -142,25 +117,22 @@ class SynergyBot : public Component {
     UIComponentPtr mPos;
     RenderAnimation mImg;
 
+    bool mChase = false;
     const WizardId mTarget;
     BotAi::HoverData mHoverData;
     BotAi::BeelineData mBeelineData;
 
-    PowerFireballData mFireball;
+    PowerFireballPtr mFireball;
     PowerFireballListPtr mFireballs;
 
     RenderObservable::SubscriptionPtr mRenderSub;
     TimeSystem::UpdateObservable::SubscriptionPtr mUpdateSub;
     TimeSystem::TimerObservable::SubscriptionPtr mAnimTimerSub;
-    // HitObservable::IdSubscriptionPtr mFbHitSub;
     PowerFireballList::HitObservable::SubscriptionPtr mFbHitSub;
+    PowerFireballList::PosObservable::SubscriptionPtr mFbPosSub;
     ParameterSystem::ParameterSubscriptionPtr mFreezeSub;
 };
 
 typedef std::unique_ptr<SynergyBot> SynergyBotPtr;
-
-std::shared_ptr<SynergyBot::HitObservable> GetSynergyBotHitObservable();
-
-class SynergyBotService : public Service<SynergyBot::HitObservable> {};
 
 #endif

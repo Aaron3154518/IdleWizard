@@ -148,19 +148,7 @@ void FireballListImpl::onResize(ResizeData data) {
     }
 }
 
-void FireballListImpl::onUpdate(Time dt) {
-    //     for (auto it = mFireballs.begin(); it != mFireballs.end();) {
-    //         if (!(*it)->isDead()) {
-    //             (*it)->onUpdate(dt);
-    //         }
-
-    //         if ((*it)->isDead()) {
-    //             it = mFireballs.erase(it);
-    //         } else {
-    //             ++it;
-    //         }
-    //     }
-}
+void FireballListImpl::onUpdate(Time dt) {}
 
 void FireballListImpl::onRender(SDL_Renderer* renderer) {
     TextureBuilder tex;
@@ -168,5 +156,3 @@ void FireballListImpl::onRender(SDL_Renderer* renderer) {
         fb->draw(tex);
     }
 }
-
-// FireballList::HitObservable

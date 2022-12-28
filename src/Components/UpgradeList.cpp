@@ -308,7 +308,7 @@ RenderObservable::SubscriptionPtr UpgradeProgressBar::onHover(
            << "{i}\nUnlocked: " << mUnlocked << "/" << mUpgrades->size();
         std::string desc = ss.str();
         std::vector<RenderTextureCPtr> imgs = {
-            Money::GetMoneyIcon(mMoneyParam), Money::GetMoneyIcon(mMoneyParam)};
+            MoneyIcons::GetMoneyIcon(mMoneyParam), MoneyIcons::GetMoneyIcon(mMoneyParam)};
         return ServiceSystem::Get<RenderService, RenderObservable>()->subscribe(
             [pos, desc, imgs](SDL_Renderer* r) {
                 Display u;

@@ -1,16 +1,16 @@
 #define SDL_MAIN_HANDLED
 
 #include <Components/Upgrade.h>
+#include <Components/WizardBase.h>
 #include <GameSystem.h>
 #include <Systems/WizardSystem/WizardObservables.h>
-#include <Wizards/Catalyst.h>
-#include <Wizards/Crystal.h>
-#include <Wizards/PoisonWizard.h>
-#include <Wizards/PowerWizard.h>
-#include <Wizards/RobotWizard.h>
-#include <Wizards/TimeWizard.h>
-#include <Wizards/Wizard.h>
-#include <Wizards/WizardBase.h>
+#include <Wizards/Catalyst/Catalyst.h>
+#include <Wizards/Crystal/Crystal.h>
+#include <Wizards/PoisonWizard/PoisonWizard.h>
+#include <Wizards/PowerWizard/PowerWizard.h>
+#include <Wizards/RobotWizard/RobotWizard.h>
+#include <Wizards/TimeWizard/TimeWizard.h>
+#include <Wizards/Wizard/Wizard.h>
 
 #include <memory>
 
@@ -23,28 +23,31 @@ int main(int argc, char* argv[]) {
     GameSystem::Init(options);
 
     // Initialize Parameters
-    WizardDefs::setDefaults();
-    CrystalDefs::setDefaults();
-    CatalystDefs::setDefaults();
-    PowerWizardDefs::setDefaults();
-    TimeWizardDefs::setDefaults();
-    PoisonWizardDefs::setDefaults();
-    RobotWizardDefs::setDefaults();
+    Wizard::Constants::setDefaults();
+    Crystal::Constants::setDefaults();
+    Catalyst::Constants::setDefaults();
+    PowerWizard::Constants::setDefaults();
+    TimeWizard::Constants::setDefaults();
+    PoisonWizard::Constants::setDefaults();
+    RobotWizard::Constants::setDefaults();
 
     // Create Components
     std::unique_ptr<UpgradeDisplay> upgradeDisplay =
         ComponentFactory<UpgradeDisplay>::New();
-    std::unique_ptr<Wizard> wizard = ComponentFactory<Wizard>::New();
-    std::unique_ptr<Crystal> catalyst = ComponentFactory<Crystal>::New();
-    std::unique_ptr<Catalyst> crystal = ComponentFactory<Catalyst>::New();
-    std::unique_ptr<PowerWizard> powerWizard =
-        ComponentFactory<PowerWizard>::New();
-    std::unique_ptr<TimeWizard> timeWizard =
-        ComponentFactory<TimeWizard>::New();
-    std::unique_ptr<PoisonWizard> poisonWizard =
-        ComponentFactory<PoisonWizard>::New();
-    std::unique_ptr<RobotWizard> robotWizard =
-        ComponentFactory<RobotWizard>::New();
+    std::unique_ptr<Wizard::Wizard> wizard =
+        ComponentFactory<Wizard::Wizard>::New();
+    std::unique_ptr<Crystal::Crystal> catalyst =
+        ComponentFactory<Crystal::Crystal>::New();
+    std::unique_ptr<Catalyst::Catalyst> crystal =
+        ComponentFactory<Catalyst::Catalyst>::New();
+    std::unique_ptr<PowerWizard::PowerWizard> powerWizard =
+        ComponentFactory<PowerWizard::PowerWizard>::New();
+    std::unique_ptr<TimeWizard::TimeWizard> timeWizard =
+        ComponentFactory<TimeWizard::TimeWizard>::New();
+    std::unique_ptr<PoisonWizard::PoisonWizard> poisonWizard =
+        ComponentFactory<PoisonWizard::PoisonWizard>::New();
+    std::unique_ptr<RobotWizard::RobotWizard> robotWizard =
+        ComponentFactory<RobotWizard::RobotWizard>::New();
 
     {  // Configure starting conditions
         enum Start { None = 0, FirstT1, SecondT1, Fracture, T2 };

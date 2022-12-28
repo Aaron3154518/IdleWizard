@@ -2,13 +2,13 @@
 #define DEFINITIONS_H
 
 #include <RenderSystem/RenderTypes.h>
-#include <Wizards/Definitions/CatalystDefs.h>
-#include <Wizards/Definitions/CrystalDefs.h>
-#include <Wizards/Definitions/PoisonWizardDefs.h>
-#include <Wizards/Definitions/PowerWizardDefs.h>
-#include <Wizards/Definitions/RobotWizardDefs.h>
-#include <Wizards/Definitions/TimeWizardDefs.h>
-#include <Wizards/Definitions/WizardDefs.h>
+#include <Wizards/Catalyst/CatalystConstants.h>
+#include <Wizards/Crystal/CrystalConstants.h>
+#include <Wizards/PoisonWizard/PoisonWizardConstants.h>
+#include <Wizards/PowerWizard/PowerWizardConstants.h>
+#include <Wizards/RobotWizard/RobotWizardConstants.h>
+#include <Wizards/TimeWizard/TimeWizardConstants.h>
+#include <Wizards/Wizard/WizardConstants.h>
 #include <Wizards/WizardIds.h>
 
 #include <unordered_map>

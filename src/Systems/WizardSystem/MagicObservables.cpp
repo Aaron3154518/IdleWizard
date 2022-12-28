@@ -2,7 +2,7 @@
 
 namespace WizardSystem {
 // CatalystMagicObservable
-void CatalystMagicObservable::next(const WizardFireball& fb) {
+void CatalystMagicObservable::next(const Wizard::Fireball& fb) {
     ParameterSystem::Params<CATALYST> params;
 
     Number magic = fb.getPower();

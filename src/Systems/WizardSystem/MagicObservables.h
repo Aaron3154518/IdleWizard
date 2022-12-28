@@ -1,7 +1,7 @@
 #ifndef MAGIC_OBSERVABLES_H
 #define MAGIC_OBSERVABLES_H
 
-#include <Components/Fireballs/WizardFireball.h>
+#include <Wizards/Wizard/WizardFireball.h>
 #include <ServiceSystem/Observable.h>
 #include <ServiceSystem/Service.h>
 #include <ServiceSystem/ServiceSystem.h>
@@ -15,7 +15,7 @@ class CatalystMagicObservable : public MagicObservableBase {
    public:
     using MagicObservableBase::next;
 
-    void next(const WizardFireball& fb);
+    void next(const Wizard::Fireball& fb);
 };
 
 std::shared_ptr<CatalystMagicObservable> GetCatalystMagicObservable();

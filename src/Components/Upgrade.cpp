@@ -19,7 +19,7 @@ const ParameterSystem::BaseValue& UpgradeCost::getMoneyParam() const {
 const Number& UpgradeCost::getCost() const { return mCost.get(); }
 const Number& UpgradeCost::getMoney() const { return mMoney.get(); }
 RenderTextureCPtr UpgradeCost::getMoneyIcon() const {
-    return Money::GetMoneyIcon(mMoney);
+    return MoneyIcons::GetMoneyIcon(mMoney);
 }
 bool UpgradeCost::canBuy() const { return mCost.get() <= mMoney.get(); }
 void UpgradeCost::buy() const { mMoney.set(mMoney.get() - mCost.get()); }

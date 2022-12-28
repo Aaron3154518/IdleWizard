@@ -4,19 +4,19 @@ namespace Definitions {
 const AnimationData& WIZ_IMG(WizardId id) {
     switch (id) {
         case CRYSTAL:
-            return CrystalDefs::IMG();
+            return Crystal::Constants::IMG();
         case CATALYST:
-            return CatalystDefs::IMG();
+            return Catalyst::Constants::IMG();
         case WIZARD:
-            return WizardDefs::IMG();
+            return Wizard::Constants::IMG();
         case POWER_WIZARD:
-            return PowerWizardDefs::IMG();
+            return PowerWizard::Constants::IMG();
         case TIME_WIZARD:
-            return TimeWizardDefs::IMG();
+            return TimeWizard::Constants::IMG();
         case POISON_WIZARD:
-            return PoisonWizardDefs::IMG();
+            return PoisonWizard::Constants::IMG();
         case ROBOT_WIZARD:
-            return RobotWizardDefs::IMG();
+            return RobotWizard::Constants::IMG();
     }
 };
 }  // namespace Definitions

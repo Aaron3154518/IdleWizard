@@ -4,7 +4,7 @@
 #include <RenderSystem/RenderSystem.h>
 #include <Systems/ParameterSystem/ParameterAccess.h>
 #include <Systems/WizardSystem/WizardObservables.h>
-#include <Wizards/Money.h>
+#include <Systems/IconSystem/MoneyIcons.h>
 
 #include <array>
 #include <initializer_list>

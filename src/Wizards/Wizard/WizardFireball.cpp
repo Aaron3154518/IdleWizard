@@ -25,8 +25,8 @@ void Fireball::init() {
     }
     mCatalystHitSub = Catalyst::Ring::GetHitObservable()->subscribe(
         [this](bool b) { onCatalystHit(b); }, mPos);
-    mGlobHitSub =
-        PoisonWizard::Glob::GetHitObservable()->subscribe([this]() { mOnPoisoned(); }, mPos);
+    mGlobHitSub = PoisonWizard::Glob::GetHitObservable()->subscribe(
+        [this]() { mOnPoisoned(); }, mPos);
 }
 
 void Fireball::draw(TextureBuilder& tex) {
@@ -88,11 +88,12 @@ const Number& Fireball::getPower() const { return mPower; }
 void Fireball::setPower(const Number& pow) { mPower = pow; }
 
 void Fireball::updateImage() {
-    FireballBase::setImg(IconSystem::Get(mPoisoned
-                                             ? Wizard::Constants::FB_INNER_POISON_IMG()
-                                             : Wizard::Constants::FB_INNER_IMG()));
-    mOuterImg.set(IconSystem::Get(mBoosted ? Wizard::Constants::FB_OUTER_BUFFED_IMG()
-                                           : Wizard::Constants::FB_OUTER_IMG()));
+    FireballBase::setImg(
+        IconSystem::Get(mPoisoned ? Wizard::Constants::FB_INNER_POISON_IMG()
+                                  : Wizard::Constants::FB_INNER_IMG()));
+    mOuterImg.set(IconSystem::Get(mBoosted
+                                      ? Wizard::Constants::FB_OUTER_BUFFED_IMG()
+                                      : Wizard::Constants::FB_OUTER_IMG()));
 }
 
 void Fireball::addFireball(const Data& data) {
@@ -119,6 +120,6 @@ void Fireball::applyTimeEffect(const Number& effect) { mPower ^= effect; }
 // FireballList
 void FireballList::push_back(FireballPtr fb) {
     fb->setOnPoisoned([this](FireballPtr fb) { push_back(std::move(fb)); });
-    FireballList::push_back(std::move(fb));
+    FireballListBase<Fireball>::push_back(std::move(fb));
 }
-}
+}  // namespace Wizard

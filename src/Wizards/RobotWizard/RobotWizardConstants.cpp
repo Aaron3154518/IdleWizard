@@ -1,7 +1,7 @@
+#include "RobotWizardConstants.h"
+
 #include <Components/FireballBase.h>
 #include <Wizards/PowerWizard/PowerFireball.h>
-
-#include "RobotWizardConstants.h"
 
 namespace RobotWizard {
 namespace Constants {

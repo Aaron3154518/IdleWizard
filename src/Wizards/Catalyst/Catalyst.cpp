@@ -9,15 +9,14 @@ Catalyst::Catalyst() : WizardBase(CATALYST) {
 void Catalyst::init() {
     mMessages = ComponentFactory<MessageHandler>::New(FONT);
 
-    Catalyst::Params params;
+    Params params;
     mImg.set(Constants::IMG());
     mImg.setDest(IMG_RECT);
     mPos->rect = mImg.getDest();
     WizardSystem::GetWizardImageObservable()->next(mId, mImg);
 
     mMagicText->setFont(FONT);
-    mMagicText->setImgs(
-        {MoneyIcons::GetMoneyIcon(params[Catalyst::Param::Magic])});
+    mMagicText->setImgs({MoneyIcons::GetMoneyIcon(params[Param::Magic])});
     mMagicRender.set(mMagicText);
     mMagicRender.setFit(RenderData::FitMode::Texture);
     mMagicRender.setFitAlign(Rect::Align::CENTER, Rect::Align::TOP_LEFT);
@@ -47,25 +46,26 @@ void Catalyst::setSubscriptions() {
     attachSubToVisibility(mWizFireballSub);
 }
 void Catalyst::setUpgrades() {
-    Catalyst::Params params;
+    Params params;
+    Crystal::Params cryParams;
 
     // Power Display
     DisplayPtr dUp = std::make_shared<Display>();
     dUp->setImage(WIZ_IMGS.at(mId));
     dUp->setEffects(
-        {params[Catalyst::Param::MagicEffect],
-         params[Catalyst::Param::FBCntEffect], params[Catalyst::Param::Range]},
+        {params[Param::MagicEffect], params[Param::FBCntEffect],
+         params[Param::Range]},
         {}, []() -> TextUpdateData {
-            Catalyst::Params params;
+            Params params;
 
             std::stringstream ss;
             ss << "{i} Multiplier: "
                << UpgradeDefaults::MultiplicativeEffectText(
-                      params[Catalyst::Param::MagicEffect].get())
+                      params[Param::MagicEffect].get())
                << "\n{i} Multiplier: "
                << UpgradeDefaults::MultiplicativeEffectText(
-                      params[Catalyst::Param::FBCntEffect].get())
-               << "\nRange: " << params[Catalyst::Param::Range].get();
+                      params[Param::FBCntEffect].get())
+               << "\nRange: " << params[Param::Range].get();
             return {ss.str(),
                     {MoneyIcons::GetMoneyIcon(UpgradeDefaults::CATALYST_MAGIC),
                      IconSystem::Get(Wizard::Constants::FB_IMG())}};
@@ -73,65 +73,60 @@ void Catalyst::setUpgrades() {
     mMagicEffectDisplay = mUpgrades->subscribe(dUp);
 
     // Boost catalyst gain
-    UpgradePtr up =
-        std::make_shared<Upgrade>(params[Catalyst::Param::GainUp1Lvl], 10);
+    UpgradePtr up = std::make_shared<Upgrade>(params[Param::GainUp1Lvl], 10);
     up->setImage("");
     up->setDescription(
         {"Multiplies {i} gain *2", {IconSystem::Get(Constants::IMG())}});
-    up->setCost(UpgradeDefaults::CRYSTAL_SHARDS,
-                params[Catalyst::Param::GainUp1Cost]);
-    up->setEffects(params[Catalyst::Param::GainUp1],
+    up->setCost(UpgradeDefaults::CRYSTAL_SHARDS, params[Param::GainUp1Cost]);
+    up->setEffects(params[Param::GainUp1],
                    UpgradeDefaults::MultiplicativeEffect);
-    mParamSubs.push_back(params[Catalyst::Param::GainUp1Cost].subscribeTo(
+    mParamSubs.push_back(params[Param::GainUp1Cost].subscribeTo(
         up->level(), [](const Number& lvl) { return 10 * (2 ^ lvl); }));
-    mParamSubs.push_back(params[Catalyst::Param::GainUp1].subscribeTo(
+    mParamSubs.push_back(params[Param::GainUp1].subscribeTo(
         up->level(), [](const Number& lvl) { return 2 ^ lvl; }));
     mGainUp1 = mUpgrades->subscribe(up);
 
     // Boost catalyst gain 2
-    up = std::make_shared<Upgrade>(params[Catalyst::Param::GainUp2Lvl], 5);
+    up = std::make_shared<Upgrade>(params[Param::GainUp2Lvl], 5);
     up->setImage("");
     up->setDescription(
         {"Improves {i} gain formula", {IconSystem::Get(Constants::IMG())}});
-    up->setCost(UpgradeDefaults::CRYSTAL_SHARDS,
-                params[Catalyst::Param::GainUp2Cost]);
+    up->setCost(UpgradeDefaults::CRYSTAL_SHARDS, params[Param::GainUp2Cost]);
     up->setEffects(
-        params[Catalyst::Param::GainUp2],
-        [](const Number& effect) -> TextUpdateData {
+        params[Param::GainUp2], [](const Number& effect) -> TextUpdateData {
             return {"log(x) -> x" + UpgradeDefaults::PowerEffectText(effect)};
         });
-    mParamSubs.push_back(params[Catalyst::Param::GainUp2Cost].subscribeTo(
+    mParamSubs.push_back(params[Param::GainUp2Cost].subscribeTo(
         up->level(),
         [](const Number& lvl) { return Number(1, 4) * (5 ^ lvl); }));
-    mParamSubs.push_back(params[Catalyst::Param::GainUp2].subscribeTo(
+    mParamSubs.push_back(params[Param::GainUp2].subscribeTo(
         up->level(), [](const Number& lvl) { return lvl / 10; }));
     mGainUp2 = mUpgrades->subscribe(up);
 
     // Boost shard gain
     UnlockablePtr uUp =
-        std::make_shared<Unlockable>(states[State::BoughtCatShardMult]);
+        std::make_shared<Unlockable>(params[Param::BoughtCatShardMult]);
     uUp->setImage("");
     uUp->setDescription(
         {"{i} boosts {i} gain",
          {MoneyIcons::GetMoneyIcon(UpgradeDefaults::CATALYST_MAGIC),
           MoneyIcons::GetMoneyIcon(UpgradeDefaults::CRYSTAL_SHARDS)}});
     uUp->setCost(UpgradeDefaults::CRYSTAL_SHARDS,
-                 params[Catalyst::Param::ShardGainUpCost]);
-    uUp->setEffects(params[Catalyst::Param::ShardGainUp],
+                 params[Param::ShardGainUpCost]);
+    uUp->setEffects(params[Param::ShardGainUp],
                     UpgradeDefaults::MultiplicativeEffect);
-    mParamSubs.push_back(params[Catalyst::Param::ShardGainUp].subscribeTo(
-        {params[Catalyst::Param::ShardMultUp]}, {uUp->level()},
-        [params]() -> Number {
-            if (!ParameterSystem::Param(State::BoughtCatShardMult).get()) {
+    mParamSubs.push_back(params[Param::ShardGainUp].subscribeTo(
+        {params[Param::ShardMultUp]}, {uUp->level()}, [params]() -> Number {
+            if (!params[Param::BoughtCatShardMult].get()) {
                 return 1;
             }
-            return params[Catalyst::Param::Magic].get().sqrtCopy() *
-                   params[Catalyst::Param::ShardMultUp].get();
+            return params[Param::Magic].get().sqrtCopy() *
+                   params[Param::ShardMultUp].get();
         }));
     mShardUp = mUpgrades->subscribe(uUp);
 
     // Catalyst multiplier upgrade
-    uUp = std::make_shared<Unlockable>(states[State::BoughtMultUp]);
+    uUp = std::make_shared<Unlockable>(params[Param::BoughtMultUp]);
     uUp->setImage("");
     uUp->setDescription(
         {"{i} multiplier to {i},{i} is increased based on log({i})",
@@ -141,88 +136,84 @@ void Catalyst::setUpgrades() {
              MoneyIcons::GetMoneyIcon(UpgradeDefaults::CRYSTAL_SHARDS),
              MoneyIcons::GetMoneyIcon(UpgradeDefaults::CATALYST_MAGIC),
          }});
-    uUp->setCost(UpgradeDefaults::CRYSTAL_SHARDS,
-                 params[Catalyst::Param::MultUpCost]);
-    uUp->setEffects({params[Catalyst::Param::CatMultUp],
-                     params[Catalyst::Param::ShardMultUp]},
-                    {}, [params]() -> TextUpdateData {
+    uUp->setCost(UpgradeDefaults::CRYSTAL_SHARDS, params[Param::MultUpCost]);
+    uUp->setEffects({params[Param::CatMultUp], params[Param::ShardMultUp]}, {},
+                    [params]() -> TextUpdateData {
                         return {UpgradeDefaults::PowerEffectText(
-                                    params[Catalyst::Param::CatMultUp].get()) +
+                                    params[Param::CatMultUp].get()) +
                                 ", " +
                                 UpgradeDefaults::MultiplicativeEffectText(
-                                    params[Catalyst::Param::ShardMultUp].get())};
+                                    params[Param::ShardMultUp].get())};
                     });
-    mParamSubs.push_back(params[Catalyst::Param::CatMultUp].subscribeTo(
-        {params[Catalyst::Param::Magic]}, {uUp->level()}, [params, states]() {
-            return states[State::BoughtMultUp].get()
-                       ? (params[Catalyst::Param::Magic].get() + 10).logTen() / 2
+    mParamSubs.push_back(params[Param::CatMultUp].subscribeTo(
+        {params[Param::Magic]}, {uUp->level()}, [params]() {
+            return params[Param::BoughtMultUp].get()
+                       ? (params[Param::Magic].get() + 10).logTen() / 2
                        : 1;
         }));
-    mParamSubs.push_back(params[Catalyst::Param::ShardMultUp].subscribeTo(
-        {params[Catalyst::Param::Magic]}, {uUp->level()}, [params, states]() {
-            return states[State::BoughtMultUp].get()
-                       ? (params[Catalyst::Param::Magic].get() + 10).logTen() ^ 2
+    mParamSubs.push_back(params[Param::ShardMultUp].subscribeTo(
+        {params[Param::Magic]}, {uUp->level()}, [params]() {
+            return params[Param::BoughtMultUp].get()
+                       ? (params[Param::Magic].get() + 10).logTen() ^ 2
                        : 1;
         }));
     mMultUp = mUpgrades->subscribe(uUp);
 
     // Zap range
-    up = std::make_shared<Upgrade>(params[Catalyst::Param::RangeUpLvl], 5);
+    up = std::make_shared<Upgrade>(params[Param::RangeUpLvl], 5);
     up->setImage("");
     up->setDescription({"Increase range of fireball boost"});
-    up->setCost(UpgradeDefaults::CRYSTAL_SHARDS,
-                params[Catalyst::Param::RangeUpCost]);
-    up->setEffects(params[Catalyst::Param::RangeUp],
+    up->setCost(UpgradeDefaults::CRYSTAL_SHARDS, params[Param::RangeUpCost]);
+    up->setEffects(params[Param::RangeUp],
                    UpgradeDefaults::MultiplicativeEffect);
-    mParamSubs.push_back(params[Catalyst::Param::RangeUpCost].subscribeTo(
+    mParamSubs.push_back(params[Param::RangeUpCost].subscribeTo(
         up->level(), [](const Number& lvl) { return 5 * (2 ^ lvl); }));
-    mParamSubs.push_back(params[Catalyst::Param::RangeUp].subscribeTo(
+    mParamSubs.push_back(params[Param::RangeUp].subscribeTo(
         up->level(), [](const Number& lvl) { return 1.1 ^ lvl; }));
     mRangeUp = mUpgrades->subscribe(up);
 
     // Num zappers
-    up = std::make_shared<Upgrade>(params[Catalyst::Param::ZapperUpLvl], 4);
+    up = std::make_shared<Upgrade>(params[Param::ZapperUpLvl], 4);
     up->setImage("");
     up->setDescription({"Increases number and charge rate of zaps"});
-    up->setCost(UpgradeDefaults::CRYSTAL_SHARDS,
-                params[Catalyst::Param::ZapperUpCost]);
-    up->setEffects(params[Catalyst::Param::ZapperUp], UpgradeDefaults::NoEffect);
-    mParamSubs.push_back(params[Catalyst::Param::ZapperUp].subscribeTo(
+    up->setCost(UpgradeDefaults::CRYSTAL_SHARDS, params[Param::ZapperUpCost]);
+    up->setEffects(params[Param::ZapperUp], UpgradeDefaults::NoEffect);
+    mParamSubs.push_back(params[Param::ZapperUp].subscribeTo(
         up->level(), [](const Number& lvl) { return 1 + lvl; }));
-    mParamSubs.push_back(params[Catalyst::Param::ZapperUpCost].subscribeTo(
+    mParamSubs.push_back(params[Param::ZapperUpCost].subscribeTo(
         up->level(), [](const Number& lvl) { return lvl * (lvl + 1); }));
     mZapperCntUp = mUpgrades->subscribe(up);
 
     // Zap count
-    up = std::make_shared<Upgrade>(params[Catalyst::Param::ZapCntUpLvl], 3);
+    up = std::make_shared<Upgrade>(params[Param::ZapCntUpLvl], 3);
     up->setImage("");
     up->setDescription({"Increases the number of times each {i} can be zapped",
                         {IconSystem::Get(Wizard::Constants::FB_IMG())}});
-    up->setCost(UpgradeDefaults::CRYSTAL_MAGIC,
-                params[Catalyst::Param::ZapCntUpCost]);
-    up->setEffects(params[Catalyst::Param::ZapCntUp], UpgradeDefaults::NoEffect);
-    mParamSubs.push_back(params[Catalyst::Param::ZapCntUpCost].subscribeTo(
+    up->setCost(UpgradeDefaults::CRYSTAL_MAGIC, params[Param::ZapCntUpCost]);
+    up->setEffects(params[Param::ZapCntUp], UpgradeDefaults::NoEffect);
+    mParamSubs.push_back(params[Param::ZapCntUpCost].subscribeTo(
         up->level(), [](const Number& lvl) { return 10 ^ (10 * (lvl + 1)); }));
-    mParamSubs.push_back(params[Catalyst::Param::ZapCntUp].subscribeTo(
+    mParamSubs.push_back(params[Param::ZapCntUp].subscribeTo(
         up->level(), [](const Number& lvl) { return 1 + lvl; }));
     mZapCntUp = mUpgrades->subscribe(up);
 
     // Fireball count upgrade
-    up = std::make_shared<Upgrade>(params[Catalyst::Param::FBCntLvl],
-                                   params[Catalyst::Param::FBCntMaxLvl]);
+    up = std::make_shared<Upgrade>(params[Param::FBCntLvl],
+                                   params[Param::FBCntMaxLvl]);
     up->setImage("");
-    mParamSubs.push_back(params[Catalyst::Param::FBCntMaxLvl].subscribeTo(
+    mParamSubs.push_back(params[Param::FBCntMaxLvl].subscribeTo(
         {},
-        {states[Crystal::Param::BoughtPoisonWizard], states[Crystal::Param::BoughtRobotWizard]},
-        [states]() {
-            return states[Crystal::Param::BoughtRobotWizard].get()    ? 3
-                   : states[Crystal::Param::BoughtPoisonWizard].get() ? 2
-                                                             : 1;
+        {cryParams[Crystal::Param::BoughtPoisonWizard],
+         cryParams[Crystal::Param::BoughtRobotWizard]},
+        [cryParams]() {
+            return cryParams[Crystal::Param::BoughtRobotWizard].get()    ? 3
+                   : cryParams[Crystal::Param::BoughtPoisonWizard].get() ? 2
+                                                                         : 1;
         }));
-    mParamSubs.push_back(params[Catalyst::Param::FBCntUpCost].subscribeTo(
+    mParamSubs.push_back(params[Param::FBCntUpCost].subscribeTo(
         up->level(), [up, params](const Number& lvl) {
             up->setCost(Constants::FB_CNT_TYPES.at(lvl.toInt()),
-                        params[Catalyst::Param::FBCntUpCost]);
+                        params[Param::FBCntUpCost]);
             switch (lvl.toInt()) {
                 case Constants::FBCntUpBuyType::Reg:
                     return 1000;
@@ -248,9 +239,9 @@ void Catalyst::setUpgrades() {
             up->setEffectText(ss.str());
         }));
     mParamSubs.push_back(ParameterSystem::subscribe(
-        {up->level(), params[Catalyst::Param::FBCntMaxLvl]}, {}, [up, params]() {
+        {up->level(), params[Param::FBCntMaxLvl]}, {}, [up, params]() {
             int lvl = up->level().get().toInt();
-            int maxLvl = params[Catalyst::Param::FBCntMaxLvl].get().toInt();
+            int maxLvl = params[Param::FBCntMaxLvl].get().toInt();
 
             std::vector<RenderTextureCPtr> imgs;
             std::stringstream desc_str;
@@ -277,57 +268,57 @@ void Catalyst::setUpgrades() {
     mFbCountUp = mUpgrades->subscribe(up);
 }
 void Catalyst::setParamTriggers() {
-    Catalyst::Params params;
+    Params params;
     Crystal::Params cryParams;
 
-    mParamSubs.push_back(params[Catalyst::Param::MagicEffect].subscribeTo(
-        {params[Catalyst::Param::Magic], params[Catalyst::Param::CatMultUp]}, {},
+    mParamSubs.push_back(params[Param::MagicEffect].subscribeTo(
+        {params[Param::Magic], params[Param::CatMultUp]}, {},
         [this]() { return calcMagicEffect(); }));
 
-    mParamSubs.push_back(params[Catalyst::Param::Capacity].subscribeTo(
+    mParamSubs.push_back(params[Param::Capacity].subscribeTo(
         cryParams[Crystal::Param::BestMagic],
         [](const Number& magic) { return (magic ^ 0.2) / 10; }));
 
-    mParamSubs.push_back(params[Catalyst::Param::Range].subscribeTo(
-        {params[Catalyst::Param::BaseRange], params[Catalyst::Param::RangeUp]},
-        {}, [this]() { return calcRange(); }));
-    mParamSubs.push_back(params[Catalyst::Param::FBCntEffect].subscribeTo(
+    mParamSubs.push_back(params[Param::Range].subscribeTo(
+        {params[Param::BaseRange], params[Param::RangeUp]}, {},
+        [this]() { return calcRange(); }));
+    mParamSubs.push_back(params[Param::FBCntEffect].subscribeTo(
         {Constants::REG_FB_CNT, Constants::POW_FB_CNT, Constants::POI_FB_CNT,
-         params[Catalyst::Param::FBCntLvl]},
+         params[Param::FBCntLvl]},
         {}, [this]() { return calcFbCntEffect(); }));
 
     mParamSubs.push_back(ParameterSystem::subscribe(
-        {params[Catalyst::Param::Magic], params[Catalyst::Param::Capacity]}, {},
+        {params[Param::Magic], params[Param::Capacity]}, {},
         [this]() { drawMagic(); }));
 
-    mParamSubs.push_back(ParameterSystem::Param(Crystal::Param::BoughtCatalyst)
-                             .subscribe([this](bool bought) {
-                                 WizardSystem::GetHideObservable()->next(
-                                     mId, !bought);
-                             }));
+    mParamSubs.push_back(cryParams[Crystal::Param::BoughtCatalyst].subscribe(
+        [this](bool bought) {
+            WizardSystem::GetHideObservable()->next(mId, !bought);
+        }));
 
     mParamSubs.push_back(ParameterSystem::subscribe(
-        {params[Catalyst::Param::Range]}, {}, [this]() { updateRange(); }));
+        {params[Param::Range]}, {}, [this]() { updateRange(); }));
 
     // Upgrade unlock constraints
     mParamSubs.push_back(
-        params[Catalyst::Param::GainUp1Lvl].subscribe([this](const Number& lvl) {
+        params[Param::GainUp1Lvl].subscribe([this](const Number& lvl) {
             mGainUp2->setActive(mGainUp1->get<UpgradeList::DATA>()->status() ==
                                 Upgrade::BOUGHT);
         }));
     mParamSubs.push_back(
-        states[Crystal::Param::BoughtPoisonWizard].subscribe([this](bool bought) {
-            mZapCntUp->setActive(bought);
-            mZapperCntUp->setActive(bought);
-        }));
-    mParamSubs.push_back(states[State::BoughtCatShardMult].subscribe(
+        cryParams[Crystal::Param::BoughtPoisonWizard].subscribe(
+            [this](bool bought) {
+                mZapCntUp->setActive(bought);
+                mZapperCntUp->setActive(bought);
+            }));
+    mParamSubs.push_back(params[Param::BoughtCatShardMult].subscribe(
         [this](bool bought) { mMultUp->setActive(bought); }));
 }
 
 void Catalyst::onWizFireballHit(const Wizard::Fireball& fireball) {
     WizardSystem::GetCatalystMagicObservable()->next(fireball);
 
-    Catalyst::Params params;
+    Params params;
     bool buffed = fireball.isBoosted(), poisoned = fireball.isPoisoned();
     if (buffed || poisoned) {
         if (buffed) {
@@ -344,20 +335,17 @@ void Catalyst::onWizFireballHit(const Wizard::Fireball& fireball) {
     }
 }
 void Catalyst::onPoisFireballHit(const PoisonWizard::Fireball& fireball) {
-    auto poisCnt =
-        Catalyst::Params::get(Catalyst::Param::CatRingPoisCnt);
+    auto poisCnt = Params::get(Param::CatRingPoisCnt);
     Number poisCntUp =
-        PoisonWizard::Params::get(PoisonWizard::Param::CatPoisCntUp)
-            .get();
+        PoisonWizard::Params::get(PoisonWizard::Param::CatPoisCntUp).get();
 
     poisCnt.set(poisCnt.get() + poisCntUp);
 }
 
 void Catalyst::onMagic(const Number& amnt) {
-    Catalyst::Params params;
-    auto magic = params[Catalyst::Param::Magic];
-    magic.set(max(
-        0, min(magic.get() + amnt, params[Catalyst::Param::Capacity].get())));
+    Params params;
+    auto magic = params[Param::Magic];
+    magic.set(max(0, min(magic.get() + amnt, params[Param::Capacity].get())));
     mMessages->addMessage(mPos->rect, "+" + amnt.toString(), RED);
 }
 
@@ -376,22 +364,21 @@ void Catalyst::onRender(SDL_Renderer* r) {
 }
 
 Number Catalyst::calcMagicEffect() {
-    Catalyst::Params params;
+    Params params;
 
-    return (params[Catalyst::Param::Magic].get() + 1) ^
-           (.5 * params[Catalyst::Param::CatMultUp].get());
+    return (params[Param::Magic].get() + 1) ^
+           (.5 * params[Param::CatMultUp].get());
 }
 
 Number Catalyst::calcRange() {
-    Catalyst::Params params;
-    return params[Catalyst::Param::BaseRange].get() *
-           params[Catalyst::Param::RangeUp].get();
+    Params params;
+    return params[Param::BaseRange].get() * params[Param::RangeUp].get();
 }
 
 Number Catalyst::calcFbCntEffect() {
-    Catalyst::Params params;
+    Params params;
     Number reg_effect = 1, pow_effect = 1, poi_effect = 1;
-    int lvl = params[Catalyst::Param::FBCntLvl].get().toInt();
+    int lvl = params[Param::FBCntLvl].get().toInt();
     if (lvl > Constants::FBCntUpBuyType::Reg) {
         reg_effect = Constants::REG_FB_CNT.get() + 1;
         if (lvl > Constants::FBCntUpBuyType::Poi) {
@@ -405,16 +392,16 @@ Number Catalyst::calcFbCntEffect() {
 }
 
 void Catalyst::drawMagic() {
-    Catalyst::Params params;
+    Params params;
     std::stringstream ss;
-    ss << "{i} " << params[Catalyst::Param::Magic].get() << "/{b}"
-       << params[Catalyst::Param::Capacity].get();
+    ss << "{i} " << params[Param::Magic].get() << "/{b}"
+       << params[Param::Capacity].get();
     mMagicText->setText(ss.str(), mPos->rect.W());
 }
 
 void Catalyst::updateRange() {
     float half = fmaxf(mPos->rect.halfH(), mPos->rect.halfW());
-    auto range = Catalyst::Params::get(Catalyst::Param::Range);
+    auto range = Params::get(Param::Range);
     mRange.setRadius((int)(half * range.get().toFloat()), ceilf(half / 100),
                      true);
     Ring::GetHitObservable()->setPos(mRange.get());

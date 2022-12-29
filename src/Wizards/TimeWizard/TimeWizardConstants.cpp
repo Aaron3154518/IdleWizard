@@ -35,8 +35,8 @@ void setDefaults() {
     params[TimeWizard::Param::SpeedUpUpLvl]->init(Event::ResetT1);
 
 
-    states[State::TimeWizActive]->init(false, Event::ResetT1);
-    states[State::TimeWizFrozen]->init(false, Event::ResetT1);
+    params[Param::TimeWizActive]->init(false, Event::ResetT1);
+    params[Param::TimeWizFrozen]->init(false, Event::ResetT1);
 }
 }  // namespace Constants
 }  // namespace TimeWizard

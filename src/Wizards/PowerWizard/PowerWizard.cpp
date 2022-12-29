@@ -96,7 +96,7 @@ void PowerWizard::setUpgrades() {
                 params[PowerWizard::Param::TimeWarpUpCost]);
     up->setEffects(
         {params[PowerWizard::Param::TimeWarpUp]},
-        {states[State::TimeWarpEnabled]}, []() -> TextUpdateData {
+        {params[Param::TimeWarpEnabled]}, []() -> TextUpdateData {
             std::stringstream ss;
             ss << "*{i}^"
                << PowerWizard::Params::get(
@@ -110,7 +110,7 @@ void PowerWizard::setUpgrades() {
     mParamSubs.push_back(params[PowerWizard::Param::TimeWarpUp].subscribeTo(
         up->level(),
         [](const Number& lvl) { return lvl == 0 ? 1 : .8 + lvl / 5; }));
-    mParamSubs.push_back(states[State::TimeWarpEnabled].subscribeTo(
+    mParamSubs.push_back(params[Param::TimeWarpEnabled].subscribeTo(
         up->level(), [](const Number& lvl) { return lvl > 0; }));
     mTimeWarpUp = mUpgrades->subscribe(up);
 }
@@ -145,19 +145,19 @@ void PowerWizard::setParamTriggers() {
         {params[PowerWizard::Param::FBSpeed]}, {},
         [this]() { return calcFBSpeedEffect(); }));
 
-    mParamSubs.push_back(states[State::TimeWizFrozen].subscribe(
+    mParamSubs.push_back(params[Param::TimeWizFrozen].subscribe(
         [this](bool val) { onTimeFreeze(val); }));
 
     mParamSubs.push_back(
         params[PowerWizard::Param::Speed].subscribe([this]() { calcTimer(); }));
 
     mParamSubs.push_back(
-        states[Crystal::Param::BoughtPowerWizard].subscribe([this](bool bought) {
+        params[Crystal::Param::BoughtPowerWizard].subscribe([this](bool bought) {
             WizardSystem::GetHideObservable()->next(mId, !bought);
         }));
 
     mParamSubs.push_back(
-        states[State::TimeWarpEnabled].subscribe([this](bool enabled) {
+        params[Param::TimeWarpEnabled].subscribe([this](bool enabled) {
             if (!enabled) {
                 mTargets[TIME_WIZARD] = -1;
             } else {
@@ -171,7 +171,7 @@ void PowerWizard::setParamTriggers() {
         }));
 
     // Upgrade unlock constraints
-    mParamSubs.push_back(states[State::BoughtSecondT1].subscribe(
+    mParamSubs.push_back(params[Param::BoughtSecondT1].subscribe(
         [this](bool bought) { mTimeWarpUp->setActive(bought); }));
 }
 
@@ -223,7 +223,7 @@ void PowerWizard::shootFireball() {
     WizardId target = getTarget();
     auto data = newFireballData(target);
 
-    if (!ParameterSystem::Param(State::TimeWizFrozen).get()) {
+    if (!ParameterSystem::Param(Param::TimeWizFrozen).get()) {
         mFireballs->push_back(std::move(ComponentFactory<Fireball>::New(
             SDL_FPoint{mPos->rect.cX(), mPos->rect.cY()}, target, data)));
     } else {

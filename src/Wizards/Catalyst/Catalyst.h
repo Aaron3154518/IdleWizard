@@ -15,8 +15,11 @@
 #include <Systems/WizardSystem/MagicObservables.h>
 #include <Systems/WizardSystem/WizardObservables.h>
 #include <Wizards/Catalyst/CatalystConstants.h>
+#include <Wizards/Catalyst/CatalystParameters.h>
 #include <Wizards/Catalyst/CatalystRing.h>
+#include <Wizards/Crystal/CrystalParameters.h>
 #include <Wizards/PoisonWizard/PoisonFireball.h>
+#include <Wizards/PoisonWizard/PoisonWizardParameters.h>
 #include <Wizards/Wizard/WizardFireball.h>
 #include <Wizards/WizardIds.h>
 

@@ -189,9 +189,9 @@ ParameterSubscriptionPtr NodeState::subscribeTo(StateParam param,
 }
 
 // Param creators
-BaseState Param(State::B key) { return BaseState(key); }
+BaseState Param(Param::B key) { return BaseState(key); }
 
-NodeState Param(State::N key) { return NodeState(key); }
+NodeState Param(Param::N key) { return NodeState(key); }
 
 // Subscribing
 ParameterSubscriptionPtr subscribe(
@@ -221,8 +221,8 @@ ParameterSubscriptionPtr subscribe(
 
 /*
 // States
-BaseState States::operator[](State::B key) const { return Param(key); }
+BaseState States::operator[](Param::B key) const { return Param(key); }
 
-NodeState States::operator[](State::N key) const { return Param(key); }
+NodeState States::operator[](Param::N key) const { return Param(key); }
 */
 }  // namespace ParameterSystem

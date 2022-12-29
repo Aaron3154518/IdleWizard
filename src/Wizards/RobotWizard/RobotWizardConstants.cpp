@@ -8,9 +8,9 @@ namespace Constants {
 const std::vector<WizardId> UP_TARGETS{CRYSTAL, WIZARD, POWER_WIZARD,
                                        TIME_WIZARD};
 const std::unordered_map<WizardId, ParameterSystem::StateParam> SYN_TARGETS = {
-    {CRYSTAL, ParameterSystem::Param(State::CrysSynBotActive)},
-    {WIZARD, ParameterSystem::Param(State::WizSynBotActive)},
-    {TIME_WIZARD, ParameterSystem::Param(State::TimeWizSynBotActive)},
+    {CRYSTAL, ParameterSystem::Param(Param::CrysSynBotActive)},
+    {WIZARD, ParameterSystem::Param(Param::WizSynBotActive)},
+    {TIME_WIZARD, ParameterSystem::Param(Param::TimeWizSynBotActive)},
 };
 
 const AnimationData& IMG() {
@@ -42,9 +42,9 @@ void setDefaults() {
     params[RobotWizard::Param::WizCritUpCost]->init(Number(1, 20));
 
 
-    states[State::CrysSynBotActive]->init(false);
-    states[State::WizSynBotActive]->init(true);
-    states[State::TimeWizSynBotActive]->init(true);
+    params[Param::CrysSynBotActive]->init(false);
+    params[Param::WizSynBotActive]->init(true);
+    params[Param::TimeWizSynBotActive]->init(true);
 }
 }  // namespace Constants
 }  // namespace RobotWizard

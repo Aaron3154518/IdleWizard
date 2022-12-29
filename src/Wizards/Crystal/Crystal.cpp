@@ -94,7 +94,7 @@ void Crystal::setUpgrades() {
 
     // Wizard count upgrade
     UnlockablePtr uUp =
-        std::make_shared<Unlockable>(states[State::BoughtCrysWizCntUp]);
+        std::make_shared<Unlockable>(params[Param::BoughtCrysWizCntUp]);
     uUp->setImage(Constants::WIZ_CNT_UP_IMG);
     uUp->setDescription(
         {"Wizards synergy provides a multiplier based on the number of active "
@@ -106,7 +106,7 @@ void Crystal::setUpgrades() {
     mWizCntUp = mUpgrades->subscribe(uUp);
 
     // Glow upgrade
-    uUp = std::make_shared<Unlockable>(states[State::BoughtCrysGlowUp]);
+    uUp = std::make_shared<Unlockable>(params[Param::BoughtCrysGlowUp]);
     uUp->setImage(Constants::CRYS_GLOW_UP_IMG);
     uUp->setDescription(
         {"After begin struck by {i}, {i} will absorb {i}\nWhen the effect "
@@ -121,7 +121,7 @@ void Crystal::setUpgrades() {
     mGlowUp = mUpgrades->subscribe(uUp);
 
     // Buy power wizard
-    uUp = std::make_shared<Unlockable>(states[Crystal::Param::BoughtPowerWizard]);
+    uUp = std::make_shared<Unlockable>(params[Crystal::Param::BoughtPowerWizard]);
     uUp->setImage(WIZ_IMGS.at(POWER_WIZARD));
     uUp->setDescription(
         {"Power Wizard empowers {i} and overloads {i} for increased {i} "
@@ -134,7 +134,7 @@ void Crystal::setUpgrades() {
     mPowWizBuy = mUpgrades->subscribe(uUp);
 
     // Buy time wizard
-    uUp = std::make_shared<Unlockable>(states[Crystal::Param::BoughtTimeWizard]);
+    uUp = std::make_shared<Unlockable>(params[Crystal::Param::BoughtTimeWizard]);
     uUp->setImage(WIZ_IMGS.at(TIME_WIZARD));
     uUp->setDescription(
         {"Time Wizard boosts {i} fire rate and freezes time for a "
@@ -145,7 +145,7 @@ void Crystal::setUpgrades() {
     mTimeWizBuy = mUpgrades->subscribe(uUp);
 
     // Buy catalyst
-    uUp = std::make_shared<Unlockable>(states[Crystal::Param::BoughtCatalyst]);
+    uUp = std::make_shared<Unlockable>(params[Crystal::Param::BoughtCatalyst]);
     uUp->setImage(WIZ_IMGS.at(CATALYST));
     uUp->setDescription(
         {"Catalyst stores magic and boosts {i} that pass nearby",
@@ -155,7 +155,7 @@ void Crystal::setUpgrades() {
     mCatalystBuy = mUpgrades->subscribe(uUp);
 
     // Buy poison wizard
-    uUp = std::make_shared<Unlockable>(states[Crystal::Param::BoughtPoisonWizard]);
+    uUp = std::make_shared<Unlockable>(params[Crystal::Param::BoughtPoisonWizard]);
     uUp->setImage(WIZ_IMGS.at(POISON_WIZARD));
     uUp->setDescription(
         {"Poison wizard increases {i} effects and enables magic-over-time "
@@ -166,7 +166,7 @@ void Crystal::setUpgrades() {
     mPoisWizBuy = mUpgrades->subscribe(uUp);
 
     // Buy robot
-    uUp = std::make_shared<Unlockable>(states[Crystal::Param::BoughtRobotWizard]);
+    uUp = std::make_shared<Unlockable>(params[Crystal::Param::BoughtRobotWizard]);
     uUp->setImage(WIZ_IMGS.at(ROBOT_WIZARD));
     uUp->setDescription({"Robot automates upgrade purchases and {i} synergies",
                          {IconSystem::Get(PowerWizard::Constants::FB_IMG())}});
@@ -198,18 +198,18 @@ void Crystal::setParamTriggers() {
 
     mParamSubs.push_back(params[Crystal::Param::NumWizards].subscribeTo(
         {},
-        {states[Crystal::Param::BoughtPowerWizard], states[Crystal::Param::BoughtTimeWizard],
-         states[Crystal::Param::BoughtCatalyst]},
+        {params[Crystal::Param::BoughtPowerWizard], params[Crystal::Param::BoughtTimeWizard],
+         params[Crystal::Param::BoughtCatalyst]},
         [this]() { return calcNumWizards(); }));
 
     mParamSubs.push_back(params[Crystal::Param::WizardCntEffect].subscribeTo(
         {params[Crystal::Param::NumWizards]},
-        {states[State::BoughtCrysWizCntUp]},
+        {params[Param::BoughtCrysWizCntUp]},
         [this]() { return calcWizCntEffect(); }));
 
     mParamSubs.push_back(params[Crystal::Param::GlowEffect].subscribeTo(
         {params[Crystal::Param::WizardCntEffect]},
-        {states[State::BoughtCrysGlowUp]},
+        {params[Param::BoughtCrysGlowUp]},
         [this]() { return calcGlowEffect(); }));
 
     mParamSubs.push_back(ParameterSystem::subscribe(
@@ -217,26 +217,26 @@ void Crystal::setParamTriggers() {
         [this]() { drawMagic(); }));
 
     mParamSubs.push_back(params[Crystal::Param::T1WizardCost].subscribeTo(
-        states[State::BoughtFirstT1], [this](bool val) {
+        params[Param::BoughtFirstT1], [this](bool val) {
             return val ? Constants::T1_COST2 : Constants::T1_COST1;
         }));
 
-    mParamSubs.push_back(states[State::BoughtFirstT1].subscribeTo(
-        {}, {states[Crystal::Param::BoughtPowerWizard], states[Crystal::Param::BoughtTimeWizard]},
+    mParamSubs.push_back(params[Param::BoughtFirstT1].subscribeTo(
+        {}, {params[Crystal::Param::BoughtPowerWizard], params[Crystal::Param::BoughtTimeWizard]},
         []() {
-                    return states[Crystal::Param::BoughtPowerWizard].get() ||
-                   states[Crystal::Param::BoughtTimeWizard].get();
+                    return params[Crystal::Param::BoughtPowerWizard].get() ||
+                   params[Crystal::Param::BoughtTimeWizard].get();
         }));
 
-    mParamSubs.push_back(states[State::BoughtSecondT1].subscribeTo(
-        {}, {states[Crystal::Param::BoughtPowerWizard], states[Crystal::Param::BoughtTimeWizard]},
+    mParamSubs.push_back(params[Param::BoughtSecondT1].subscribeTo(
+        {}, {params[Crystal::Param::BoughtPowerWizard], params[Crystal::Param::BoughtTimeWizard]},
         []() {
-                    return states[Crystal::Param::BoughtPowerWizard].get() &&
-                   states[Crystal::Param::BoughtTimeWizard].get();
+                    return params[Crystal::Param::BoughtPowerWizard].get() &&
+                   params[Crystal::Param::BoughtTimeWizard].get();
         }));
 
     mParamSubs.push_back(params[Crystal::Param::T1CostMult].subscribeTo(
-        states[State::BoughtSecondT1],
+        params[Param::BoughtSecondT1],
         [](bool val) { return val ? Number(1, 3) : 1; }));
 
     mParamSubs.push_back(ParameterSystem::subscribe(
@@ -248,20 +248,20 @@ void Crystal::setParamTriggers() {
 
     // Upgrade unlock constraints
     mParamSubs.push_back(ParameterSystem::subscribe(
-        {}, {states[State::BoughtSecondT1], states[State::BoughtCrysWizCntUp]},
+        {}, {params[Param::BoughtSecondT1], params[Param::BoughtCrysWizCntUp]},
         [this]() {
-                    mGlowUp->setActive(states[State::BoughtSecondT1].get() &&
-                               states[State::BoughtCrysWizCntUp].get());
+                    mGlowUp->setActive(params[Param::BoughtSecondT1].get() &&
+                               params[Param::BoughtCrysWizCntUp].get());
         }));
-    mParamSubs.push_back(states[State::ResetT1].subscribe([this](bool val) {
+    mParamSubs.push_back(params[Param::ResetT1].subscribe([this](bool val) {
         mCatalystBuy->setActive(val);
         mPoisWizBuy->setActive(val);
     }));
-    mParamSubs.push_back(states[State::BoughtFirstT1].subscribe(
+    mParamSubs.push_back(params[Param::BoughtFirstT1].subscribe(
         [this](bool val) { mWizCntUp->setActive(val); }));
-    mParamSubs.push_back(states[Crystal::Param::BoughtCatalyst].subscribe(
+    mParamSubs.push_back(params[Crystal::Param::BoughtCatalyst].subscribe(
         [this](bool bought) { mRobotBuy->setActive(bought); }));
-    mParamSubs.push_back(states[Crystal::Param::BoughtPoisonWizard].subscribe(
+    mParamSubs.push_back(params[Crystal::Param::BoughtPoisonWizard].subscribe(
         [this, params](bool bought) { mPoisonTimerSub->setActive(bought); }));
 }
 
@@ -274,7 +274,7 @@ void Crystal::onRender(SDL_Renderer* r) {
         mGlowFinishBkgrnd.setDest(glowRect);
         tex.draw(mGlowFinishBkgrnd);
     }
-    if (ParameterSystem::Param(State::CrysGlowActive).get()) {
+    if (ParameterSystem::Param(Param::CrysGlowActive).get()) {
         Rect glowRect = mGlowBkgrnd.getRect();
         glowRect.setPos(mPos->rect.cX(), mPos->rect.cY(), Rect::Align::CENTER);
         mGlowBkgrnd.setDest(glowRect);
@@ -338,7 +338,7 @@ void Crystal::onT1Reset() {
 }
 
 void Crystal::onWizFireballHit(const Wizard::Fireball& fireball) {
-    if (ParameterSystem::Param(State::CrysGlowActive).get()) {
+    if (ParameterSystem::Param(Param::CrysGlowActive).get()) {
         mGlowMagic += fireball.getPower();
         mGlowAnimTimerSub->get<TimerObservableBase::DATA>().timer = 0;
         mGlowAnimTimerSub->setActive(true);
@@ -359,11 +359,11 @@ void Crystal::onWizFireballHit(const Wizard::Fireball& fireball) {
 
 void Crystal::onPowFireballHit(const PowerWizard::Fireball& fireball) {
     createFireRing(fireball.getPower());
-    if (states[State::BoughtCrysGlowUp].get()) {
+    if (params[Param::BoughtCrysGlowUp].get()) {
         mGlowTimerSub = TimeSystem::GetTimerObservable()->subscribe(
             [this](Timer& t) { return onGlowTimer(t); },
             Timer(fireball.getDuration().toFloat()));
-        states[State::CrysGlowActive].set(true);
+        params[Param::CrysGlowActive].set(true);
     }
 }
 
@@ -371,7 +371,7 @@ bool Crystal::onGlowTimer(Timer& t) {
     Crystal::Params params;
     Number magic = mGlowMagic * params[Crystal::Param::GlowEffect].get();
     mGlowMagic = 0;
-    states[State::CrysGlowActive].set(false);
+    params[Param::CrysGlowActive].set(false);
 
     if (mGlowFinishing) {
         mGlowFinishTimerSub->get<TimerObservable::ON_TRIGGER>()(
@@ -444,14 +444,14 @@ Number Crystal::calcNumWizards() {
     for (auto state : {Crystal::Param::BoughtPowerWizard, Crystal::Param::BoughtTimeWizard,
                        Crystal::Param::BoughtCatalyst, Crystal::Param::BoughtPoisonWizard,
                        Crystal::Param::BoughtRobotWizard}) {
-        cnt += states[state].get();
+        cnt += params[state].get();
     }
 
     return cnt;
 }
 
 Number Crystal::calcWizCntEffect() {
-    if (!ParameterSystem::Param(State::BoughtCrysWizCntUp).get()) {
+    if (!ParameterSystem::Param(Param::BoughtCrysWizCntUp).get()) {
         return 1;
     }
 
@@ -461,7 +461,7 @@ Number Crystal::calcWizCntEffect() {
 Number Crystal::calcGlowEffect() {
     Crystal::Params params;
 
-    if (!states[State::BoughtCrysGlowUp].get()) {
+    if (!params[Param::BoughtCrysGlowUp].get()) {
         return 1;
     }
 

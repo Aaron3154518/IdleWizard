@@ -45,7 +45,7 @@ void setDefaults() {
     params[Catalyst::Param::FBCntLvl]->init(Event::ResetT2);
 
 
-    states[State::BoughtCatShardMult]->init(false, Event::ResetT2);
+    params[Param::BoughtCatShardMult]->init(false, Event::ResetT2);
 }
 }  // namespace Constants
 }  // namespace Catalyst

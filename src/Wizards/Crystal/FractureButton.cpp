@@ -40,7 +40,7 @@ void FractureButton::onClick(Event::MouseButton b, bool clicked) {
             Crystal::Params::get(Crystal::Param::ShardGain);
         shards.set(shards.get() + shardGain.get());
 
-        auto resetT1 = ParameterSystem::Param(State::ResetT1);
+        auto resetT1 = ParameterSystem::Param(Param::ResetT1);
         if (!resetT1.get()) {
             resetT1.set(true);
         }

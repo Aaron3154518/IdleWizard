@@ -43,7 +43,7 @@ void PoisonWizard::setUpgrades() {
     dUp->setEffects(
         {cryParams[Crystal::Param::PoisonMagic],
          cryParams[Crystal::Param::PoisonRate]},
-        {}, [states, cryParams]() -> TextUpdateData {
+        {}, [params, cryParams]() -> TextUpdateData {
             std::stringstream ss;
             ss << UpgradeDefaults::PercentEffectText(
                       cryParams[Crystal::Param::PoisonRate].get())
@@ -110,7 +110,7 @@ void PoisonWizard::setUpgrades() {
 
     // Shoot poison ball at catalyst
     UnlockablePtr uUp =
-        std::make_shared<Unlockable>(states[State::BoughtPoisWizCatPois]);
+        std::make_shared<Unlockable>(params[Param::BoughtPoisWizCatPois]);
     uUp->setImage("");
     uUp->setDescription(
         {"Fires {i} at {i} to grant poison effect. {i} zaps convert {i} into "
@@ -140,13 +140,13 @@ void PoisonWizard::setParamTriggers() {
         {}, [this]() { return calcBlobCount(); }));
 
     mParamSubs.push_back(
-        states[Crystal::Param::BoughtPoisonWizard].subscribe([this](bool bought) {
+        params[Crystal::Param::BoughtPoisonWizard].subscribe([this](bool bought) {
             WizardSystem::GetHideObservable()->next(mId, !bought);
         }));
 
     mParamSubs.push_back(ParameterSystem::subscribe(
         {},
-        {states[State::BoughtPoisWizCatPois], states[Crystal::Param::BoughtCatalyst]},
+        {params[Param::BoughtPoisWizCatPois], params[Crystal::Param::BoughtCatalyst]},
         [this]() { setTargets(); }));
 }
 
@@ -204,8 +204,8 @@ Number PoisonWizard::calcBlobCount() {
 void PoisonWizard::setTargets() {
 
     mTargets.clear();
-    if (states[State::BoughtPoisWizCatPois].get() &&
-        states[Crystal::Param::BoughtCatalyst].get()) {
+    if (params[Param::BoughtPoisWizCatPois].get() &&
+        params[Crystal::Param::BoughtCatalyst].get()) {
         mTargets.push_back(CATALYST);
     }
 }

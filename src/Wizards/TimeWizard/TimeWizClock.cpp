@@ -45,7 +45,7 @@ void Clock::onRender(SDL_Renderer* r) {
 
 void Clock::onUpdate(Time dt) {
     float multi =
-        ParameterSystem::Param<TIME_WIZARD>(TimeWizardParams::ClockSpeed)
+        TimeWizard::Params::get(TimeWizard::Param::ClockSpeed)
             .get()
             .toFloat();
     mSmallRot = fmodf(mSmallRot + SMALL_HAND_SPD * dt.s() * multi, 360);

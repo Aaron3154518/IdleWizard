@@ -53,33 +53,32 @@ void Wizard::setSubscriptions() {
     attachSubToVisibility(mGlobHitSub);
 }
 void Wizard::setUpgrades() {
-    ParameterSystem::Params<WIZARD> params;
+    Params params;
 
     // Power Display
     DisplayPtr dUp = std::make_shared<Display>();
     dUp->setImage(mId);
-    dUp->setEffects(
-        {params[WizardParams::Power], params[WizardParams::FBSpeed],
-         params[WizardParams::FBSpeedEffect], params[WizardParams::Speed],
-         params[WizardParams::Crit]},
-        {}, []() -> TextUpdateData {
-            ParameterSystem::Params<WIZARD> params;
-            std::stringstream ss;
-            std::vector<RenderTextureCPtr> imgs;
-            ss << "Power: "
-               << UpgradeDefaults::MultiplicativeEffectText(
-                      params[WizardParams::Power].get())
-               << "\nFire Rate: " << params[WizardParams::Speed].get()
-               << "/s\n{i} Speed: "
-               << UpgradeDefaults::MultiplicativeEffectText(
-                      params[WizardParams::FBSpeed].get())
-               << ", {b}Power : "
-               << UpgradeDefaults::MultiplicativeEffectText(
-                      params[WizardParams::FBSpeedEffect].get())
-               << "\nCrit Power: " << params[WizardParams::Crit].get();
-            imgs.push_back(IconSystem::Get(Constants::FB_IMG()));
-            return {ss.str(), imgs};
-        });
+    dUp->setEffects({params[Param::Power], params[Param::FBSpeed],
+                     params[Param::FBSpeedEffect], params[Param::Speed],
+                     params[Param::Crit]},
+                    {}, []() -> TextUpdateData {
+                        Params params;
+                        std::stringstream ss;
+                        std::vector<RenderTextureCPtr> imgs;
+                        ss << "Power: "
+                           << UpgradeDefaults::MultiplicativeEffectText(
+                                  params[Param::Power].get())
+                           << "\nFire Rate: " << params[Param::Speed].get()
+                           << "/s\n{i} Speed: "
+                           << UpgradeDefaults::MultiplicativeEffectText(
+                                  params[Param::FBSpeed].get())
+                           << ", {b}Power : "
+                           << UpgradeDefaults::MultiplicativeEffectText(
+                                  params[Param::FBSpeedEffect].get())
+                           << "\nCrit Power: " << params[Param::Crit].get();
+                        imgs.push_back(IconSystem::Get(Constants::FB_IMG()));
+                        return {ss.str(), imgs};
+                    });
     mPowerDisplay = mUpgrades->subscribe(dUp);
 
     // Target Upgrade
@@ -98,126 +97,117 @@ void Wizard::setUpgrades() {
     mTargetUp = mUpgrades->subscribe(tUp);
 
     // Power Upgrade
-    UpgradePtr up = std::make_shared<Upgrade>(
-        params[WizardParams::PowerUpLvl], params[WizardParams::PowerUpMaxLvl]);
+    UpgradePtr up = std::make_shared<Upgrade>(params[Param::PowerUpLvl],
+                                              params[Param::PowerUpMaxLvl]);
     up->setImage(Constants::POWER_UP_IMG);
     up->setDescription({"Increase base power by 1"});
-    up->setCost(UpgradeDefaults::CRYSTAL_MAGIC,
-                params[WizardParams::PowerUpCost]);
-    up->setEffects(params[WizardParams::PowerUp],
-                   UpgradeDefaults::AdditiveEffect);
-    mParamSubs.push_back(params[WizardParams::PowerUpCost].subscribeTo(
+    up->setCost(UpgradeDefaults::CRYSTAL_MAGIC, params[Param::PowerUpCost]);
+    up->setEffects(params[Param::PowerUp], UpgradeDefaults::AdditiveEffect);
+    mParamSubs.push_back(params[Param::PowerUpCost].subscribeTo(
         up->level(), [](const Number& lvl) { return 25 * (1.55 ^ lvl); }));
-    mParamSubs.push_back(params[WizardParams::PowerUp].subscribeTo(
+    mParamSubs.push_back(params[Param::PowerUp].subscribeTo(
         up->level(),
         [](const Number& lvl) { return min(lvl, 5) + 2 * max(lvl - 5, 0); }));
     mPowerUp = mUpgrades->subscribe(up);
 
     // Crit Upgrade
-    up = std::make_shared<Upgrade>(params[WizardParams::CritUpLvl], 10);
+    up = std::make_shared<Upgrade>(params[Param::CritUpLvl], 10);
     up->setImage(Constants::CRIT_UP_IMG);
     up->setDescription(
         {"Multiplies critical hit power *1.1 and increases chance for "
          "higher crits"});
-    up->setCost(UpgradeDefaults::CRYSTAL_MAGIC,
-                params[WizardParams::CritUpCost]);
-    up->setEffects(
-        {params[WizardParams::CritUp], params[WizardParams::CritSpreadUp]}, {},
-        []() -> TextUpdateData {
-            ParameterSystem::Params<WIZARD> params;
-            std::stringstream ss;
-            ss << "Crit: +" << params[WizardParams::CritUp].get()
-               << " | Spread: *" << params[WizardParams::CritSpreadUp].get();
-            return {ss.str()};
-        });
+    up->setCost(UpgradeDefaults::CRYSTAL_MAGIC, params[Param::CritUpCost]);
+    up->setEffects({params[Param::CritUp], params[Param::CritSpreadUp]}, {},
+                   []() -> TextUpdateData {
+                       Params params;
+                       std::stringstream ss;
+                       ss << "Crit: +" << params[Param::CritUp].get()
+                          << " | Spread: *"
+                          << params[Param::CritSpreadUp].get();
+                       return {ss.str()};
+                   });
     mParamSubs.push_back(UpgradeDefaults::subscribeT1UpCost(
-        up->level(), params[WizardParams::CritUpCost],
+        up->level(), params[Param::CritUpCost],
         [](const Number& lvl) { return 200 * (1.5 ^ lvl); }));
-    mParamSubs.push_back(params[WizardParams::CritUp].subscribeTo(
+    mParamSubs.push_back(params[Param::CritUp].subscribeTo(
         up->level(), [](const Number& lvl) { return (1.1 ^ lvl) - 1; }));
-    mParamSubs.push_back(params[WizardParams::CritSpreadUp].subscribeTo(
+    mParamSubs.push_back(params[Param::CritSpreadUp].subscribeTo(
         up->level(), [](const Number& lvl) { return .95 ^ lvl; }));
     mCritUp = mUpgrades->subscribe(up);
 
     // Robo Crit Upgrade
-    up = std::make_shared<Upgrade>(params[WizardParams::RoboCritUpLvl], 10);
+    up = std::make_shared<Upgrade>(params[Param::RoboCritUpLvl], 10);
     up->setImage("");
     up->setDescription({"Multiplies critical hit power *1.15"});
-    up->setCost(UpgradeDefaults::CRYSTAL_MAGIC,
-                params[WizardParams::RoboCritUpCost]);
-    up->setEffects(params[WizardParams::RoboCritUp],
+    up->setCost(UpgradeDefaults::CRYSTAL_MAGIC, params[Param::RoboCritUpCost]);
+    up->setEffects(params[Param::RoboCritUp],
                    UpgradeDefaults::MultiplicativeEffect);
-    mParamSubs.push_back(params[WizardParams::RoboCritUpCost].subscribeTo(
+    mParamSubs.push_back(params[Param::RoboCritUpCost].subscribeTo(
         up->level(),
         [](const Number& lvl) { return Number(1, 20) * (11 ^ lvl); }));
-    mParamSubs.push_back(params[WizardParams::RoboCritUp].subscribeTo(
+    mParamSubs.push_back(params[Param::RoboCritUp].subscribeTo(
         up->level(), [](const Number& lvl) { return 1.15 ^ lvl; }));
     mRoboCritUp = mUpgrades->subscribe(up);
 
     // Multi Upgrade
-    up = std::make_shared<Upgrade>(params[WizardParams::MultiUpLvl], 20);
+    up = std::make_shared<Upgrade>(params[Param::MultiUpLvl], 20);
     up->setImage(Constants::MULTI_UP_IMG);
     up->setDescription({"Increase double {i} chance by +5%",
                         {IconSystem::Get(Constants::FB_IMG())}});
-    up->setCost(UpgradeDefaults::CRYSTAL_MAGIC,
-                params[WizardParams::MultiUpCost]);
-    up->setEffects(params[WizardParams::MultiUp],
-                   UpgradeDefaults::PercentEffect);
+    up->setCost(UpgradeDefaults::CRYSTAL_MAGIC, params[Param::MultiUpCost]);
+    up->setEffects(params[Param::MultiUp], UpgradeDefaults::PercentEffect);
     mParamSubs.push_back(UpgradeDefaults::subscribeT1UpCost(
-        up->level(), params[WizardParams::MultiUpCost],
+        up->level(), params[Param::MultiUpCost],
         [](const Number& lvl) { return 175 * (1.3 ^ lvl); }));
-    mParamSubs.push_back(params[WizardParams::MultiUp].subscribeTo(
+    mParamSubs.push_back(params[Param::MultiUp].subscribeTo(
         up->level(), [](const Number& lvl) { return .05 * lvl; }));
     mMultiUp = mUpgrades->subscribe(up);
 }
 void Wizard::setParamTriggers() {
-    ParameterSystem::Params<WIZARD> params;
-    ParameterSystem::Params<CRYSTAL> crysParams;
-    ParameterSystem::Params<CATALYST> catParams;
-    ParameterSystem::Params<TIME_WIZARD> timeParams;
-    ParameterSystem::States states;
+    Params params;
+    Crystal::Params cryParams;
+    Catalyst::Params catParams;
+    TimeWizard::Params timeParams;
+    RobotWizard::Params roboParams;
 
-    mParamSubs.push_back(params[WizardParams::Power].subscribeTo(
-        {params[WizardParams::BasePower], params[WizardParams::PowerUp],
-         params[WizardParams::Speed], params[WizardParams::PowerWizEffect],
-         crysParams[CrystalParams::MagicEffect],
-         crysParams[CrystalParams::WizardCntEffect],
-         catParams[CatalystParams::MagicEffect],
-         catParams[CatalystParams::FBCntEffect]},
+    mParamSubs.push_back(params[Param::Power].subscribeTo(
+        {params[Param::BasePower], params[Param::PowerUp], params[Param::Speed],
+         params[Param::PowerWizEffect], cryParams[Crystal::Param::MagicEffect],
+         cryParams[Crystal::Param::WizardCntEffect],
+         catParams[Catalyst::Param::MagicEffect],
+         catParams[Catalyst::Param::FBCntEffect]},
         {}, [this]() { return calcPower(); }));
 
-    mParamSubs.push_back(params[WizardParams::Speed].subscribeTo(
-        {params[WizardParams::BaseSpeed],
-         timeParams[TimeWizardParams::SpeedEffect]},
-        {states[State::WizBoosted]}, [this]() { return calcSpeed(); }));
+    mParamSubs.push_back(params[Param::Speed].subscribeTo(
+        {params[Param::BaseSpeed], timeParams[TimeWizard::Param::SpeedEffect]},
+        {params[Param::WizBoosted]}, [this]() { return calcSpeed(); }));
 
-    mParamSubs.push_back(params[WizardParams::FBSpeed].subscribeTo(
-        {params[WizardParams::BaseFBSpeed],
-         timeParams[TimeWizardParams::FBSpeedUp]},
+    mParamSubs.push_back(params[Param::FBSpeed].subscribeTo(
+        {params[Param::BaseFBSpeed], timeParams[TimeWizard::Param::FBSpeedUp]},
         {}, [this]() { return calcFBSpeed(); }));
 
-    mParamSubs.push_back(params[WizardParams::FBSpeedEffect].subscribeTo(
-        {params[WizardParams::FBSpeed]}, {},
+    mParamSubs.push_back(params[Param::FBSpeedEffect].subscribeTo(
+        {params[Param::FBSpeed]}, {},
         [this]() { return calcFBSpeedEffect(); }));
 
     mParamSubs.push_back(
-        params[WizardParams::Speed].subscribe([this]() { calcTimer(); }));
+        params[Param::Speed].subscribe([this]() { calcTimer(); }));
 
-    mParamSubs.push_back(params[WizardParams::Crit].subscribeTo(
-        {params[WizardParams::BaseCrit], params[WizardParams::CritUp],
-         params[WizardParams::RoboCritUp]},
-        {states[State::BoughtRoboWizCritUp]}, [this]() { return calcCrit(); }));
+    mParamSubs.push_back(params[Param::Crit].subscribeTo(
+        {params[Param::BaseCrit], params[Param::CritUp],
+         params[Param::RoboCritUp]},
+        {roboParams[RobotWizard::Param::BoughtRoboWizCritUp]},
+        [this]() { return calcCrit(); }));
 
-    mParamSubs.push_back(params[WizardParams::CritSpread].subscribeTo(
-        {params[WizardParams::BaseCritSpread],
-         params[WizardParams::CritSpreadUp]},
-        {}, [this]() { return calcCritSpread(); }));
+    mParamSubs.push_back(params[Param::CritSpread].subscribeTo(
+        {params[Param::BaseCritSpread], params[Param::CritSpreadUp]}, {},
+        [this]() { return calcCritSpread(); }));
 
-    mParamSubs.push_back(states[State::TimeWizFrozen].subscribe(
+    mParamSubs.push_back(timeParams[TimeWizard::Param::TimeWizFrozen].subscribe(
         [this](bool val) { onTimeFreeze(val); }));
 
-    mParamSubs.push_back(params[WizardParams::PowerUpMaxLvl].subscribeTo(
-        states[State::BoughtFirstT1], [this](bool val) {
+    mParamSubs.push_back(params[Param::PowerUpMaxLvl].subscribeTo(
+        cryParams[Crystal::Param::BoughtFirstT1], [this](bool val) {
             if (val) {
                 showStar();
             }
@@ -225,17 +215,18 @@ void Wizard::setParamTriggers() {
         }));
 
     // Upgrade unlock constraints
-    mParamSubs.push_back(states[State::BoughtPowerWizard].subscribe(
+    mParamSubs.push_back(cryParams[Crystal::Param::BoughtPowerWizard].subscribe(
         [this](bool val) { mCritUp->setActive(val); }));
-    mParamSubs.push_back(states[State::BoughtTimeWizard].subscribe(
+    mParamSubs.push_back(cryParams[Crystal::Param::BoughtTimeWizard].subscribe(
         [this](bool val) { mMultiUp->setActive(val); }));
     mParamSubs.push_back(ParameterSystem::subscribe(
-        {}, {states[State::BoughtCatalyst]}, [this]() {
-            ParameterSystem::States states;
-            mTargetUp->setActive(states[State::BoughtCatalyst].get());
+        {}, {cryParams[Crystal::Param::BoughtCatalyst]}, [this, cryParams]() {
+            mTargetUp->setActive(
+                cryParams[Crystal::Param::BoughtCatalyst].get());
         }));
-    mParamSubs.push_back(states[State::BoughtRoboWizCritUp].subscribe(
-        [this](bool bought) { mRoboCritUp->setActive(bought); }));
+    mParamSubs.push_back(
+        roboParams[RobotWizard::Param::BoughtRoboWizCritUp].subscribe(
+            [this](bool bought) { mRoboCritUp->setActive(bought); }));
 }
 
 void Wizard::onRender(SDL_Renderer* r) {
@@ -280,10 +271,10 @@ void Wizard::onT1Reset() {
 }
 
 bool Wizard::onTimer(Timer& timer) {
-    ParameterSystem::Params<WIZARD> params;
+    Params params;
 
     shootFireball(newFireballData());
-    float Multi = params[WizardParams::MultiUp].get().toFloat();
+    float Multi = params[Param::MultiUp].get().toFloat();
     if (rDist(gen) < Multi) {
         shootFireball(
             newFireballData(),
@@ -329,13 +320,12 @@ void Wizard::onPowFireballHit(const PowerWizard::Fireball& fireball) {
         mPowWizBoosts.push_back(std::make_pair(power, duration));
     }
 
-    ParameterSystem::Param(State::WizBoosted).set(true);
-    ParameterSystem::Param<WIZARD>(WizardParams::PowerWizEffect)
-        .set(mPowWizBoosts.front().first);
+    Params::get(Param::WizBoosted).set(true);
+    Params::get(Param::PowerWizEffect).set(mPowWizBoosts.front().first);
     mPowWizTimerSub = TimeSystem::GetTimerObservable()->subscribe(
         [this](Timer& t) {
             bool boosted = onPowWizTimer(t);
-            ParameterSystem::Param(State::WizBoosted).set(boosted);
+            Params::get(Param::WizBoosted).set(boosted);
             return boosted;
         },
         [this](Time dt, Timer& t) { onPowWizTimerUpdate(dt, t); },
@@ -349,8 +339,7 @@ void Wizard::onGlobHit() {
 }
 
 bool Wizard::onPowWizTimer(Timer& timer) {
-    auto powerWizEffect =
-        ParameterSystem::Param<WIZARD>(WizardParams::PowerWizEffect);
+    auto powerWizEffect = Params::get(Param::PowerWizEffect);
     mPowWizBoosts.erase(mPowWizBoosts.begin());
     if (mPowWizBoosts.empty()) {
         powerWizEffect.set(1);
@@ -368,8 +357,7 @@ void Wizard::onPowWizTimerUpdate(Time dt, Timer& timer) {
 void Wizard::onTimeFreeze(bool frozen) {
     if (!frozen && mFreezeFireball) {
         Number freezeEffect =
-            ParameterSystem::Param<TIME_WIZARD>(TimeWizardParams::FreezeEffect)
-                .get();
+            TimeWizard::Params::get(TimeWizard::Param::FreezeEffect).get();
         mFreezeFireball->applyTimeEffect(freezeEffect);
         mFireballs->push_back(std::move(mFreezeFireball));
     }
@@ -377,8 +365,7 @@ void Wizard::onTimeFreeze(bool frozen) {
 
 void Wizard::onTimeWarp() {
     Number effect =
-        ParameterSystem::Param<TIME_WIZARD>(TimeWizardParams::TimeWarpEffect)
-            .get();
+        TimeWizard::Params::get(TimeWizard::Param::TimeWarpEffect).get();
     for (auto& fireball : *mFireballs) {
         fireball.setSpeed(fireball.getSpeed() * 10);
         fireball.setPower(fireball.getPower() * effect);
@@ -386,7 +373,7 @@ void Wizard::onTimeWarp() {
 }
 
 void Wizard::shootFireball(const Fireball::Data& data) {
-    if (!ParameterSystem::Param(State::TimeWizFrozen).get()) {
+    if (!TimeWizard::Params::get(TimeWizard::Param::TimeWizFrozen).get()) {
         mFireballs->push_back(ComponentFactory<Fireball>::New(
             SDL_FPoint{mPos->rect.cX(), mPos->rect.cY()}, mTarget, data));
     } else {
@@ -408,40 +395,39 @@ void Wizard::shootFireball(const Fireball::Data& data, SDL_FPoint launch) {
 }
 
 Number Wizard::calcPower() {
-    ParameterSystem::Params<WIZARD> params;
-    ParameterSystem::Params<CRYSTAL> crysParams;
-    ParameterSystem::Params<CATALYST> catParams;
+    Params params;
+    Crystal::Params crysParams;
+    Catalyst::Params catParams;
 
-    return (params[WizardParams::BasePower].get() +
-            params[WizardParams::PowerUp].get()) *
-           params[WizardParams::PowerWizEffect].get() *
-           crysParams[CrystalParams::MagicEffect].get() *
-           crysParams[CrystalParams::WizardCntEffect].get() *
-           catParams[CatalystParams::MagicEffect].get() *
-           catParams[CatalystParams::FBCntEffect].get() *
-           max(1, params[WizardParams::Speed].get() * 16 / 1000);
+    return (params[Param::BasePower].get() + params[Param::PowerUp].get()) *
+           params[Param::PowerWizEffect].get() *
+           crysParams[Crystal::Param::MagicEffect].get() *
+           crysParams[Crystal::Param::WizardCntEffect].get() *
+           catParams[Catalyst::Param::MagicEffect].get() *
+           catParams[Catalyst::Param::FBCntEffect].get() *
+           max(1, params[Param::Speed].get() * 16 / 1000);
 }
 
 Number Wizard::calcSpeed() {
-    ParameterSystem::Params<WIZARD> params;
-    ParameterSystem::Params<TIME_WIZARD> timeParams;
+    Params params;
+    TimeWizard::Params timeParams;
 
-    Number speed = params[WizardParams::BaseSpeed].get() *
-                   timeParams[TimeWizardParams::SpeedEffect].get();
+    Number speed = params[Param::BaseSpeed].get() *
+                   timeParams[TimeWizard::Param::SpeedEffect].get();
     return speed;
 }
 
 Number Wizard::calcFBSpeed() {
-    ParameterSystem::Params<WIZARD> params;
-    ParameterSystem::Params<TIME_WIZARD> timeParams;
+    Params params;
+    TimeWizard::Params timeParams;
 
-    return params[WizardParams::BaseFBSpeed].get() *
-           timeParams[TimeWizardParams::FBSpeedUp].get();
+    return params[Param::BaseFBSpeed].get() *
+           timeParams[TimeWizard::Param::FBSpeedUp].get();
 }
 
 Number Wizard::calcFBSpeedEffect() {
-    ParameterSystem::Params<WIZARD> params;
-    Number fbSpeed = max(params[WizardParams::FBSpeed].get(), 1);
+    Params params;
+    Number fbSpeed = max(params[Param::FBSpeed].get(), 1);
 
     Number twoFbSpeed = 2 * fbSpeed;
 
@@ -449,10 +435,10 @@ Number Wizard::calcFBSpeedEffect() {
 }
 
 void Wizard::calcTimer() {
-    ParameterSystem::Params<WIZARD> params;
+    Params params;
 
     Timer& timer = mFireballTimerSub->get<TimerObservable::DATA>();
-    float div = params[WizardParams::Speed].get().toFloat();
+    float div = params[Param::Speed].get().toFloat();
     if (div <= 0) {
         div = 1;
     }
@@ -462,32 +448,31 @@ void Wizard::calcTimer() {
 }
 
 Number Wizard::calcCrit() {
-    ParameterSystem::Params<WIZARD> params;
-    ParameterSystem::States states;
-    Number crit = (params[WizardParams::BaseCrit].get() +
-                   params[WizardParams::CritUp].get()) *
-                  params[WizardParams::RoboCritUp].get();
-    if (states[State::BoughtRoboWizCritUp].get()) {
+    Params params;
+    Number crit =
+        (params[Param::BaseCrit].get() + params[Param::CritUp].get()) *
+        params[Param::RoboCritUp].get();
+    if (RobotWizard::Params::get(RobotWizard::Param::BoughtRoboWizCritUp)
+            .get()) {
         crit.powTen();
     }
     return crit;
 }
 
 Number Wizard::calcCritSpread() {
-    ParameterSystem::Params<WIZARD> params;
-    return params[WizardParams::BaseCritSpread].get() +
-           params[WizardParams::CritSpreadUp].get();
+    Params params;
+    return params[Param::BaseCritSpread].get() +
+           params[Param::CritSpreadUp].get();
 }
 
 Fireball::Data Wizard::newFireballData() {
-    ParameterSystem::Params<WIZARD> params;
-    ParameterSystem::States states;
+    Params params;
 
-    Number power = params[WizardParams::Power].get() *
-                   params[WizardParams::FBSpeedEffect].get();
-    float speed = params[WizardParams::FBSpeed].get().toFloat();
+    Number power =
+        params[Param::Power].get() * params[Param::FBSpeedEffect].get();
+    float speed = params[Param::FBSpeed].get().toFloat();
 
-    if (params[WizardParams::CritUpLvl].get() == 0) {
+    if (params[Param::CritUpLvl].get() == 0) {
         return {power, 1, speed};
     }
 
@@ -495,9 +480,9 @@ Fireball::Data Wizard::newFireballData() {
     if (frac == 0) {
         frac = std::numeric_limits<float>::min();
     }
-    frac = (frac ^ params[WizardParams::CritSpread].get()).toFloat() + .5;
-    return {power * params[WizardParams::Crit].get() * frac, powf(frac, .25),
-            speed, !mPowWizBoosts.empty()};
+    frac = (frac ^ params[Param::CritSpread].get()).toFloat() + .5;
+    return {power * params[Param::Crit].get() * frac, powf(frac, .25), speed,
+            !mPowWizBoosts.empty()};
 }
 
 void Wizard::setPos(float x, float y) {

@@ -11,7 +11,6 @@
 #include <Systems/IconSystem/IconSystem.h>
 #include <Systems/IconSystem/MoneyIcons.h>
 #include <Systems/ParameterSystem/ParameterAccess.h>
-#include <Systems/ParameterSystem/WizardParameters.h>
 #include <Systems/WizardSystem/WizardObservables.h>
 #include <Wizards/Crystal/CrystalConstants.h>
 #include <Wizards/PowerWizard/PowerFireball.h>

@@ -219,8 +219,10 @@ ParameterSubscriptionPtr subscribe(
     return sub;
 }
 
+/*
 // States
 BaseState States::operator[](State::B key) const { return Param(key); }
 
 NodeState States::operator[](State::N key) const { return Param(key); }
+*/
 }  // namespace ParameterSystem

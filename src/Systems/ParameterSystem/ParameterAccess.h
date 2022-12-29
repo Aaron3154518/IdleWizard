@@ -3,8 +3,6 @@
 
 #include <Systems/ParameterSystem/ParameterDag.h>
 #include <Systems/ParameterSystem/ParameterObservable.h>
-#include <Systems/ParameterSystem/WizardParameters.h>
-#include <Systems/ParameterSystem/WizardStates.h>
 #include <Utils/Number.h>
 #include <Wizards/WizardIds.h>
 
@@ -34,11 +32,11 @@ struct ValueParam {
                                        bool fire = true) const;
 
     WizardId mId;
-    param_t mKey;
+    key_t mKey;
     bool mIsBase;
 
    protected:
-    ValueParam(WizardId id, param_t key, bool isBase);
+    ValueParam(WizardId id, key_t key, bool isBase);
 };
 
 typedef std::unique_ptr<ValueParam> ValueParamPtr;
@@ -61,19 +59,20 @@ struct StateParam {
     ParameterSubscriptionPtr subscribe(std::function<void(bool)> func,
                                        bool fire = true) const;
 
-    param_t mKey;
+    key_t mKey;
     bool mIsBase;
 
    protected:
-    StateParam(param_t key, bool isBase);
+    StateParam(key_t key, bool isBase);
 };
 
 typedef std::unique_ptr<StateParam> StateParamPtr;
 
 // Classes to base params
 struct BaseValue : public ValueParam {
-    template <WizardId id>
-    friend BaseValue Param(WizardBaseType<id> key);
+    template <WizardId id, class BaseParamT, class NodeParamT, class BaseStateT,
+              class NodeStateT>
+    friend class Params;
 
    public:
     BaseValueObservablePtr operator->() const;
@@ -81,13 +80,15 @@ struct BaseValue : public ValueParam {
     void set(const Number& val) const;
 
    private:
-    BaseValue(WizardId id, param_t key);
+    BaseValue(WizardId id, key_t key);
 };
 
 typedef std::unique_ptr<BaseValue> BaseValuePtr;
 
 struct BaseState : public StateParam {
-    friend BaseState Param(State::B key);
+    template <WizardId id, class BaseParamT, class NodeParamT, class BaseStateT,
+              class NodeStateT>
+    friend class Params;
 
    public:
     BaseStateObservablePtr operator->() const;
@@ -95,15 +96,16 @@ struct BaseState : public StateParam {
     void set(bool state) const;
 
    private:
-    BaseState(param_t key);
+    BaseState(key_t key);
 };
 
 typedef std::unique_ptr<BaseState> BaseStatePtr;
 
 // Classes for node params
 struct NodeValue : public ValueParam {
-    template <WizardId id>
-    friend NodeValue Param(WizardNodeType<id> key);
+    template <WizardId id, class BaseParamT, class NodeParamT, class BaseStateT,
+              class NodeStateT>
+    friend class Params;
 
    public:
     NodeValueObservablePtr operator->() const;
@@ -120,13 +122,15 @@ struct NodeValue : public ValueParam {
                                          bool fire = true) const;
 
    private:
-    NodeValue(WizardId id, param_t key);
+    NodeValue(WizardId id, key_t key);
 };
 
 typedef std::unique_ptr<NodeValue> NodeValuePtr;
 
 struct NodeState : public StateParam {
-    friend NodeState Param(State::N key);
+    template <WizardId id, class BaseParamT, class NodeParamT, class BaseStateT,
+              class NodeStateT>
+    friend class Params;
 
    public:
     NodeStateObservablePtr operator->() const;
@@ -143,25 +147,10 @@ struct NodeState : public StateParam {
                                          bool fire = true) const;
 
    private:
-    NodeState(param_t key);
+    NodeState(key_t key);
 };
 
 typedef std::unique_ptr<NodeState> NodeStatePtr;
-
-// Creates a param
-template <WizardId id>
-BaseValue Param(WizardBaseType<id> key) {
-    return BaseValue(id, key);
-}
-
-template <WizardId id>
-NodeValue Param(WizardNodeType<id> key) {
-    return NodeValue(id, key);
-}
-
-BaseState Param(State::B key);
-
-NodeState Param(State::N key);
 
 // Subscribes to multiple params
 ParameterSubscriptionPtr subscribe(
@@ -169,23 +158,31 @@ ParameterSubscriptionPtr subscribe(
     const std::initializer_list<StateParam>& states, std::function<void()> func,
     bool fire = true);
 
-// Provides easy access to params from one wizard
-template <WizardId id>
-struct Params {
-    BaseValue operator[](WizardBaseType<id> key) const {
-        return Param<id>(key);
-    }
+// Creates parameters
+template <WizardId id, class BaseParamT, class NodeParamT, class BaseStateT,
+          class NodeStateT>
+class Params {
+    static_assert(std::is_integral<BaseParamT>::value,
+                  "Params: BaseParamT must be integral type");
+    static_assert(std::is_integral<NodeParamT>::value,
+                  "Params: NodeParamT must be integral type");
+    static_assert(std::is_integral<BaseStateT>::value,
+                  "Params: BaseStateT must be integral type");
+    static_assert(std::is_integral<NodeStateT>::value,
+                  "Params: NodeStateT must be integral type");
 
-    NodeValue operator[](WizardNodeType<id> key) const {
-        return Param<id>(key);
-    }
-};
+   public:
+    static BaseValue get(BaseParamT key) { return BaseValue(id, key); }
+    BaseValue operator[](BaseParamT key) const { return get(key); }
 
-// Provides easy access to state params
-struct States {
-    BaseState operator[](State::B key) const;
+    static NodeValue get(NodeParamT key) { return NodeValue(id, key); }
+    NodeValue operator[](NodeParamT key) const { return get(key); }
 
-    NodeState operator[](State::N key) const;
+    static BaseState get(BaseStateT key) { return BaseState(id, key); }
+    BaseState operator[](BaseStateT key) const { return get(key); }
+
+    static NodeState get(NodeStateT key) { return NodeState(id, key); }
+    NodeState operator[](NodeStateT key) const { return get(key); }
 };
 }  // namespace ParameterSystem
 

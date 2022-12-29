@@ -32,9 +32,9 @@ ParameterSystem::ParameterSubscriptionPtr UpgradeCost::subscribe(
 // UpgradeDefaults
 namespace UpgradeDefaults {
 const ParameterSystem::BaseValue
-    CRYSTAL_MAGIC = ParameterSystem::Param<CRYSTAL>(CrystalParams::Magic),
-    CRYSTAL_SHARDS = ParameterSystem::Param<CRYSTAL>(CrystalParams::Shards),
-    CATALYST_MAGIC = ParameterSystem::Param<CATALYST>(CatalystParams::Magic);
+    CRYSTAL_MAGIC = Crystal::Params::get(Crystal::Param::Magic),
+    CRYSTAL_SHARDS = Crystal::Params::get(Crystal::Param::Shards),
+    CATALYST_MAGIC = Catalyst::Params::get(Catalyst::Param::Magic);
 
 std::string NoEffectText(const Number& effect) { return effect.toString(); }
 TextUpdateData NoEffect(const Number& effect) { return {NoEffectText(effect)}; }
@@ -66,7 +66,7 @@ TextUpdateData PowerEffect(const Number& effect) {
 ParameterSystem::ParameterSubscriptionPtr subscribeT1UpCost(
     ParameterSystem::BaseValue lvlParam, ParameterSystem::NodeValue costParam,
     std::function<Number(const Number&)> costFunc) {
-    auto costMult = ParameterSystem::Param<CRYSTAL>(CrystalParams::T1CostMult);
+    auto costMult = Crystal::Params::get(Crystal::Param::T1CostMult);
     return costParam.subscribeTo(
         {lvlParam, costMult}, {}, [costFunc, lvlParam, costMult]() {
             return costFunc(lvlParam.get()) * costMult.get();

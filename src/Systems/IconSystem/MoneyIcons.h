@@ -5,8 +5,9 @@
 #include <ServiceSystem/UpdateServices/TimerService.h>
 #include <Systems/IconSystem/IconSystem.h>
 #include <Systems/ParameterSystem/ParameterAccess.h>
-#include <Systems/ParameterSystem/WizardParameters.h>
 #include <Wizards/Catalyst/CatalystConstants.h>
+#include <Wizards/Catalyst/CatalystParameters.h>
+#include <Wizards/Crystal/CrystalParameters.h>
 #include <Wizards/PoisonWizard/PoisonWizardConstants.h>
 #include <Wizards/PowerWizard/PowerWizardConstants.h>
 #include <Wizards/Wizard/WizardConstants.h>

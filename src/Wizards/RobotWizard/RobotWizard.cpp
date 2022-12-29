@@ -84,11 +84,10 @@ void RobotWizard::setSubscriptions() {
     attachSubToVisibility(mMoveUpdateSub);
 }
 void RobotWizard::setUpgrades() {
-    ParameterSystem::Params<ROBOT_WIZARD> params;
-    ParameterSystem::States states;
+    RobotWizard::Params params;
 
     UnlockablePtr uUp =
-        std::make_shared<Unlockable>(states[State::BoughtRoboWizCritUp]);
+        std::make_shared<Unlockable>(states[RobotWizard::Param::BoughtRoboWizCritUp]);
     uUp->setImage("");
     uUp->setDescription(
         {"{i} crit is *10^crit instead of *crit\nUnlocks new {i} "
@@ -96,10 +95,10 @@ void RobotWizard::setUpgrades() {
          {IconSystem::Get(Wizard::Constants::FB_IMG()),
           IconSystem::Get(Wizard::Constants::IMG())}});
     uUp->setCost(UpgradeDefaults::CRYSTAL_SHARDS,
-                 params[RobotWizardParams::WizCritUpCost]);
+                 params[RobotWizard::Param::WizCritUpCost]);
     mWizCritUp = mUpgrades->subscribe(uUp);
 
-    using RobotWizardParams::B;
+    using RobotWizard::Param::B;
     params[B::U1]->init(0);
     params[B::U2]->init(0.1);
     params[B::U3]->init(0.5);
@@ -113,7 +112,7 @@ void RobotWizard::setUpgrades() {
     int i = 0;
     for (auto p : {B::U1, B::U2, B::U3, B::U4, B::U5, B::U6, B::U7, B::U8,
                    B::U9, B::U10}) {
-        uUp = std::make_shared<Unlockable>(states[State::BoughtRoboWizCritUp]);
+        uUp = std::make_shared<Unlockable>(states[RobotWizard::Param::BoughtRoboWizCritUp]);
         uUp->setImage(p == B::U7 ? Constants::IMG().file : "");
         uUp->setDescription({"{i} " + std::to_string(i++),
                              {IconSystem::Get(Constants::IMG())}});
@@ -122,17 +121,16 @@ void RobotWizard::setUpgrades() {
     }
 }
 void RobotWizard::setParamTriggers() {
-    ParameterSystem::Params<ROBOT_WIZARD> params;
-    ParameterSystem::States states;
+    RobotWizard::Params params;
 
     mParamSubs.push_back(
-        states[State::BoughtRobotWizard].subscribe([this](bool bought) {
+        states[Crystal::Param::BoughtRobotWizard].subscribe([this](bool bought) {
             WizardSystem::GetHideObservable()->next(mId, !bought);
         }));
 
     mParamSubs.push_back(
         states[State::TimeWizFrozen].subscribe([this](bool frozen) {
-            if (!ParameterSystem::Param(State::BoughtRobotWizard).get()) {
+            if (!ParameterSystem::Param(Crystal::Param::BoughtRobotWizard).get()) {
                 return;
             }
 
@@ -163,12 +161,6 @@ void RobotWizard::setParamTriggers() {
                 r.setPos(p.x, p.y, Rect::Align::CENTER);
                 mPortals[it->first].start(r);
             }
-        }));
-
-    mParamSubs.push_back(states[State::ShootRobot].subscribeTo(
-        {}, {states[State::BoughtRobotWizard]}, []() {
-            ParameterSystem::States states;
-            return states[State::BoughtRobotWizard].get();
         }));
 
     for (auto pair : Constants::SYN_TARGETS) {
@@ -261,6 +253,6 @@ void RobotWizard::onHide(bool hide) {
 void RobotWizard::showUpgrades() {
     ServiceSystem::Get<UpgradeService, UpgradeListObservable>()->next(
         mUpgrades, UpgradeDefaults::CRYSTAL_SHARDS,
-        ParameterSystem::Param<ROBOT_WIZARD>(RobotWizardParams::ShardAmnt));
+        RobotWizard::Params::get(RobotWizard::Param::ShardAmnt));
 }
 }  // namespace RobotWizard

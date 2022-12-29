@@ -15,7 +15,6 @@
 #include <ServiceSystem/EventServices/MouseService.h>
 #include <Systems/IconSystem/IconSystem.h>
 #include <Systems/ParameterSystem/ParameterAccess.h>
-#include <Systems/ParameterSystem/WizardParameters.h>
 #include <Utils/AnimationData.h>
 #include <Wizards/Crystal/CrystalConstants.h>
 #include <Wizards/PowerWizard/PowerWizardConstants.h>

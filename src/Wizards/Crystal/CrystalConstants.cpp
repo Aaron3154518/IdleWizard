@@ -28,32 +28,31 @@ const AnimationData& GLOW_FINISH_IMG() {
 void setDefaults() {
     using WizardSystem::Event;
 
-    ParameterSystem::Params<CRYSTAL> params;
+    Crystal::Params params;
 
-    params[CrystalParams::Magic]->init(0, Event::ResetT1);
-    params[CrystalParams::Shards]->init(0, Event::ResetT2);
-    params[CrystalParams::BestMagic]->init(0, Event::ResetT2);
-    params[CrystalParams::PoisonMagic]->init(0, Event::ResetT1);
-    params[CrystalParams::PoisonRate]->init(0, Event::ResetT1);
+    params[Crystal::Param::Magic]->init(0, Event::ResetT1);
+    params[Crystal::Param::Shards]->init(0, Event::ResetT2);
+    params[Crystal::Param::BestMagic]->init(0, Event::ResetT2);
+    params[Crystal::Param::PoisonMagic]->init(0, Event::ResetT1);
+    params[Crystal::Param::PoisonRate]->init(0, Event::ResetT1);
 
-    params[CrystalParams::WizardCntUpCost]->init(Number(1, 4));
-    params[CrystalParams::GlowUpCost]->init(Number(1, 11));
-    params[CrystalParams::CatalystCost]->init(1);
-    params[CrystalParams::PoisonWizCost]->init(100);
-    params[CrystalParams::RobotCost]->init(1000);
-    params[CrystalParams::T1ResetCost]->init(Number(1, 15));
+    params[Crystal::Param::WizardCntUpCost]->init(Number(1, 4));
+    params[Crystal::Param::GlowUpCost]->init(Number(1, 11));
+    params[Crystal::Param::CatalystCost]->init(1);
+    params[Crystal::Param::PoisonWizCost]->init(100);
+    params[Crystal::Param::RobotCost]->init(1000);
+    params[Crystal::Param::T1ResetCost]->init(Number(1, 15));
 
-    ParameterSystem::States states;
 
     states[State::ResetT1]->init(false);
     states[State::BoughtCrysWizCntUp]->init(false, Event::ResetT1);
     states[State::BoughtCrysGlowUp]->init(false, Event::ResetT1);
-    states[State::BoughtPowerWizard]->init(false, Event::ResetT1);
-    states[State::BoughtTimeWizard]->init(false, Event::ResetT1);
+    states[Crystal::Param::BoughtPowerWizard]->init(false, Event::ResetT1);
+    states[Crystal::Param::BoughtTimeWizard]->init(false, Event::ResetT1);
     states[State::CrysGlowActive]->init(false, Event::ResetT2);
-    states[State::BoughtCatalyst]->init(false, Event::ResetT2);
-    states[State::BoughtPoisonWizard]->init(false, Event::ResetT2);
-    states[State::BoughtRobotWizard]->init(false, Event::ResetT2);
+    states[Crystal::Param::BoughtCatalyst]->init(false, Event::ResetT2);
+    states[Crystal::Param::BoughtPoisonWizard]->init(false, Event::ResetT2);
+    states[Crystal::Param::BoughtRobotWizard]->init(false, Event::ResetT2);
 }
 }  // namespace Constants
 }  // namespace Crystal

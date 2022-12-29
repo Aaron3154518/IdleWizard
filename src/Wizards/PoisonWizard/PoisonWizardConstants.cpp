@@ -25,20 +25,19 @@ const AnimationData& BUBBLE2_IMG() {
 void setDefaults() {
     using WizardSystem::Event;
 
-    ParameterSystem::Params<POISON_WIZARD> params;
+    PoisonWizard::Params params;
 
-    params[PoisonWizardParams::BaseSpeed]->init(.125);
-    params[PoisonWizardParams::BaseGlobCnt]->init(5);
-    params[PoisonWizardParams::BasePoisonRate]->init(0.1);
-    params[PoisonWizardParams::PoisonDecay]->init(.95);
+    params[PoisonWizard::Param::BaseSpeed]->init(.125);
+    params[PoisonWizard::Param::BaseGlobCnt]->init(5);
+    params[PoisonWizard::Param::BasePoisonRate]->init(0.1);
+    params[PoisonWizard::Param::PoisonDecay]->init(.95);
 
-    params[PoisonWizardParams::CatPoisonUpCost]->init(Number(1, 4));
-    params[PoisonWizardParams::CatPoisCntUp]->init(5);
+    params[PoisonWizard::Param::CatPoisonUpCost]->init(Number(1, 4));
+    params[PoisonWizard::Param::CatPoisCntUp]->init(5);
 
-    params[PoisonWizardParams::PoisonFbUpLvl]->init(Event::ResetT2);
-    params[PoisonWizardParams::GlobCntUpLvl]->init(Event::ResetT2);
+    params[PoisonWizard::Param::PoisonFbUpLvl]->init(Event::ResetT2);
+    params[PoisonWizard::Param::GlobCntUpLvl]->init(Event::ResetT2);
 
-    ParameterSystem::States states;
 }
 }  // namespace Constants
 }  // namespace PoisonWizard

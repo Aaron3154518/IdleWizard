@@ -50,7 +50,7 @@ void HitObservable::init() {
         },
         CATALYST);
 
-    mNumZapsSub = ParameterSystem::Param<CATALYST>(CatalystParams::ZapperUp)
+    mNumZapsSub = Catalyst::Params::get(Catalyst::Param::ZapperUp)
                       .subscribe([this](const Number& numZaps) {
                           mMaxZaps = std::max(numZaps.toInt(), 1);
                           mReady = mMaxZaps;
@@ -83,8 +83,8 @@ void HitObservable::onTimerUpdate(Time dt, Timer& timer) {
             int idx = (int)(rDist(gen) * inRange.size());
             auto sub = inRange.at(idx).lock();
             if (sub) {
-                auto poisCntParam = ParameterSystem::Param<CATALYST>(
-                    CatalystParams::CatRingPoisCnt);
+                auto poisCntParam = Catalyst::Params::get(
+                    Catalyst::Param::CatRingPoisCnt);
                 int poisCnt = poisCntParam.get().toInt();
 
                 sub->get<ZAP_CNT>()++;
@@ -104,7 +104,7 @@ void HitObservable::onTimerUpdate(Time dt, Timer& timer) {
 
 std::vector<HitObservable::SubscriptionWPtr> HitObservable::getInRange() {
     std::vector<SubscriptionWPtr> inRange;
-    int zapCnt = ParameterSystem::Param<CATALYST>(CatalystParams::ZapCntUp)
+    int zapCnt = Catalyst::Params::get(Catalyst::Param::ZapCntUp)
                      .get()
                      .toInt();
     for (auto sub : *this) {

@@ -11,24 +11,24 @@ RenderTextureCPtr GetMoneyIcon(const ParameterSystem::ValueParam& param) {
     switch (param.mId) {
         case CRYSTAL:
             switch (param.mKey) {
-                case CrystalParams::Magic:
+                case Crystal::Param::Magic:
                     data = CRYSTAL_MAGIC;
                     break;
-                case CrystalParams::Shards:
+                case Crystal::Param::Shards:
                     data = CRYSTAL_SHARDS;
                     break;
             }
             break;
         case CATALYST:
             switch (param.mKey) {
-                case CatalystParams::Magic:
+                case Catalyst::Param::Magic:
                     data = CATALYST_MAGIC;
                     break;
-                case CatalystParams::FBRegCnt:
+                case Catalyst::Param::FBRegCnt:
                     return IconSystem::Get(Wizard::Constants::FB_IMG());
-                case CatalystParams::FBPowCnt:
+                case Catalyst::Param::FBPowCnt:
                     return IconSystem::Get(PowerWizard::Constants::FB_IMG());
-                case CatalystParams::FBPoiCnt:
+                case Catalyst::Param::FBPoiCnt:
                     return IconSystem::Get(PoisonWizard::Constants::GLOB_IMG());
             };
             break;

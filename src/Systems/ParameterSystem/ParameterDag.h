@@ -2,28 +2,28 @@
 #define PARAMETER_DAG_H
 
 #include <Systems/ParameterSystem/ParameterObservable.h>
-#include <Systems/ParameterSystem/WizardParameters.h>
-#include <Systems/ParameterSystem/WizardStates.h>
 #include <Wizards/WizardIds.h>
 
 #include <unordered_map>
 
 namespace ParameterSystem {
+typedef uint8_t key_t;
+
 typedef std::unordered_map<WizardId,
-                           std::unordered_map<param_t, BaseValueObservablePtr>>
+                           std::unordered_map<key_t, BaseValueObservablePtr>>
     BaseValueMap;
 typedef std::unordered_map<WizardId,
-                           std::unordered_map<param_t, NodeValueObservablePtr>>
+                           std::unordered_map<key_t, NodeValueObservablePtr>>
     NodeValueMap;
-typedef std::unordered_map<param_t, BaseStateObservablePtr> BaseStateMap;
-typedef std::unordered_map<param_t, NodeStateObservablePtr> NodeStateMap;
+typedef std::unordered_map<key_t, BaseStateObservablePtr> BaseStateMap;
+typedef std::unordered_map<key_t, NodeStateObservablePtr> NodeStateMap;
 
 class ParameterDagImpl {
    protected:
-    static const BaseValueObservablePtr& GetBase(WizardId id, param_t key);
-    static const NodeValueObservablePtr& GetNode(WizardId id, param_t key);
-    static const BaseStateObservablePtr& GetBase(param_t key);
-    static const NodeStateObservablePtr& GetNode(param_t key);
+    static const BaseValueObservablePtr& GetBase(WizardId id, key_t key);
+    static const NodeValueObservablePtr& GetNode(WizardId id, key_t key);
+    static const BaseStateObservablePtr& GetBase(key_t key);
+    static const NodeStateObservablePtr& GetNode(key_t key);
 
    private:
     static BaseValueMap& mBaseValues();
@@ -33,9 +33,6 @@ class ParameterDagImpl {
 };
 
 class ParameterDag : public ParameterDagImpl {
-    template <WizardId>
-    friend class Params;
-
     friend class ValueParam;
     friend class BaseValue;
     friend class NodeValue;

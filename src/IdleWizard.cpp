@@ -54,11 +54,10 @@ int main(int argc, char* argv[]) {
         Start start = Start::T2;
         WizardId t1Wiz = POWER_WIZARD, t2Wiz = CATALYST;
 
-        ParameterSystem::States states;
-        ParameterSystem::Params<WIZARD> wParams;
-        ParameterSystem::Params<POWER_WIZARD> pwParams;
-        ParameterSystem::Params<TIME_WIZARD> twParams;
-        ParameterSystem::Params<CRYSTAL> cryParams;
+            Wizard::Params wParams;
+        PowerWizard::Params pwParams;
+        TimeWizard::Params twParams;
+        Crystal::Params cryParams;
         // Buy upgrades
         switch (start) {
             case Start::T2:
@@ -68,14 +67,14 @@ int main(int argc, char* argv[]) {
                 // UpgradeDefaults::CRYSTAL_SHARDS);
                 // GetWizardUpgrades(CRYSTAL)->maxAll(
                 // UpgradeDefaults::CRYSTAL_SHARDS);
-                states[State::BoughtRobotWizard].set(true);
-                cryParams[CrystalParams::Shards].set(Number(1, 10));
+                states[Crystal::Param::BoughtRobotWizard].set(true);
+                cryParams[Crystal::Param::Shards].set(Number(1, 10));
             case Start::Fracture:
-                states[State::BoughtPowerWizard].set(true);
-                states[State::BoughtTimeWizard].set(true);
+                states[Crystal::Param::BoughtPowerWizard].set(true);
+                states[Crystal::Param::BoughtTimeWizard].set(true);
 
-                cryParams[CrystalParams::Magic].set(
-                    cryParams[CrystalParams::T1ResetCost].get());
+                cryParams[Crystal::Param::Magic].set(
+                    cryParams[Crystal::Param::T1ResetCost].get());
 
                 for (WizardId id : {
                          CRYSTAL,
@@ -87,12 +86,12 @@ int main(int argc, char* argv[]) {
             case Start::SecondT1:
                 switch (t1Wiz) {
                     case POWER_WIZARD:
-                        states[State::BoughtTimeWizard].set(true);
+                        states[Crystal::Param::BoughtTimeWizard].set(true);
                         GetWizardUpgrades(TIME_WIZARD)
                             ->maxAll(UpgradeDefaults::CRYSTAL_MAGIC);
                         break;
                     case TIME_WIZARD:
-                        states[State::BoughtPowerWizard].set(true);
+                        states[Crystal::Param::BoughtPowerWizard].set(true);
                         GetWizardUpgrades(POWER_WIZARD)
                             ->maxAll(UpgradeDefaults::CRYSTAL_MAGIC);
                         break;
@@ -104,10 +103,10 @@ int main(int argc, char* argv[]) {
                 // UpgradeDefaults::CRYSTAL_MAGIC);
                 switch (t1Wiz) {
                     case POWER_WIZARD:
-                        states[State::BoughtPowerWizard].set(true);
+                        states[Crystal::Param::BoughtPowerWizard].set(true);
                         break;
                     case TIME_WIZARD:
-                        states[State::BoughtTimeWizard].set(true);
+                        states[Crystal::Param::BoughtTimeWizard].set(true);
                         break;
                 }
                 break;

@@ -2,7 +2,6 @@
 #define PARAMETER_OBSERVABLE_H
 
 #include <ServiceSystem/Observable.h>
-#include <Systems/ParameterSystem/WizardStates.h>
 #include <Systems/WizardSystem/WizardEvents.h>
 #include <Utils/Number.h>
 
@@ -48,8 +47,6 @@ class StateObservable : public ParamObservableBase {
 typedef std::shared_ptr<StateObservable> StateObservablePtr;
 
 class NodeValueObservable : public ValueObservable {
-    template <WizardId>
-    friend class Params;
     friend class NodeValue;
 };
 

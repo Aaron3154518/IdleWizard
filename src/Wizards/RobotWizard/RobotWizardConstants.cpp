@@ -35,13 +35,12 @@ const AnimationData& PORTAL_BOT() {
 void setDefaults() {
     using WizardSystem::Event;
 
-    ParameterSystem::Params<ROBOT_WIZARD> params;
+    RobotWizard::Params params;
 
-    params[RobotWizardParams::ShardAmnt]->init(0, Event::ResetT2);
+    params[RobotWizard::Param::ShardAmnt]->init(0, Event::ResetT2);
 
-    params[RobotWizardParams::WizCritUpCost]->init(Number(1, 20));
+    params[RobotWizard::Param::WizCritUpCost]->init(Number(1, 20));
 
-    ParameterSystem::States states;
 
     states[State::CrysSynBotActive]->init(false);
     states[State::WizSynBotActive]->init(true);

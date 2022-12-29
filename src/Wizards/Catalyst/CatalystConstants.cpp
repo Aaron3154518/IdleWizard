@@ -9,42 +9,41 @@ const AnimationData& IMG() {
     return IMG;
 }
 
-const ParameterSystem::BaseValue REG_FB_CNT = ParameterSystem::Param<CATALYST>(
-                                     CatalystParams::FBRegCnt),
-                                 POW_FB_CNT = ParameterSystem::Param<CATALYST>(
-                                     CatalystParams::FBPowCnt),
-                                 POI_FB_CNT = ParameterSystem::Param<CATALYST>(
-                                     CatalystParams::FBPoiCnt);
+const ParameterSystem::BaseValue REG_FB_CNT = Catalyst::Params::get(
+                                     Catalyst::Param::FBRegCnt),
+                                 POW_FB_CNT = Catalyst::Params::get(
+                                     Catalyst::Param::FBPowCnt),
+                                 POI_FB_CNT = Catalyst::Params::get(
+                                     Catalyst::Param::FBPoiCnt);
 
 const std::vector<ParameterSystem::BaseValue> FB_CNT_TYPES = {
-    ParameterSystem::Param<CATALYST>(CatalystParams::Magic), REG_FB_CNT,
+    Catalyst::Params::get(Catalyst::Param::Magic), REG_FB_CNT,
     POI_FB_CNT, POW_FB_CNT};
 
 void setDefaults() {
     using WizardSystem::Event;
 
-    ParameterSystem::Params<CATALYST> params;
+    Catalyst::Params params;
 
-    params[CatalystParams::Magic]->init(Number(1, 10));
+    params[Catalyst::Param::Magic]->init(Number(1, 10));
 
-    params[CatalystParams::FBRegCnt]->init(0, Event::ResetT1);
-    params[CatalystParams::FBPowCnt]->init(0, Event::ResetT1);
-    params[CatalystParams::FBPoiCnt]->init(0, Event::ResetT1);
-    params[CatalystParams::CatRingPoisCnt]->init(0, Event::ResetT1);
+    params[Catalyst::Param::FBRegCnt]->init(0, Event::ResetT1);
+    params[Catalyst::Param::FBPowCnt]->init(0, Event::ResetT1);
+    params[Catalyst::Param::FBPoiCnt]->init(0, Event::ResetT1);
+    params[Catalyst::Param::CatRingPoisCnt]->init(0, Event::ResetT1);
 
-    params[CatalystParams::BaseRange]->init(1.25);
+    params[Catalyst::Param::BaseRange]->init(1.25);
 
-    params[CatalystParams::ShardGainUpCost]->init(2);
-    params[CatalystParams::MultUpCost]->init(100);
+    params[Catalyst::Param::ShardGainUpCost]->init(2);
+    params[Catalyst::Param::MultUpCost]->init(100);
 
-    params[CatalystParams::RangeUpLvl]->init(Event::ResetT2);
-    params[CatalystParams::ZapCntUpLvl]->init(Event::ResetT2);
-    params[CatalystParams::ZapperUpLvl]->init(Event::ResetT2);
-    params[CatalystParams::GainUp1Lvl]->init(Event::ResetT2);
-    params[CatalystParams::GainUp2Lvl]->init(Event::ResetT2);
-    params[CatalystParams::FBCntLvl]->init(Event::ResetT2);
+    params[Catalyst::Param::RangeUpLvl]->init(Event::ResetT2);
+    params[Catalyst::Param::ZapCntUpLvl]->init(Event::ResetT2);
+    params[Catalyst::Param::ZapperUpLvl]->init(Event::ResetT2);
+    params[Catalyst::Param::GainUp1Lvl]->init(Event::ResetT2);
+    params[Catalyst::Param::GainUp2Lvl]->init(Event::ResetT2);
+    params[Catalyst::Param::FBCntLvl]->init(Event::ResetT2);
 
-    ParameterSystem::States states;
 
     states[State::BoughtCatShardMult]->init(false, Event::ResetT2);
 }

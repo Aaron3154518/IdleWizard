@@ -30,9 +30,8 @@ void PoisonWizard::setSubscriptions() {
     attachSubToVisibility(mFireballTimerSub);
 }
 void PoisonWizard::setUpgrades() {
-    ParameterSystem::Params<POISON_WIZARD> params;
-    ParameterSystem::Params<CRYSTAL> cryParams;
-    ParameterSystem::States states;
+    PoisonWizard::Params params;
+    Crystal::Params cryParams;
 
     // Poison gain
     DisplayPtr dUp = std::make_shared<Display>();
@@ -42,13 +41,13 @@ void PoisonWizard::setUpgrades() {
          {IconSystem::Get(Crystal::Constants::IMG()),
           MoneyIcons::GetMoneyIcon(UpgradeDefaults::CRYSTAL_MAGIC)}});
     dUp->setEffects(
-        {cryParams[CrystalParams::PoisonMagic],
-         cryParams[CrystalParams::PoisonRate]},
+        {cryParams[Crystal::Param::PoisonMagic],
+         cryParams[Crystal::Param::PoisonRate]},
         {}, [states, cryParams]() -> TextUpdateData {
             std::stringstream ss;
             ss << UpgradeDefaults::PercentEffectText(
-                      cryParams[CrystalParams::PoisonRate].get())
-               << " of " << cryParams[CrystalParams::PoisonMagic].get()
+                      cryParams[Crystal::Param::PoisonRate].get())
+               << " of " << cryParams[Crystal::Param::PoisonMagic].get()
                << "{i}/s";
             return {ss.str(),
                     {MoneyIcons::GetMoneyIcon(UpgradeDefaults::CRYSTAL_MAGIC)}};
@@ -57,55 +56,55 @@ void PoisonWizard::setUpgrades() {
 
     // Shard multiplier
     UpgradePtr up = std::make_shared<Upgrade>(
-        params[PoisonWizardParams::ShardMultUpLvl], 5);
+        params[PoisonWizard::Param::ShardMultUpLvl], 5);
     up->setImage("");
     up->setDescription(
         {"Triple {i} gain",
          {MoneyIcons::GetMoneyIcon(UpgradeDefaults::CRYSTAL_MAGIC)}});
     up->setCost(UpgradeDefaults::CRYSTAL_MAGIC,
-                params[PoisonWizardParams::ShardMultUpCost]);
-    up->setEffects(params[PoisonWizardParams::ShardMultUp],
+                params[PoisonWizard::Param::ShardMultUpCost]);
+    up->setEffects(params[PoisonWizard::Param::ShardMultUp],
                    UpgradeDefaults::MultiplicativeEffect);
     mParamSubs.push_back(
-        params[PoisonWizardParams::ShardMultUpCost].subscribeTo(
+        params[PoisonWizard::Param::ShardMultUpCost].subscribeTo(
             up->level(), [](const Number& lvl) {
                 return Number(1, 20 + 10 * lvl.toInt());
             }));
-    mParamSubs.push_back(params[PoisonWizardParams::ShardMultUp].subscribeTo(
+    mParamSubs.push_back(params[PoisonWizard::Param::ShardMultUp].subscribeTo(
         up->level(), [](const Number& lvl) { return 3 ^ lvl; }));
     mShardMultUp = mUpgrades->subscribe(up);
 
     // Increase poison gain from poison fbs
     up =
-        std::make_shared<Upgrade>(params[PoisonWizardParams::PoisonFbUpLvl], 5);
+        std::make_shared<Upgrade>(params[PoisonWizard::Param::PoisonFbUpLvl], 5);
     up->setImage("");
     up->setDescription(
         {"{i} increase the {i} gain rate by +10%/lvl",
          {IconSystem::Get(Wizard::Constants::FB_POISON_IMG()),
           MoneyIcons::GetMoneyIcon(UpgradeDefaults::CRYSTAL_MAGIC)}});
     up->setCost(UpgradeDefaults::CRYSTAL_MAGIC,
-                params[PoisonWizardParams::PoisonFbUpCost]);
-    up->setEffects(params[PoisonWizardParams::PoisonFbUp],
+                params[PoisonWizard::Param::PoisonFbUpCost]);
+    up->setEffects(params[PoisonWizard::Param::PoisonFbUp],
                    UpgradeDefaults::PercentEffect);
-    mParamSubs.push_back(params[PoisonWizardParams::PoisonFbUpCost].subscribeTo(
+    mParamSubs.push_back(params[PoisonWizard::Param::PoisonFbUpCost].subscribeTo(
         up->level(),
         [](const Number& lvl) { return Number(1, 15) * (4.5 ^ lvl); }));
-    mParamSubs.push_back(params[PoisonWizardParams::PoisonFbUp].subscribeTo(
+    mParamSubs.push_back(params[PoisonWizard::Param::PoisonFbUp].subscribeTo(
         up->level(), [](const Number& lvl) { return lvl / 10; }));
     mPoisonFbUp = mUpgrades->subscribe(up);
 
     // Increase globs fired
-    up = std::make_shared<Upgrade>(params[PoisonWizardParams::GlobCntUpLvl], 3);
+    up = std::make_shared<Upgrade>(params[PoisonWizard::Param::GlobCntUpLvl], 3);
     up->setImage("");
     up->setDescription({"Increases {i} count by +2",
                         {IconSystem::Get(Constants::GLOB_IMG())}});
     up->setCost(UpgradeDefaults::CRYSTAL_SHARDS,
-                params[PoisonWizardParams::GlobCntCost]);
-    up->setEffects(params[PoisonWizardParams::GlobCntUp],
+                params[PoisonWizard::Param::GlobCntCost]);
+    up->setEffects(params[PoisonWizard::Param::GlobCntUp],
                    UpgradeDefaults::AdditiveEffect);
-    mParamSubs.push_back(params[PoisonWizardParams::GlobCntCost].subscribeTo(
+    mParamSubs.push_back(params[PoisonWizard::Param::GlobCntCost].subscribeTo(
         up->level(), [](const Number& lvl) { return 50 * (1.5 ^ lvl); }));
-    mParamSubs.push_back(params[PoisonWizardParams::GlobCntUp].subscribeTo(
+    mParamSubs.push_back(params[PoisonWizard::Param::GlobCntUp].subscribeTo(
         up->level(), [](const Number& lvl) { return 2 * lvl; }));
     mGlobCntUp = mUpgrades->subscribe(up);
 
@@ -122,33 +121,32 @@ void PoisonWizard::setUpgrades() {
           IconSystem::Get(Wizard::Constants::FB_IMG()),
           IconSystem::Get(Wizard::Constants::FB_POISON_IMG())}});
     uUp->setCost(UpgradeDefaults::CATALYST_MAGIC,
-                 params[PoisonWizardParams::CatPoisonUpCost]);
+                 params[PoisonWizard::Param::CatPoisonUpCost]);
     mCatPoisUp = mUpgrades->subscribe(uUp);
 }
 void PoisonWizard::setParamTriggers() {
-    ParameterSystem::Params<POISON_WIZARD> params;
-    ParameterSystem::States states;
+    PoisonWizard::Params params;
 
-    mParamSubs.push_back(params[PoisonWizardParams::Speed].subscribeTo(
-        {params[PoisonWizardParams::BaseSpeed]}, {},
+    mParamSubs.push_back(params[PoisonWizard::Param::Speed].subscribeTo(
+        {params[PoisonWizard::Param::BaseSpeed]}, {},
         [this]() { return calcSpeed(); }));
 
     mParamSubs.push_back(
-        params[PoisonWizardParams::Speed].subscribe([this]() { calcTimer(); }));
+        params[PoisonWizard::Param::Speed].subscribe([this]() { calcTimer(); }));
 
-    mParamSubs.push_back(params[PoisonWizardParams::GlobCnt].subscribeTo(
-        {params[PoisonWizardParams::BaseGlobCnt],
-         params[PoisonWizardParams::GlobCntUp]},
+    mParamSubs.push_back(params[PoisonWizard::Param::GlobCnt].subscribeTo(
+        {params[PoisonWizard::Param::BaseGlobCnt],
+         params[PoisonWizard::Param::GlobCntUp]},
         {}, [this]() { return calcBlobCount(); }));
 
     mParamSubs.push_back(
-        states[State::BoughtPoisonWizard].subscribe([this](bool bought) {
+        states[Crystal::Param::BoughtPoisonWizard].subscribe([this](bool bought) {
             WizardSystem::GetHideObservable()->next(mId, !bought);
         }));
 
     mParamSubs.push_back(ParameterSystem::subscribe(
         {},
-        {states[State::BoughtPoisWizCatPois], states[State::BoughtCatalyst]},
+        {states[State::BoughtPoisWizCatPois], states[Crystal::Param::BoughtCatalyst]},
         [this]() { setTargets(); }));
 }
 
@@ -182,14 +180,14 @@ void PoisonWizard::onT1Reset() {
 }
 
 Number PoisonWizard::calcSpeed() {
-    ParameterSystem::Params<POISON_WIZARD> params;
-    return params[PoisonWizardParams::BaseSpeed].get();
+    PoisonWizard::Params params;
+    return params[PoisonWizard::Param::BaseSpeed].get();
 }
 void PoisonWizard::calcTimer() {
-    ParameterSystem::Params<POISON_WIZARD> params;
+    PoisonWizard::Params params;
 
     Timer& timer = mFireballTimerSub->get<TimerObservable::DATA>();
-    float div = params[PoisonWizardParams::Speed].get().toFloat();
+    float div = params[PoisonWizard::Param::Speed].get().toFloat();
     if (div <= 0) {
         div = 1;
     }
@@ -198,23 +196,22 @@ void PoisonWizard::calcTimer() {
     timer.timer *= timer.length / prevLen;
 }
 Number PoisonWizard::calcBlobCount() {
-    ParameterSystem::Params<POISON_WIZARD> params;
-    return params[PoisonWizardParams::BaseGlobCnt].get() +
-           params[PoisonWizardParams::GlobCntUp].get();
+    PoisonWizard::Params params;
+    return params[PoisonWizard::Param::BaseGlobCnt].get() +
+           params[PoisonWizard::Param::GlobCntUp].get();
 }
 
 void PoisonWizard::setTargets() {
-    ParameterSystem::States states;
 
     mTargets.clear();
     if (states[State::BoughtPoisWizCatPois].get() &&
-        states[State::BoughtCatalyst].get()) {
+        states[Crystal::Param::BoughtCatalyst].get()) {
         mTargets.push_back(CATALYST);
     }
 }
 
 void PoisonWizard::shootFireball() {
-    ParameterSystem::Params<POISON_WIZARD> params;
+    PoisonWizard::Params params;
 
     if (!mTargets.empty()) {
         auto data = newFireballData();
@@ -223,7 +220,7 @@ void PoisonWizard::shootFireball() {
             mTargets.at((int)(rDist(gen) * mTargets.size())), data));
     }
 
-    Number cnt = params[PoisonWizardParams::GlobCnt].get();
+    Number cnt = params[PoisonWizard::Param::GlobCnt].get();
     for (int i = 0; i < cnt; i++) {
         float theta = rDist(gen) * 2 * M_PI;
         mGlobs.push_back(ComponentFactory<Glob>::New(
@@ -233,7 +230,7 @@ void PoisonWizard::shootFireball() {
 }
 
 Fireball::Data PoisonWizard::newFireballData() {
-    ParameterSystem::Params<WIZARD> params;
+    Wizard::Params params;
 
     Fireball::Data data;
     data.duration = 7500;

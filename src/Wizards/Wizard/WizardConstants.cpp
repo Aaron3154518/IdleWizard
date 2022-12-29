@@ -58,22 +58,21 @@ const std::vector<WizardId> TARGETS = {CRYSTAL, CATALYST};
 void setDefaults() {
     using WizardSystem::Event;
 
-    ParameterSystem::Params<WIZARD> params;
+    Params params;
 
-    params[WizardParams::BaseCritSpread]->init(0);
-    params[WizardParams::BasePower]->init(1);
-    params[WizardParams::BaseSpeed]->init(.5);
-    params[WizardParams::BaseFBSpeed]->init(1);
-    params[WizardParams::BaseCrit]->init(1);
-    params[WizardParams::PowerWizEffect]->init(1, Event::ResetT1);
+    params[Param::BaseCritSpread]->init(0);
+    params[Param::BasePower]->init(1);
+    params[Param::BaseSpeed]->init(.5);
+    params[Param::BaseFBSpeed]->init(1);
+    params[Param::BaseCrit]->init(1);
+    params[Param::PowerWizEffect]->init(1, Event::ResetT1);
 
-    params[WizardParams::PowerUpLvl]->init(Event::ResetT1);
-    params[WizardParams::MultiUpLvl]->init(Event::ResetT1);
-    params[WizardParams::CritUpLvl]->init(Event::ResetT1);
-    params[WizardParams::RoboCritUpLvl]->init(Event::ResetT1);
+    params[Param::PowerUpLvl]->init(Event::ResetT1);
+    params[Param::MultiUpLvl]->init(Event::ResetT1);
+    params[Param::CritUpLvl]->init(Event::ResetT1);
+    params[Param::RoboCritUpLvl]->init(Event::ResetT1);
 
-    ParameterSystem::States states;
-    states[State::WizBoosted]->init(false, Event::ResetT1);
+    params[Param::WizBoosted]->init(false, Event::ResetT1);
 }
 }  // namespace Constants
 }  // namespace Wizard

@@ -1,7 +1,6 @@
 #ifndef BOT_H
 #define BOT_H
 
-#include <Wizards/PowerWizard/PowerFireball.h>
 #include <Components/UpgradeList.h>
 #include <RenderSystem/RenderTypes.h>
 #include <ServiceSystem/Component.h>
@@ -12,6 +11,7 @@
 #include <Systems/TargetSystem.h>
 #include <Systems/TimeSystem.h>
 #include <Systems/WizardSystem/WizardObservables.h>
+#include <Wizards/PowerWizard/PowerFireball.h>
 #include <Wizards/RobotWizard/RobotWizardConstants.h>
 #include <Wizards/TimeWizard/TimeWizardParameters.h>
 #include <Wizards/WizardIds.h>
@@ -98,6 +98,26 @@ typedef std::unique_ptr<UpgradeBot> UpgradeBotPtr;
 
 class SynergyBot : public Component {
    public:
+    struct Portal : public Component {
+       public:
+        Portal();
+
+        void start(const Rect& r);
+
+       private:
+        void init();
+
+        void setActive(bool active);
+
+        RenderAnimation mPortalTopImg, mPortalBotImg;
+        TimerObservable::SubscriptionPtr mPortalTimerSub;
+        UIComponentPtr mPortalTopPos, mPortalBotPos;
+        RenderObservable::SubscriptionPtr mPortalTopRenderSub,
+            mPortalBotRenderSub;
+    };
+
+    typedef std::unique_ptr<Portal> PortalPtr;
+
     SynergyBot(WizardId id);
 
     void setPos(float x, float y);
@@ -125,7 +145,8 @@ class SynergyBot : public Component {
     BotAi::BeelineData mBeelineData;
 
     PowerWizard::FireballPtr mFireball;
-    PowerWizard::FireballListPtr mFireballs;
+    PowerWizard::RobotFireballListPtr mFireballs;
+    PortalPtr mPortal;
 
     RenderObservable::SubscriptionPtr mRenderSub;
     TimeSystem::UpdateObservable::SubscriptionPtr mUpdateSub;

@@ -232,8 +232,7 @@ void Wizard::setParamTriggers() {
 void Wizard::onRender(SDL_Renderer* r) {
     TextureBuilder tex;
 
-    if (mPowWizTimerSub &&
-        mPowWizTimerSub->get<TimerObservable::DATA>().isActive()) {
+    if (!mPowWizBoosts.empty()) {
         mPowBkgrnd.setDest(mPos->rect);
         tex.draw(mPowBkgrnd);
     }
@@ -452,8 +451,7 @@ Number Wizard::calcCrit() {
     Number crit =
         (params[Param::BaseCrit].get() + params[Param::CritUp].get()) *
         params[Param::RoboCritUp].get();
-    if (RobotWizard::Params::get(RobotWizard::Param::BoughtWizCritUp)
-            .get()) {
+    if (RobotWizard::Params::get(RobotWizard::Param::BoughtWizCritUp).get()) {
         crit.powTen();
     }
     return crit;
@@ -468,21 +466,24 @@ Number Wizard::calcCritSpread() {
 Fireball::Data Wizard::newFireballData() {
     Params params;
 
-    Number power =
+    Fireball::Data data;
+
+    data.boosted = !mPowWizBoosts.empty();
+    data.power =
         params[Param::Power].get() * params[Param::FBSpeedEffect].get();
-    float speed = params[Param::FBSpeed].get().toFloat();
+    data.speed = params[Param::FBSpeed].get().toFloat();
 
-    if (params[Param::CritUpLvl].get() == 0) {
-        return {power, 1, speed};
+    if (params[Param::CritUpLvl].get() > 0) {
+        float frac = rDist(gen);
+        if (frac == 0) {
+            frac = std::numeric_limits<float>::min();
+        }
+        frac = (frac ^ params[Param::CritSpread].get()).toFloat() + .5;
+        Fireball::Data data;
+        data.power *= params[Param::Crit].get() * frac;
+        data.sizeFactor = powf(frac, .25);
     }
-
-    float frac = rDist(gen);
-    if (frac == 0) {
-        frac = std::numeric_limits<float>::min();
-    }
-    frac = (frac ^ params[Param::CritSpread].get()).toFloat() + .5;
-    return {power * params[Param::Crit].get() * frac, powf(frac, .25), speed,
-            !mPowWizBoosts.empty()};
+    return data;
 }
 
 void Wizard::setPos(float x, float y) {

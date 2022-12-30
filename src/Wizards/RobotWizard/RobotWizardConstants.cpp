@@ -41,7 +41,7 @@ void setDefaults() {
 
     params[Param::WizCritUpCost]->init(Number(1, 20));
 
-    params[Param::CrysSynBotActive]->init(false);
+    params[Param::CrysSynBotActive]->init(true);
     params[Param::WizSynBotActive]->init(true);
     params[Param::TimeWizSynBotActive]->init(true);
 }

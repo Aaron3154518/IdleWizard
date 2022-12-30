@@ -221,8 +221,7 @@ void TimeWizard::setParamTriggers() {
 bool TimeWizard::onCostTimer(Timer& timer) {
     Params params;
 
-    if (!params[Param::Frozen].get() &&
-        params[Param::Active].get()) {
+    if (!params[Param::Frozen].get() && params[Param::Active].get()) {
         auto speedCost = Params::get(Param::SpeedCost);
         auto money = Crystal::Params::get(Crystal::Param::Magic);
         money.set(money.get() * (1 - speedCost.get() * timer.length / 1000));
@@ -238,6 +237,17 @@ void TimeWizard::onRender(SDL_Renderer* r) {
     mFreezePb.dest = Rect(mPos->rect.x(), mPos->rect.y2(), mPos->rect.w(),
                           mPos->rect.h() / 15);
     tex.draw(mFreezePb);
+}
+
+void TimeWizard::onClick(Event::MouseButton b, bool clicked) {
+    static bool _prev_clicked = false;
+
+    WizardBase::onClick(b, clicked);
+
+    if (_prev_clicked && clicked) {
+        Params::get(Param::Frozen).set(!Params::get(Param::Frozen).get());
+    }
+    _prev_clicked = clicked;
 }
 
 void TimeWizard::onHide(bool hide) {
@@ -319,8 +329,7 @@ Number TimeWizard::calcFreezeEffect() {
 Number TimeWizard::calcSpeedEffect() {
     Params params;
     Number effect = 1;
-    if (params[Param::Active].get() ||
-        params[Param::Frozen].get()) {
+    if (params[Param::Active].get() || params[Param::Frozen].get()) {
         effect =
             params[Param::SpeedBaseEffect].get() +
             (params[Param::SpeedUp].get() * params[Param::SpeedUpUp].get());

@@ -30,22 +30,6 @@
 namespace RobotWizard {
 class RobotWizard : public WizardBase {
    public:
-    struct Portals {
-       public:
-        Portals();
-
-        void start(const Rect& r);
-
-       private:
-        void setActive(bool active);
-
-        RenderAnimation mPortalTopImg, mPortalBotImg;
-        TimerObservable::SubscriptionPtr mPortalTimerSub;
-        UIComponentPtr mPortalTopPos, mPortalBotPos;
-        RenderObservable::SubscriptionPtr mPortalTopRenderSub,
-            mPortalBotRenderSub;
-    };
-
     RobotWizard();
 
    private:
@@ -55,19 +39,15 @@ class RobotWizard : public WizardBase {
     void setParamTriggers();
 
     void onMoveUpdate(Time dt);
-    bool onUpgradeTimer(Timer& t);
     void onRender(SDL_Renderer* r);
     void onResize(ResizeData data);
     void onHide(bool hide);
 
     void showUpgrades();
 
-    void upgradeTarget();
-
     SDL_FPoint mTargetPos;
 
     RenderAnimation mTpImg;
-    std::unordered_map<WizardId, Portals> mPortals;
 
     std::unordered_map<WizardId, PowerWizard::FireballData> mStoredFireballs;
     PowerWizard::RobotFireballListPtr mFireballs;

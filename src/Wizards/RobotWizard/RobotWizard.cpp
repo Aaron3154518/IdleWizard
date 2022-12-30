@@ -1,54 +1,6 @@
 #include "RobotWizard.h"
 
 namespace RobotWizard {
-// Portals
-RobotWizard::Portals::Portals()
-    : mPortalTopPos(
-          std::make_shared<UIComponent>(Rect(), Elevation::PORTAL_TOP)),
-      mPortalBotPos(
-          std::make_shared<UIComponent>(Rect(), Elevation::PORTAL_BOT)) {
-    mPortalTopImg.set(Constants::PORTAL_TOP());
-    mPortalBotImg.set(Constants::PORTAL_BOT());
-
-    mPortalTimerSub =
-        ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
-            [this](Timer& t) {
-                mPortalBotImg->nextFrame();
-                mPortalTopImg->nextFrame();
-                if (mPortalBotImg->getFrame() == 0) {
-                    setActive(false);
-                }
-                return true;
-            },
-            Constants::PORTAL_TOP().frame_ms);
-
-    mPortalTopPos->mouse = mPortalBotPos->mouse = false;
-    mPortalTopRenderSub =
-        ServiceSystem::Get<RenderService, RenderObservable>()->subscribe(
-            [this](SDL_Renderer* r) { TextureBuilder().draw(mPortalTopImg); },
-            mPortalTopPos);
-    mPortalBotRenderSub =
-        ServiceSystem::Get<RenderService, RenderObservable>()->subscribe(
-            [this](SDL_Renderer* r) { TextureBuilder().draw(mPortalBotImg); },
-            mPortalBotPos);
-
-    setActive(false);
-}
-
-void RobotWizard::Portals::start(const Rect& r) {
-    mPortalTopImg->setFrame(0);
-    mPortalTopImg.setDest(r);
-    mPortalBotImg->setFrame(0);
-    mPortalBotImg.setDest(r);
-    setActive(true);
-}
-
-void RobotWizard::Portals::setActive(bool active) {
-    mPortalTopRenderSub->setActive(active);
-    mPortalBotRenderSub->setActive(active);
-    mPortalTimerSub->setActive(active);
-}
-
 // RobotWizard
 RobotWizard::RobotWizard() : WizardBase(ROBOT_WIZARD) {}
 
@@ -127,42 +79,6 @@ void RobotWizard::setParamTriggers() {
     mParamSubs.push_back(cryParams[Crystal::Param::BoughtRobotWizard].subscribe(
         [this](bool bought) {
             WizardSystem::GetHideObservable()->next(mId, !bought);
-        }));
-
-    mParamSubs.push_back(timeParams[TimeWizard::Param::Frozen].subscribe(
-        [this](bool frozen) {
-            if (!Crystal::Params::get(Crystal::Param::BoughtRobotWizard)
-                     .get()) {
-                return;
-            }
-
-            std::vector<WizardId> targets;
-            if (frozen) {
-                targets = {WIZARD};
-            } else {
-                targets = {CRYSTAL, TIME_WIZARD};
-            }
-
-            for (auto target : targets) {
-                auto it = mStoredFireballs.find(target);
-                if (it == mStoredFireballs.end()) {
-                    continue;
-                }
-                Rect pos = WizardSystem::GetWizardPos(it->first);
-                SDL_FPoint p{
-                    pos.cX() - (mPos->rect.w() * (rDist(gen) * .5f + .5f)),
-                    pos.cY() + (mPos->rect.h() * (rDist(gen) * 1.f - .5f))};
-                mFireballs->push_back(
-                    ComponentFactory<PowerWizard::Fireball>::New(p, target,
-                                                                 it->second));
-                mStoredFireballs.erase(it);
-
-                // Setup portals
-                float w = mPos->rect.minDim();
-                Rect r(0, 0, w, w);
-                r.setPos(p.x, p.y, Rect::Align::CENTER);
-                mPortals[it->first].start(r);
-            }
         }));
 
     for (auto pair : Constants::SYN_TARGETS) {

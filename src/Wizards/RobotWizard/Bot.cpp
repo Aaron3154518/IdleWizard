@@ -281,6 +281,56 @@ void UpgradeBot::setPos(float x, float y) {
     mPos->rect.setPos(x, y, Rect::Align::CENTER);
 }
 
+// Portal
+SynergyBot::Portal::Portal()
+    : mPortalTopPos(
+          std::make_shared<UIComponent>(Rect(), Elevation::PORTAL_TOP)),
+      mPortalBotPos(
+          std::make_shared<UIComponent>(Rect(), Elevation::PORTAL_BOT)) {}
+
+void SynergyBot::Portal::init() {
+    mPortalTopImg.set(Constants::PORTAL_TOP());
+    mPortalBotImg.set(Constants::PORTAL_BOT());
+
+    mPortalTimerSub =
+        ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
+            [this](Timer& t) {
+                mPortalBotImg->nextFrame();
+                mPortalTopImg->nextFrame();
+                if (mPortalBotImg->getFrame() == 0) {
+                    setActive(false);
+                }
+                return true;
+            },
+            Constants::PORTAL_TOP().frame_ms);
+
+    mPortalTopPos->mouse = mPortalBotPos->mouse = false;
+    mPortalTopRenderSub =
+        ServiceSystem::Get<RenderService, RenderObservable>()->subscribe(
+            [this](SDL_Renderer* r) { TextureBuilder().draw(mPortalTopImg); },
+            mPortalTopPos);
+    mPortalBotRenderSub =
+        ServiceSystem::Get<RenderService, RenderObservable>()->subscribe(
+            [this](SDL_Renderer* r) { TextureBuilder().draw(mPortalBotImg); },
+            mPortalBotPos);
+
+    setActive(false);
+}
+
+void SynergyBot::Portal::start(const Rect& r) {
+    mPortalTopImg->setFrame(0);
+    mPortalTopImg.setDest(r);
+    mPortalBotImg->setFrame(0);
+    mPortalBotImg.setDest(r);
+    setActive(true);
+}
+
+void SynergyBot::Portal::setActive(bool active) {
+    mPortalTopRenderSub->setActive(active);
+    mPortalBotRenderSub->setActive(active);
+    mPortalTimerSub->setActive(active);
+}
+
 // SynergyBot
 SynergyBot::SynergyBot(WizardId id)
     : mTarget(id),
@@ -289,6 +339,9 @@ SynergyBot::SynergyBot(WizardId id)
 }
 
 void SynergyBot::init() {
+    mFireballs = ComponentFactory<PowerWizard::RobotFireballList>::New();
+    mPortal = ComponentFactory<Portal>::New();
+
     mImg.set(RobotWizard::Constants::UP_BOT_IMG());
     Rect r = WizardSystem::GetWizardPosObservable()->get(mTarget);
     mPos->rect.setPos(r.cX(), r.cY(), Rect::Align::CENTER);
@@ -339,13 +392,15 @@ void SynergyBot::onUpdate(Time dt) {
 
 void SynergyBot::onFbHit(const PowerWizard::Fireball& fb) {
     auto data = fb.getData();
+    data.fromBot = true;
+    data.speed = PowerWizard::FireballData{}.speed * 5;
     if (mFireball) {
         auto currData = mFireball->getData();
         data.power = max(data.power, currData.power);
         data.duration = max(data.duration, currData.duration);
         data.sizeFactor = fmaxf(data.sizeFactor, currData.sizeFactor);
     }
-    mFireball = ComponentFactory<PowerWizard::Fireball>::New(SDL_FPoint{},
+    mFireball = ComponentFactory<PowerWizard::Fireball>::New(SDL_FPoint{0, 0},
                                                              mTarget, data);
 }
 
@@ -388,16 +443,10 @@ void SynergyBot::onTimeFreeze(bool frozen) {
         return;
     }
 
-    Rect pos = WizardSystem::GetWizardPos(mTarget);
-    SDL_FPoint p{pos.cX() - (mPos->rect.w() * (rDist(gen) * .5f + .5f)),
-                 pos.cY() + (mPos->rect.h() * (rDist(gen) * 1.f - .5f))};
+    SDL_FPoint pos =
+        WizardSystem::GetWizardPos(mTarget).getPos(Rect::Align::CENTER);
+    mFireball->launch(pos);
     mFireballs->push_back(std::move(mFireball));
-
-    // Setup portals
-    float w = mPos->rect.minDim();
-    Rect r(0, 0, w, w);
-    r.setPos(p.x, p.y, Rect::Align::CENTER);
-    // mPortals[it->first].start(r);
 }
 
 void SynergyBot::setPos(float x, float y) {

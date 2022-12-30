@@ -72,7 +72,7 @@ void setDefaults() {
     params[Param::CritUpLvl]->init(Event::ResetT1);
     params[Param::RoboCritUpLvl]->init(Event::ResetT1);
 
-    params[Param::WizBoosted]->init(false, Event::ResetT1);
+    params[Param::Boosted]->init(false, Event::ResetT1);
 }
 }  // namespace Constants
 }  // namespace Wizard

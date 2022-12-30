@@ -13,7 +13,7 @@ enum P_B : key_t {
     FBRegCnt,
     FBPowCnt,
     FBPoiCnt,
-    CatRingPoisCnt,
+    RingPoisCnt,
 
     BaseRange,
 
@@ -56,7 +56,7 @@ enum P_N : key_t {
 };
 
 enum S_B : key_t {
-    BoughtCatShardMult = 0,
+    BoughtShardMult = 0,
     BoughtMultUp,
 };
 

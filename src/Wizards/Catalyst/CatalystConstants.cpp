@@ -26,7 +26,7 @@ void setDefaults() {
     params[Param::FBRegCnt]->init(0, Event::ResetT1);
     params[Param::FBPowCnt]->init(0, Event::ResetT1);
     params[Param::FBPoiCnt]->init(0, Event::ResetT1);
-    params[Param::CatRingPoisCnt]->init(0, Event::ResetT1);
+    params[Param::RingPoisCnt]->init(0, Event::ResetT1);
 
     params[Param::BaseRange]->init(1.25);
 
@@ -40,7 +40,7 @@ void setDefaults() {
     params[Param::GainUp2Lvl]->init(Event::ResetT2);
     params[Param::FBCntLvl]->init(Event::ResetT2);
 
-    params[Param::BoughtCatShardMult]->init(false, Event::ResetT2);
+    params[Param::BoughtShardMult]->init(false, Event::ResetT2);
 }
 }  // namespace Constants
 }  // namespace Catalyst

@@ -87,7 +87,7 @@ void RobotWizard::setUpgrades() {
     Params params;
 
     UnlockablePtr uUp =
-        std::make_shared<Unlockable>(params[Param::BoughtRoboWizCritUp]);
+        std::make_shared<Unlockable>(params[Param::BoughtWizCritUp]);
     uUp->setImage("");
     uUp->setDescription(
         {"{i} crit is *10^crit instead of *crit\nUnlocks new {i} "
@@ -111,7 +111,7 @@ void RobotWizard::setUpgrades() {
     int i = 0;
     for (auto p : {P_B::U1, P_B::U2, P_B::U3, P_B::U4, P_B::U5, P_B::U6,
                    P_B::U7, P_B::U8, P_B::U9, P_B::U10}) {
-        uUp = std::make_shared<Unlockable>(params[Param::BoughtRoboWizCritUp]);
+        uUp = std::make_shared<Unlockable>(params[Param::BoughtWizCritUp]);
         uUp->setImage(p == P_B::U7 ? Constants::IMG().file : "");
         uUp->setDescription({"{i} " + std::to_string(i++),
                              {IconSystem::Get(Constants::IMG())}});
@@ -129,7 +129,7 @@ void RobotWizard::setParamTriggers() {
             WizardSystem::GetHideObservable()->next(mId, !bought);
         }));
 
-    mParamSubs.push_back(timeParams[TimeWizard::Param::TimeWizFrozen].subscribe(
+    mParamSubs.push_back(timeParams[TimeWizard::Param::Frozen].subscribe(
         [this](bool frozen) {
             if (!Crystal::Params::get(Crystal::Param::BoughtRobotWizard)
                      .get()) {

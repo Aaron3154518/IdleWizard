@@ -139,7 +139,7 @@ void PowerWizard::setParamTriggers() {
         {params[Param::FBSpeed]}, {},
         [this]() { return calcFBSpeedEffect(); }));
 
-    mParamSubs.push_back(timeParams[TimeWizard::Param::TimeWizFrozen].subscribe(
+    mParamSubs.push_back(timeParams[TimeWizard::Param::Frozen].subscribe(
         [this](bool val) { onTimeFreeze(val); }));
 
     mParamSubs.push_back(
@@ -217,7 +217,7 @@ void PowerWizard::shootFireball() {
     WizardId target = getTarget();
     auto data = newFireballData(target);
 
-    if (!TimeWizard::Params::get(TimeWizard::Param::TimeWizFrozen).get()) {
+    if (!TimeWizard::Params::get(TimeWizard::Param::Frozen).get()) {
         mFireballs->push_back(std::move(ComponentFactory<Fireball>::New(
             SDL_FPoint{mPos->rect.cX(), mPos->rect.cY()}, target, data)));
     } else {

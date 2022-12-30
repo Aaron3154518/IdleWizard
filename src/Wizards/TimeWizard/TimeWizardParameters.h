@@ -41,8 +41,8 @@ enum P_N : key_t {
 };
 
 enum S_B : key_t {
-    TimeWizActive = 0,
-    TimeWizFrozen,
+    Active = 0,
+    Frozen,
 };
 
 enum S_N : key_t {

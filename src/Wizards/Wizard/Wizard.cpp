@@ -180,7 +180,7 @@ void Wizard::setParamTriggers() {
 
     mParamSubs.push_back(params[Param::Speed].subscribeTo(
         {params[Param::BaseSpeed], timeParams[TimeWizard::Param::SpeedEffect]},
-        {params[Param::WizBoosted]}, [this]() { return calcSpeed(); }));
+        {params[Param::Boosted]}, [this]() { return calcSpeed(); }));
 
     mParamSubs.push_back(params[Param::FBSpeed].subscribeTo(
         {params[Param::BaseFBSpeed], timeParams[TimeWizard::Param::FBSpeedUp]},
@@ -196,14 +196,14 @@ void Wizard::setParamTriggers() {
     mParamSubs.push_back(params[Param::Crit].subscribeTo(
         {params[Param::BaseCrit], params[Param::CritUp],
          params[Param::RoboCritUp]},
-        {roboParams[RobotWizard::Param::BoughtRoboWizCritUp]},
+        {roboParams[RobotWizard::Param::BoughtWizCritUp]},
         [this]() { return calcCrit(); }));
 
     mParamSubs.push_back(params[Param::CritSpread].subscribeTo(
         {params[Param::BaseCritSpread], params[Param::CritSpreadUp]}, {},
         [this]() { return calcCritSpread(); }));
 
-    mParamSubs.push_back(timeParams[TimeWizard::Param::TimeWizFrozen].subscribe(
+    mParamSubs.push_back(timeParams[TimeWizard::Param::Frozen].subscribe(
         [this](bool val) { onTimeFreeze(val); }));
 
     mParamSubs.push_back(params[Param::PowerUpMaxLvl].subscribeTo(
@@ -225,7 +225,7 @@ void Wizard::setParamTriggers() {
                 cryParams[Crystal::Param::BoughtCatalyst].get());
         }));
     mParamSubs.push_back(
-        roboParams[RobotWizard::Param::BoughtRoboWizCritUp].subscribe(
+        roboParams[RobotWizard::Param::BoughtWizCritUp].subscribe(
             [this](bool bought) { mRoboCritUp->setActive(bought); }));
 }
 
@@ -320,12 +320,12 @@ void Wizard::onPowFireballHit(const PowerWizard::Fireball& fireball) {
         mPowWizBoosts.push_back(std::make_pair(power, duration));
     }
 
-    Params::get(Param::WizBoosted).set(true);
+    Params::get(Param::Boosted).set(true);
     Params::get(Param::PowerWizEffect).set(mPowWizBoosts.front().first);
     mPowWizTimerSub = TimeSystem::GetTimerObservable()->subscribe(
         [this](Timer& t) {
             bool boosted = onPowWizTimer(t);
-            Params::get(Param::WizBoosted).set(boosted);
+            Params::get(Param::Boosted).set(boosted);
             return boosted;
         },
         [this](Time dt, Timer& t) { onPowWizTimerUpdate(dt, t); },
@@ -373,7 +373,7 @@ void Wizard::onTimeWarp() {
 }
 
 void Wizard::shootFireball(const Fireball::Data& data) {
-    if (!TimeWizard::Params::get(TimeWizard::Param::TimeWizFrozen).get()) {
+    if (!TimeWizard::Params::get(TimeWizard::Param::Frozen).get()) {
         mFireballs->push_back(ComponentFactory<Fireball>::New(
             SDL_FPoint{mPos->rect.cX(), mPos->rect.cY()}, mTarget, data));
     } else {
@@ -452,7 +452,7 @@ Number Wizard::calcCrit() {
     Number crit =
         (params[Param::BaseCrit].get() + params[Param::CritUp].get()) *
         params[Param::RoboCritUp].get();
-    if (RobotWizard::Params::get(RobotWizard::Param::BoughtRoboWizCritUp)
+    if (RobotWizard::Params::get(RobotWizard::Param::BoughtWizCritUp)
             .get()) {
         crit.powTen();
     }

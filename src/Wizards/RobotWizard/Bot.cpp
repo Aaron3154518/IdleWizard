@@ -311,7 +311,7 @@ void SynergyBot::init() {
     mFbPosSub = PowerWizard::FireballList::GetPosObservable()->subscribe(
         [this](const PowerWizard::FireballList& list) { onFbPos(list); });
 
-    mFreezeSub = TimeWizard::Params::get(TimeWizard::Param::TimeWizFrozen)
+    mFreezeSub = TimeWizard::Params::get(TimeWizard::Param::Frozen)
                      .subscribe([this](bool frozen) { onTimeFreeze(frozen); });
 }
 

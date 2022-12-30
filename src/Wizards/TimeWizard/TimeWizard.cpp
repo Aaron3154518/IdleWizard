@@ -23,7 +23,7 @@ void TimeWizard::setSubscriptions() {
             [this](Timer& t) {
                 mImg->nextFrame();
                 WizardSystem::GetWizardImageObservable()->next(mId, mImg);
-                if (Params::get(Param::TimeWizFrozen).get()) {
+                if (Params::get(Param::Frozen).get()) {
                     t.length = mImg->getFrame() != 0
                                    ? Constants::FREEZE_IMG().frame_ms
                                    : (int)(rDist(gen) * 500) + 1000;
@@ -70,7 +70,7 @@ void TimeWizard::setUpgrades() {
     // Active toggle
     mActiveToggle = std::make_shared<Toggle>(
         [this](unsigned int state, Toggle& tUp) {
-            auto active = Params::get(Param::TimeWizActive);
+            auto active = Params::get(Param::Active);
             active.set(state == 1);
             tUp.setImage(active.get() ? Constants::ACTIVE_UP_IMG
                                       : WIZ_IMGS.at(mId));
@@ -180,7 +180,7 @@ void TimeWizard::setParamTriggers() {
     mParamSubs.push_back(params[Param::SpeedEffect].subscribeTo(
         {params[Param::SpeedBaseEffect], params[Param::SpeedUp],
          params[Param::SpeedUpUp]},
-        {params[Param::TimeWizActive], params[Param::TimeWizFrozen]},
+        {params[Param::Active], params[Param::Frozen]},
         [this]() { return calcSpeedEffect(); }));
 
     mParamSubs.push_back(params[Param::SpeedCost].subscribeTo(
@@ -205,7 +205,7 @@ void TimeWizard::setParamTriggers() {
             WizardSystem::GetHideObservable()->next(mId, !bought);
         }));
 
-    mParamSubs.push_back(params[Param::TimeWizFrozen].subscribe(
+    mParamSubs.push_back(params[Param::Frozen].subscribe(
         [this](bool frozen) { onFreezeChange(frozen); }));
 
     // Upgrade unlock constraints
@@ -221,8 +221,8 @@ void TimeWizard::setParamTriggers() {
 bool TimeWizard::onCostTimer(Timer& timer) {
     Params params;
 
-    if (!params[Param::TimeWizFrozen].get() &&
-        params[Param::TimeWizActive].get()) {
+    if (!params[Param::Frozen].get() &&
+        params[Param::Active].get()) {
         auto speedCost = Params::get(Param::SpeedCost);
         auto money = Crystal::Params::get(Crystal::Param::Magic);
         money.set(money.get() * (1 - speedCost.get() * timer.length / 1000));
@@ -245,7 +245,7 @@ void TimeWizard::onHide(bool hide) {
     if (hide) {
         mActiveToggle->setLevel(0);
     }
-    Params::get(Param::TimeWizFrozen).set(false);
+    Params::get(Param::Frozen).set(false);
 }
 
 void TimeWizard::onT1Reset() {
@@ -265,7 +265,7 @@ void TimeWizard::onFreezeChange(bool frozen) {
             mFreezeTimerSub =
                 ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
                     [this](Timer& t) {
-                        Params::get(Param::TimeWizFrozen).set(false);
+                        Params::get(Param::Frozen).set(false);
                         return false;
                     },
                     [this](Time dt, Timer& timer) {
@@ -281,7 +281,7 @@ void TimeWizard::onFreezeChange(bool frozen) {
             mFreezeDelaySub =
                 ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
                     [this](Timer& t) {
-                        Params::get(Param::TimeWizFrozen).set(true);
+                        Params::get(Param::Frozen).set(true);
                         return false;
                     },
                     [this](Time dt, Timer& timer) {
@@ -301,7 +301,7 @@ void TimeWizard::onPowFireballHit(const PowerWizard::Fireball& fireball) {
 }
 
 void TimeWizard::onGlobHit() {
-    if (Params::get(Param::TimeWizFrozen).get()) {
+    if (Params::get(Param::Frozen).get()) {
         Timer& t = mFreezeTimerSub->get<TimerObservable::DATA>();
         t.timer += t.length / 15;
     } else {
@@ -319,8 +319,8 @@ Number TimeWizard::calcFreezeEffect() {
 Number TimeWizard::calcSpeedEffect() {
     Params params;
     Number effect = 1;
-    if (params[Param::TimeWizActive].get() ||
-        params[Param::TimeWizFrozen].get()) {
+    if (params[Param::Active].get() ||
+        params[Param::Frozen].get()) {
         effect =
             params[Param::SpeedBaseEffect].get() +
             (params[Param::SpeedUp].get() * params[Param::SpeedUpUp].get());
@@ -350,7 +350,7 @@ Number TimeWizard::calcClockSpeed() {
 void TimeWizard::updateImg() {
     Rect imgR = mImg.getRect();
     imgR.setPos(mPos->rect.cX(), mPos->rect.cY(), Rect::Align::CENTER);
-    bool frozen = Params::get(Param::TimeWizFrozen).get();
+    bool frozen = Params::get(Param::Frozen).get();
     mImg.set(frozen ? Constants::FREEZE_IMG() : mImgAnimData);
     if (mAnimTimerSub) {
         mAnimTimerSub->get<TimerObservable::DATA>() =

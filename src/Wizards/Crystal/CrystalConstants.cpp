@@ -44,11 +44,11 @@ void setDefaults() {
     params[Param::T1ResetCost]->init(Number(1, 15));
 
     params[Param::ResetT1]->init(false);
-    params[Param::BoughtCrysWizCntUp]->init(false, Event::ResetT1);
-    params[Param::BoughtCrysGlowUp]->init(false, Event::ResetT1);
+    params[Param::BoughtWizCntUp]->init(false, Event::ResetT1);
+    params[Param::BoughtGlowUp]->init(false, Event::ResetT1);
     params[Param::BoughtPowerWizard]->init(false, Event::ResetT1);
     params[Param::BoughtTimeWizard]->init(false, Event::ResetT1);
-    params[Param::CrysGlowActive]->init(false, Event::ResetT2);
+    params[Param::GlowActive]->init(false, Event::ResetT2);
     params[Param::BoughtCatalyst]->init(false, Event::ResetT2);
     params[Param::BoughtPoisonWizard]->init(false, Event::ResetT2);
     params[Param::BoughtRobotWizard]->init(false, Event::ResetT2);

@@ -35,7 +35,7 @@ enum P_N : key_t {
 };
 
 enum S_B : key_t {
-    BoughtPoisWizCatPois = 0,
+    BoughtCatPois = 0,
 };
 
 enum S_N : key_t {};

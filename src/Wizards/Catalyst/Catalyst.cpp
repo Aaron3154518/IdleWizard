@@ -105,7 +105,7 @@ void Catalyst::setUpgrades() {
 
     // Boost shard gain
     UnlockablePtr uUp =
-        std::make_shared<Unlockable>(params[Param::BoughtCatShardMult]);
+        std::make_shared<Unlockable>(params[Param::BoughtShardMult]);
     uUp->setImage("");
     uUp->setDescription(
         {"{i} boosts {i} gain",
@@ -117,7 +117,7 @@ void Catalyst::setUpgrades() {
                     UpgradeDefaults::MultiplicativeEffect);
     mParamSubs.push_back(params[Param::ShardGainUp].subscribeTo(
         {params[Param::ShardMultUp]}, {uUp->level()}, [params]() -> Number {
-            if (!params[Param::BoughtCatShardMult].get()) {
+            if (!params[Param::BoughtShardMult].get()) {
                 return 1;
             }
             return params[Param::Magic].get().sqrtCopy() *
@@ -311,7 +311,7 @@ void Catalyst::setParamTriggers() {
                 mZapCntUp->setActive(bought);
                 mZapperCntUp->setActive(bought);
             }));
-    mParamSubs.push_back(params[Param::BoughtCatShardMult].subscribe(
+    mParamSubs.push_back(params[Param::BoughtShardMult].subscribe(
         [this](bool bought) { mMultUp->setActive(bought); }));
 }
 
@@ -335,7 +335,7 @@ void Catalyst::onWizFireballHit(const Wizard::Fireball& fireball) {
     }
 }
 void Catalyst::onPoisFireballHit(const PoisonWizard::Fireball& fireball) {
-    auto poisCnt = Params::get(Param::CatRingPoisCnt);
+    auto poisCnt = Params::get(Param::RingPoisCnt);
     Number poisCntUp =
         PoisonWizard::Params::get(PoisonWizard::Param::CatPoisCntUp).get();
 

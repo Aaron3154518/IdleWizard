@@ -82,7 +82,7 @@ void HitObservable::onTimerUpdate(Time dt, Timer& timer) {
             int idx = (int)(rDist(gen) * inRange.size());
             auto sub = inRange.at(idx).lock();
             if (sub) {
-                auto poisCntParam = Params::get(Param::CatRingPoisCnt);
+                auto poisCntParam = Params::get(Param::RingPoisCnt);
                 int poisCnt = poisCntParam.get().toInt();
 
                 sub->get<ZAP_CNT>()++;

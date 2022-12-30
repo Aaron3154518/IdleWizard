@@ -44,10 +44,10 @@ enum S_B : key_t {
     BoughtPoisonWizard,
     BoughtRobotWizard,
 
-    BoughtCrysWizCntUp,
-    BoughtCrysGlowUp,
+    BoughtWizCntUp,
+    BoughtGlowUp,
 
-    CrysGlowActive,
+    GlowActive,
 };
 
 enum S_N : key_t {

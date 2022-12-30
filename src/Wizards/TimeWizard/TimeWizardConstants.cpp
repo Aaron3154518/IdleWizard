@@ -34,8 +34,8 @@ void setDefaults() {
     params[Param::FreezeUpLvl]->init(Event::ResetT1);
     params[Param::SpeedUpUpLvl]->init(Event::ResetT1);
 
-    params[Param::TimeWizActive]->init(false, Event::ResetT1);
-    params[Param::TimeWizFrozen]->init(false, Event::ResetT1);
+    params[Param::Active]->init(false, Event::ResetT1);
+    params[Param::Frozen]->init(false, Event::ResetT1);
 }
 }  // namespace Constants
 }  // namespace TimeWizard

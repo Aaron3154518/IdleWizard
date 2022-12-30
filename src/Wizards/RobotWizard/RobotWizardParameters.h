@@ -27,7 +27,7 @@ enum P_B : key_t {
 enum P_N : key_t {};
 
 enum S_B : key_t {
-    BoughtRoboWizCritUp = 0,
+    BoughtWizCritUp = 0,
 
     WizSynBotActive,
     CrysSynBotActive,

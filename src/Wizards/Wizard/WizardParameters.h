@@ -45,13 +45,14 @@ enum P_N : key_t {
 };
 
 enum S_B : key_t {
-    WizBoosted = 0,
+    Boosted = 0,
 };
 
 enum S_N : key_t {};
 }  // namespace Param
 
-typedef ParameterSystem::Params<WIZARD, Param::P_B, Param::P_N, Param::S_B, Param::S_N>
+typedef ParameterSystem::Params<WIZARD, Param::P_B, Param::P_N, Param::S_B,
+                                Param::S_N>
     Params;
 }  // namespace Wizard
 

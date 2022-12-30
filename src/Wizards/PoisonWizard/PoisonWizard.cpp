@@ -101,7 +101,7 @@ void PoisonWizard::setUpgrades() {
 
     // Shoot poison ball at catalyst
     UnlockablePtr uUp =
-        std::make_shared<Unlockable>(params[Param::BoughtPoisWizCatPois]);
+        std::make_shared<Unlockable>(params[Param::BoughtCatPois]);
     uUp->setImage("");
     uUp->setDescription(
         {"Fires {i} at {i} to grant poison effect. {i} zaps convert {i} into "
@@ -137,7 +137,7 @@ void PoisonWizard::setParamTriggers() {
 
     mParamSubs.push_back(
         ParameterSystem::subscribe({},
-                                   {params[Param::BoughtPoisWizCatPois],
+                                   {params[Param::BoughtCatPois],
                                     cryParams[Crystal::Param::BoughtCatalyst]},
                                    [this]() { setTargets(); }));
 }
@@ -194,7 +194,7 @@ Number PoisonWizard::calcBlobCount() {
 
 void PoisonWizard::setTargets() {
     mTargets.clear();
-    if (Params::get(Param::BoughtPoisWizCatPois).get() &&
+    if (Params::get(Param::BoughtCatPois).get() &&
         Crystal::Params::get(Crystal::Param::BoughtCatalyst).get()) {
         mTargets.push_back(CATALYST);
     }

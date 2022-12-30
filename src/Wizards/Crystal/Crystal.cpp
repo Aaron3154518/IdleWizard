@@ -94,7 +94,7 @@ void Crystal::setUpgrades() {
 
     // Wizard count upgrade
     UnlockablePtr uUp =
-        std::make_shared<Unlockable>(params[Param::BoughtCrysWizCntUp]);
+        std::make_shared<Unlockable>(params[Param::BoughtWizCntUp]);
     uUp->setImage(Constants::WIZ_CNT_UP_IMG);
     uUp->setDescription(
         {"Wizards synergy provides a multiplier based on the number of active "
@@ -106,7 +106,7 @@ void Crystal::setUpgrades() {
     mWizCntUp = mUpgrades->subscribe(uUp);
 
     // Glow upgrade
-    uUp = std::make_shared<Unlockable>(params[Param::BoughtCrysGlowUp]);
+    uUp = std::make_shared<Unlockable>(params[Param::BoughtGlowUp]);
     uUp->setImage(Constants::CRYS_GLOW_UP_IMG);
     uUp->setDescription(
         {"After begin struck by {i}, {i} will absorb {i}\nWhen the effect "
@@ -196,11 +196,11 @@ void Crystal::setParamTriggers() {
         [this]() { return calcNumWizards(); }));
 
     mParamSubs.push_back(params[Param::WizardCntEffect].subscribeTo(
-        {params[Param::NumWizards]}, {params[Param::BoughtCrysWizCntUp]},
+        {params[Param::NumWizards]}, {params[Param::BoughtWizCntUp]},
         [this]() { return calcWizCntEffect(); }));
 
     mParamSubs.push_back(params[Param::GlowEffect].subscribeTo(
-        {params[Param::WizardCntEffect]}, {params[Param::BoughtCrysGlowUp]},
+        {params[Param::WizardCntEffect]}, {params[Param::BoughtGlowUp]},
         [this]() { return calcGlowEffect(); }));
 
     mParamSubs.push_back(ParameterSystem::subscribe(
@@ -239,10 +239,10 @@ void Crystal::setParamTriggers() {
 
     // Upgrade unlock constraints
     mParamSubs.push_back(ParameterSystem::subscribe(
-        {}, {params[Param::BoughtSecondT1], params[Param::BoughtCrysWizCntUp]},
+        {}, {params[Param::BoughtSecondT1], params[Param::BoughtWizCntUp]},
         [this, params]() {
             mGlowUp->setActive(params[Param::BoughtSecondT1].get() &&
-                               params[Param::BoughtCrysWizCntUp].get());
+                               params[Param::BoughtWizCntUp].get());
         }));
     mParamSubs.push_back(params[Param::ResetT1].subscribe([this](bool val) {
         mCatalystBuy->setActive(val);
@@ -265,7 +265,7 @@ void Crystal::onRender(SDL_Renderer* r) {
         mGlowFinishBkgrnd.setDest(glowRect);
         tex.draw(mGlowFinishBkgrnd);
     }
-    if (Params::get(Param::CrysGlowActive).get()) {
+    if (Params::get(Param::GlowActive).get()) {
         Rect glowRect = mGlowBkgrnd.getRect();
         glowRect.setPos(mPos->rect.cX(), mPos->rect.cY(), Rect::Align::CENTER);
         mGlowBkgrnd.setDest(glowRect);
@@ -328,7 +328,7 @@ void Crystal::onT1Reset() {
 }
 
 void Crystal::onWizFireballHit(const Wizard::Fireball& fireball) {
-    if (Params::get(Param::CrysGlowActive).get()) {
+    if (Params::get(Param::GlowActive).get()) {
         mGlowMagic += fireball.getPower();
         mGlowAnimTimerSub->get<TimerObservableBase::DATA>().timer = 0;
         mGlowAnimTimerSub->setActive(true);
@@ -347,11 +347,11 @@ void Crystal::onWizFireballHit(const Wizard::Fireball& fireball) {
 
 void Crystal::onPowFireballHit(const PowerWizard::Fireball& fireball) {
     createFireRing(fireball.getPower());
-    if (Params::get(Param::BoughtCrysGlowUp).get()) {
+    if (Params::get(Param::BoughtGlowUp).get()) {
         mGlowTimerSub = TimeSystem::GetTimerObservable()->subscribe(
             [this](Timer& t) { return onGlowTimer(t); },
             Timer(fireball.getDuration().toFloat()));
-        Params::get(Param::CrysGlowActive).set(true);
+        Params::get(Param::GlowActive).set(true);
     }
 }
 
@@ -359,7 +359,7 @@ bool Crystal::onGlowTimer(Timer& t) {
     Params params;
     Number magic = mGlowMagic * params[Param::GlowEffect].get();
     mGlowMagic = 0;
-    params[Param::CrysGlowActive].set(false);
+    params[Param::GlowActive].set(false);
 
     if (mGlowFinishing) {
         mGlowFinishTimerSub->get<TimerObservable::ON_TRIGGER>()(
@@ -439,7 +439,7 @@ Number Crystal::calcNumWizards() {
 }
 
 Number Crystal::calcWizCntEffect() {
-    if (!Params::get(Param::BoughtCrysWizCntUp).get()) {
+    if (!Params::get(Param::BoughtWizCntUp).get()) {
         return 1;
     }
 
@@ -449,7 +449,7 @@ Number Crystal::calcWizCntEffect() {
 Number Crystal::calcGlowEffect() {
     Params params;
 
-    if (!params[Param::BoughtCrysGlowUp].get()) {
+    if (!params[Param::BoughtGlowUp].get()) {
         return 1;
     }
 

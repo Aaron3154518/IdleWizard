@@ -2,8 +2,8 @@
 
 namespace ParameterSystem {
 // ParameterDagImpl
-const BaseValueObservablePtr& ParameterDagImpl::GetBase(WizardId id,
-                                                        param_t key) {
+const BaseValueObservablePtr& ParameterDagImpl::GetBaseValue(WizardId id,
+                                                             key_t key) {
     auto& map = mBaseValues();
     auto& ptr = map[id][key];
     if (!ptr) {
@@ -12,8 +12,8 @@ const BaseValueObservablePtr& ParameterDagImpl::GetBase(WizardId id,
     return ptr;
 }
 
-const NodeValueObservablePtr& ParameterDagImpl::GetNode(WizardId id,
-                                                        param_t key) {
+const NodeValueObservablePtr& ParameterDagImpl::GetNodeValue(WizardId id,
+                                                             key_t key) {
     auto& map = mNodeValues();
     auto& ptr = map[id][key];
     if (!ptr) {
@@ -22,7 +22,8 @@ const NodeValueObservablePtr& ParameterDagImpl::GetNode(WizardId id,
     return ptr;
 }
 
-const BaseStateObservablePtr& ParameterDagImpl::GetBase(param_t key) {
+const BaseStateObservablePtr& ParameterDagImpl::GetBaseState(WizardId id,
+                                                             key_t key) {
     auto& map = mBaseStates();
     auto& ptr = map[key];
     if (!ptr) {
@@ -31,7 +32,8 @@ const BaseStateObservablePtr& ParameterDagImpl::GetBase(param_t key) {
     return ptr;
 }
 
-const NodeStateObservablePtr& ParameterDagImpl::GetNode(param_t key) {
+const NodeStateObservablePtr& ParameterDagImpl::GetNodeState(WizardId id,
+                                                             key_t key) {
     auto& map = mNodeStates();
     auto& ptr = map[key];
     if (!ptr) {

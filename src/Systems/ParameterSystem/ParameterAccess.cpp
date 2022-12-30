@@ -1,28 +1,31 @@
 #include "ParameterAccess.h"
 
 namespace ParameterSystem {
-
-// ValueParam
-ValueParam::ValueParam(WizardId id, param_t key, bool isBase)
+// ParamImpl
+ParamImpl::ParamImpl(WizardId id, key_t key, bool isBase)
     : mId(id), mKey(key), mIsBase(isBase) {}
-ValueParam::ValueParam(const ValueParam& other)
-    : ValueParam(other.mId, other.mKey, other.mIsBase) {}
+ParamImpl::ParamImpl(const ParamImpl& other)
+    : ParamImpl(other.mId, other.mKey, other.mIsBase) {}
 
-ValueParam& ValueParam::operator=(const ValueParam& other) {
+ParamImpl& ParamImpl::operator=(const ParamImpl& other) {
     mId = other.mId;
     mKey = other.mKey;
     mIsBase = other.mIsBase;
     return *this;
 }
-bool ValueParam::operator==(const ValueParam& other) const {
+bool ParamImpl::operator==(const ParamImpl& other) const {
     return mId == other.mId && mKey == other.mKey;
 }
 
+WizardId ParamImpl::id() const { return mId; }
+key_t ParamImpl::key() const { return mKey; }
+
+// ValueParam
 ValueObservablePtr ValueParam::operator->() const {
     if (mIsBase) {
-        return ParameterDag::GetBase(mId, mKey);
+        return ParameterDag::GetBaseValue(mId, mKey);
     }
-    return ParameterDag::GetNode(mId, mKey);
+    return ParameterDag::GetNodeValue(mId, mKey);
 }
 
 const Number& ValueParam::get() const { return operator->()->get(); }
@@ -40,33 +43,22 @@ ParameterSubscriptionPtr ValueParam::subscribe(
     auto key = mKey;
     if (mIsBase) {
         return subscribe(
-            [id, key, func]() { func(ParameterDag::GetBase(id, key)->get()); },
+            [id, key, func]() {
+                func(ParameterDag::GetBaseValue(id, key)->get());
+            },
             fire);
     }
     return subscribe(
-        [id, key, func]() { func(ParameterDag::GetNode(id, key)->get()); },
+        [id, key, func]() { func(ParameterDag::GetNodeValue(id, key)->get()); },
         fire);
 }
 
 // StateParam
-StateParam::StateParam(param_t key, bool isBase) : mKey(key), mIsBase(isBase) {}
-StateParam::StateParam(const StateParam& other)
-    : StateParam(other.mKey, other.mIsBase) {}
-
-StateParam& StateParam::operator=(const StateParam& other) {
-    mKey = other.mKey;
-    mIsBase = other.mIsBase;
-    return *this;
-}
-bool StateParam::operator==(const StateParam& other) const {
-    return mKey == other.mKey;
-}
-
 StateObservablePtr StateParam::operator->() const {
     if (mIsBase) {
-        return ParameterDag::GetBase(mKey);
+        return ParameterDag::GetBaseState(mId, mKey);
     }
-    return ParameterDag::GetNode(mKey);
+    return ParameterDag::GetNodeState(mId, mKey);
 }
 
 bool StateParam::get() const { return operator->()->get(); }
@@ -80,38 +72,43 @@ ParameterSubscriptionPtr StateParam::subscribe(std::function<void()> func,
 }
 ParameterSubscriptionPtr StateParam::subscribe(std::function<void(bool)> func,
                                                bool fire) const {
+    auto id = mId;
     auto key = mKey;
     if (mIsBase) {
         return subscribe(
-            [key, func]() { func(ParameterDag::GetBase(key)->get()); }, fire);
+            [id, key, func]() {
+                func(ParameterDag::GetBaseState(id, key)->get());
+            },
+            fire);
     }
-    return subscribe([key, func]() { func(ParameterDag::GetNode(key)->get()); },
-                     fire);
+    return subscribe(
+        [id, key, func]() { func(ParameterDag::GetNodeState(id, key)->get()); },
+        fire);
 }
 
 // BaseValue
-BaseValue::BaseValue(WizardId id, param_t key) : ValueParam(id, key, true) {}
+BaseValue::BaseValue(WizardId id, key_t key) : ValueParam(id, key, true) {}
 
 BaseValueObservablePtr BaseValue::operator->() const {
-    return ParameterDag::GetBase(mId, mKey);
+    return ParameterDag::GetBaseValue(mId, mKey);
 }
 
 void BaseValue::set(const Number& val) const { operator->()->set(val); }
 
 // BaseState
-BaseState::BaseState(param_t key) : StateParam(key, true) {}
+BaseState::BaseState(WizardId id, key_t key) : StateParam(id, key, true) {}
 
 BaseStateObservablePtr BaseState::operator->() const {
-    return ParameterDag::GetBase(mKey);
+    return ParameterDag::GetBaseState(mId, mKey);
 }
 
 void BaseState::set(bool state) const { operator->()->set(state); }
 
 // NodeValue
-NodeValue::NodeValue(WizardId id, param_t key) : ValueParam(id, key, false) {}
+NodeValue::NodeValue(WizardId id, key_t key) : ValueParam(id, key, false) {}
 
 NodeValueObservablePtr NodeValue::operator->() const {
-    return ParameterDag::GetNode(mId, mKey);
+    return ParameterDag::GetNodeValue(mId, mKey);
 }
 
 ParameterSubscriptionPtr NodeValue::subscribeTo(
@@ -122,7 +119,7 @@ ParameterSubscriptionPtr NodeValue::subscribeTo(
     auto key = mKey;
     return ParameterSystem::subscribe(
         values, states,
-        [id, key, func]() { ParameterDag::GetNode(id, key)->set(func()); },
+        [id, key, func]() { ParameterDag::GetNodeValue(id, key)->set(func()); },
         fire);
 }
 
@@ -133,7 +130,7 @@ ParameterSubscriptionPtr NodeValue::subscribeTo(
     auto key = mKey;
     return param.subscribe(
         [id, key, func](const Number& val) {
-            ParameterDag::GetNode(id, key)->set(func(val));
+            ParameterDag::GetNodeValue(id, key)->set(func(val));
         },
         fire);
 }
@@ -144,35 +141,38 @@ ParameterSubscriptionPtr NodeValue::subscribeTo(
     auto key = mKey;
     return param.subscribe(
         [id, key, func](bool state) {
-            ParameterDag::GetNode(id, key)->set(func(state));
+            ParameterDag::GetNodeValue(id, key)->set(func(state));
         },
         fire);
 }
 
 // NodeState
-NodeState::NodeState(param_t key) : StateParam(key, false) {}
+NodeState::NodeState(WizardId id, key_t key) : StateParam(id, key, false) {}
 
 NodeStateObservablePtr NodeState::operator->() const {
-    return ParameterDag::GetNode(mKey);
+    return ParameterDag::GetNodeState(mId, mKey);
 }
 
 ParameterSubscriptionPtr NodeState::subscribeTo(
     const std::initializer_list<ValueParam>& values,
     const std::initializer_list<StateParam>& states, std::function<bool()> func,
     bool fire) const {
+    auto id = mId;
     auto key = mKey;
     return ParameterSystem::subscribe(
         values, states,
-        [key, func]() { ParameterDag::GetNode(key)->set(func()); }, fire);
+        [id, key, func]() { ParameterDag::GetNodeState(id, key)->set(func()); },
+        fire);
 }
 
 ParameterSubscriptionPtr NodeState::subscribeTo(
     ValueParam param, std::function<bool(const Number&)> func,
     bool fire) const {
+    auto id = mId;
     auto key = mKey;
     return param.subscribe(
-        [key, func](const Number& val) {
-            ParameterDag::GetNode(key)->set(func(val));
+        [id, key, func](const Number& val) {
+            ParameterDag::GetNodeState(id, key)->set(func(val));
         },
         fire);
 }
@@ -180,18 +180,14 @@ ParameterSubscriptionPtr NodeState::subscribeTo(
 ParameterSubscriptionPtr NodeState::subscribeTo(StateParam param,
                                                 std::function<bool(bool)> func,
                                                 bool fire) const {
+    auto id = mId;
     auto key = mKey;
     return param.subscribe(
-        [key, func](bool state) {
-            ParameterDag::GetNode(key)->set(func(state));
+        [id, key, func](bool state) {
+            ParameterDag::GetNodeState(id, key)->set(func(state));
         },
         fire);
 }
-
-// Param creators
-BaseState Param(Param::B key) { return BaseState(key); }
-
-NodeState Param(Param::N key) { return NodeState(key); }
 
 // Subscribing
 ParameterSubscriptionPtr subscribe(

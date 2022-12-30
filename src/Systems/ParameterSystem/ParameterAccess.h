@@ -14,14 +14,30 @@
 #include <utility>
 
 namespace ParameterSystem {
-// Base class for different Value templates
-struct ValueParam {
+// Base class for parameters of different types
+struct ParamImpl {
    public:
-    ValueParam(const ValueParam& other);
-    virtual ~ValueParam() = default;
+    virtual ~ParamImpl() = default;
 
-    ValueParam& operator=(const ValueParam& other);
-    bool operator==(const ValueParam& other) const;
+    ParamImpl& operator=(const ParamImpl& other);
+    bool operator==(const ParamImpl& other) const;
+
+    WizardId id() const;
+    key_t key() const;
+
+   protected:
+    WizardId mId;
+    key_t mKey;
+    bool mIsBase;
+
+    ParamImpl(WizardId id, key_t key, bool isBase);
+    ParamImpl(const ParamImpl& other);
+};
+
+// Base class for different Value templates
+struct ValueParam : public ParamImpl {
+   public:
+    virtual ~ValueParam() = default;
 
     ValueObservablePtr operator->() const;
 
@@ -32,24 +48,16 @@ struct ValueParam {
     ParameterSubscriptionPtr subscribe(std::function<void(const Number&)> func,
                                        bool fire = true) const;
 
-    WizardId mId;
-    key_t mKey;
-    bool mIsBase;
-
    protected:
-    ValueParam(WizardId id, key_t key, bool isBase);
+    using ParamImpl::ParamImpl;
 };
 
 typedef std::unique_ptr<ValueParam> ValueParamPtr;
 
 // Base class for different State templates
-struct StateParam {
+struct StateParam : public ParamImpl {
    public:
-    StateParam(const StateParam& other);
     virtual ~StateParam() = default;
-
-    StateParam& operator=(const StateParam& other);
-    bool operator==(const StateParam& other) const;
 
     StateObservablePtr operator->() const;
 
@@ -60,11 +68,8 @@ struct StateParam {
     ParameterSubscriptionPtr subscribe(std::function<void(bool)> func,
                                        bool fire = true) const;
 
-    key_t mKey;
-    bool mIsBase;
-
    protected:
-    StateParam(key_t key, bool isBase);
+    using ParamImpl::ParamImpl;
 };
 
 typedef std::unique_ptr<StateParam> StateParamPtr;
@@ -97,7 +102,7 @@ struct BaseState : public StateParam {
     void set(bool state) const;
 
    private:
-    BaseState(key_t key);
+    BaseState(WizardId mId, key_t key);
 };
 
 typedef std::unique_ptr<BaseState> BaseStatePtr;
@@ -148,7 +153,7 @@ struct NodeState : public StateParam {
                                          bool fire = true) const;
 
    private:
-    NodeState(key_t key);
+    NodeState(WizardId mId, key_t key);
 };
 
 typedef std::unique_ptr<NodeState> NodeStatePtr;

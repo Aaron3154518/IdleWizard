@@ -20,10 +20,10 @@ typedef std::unordered_map<key_t, NodeStateObservablePtr> NodeStateMap;
 
 class ParameterDagImpl {
    protected:
-    static const BaseValueObservablePtr& GetBase(WizardId id, key_t key);
-    static const NodeValueObservablePtr& GetNode(WizardId id, key_t key);
-    static const BaseStateObservablePtr& GetBase(key_t key);
-    static const NodeStateObservablePtr& GetNode(key_t key);
+    static const BaseValueObservablePtr& GetBaseValue(WizardId id, key_t key);
+    static const NodeValueObservablePtr& GetNodeValue(WizardId id, key_t key);
+    static const BaseStateObservablePtr& GetBaseState(WizardId id, key_t key);
+    static const NodeStateObservablePtr& GetNodeState(WizardId id, key_t key);
 
    private:
     static BaseValueMap& mBaseValues();

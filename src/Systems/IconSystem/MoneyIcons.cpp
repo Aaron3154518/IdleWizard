@@ -8,9 +8,9 @@ RenderTextureCPtr GetMoneyIcon(const ParameterSystem::ValueParam& param) {
         CATALYST_MAGIC{"res/money/catalyst_magic.png", 8, 150};
 
     AnimationData data;
-    switch (param.mId) {
+    switch (param.id()) {
         case CRYSTAL:
-            switch (param.mKey) {
+            switch (param.key()) {
                 case Crystal::Param::Magic:
                     data = CRYSTAL_MAGIC;
                     break;
@@ -20,7 +20,7 @@ RenderTextureCPtr GetMoneyIcon(const ParameterSystem::ValueParam& param) {
             }
             break;
         case CATALYST:
-            switch (param.mKey) {
+            switch (param.key()) {
                 case Catalyst::Param::Magic:
                     data = CATALYST_MAGIC;
                     break;

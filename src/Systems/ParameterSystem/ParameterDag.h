@@ -15,8 +15,12 @@ typedef std::unordered_map<WizardId,
 typedef std::unordered_map<WizardId,
                            std::unordered_map<key_t, NodeValueObservablePtr>>
     NodeValueMap;
-typedef std::unordered_map<key_t, BaseStateObservablePtr> BaseStateMap;
-typedef std::unordered_map<key_t, NodeStateObservablePtr> NodeStateMap;
+typedef std::unordered_map<WizardId,
+                           std::unordered_map<key_t, BaseStateObservablePtr>>
+    BaseStateMap;
+typedef std::unordered_map<WizardId,
+                           std::unordered_map<key_t, NodeStateObservablePtr>>
+    NodeStateMap;
 
 class ParameterDagImpl {
    protected:

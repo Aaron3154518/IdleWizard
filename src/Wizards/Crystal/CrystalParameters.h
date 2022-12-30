@@ -56,7 +56,7 @@ enum S_N : key_t {
 };
 }  // namespace Param
 
-typedef ParameterSystem::Params<CRYSTAL, Param::P_B,Param::P_N, Param::S_B,
+typedef ParameterSystem::Params<CRYSTAL, Param::P_B, Param::P_N, Param::S_B,
                                 Param::S_N>
     Params;
 }  // namespace Crystal

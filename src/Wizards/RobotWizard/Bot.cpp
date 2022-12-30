@@ -281,56 +281,6 @@ void UpgradeBot::setPos(float x, float y) {
     mPos->rect.setPos(x, y, Rect::Align::CENTER);
 }
 
-// Portal
-SynergyBot::Portal::Portal()
-    : mPortalTopPos(
-          std::make_shared<UIComponent>(Rect(), Elevation::PORTAL_TOP)),
-      mPortalBotPos(
-          std::make_shared<UIComponent>(Rect(), Elevation::PORTAL_BOT)) {}
-
-void SynergyBot::Portal::init() {
-    mPortalTopImg.set(Constants::PORTAL_TOP());
-    mPortalBotImg.set(Constants::PORTAL_BOT());
-
-    mPortalTimerSub =
-        ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
-            [this](Timer& t) {
-                mPortalBotImg->nextFrame();
-                mPortalTopImg->nextFrame();
-                if (mPortalBotImg->getFrame() == 0) {
-                    setActive(false);
-                }
-                return true;
-            },
-            Constants::PORTAL_TOP().frame_ms);
-
-    mPortalTopPos->mouse = mPortalBotPos->mouse = false;
-    mPortalTopRenderSub =
-        ServiceSystem::Get<RenderService, RenderObservable>()->subscribe(
-            [this](SDL_Renderer* r) { TextureBuilder().draw(mPortalTopImg); },
-            mPortalTopPos);
-    mPortalBotRenderSub =
-        ServiceSystem::Get<RenderService, RenderObservable>()->subscribe(
-            [this](SDL_Renderer* r) { TextureBuilder().draw(mPortalBotImg); },
-            mPortalBotPos);
-
-    setActive(false);
-}
-
-void SynergyBot::Portal::start(const Rect& r) {
-    mPortalTopImg->setFrame(0);
-    mPortalTopImg.setDest(r);
-    mPortalBotImg->setFrame(0);
-    mPortalBotImg.setDest(r);
-    setActive(true);
-}
-
-void SynergyBot::Portal::setActive(bool active) {
-    mPortalTopRenderSub->setActive(active);
-    mPortalBotRenderSub->setActive(active);
-    mPortalTimerSub->setActive(active);
-}
-
 // SynergyBot
 SynergyBot::SynergyBot(WizardId id)
     : mTarget(id),
@@ -340,7 +290,6 @@ SynergyBot::SynergyBot(WizardId id)
 
 void SynergyBot::init() {
     mFireballs = ComponentFactory<PowerWizard::RobotFireballList>::New();
-    mPortal = ComponentFactory<Portal>::New();
 
     mImg.set(RobotWizard::Constants::UP_BOT_IMG());
     Rect r = WizardSystem::GetWizardPosObservable()->get(mTarget);

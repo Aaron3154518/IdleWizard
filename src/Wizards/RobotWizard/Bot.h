@@ -98,26 +98,6 @@ typedef std::unique_ptr<UpgradeBot> UpgradeBotPtr;
 
 class SynergyBot : public Component {
    public:
-    struct Portal : public Component {
-       public:
-        Portal();
-
-        void start(const Rect& r);
-
-       private:
-        void init();
-
-        void setActive(bool active);
-
-        RenderAnimation mPortalTopImg, mPortalBotImg;
-        TimerObservable::SubscriptionPtr mPortalTimerSub;
-        UIComponentPtr mPortalTopPos, mPortalBotPos;
-        RenderObservable::SubscriptionPtr mPortalTopRenderSub,
-            mPortalBotRenderSub;
-    };
-
-    typedef std::unique_ptr<Portal> PortalPtr;
-
     SynergyBot(WizardId id);
 
     void setPos(float x, float y);
@@ -146,7 +126,6 @@ class SynergyBot : public Component {
 
     PowerWizard::FireballPtr mFireball;
     PowerWizard::RobotFireballListPtr mFireballs;
-    PortalPtr mPortal;
 
     RenderObservable::SubscriptionPtr mRenderSub;
     TimeSystem::UpdateObservable::SubscriptionPtr mUpdateSub;

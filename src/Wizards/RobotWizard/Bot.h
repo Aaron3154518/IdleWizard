@@ -13,6 +13,7 @@
 #include <Systems/TimeSystem.h>
 #include <Systems/WizardSystem/WizardObservables.h>
 #include <Wizards/RobotWizard/RobotWizardConstants.h>
+#include <Wizards/TimeWizard/TimeWizardParameters.h>
 #include <Wizards/WizardIds.h>
 
 #include <memory>

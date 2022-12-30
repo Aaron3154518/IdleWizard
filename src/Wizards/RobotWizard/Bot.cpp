@@ -306,11 +306,12 @@ void SynergyBot::init() {
         RobotWizard::Constants::UP_BOT_IMG());
     mFbHitSub = PowerWizard::FireballList::GetHitObservable()->subscribe(
         [this](const PowerWizard::Fireball& fb) { onFbHit(fb); },
-        [this](const PowerWizard::Fireball& fb) { return fireballFilter(fb); }, mPos);
+        [this](const PowerWizard::Fireball& fb) { return fireballFilter(fb); },
+        mPos);
     mFbPosSub = PowerWizard::FireballList::GetPosObservable()->subscribe(
         [this](const PowerWizard::FireballList& list) { onFbPos(list); });
 
-    mFreezeSub = ParameterSystem::Param(Param::TimeWizFrozen)
+    mFreezeSub = TimeWizard::Params::get(TimeWizard::Param::TimeWizFrozen)
                      .subscribe([this](bool frozen) { onTimeFreeze(frozen); });
 }
 
@@ -344,8 +345,8 @@ void SynergyBot::onFbHit(const PowerWizard::Fireball& fb) {
         data.duration = max(data.duration, currData.duration);
         data.sizeFactor = fmaxf(data.sizeFactor, currData.sizeFactor);
     }
-    mFireball =
-        ComponentFactory<PowerWizard::Fireball>::New(SDL_FPoint{}, mTarget, data);
+    mFireball = ComponentFactory<PowerWizard::Fireball>::New(SDL_FPoint{},
+                                                             mTarget, data);
 }
 
 void SynergyBot::onFbPos(const PowerWizard::FireballList& list) {

@@ -8,6 +8,7 @@
 #include <ServiceSystem/CoreServices/UpdateService.h>
 #include <Systems/ParameterSystem/ParameterAccess.h>
 #include <Utils/Rect.h>
+#include <Wizards/TimeWizard/TimeWizardParameters.h>
 #include <Wizards/WizardIds.h>
 
 namespace TimeWizard {

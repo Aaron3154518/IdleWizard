@@ -13,10 +13,13 @@
 #include <Systems/ParameterSystem/ParameterAccess.h>
 #include <Systems/WizardSystem/WizardObservables.h>
 #include <Wizards/Crystal/CrystalConstants.h>
+#include <Wizards/Crystal/CrystalParameters.h>
 #include <Wizards/PowerWizard/PowerFireball.h>
 #include <Wizards/RobotWizard/Bot.h>
 #include <Wizards/RobotWizard/RobotWizardConstants.h>
+#include <Wizards/RobotWizard/RobotWizardParameters.h>
 #include <Wizards/TimeWizard/TimeWizardConstants.h>
+#include <Wizards/TimeWizard/TimeWizardParameters.h>
 #include <Wizards/Wizard/WizardConstants.h>
 #include <Wizards/WizardIds.h>
 

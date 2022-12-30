@@ -1,12 +1,9 @@
 #ifndef CRYSTAL_H
 #define CRYSTAL_H
 
-#include <Wizards/Crystal/FireRing.h>
-#include <Wizards/PoisonWizard/PoisonFireball.h>
-#include <Wizards/PowerWizard/PowerFireball.h>
-#include <Wizards/Wizard/WizardFireball.h>
-#include <Wizards/Crystal/FractureButton.h>
+#include <Components/Message.h>
 #include <Components/Upgrade.h>
+#include <Components/WizardBase.h>
 #include <RenderSystem/AssetManager.h>
 #include <RenderSystem/RenderTypes.h>
 #include <RenderSystem/Shapes.h>
@@ -14,14 +11,20 @@
 #include <ServiceSystem/CoreServices/RenderService.h>
 #include <ServiceSystem/EventServices/MouseService.h>
 #include <Systems/IconSystem/IconSystem.h>
+#include <Systems/IconSystem/MoneyIcons.h>
 #include <Systems/ParameterSystem/ParameterAccess.h>
 #include <Utils/AnimationData.h>
 #include <Wizards/Crystal/CrystalConstants.h>
+#include <Wizards/Crystal/CrystalParameters.h>
+#include <Wizards/Crystal/FireRing.h>
+#include <Wizards/Crystal/FractureButton.h>
+#include <Wizards/PoisonWizard/PoisonFireball.h>
+#include <Wizards/PoisonWizard/PoisonWizardParameters.h>
+#include <Wizards/PowerWizard/PowerFireball.h>
 #include <Wizards/PowerWizard/PowerWizardConstants.h>
+#include <Wizards/RobotWizard/RobotWizardParameters.h>
 #include <Wizards/Wizard/WizardConstants.h>
-#include <Components/Message.h>
-#include <Systems/IconSystem/MoneyIcons.h>
-#include <Components/WizardBase.h>
+#include <Wizards/Wizard/WizardFireball.h>
 #include <Wizards/WizardIds.h>
 
 #include <memory>
@@ -73,7 +76,8 @@ class Crystal : public WizardBase {
     TimeSystem::TimerObservable::SubscriptionPtr mAnimTimerSub, mGlowTimerSub,
         mGlowFinishTimerSub, mGlowAnimTimerSub, mPoisonTimerSub;
     Wizard::FireballList::HitObservable::SubscriptionPtr mWizFireballHitSub;
-    PowerWizard::FireballList::HitObservable::SubscriptionPtr mPowFireballHitSub;
+    PowerWizard::FireballList::HitObservable::SubscriptionPtr
+        mPowFireballHitSub;
     WizardSystem::WizardEventObservable::IdSubscriptionPtr mT1ResetSub;
     UpgradeList::SubscriptionPtr mMagicEffectDisplay, mWizCntUp, mGlowUp,
         mPowWizBuy, mTimeWizBuy, mCatalystBuy, mPoisWizBuy, mRobotBuy;

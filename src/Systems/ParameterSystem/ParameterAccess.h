@@ -10,6 +10,7 @@
 #include <initializer_list>
 #include <list>
 #include <memory>
+#include <type_traits>
 #include <utility>
 
 namespace ParameterSystem {
@@ -162,14 +163,14 @@ ParameterSubscriptionPtr subscribe(
 template <WizardId id, class BaseParamT, class NodeParamT, class BaseStateT,
           class NodeStateT>
 class Params {
-    static_assert(std::is_integral<BaseParamT>::value,
-                  "Params: BaseParamT must be integral type");
-    static_assert(std::is_integral<NodeParamT>::value,
-                  "Params: NodeParamT must be integral type");
-    static_assert(std::is_integral<BaseStateT>::value,
-                  "Params: BaseStateT must be integral type");
-    static_assert(std::is_integral<NodeStateT>::value,
-                  "Params: NodeStateT must be integral type");
+    static_assert(std::is_convertible<BaseParamT, key_t>::value,
+                  "Params: BaseParamT is not a valid key type");
+    static_assert(std::is_convertible<NodeParamT, key_t>::value,
+                  "Params: NodeParamT is not a valid key type");
+    static_assert(std::is_convertible<BaseStateT, key_t>::value,
+                  "Params: BaseStateT is not a valid key type");
+    static_assert(std::is_convertible<NodeStateT, key_t>::value,
+                  "Params: NodeStateT is not a valid key type");
 
    public:
     static BaseValue get(BaseParamT key) { return BaseValue(id, key); }

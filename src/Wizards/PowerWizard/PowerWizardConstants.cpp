@@ -18,14 +18,14 @@ const std::string POWER_UP_IMG = "res/upgrades/power_fireball_upgrade.png",
 void setDefaults() {
     using WizardSystem::Event;
 
-    PowerWizard::Params params;
+    Params params;
 
-    params[PowerWizard::Param::BasePower]->init(5);
-    params[PowerWizard::Param::BaseSpeed]->init(.25);
-    params[PowerWizard::Param::BaseFBSpeed]->init(.75);
+    params[Param::BasePower]->init(5);
+    params[Param::BaseSpeed]->init(.25);
+    params[Param::BaseFBSpeed]->init(.75);
 
-    params[PowerWizard::Param::PowerUpLvl]->init(Event::ResetT1);
-    params[PowerWizard::Param::TimeWarpUpLvl]->init(Event::ResetT1);
+    params[Param::PowerUpLvl]->init(Event::ResetT1);
+    params[Param::TimeWarpUpLvl]->init(Event::ResetT1);
 }
 }  // namespace Constants
 }  // namespace PowerWizard

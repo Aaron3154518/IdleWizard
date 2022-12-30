@@ -30,7 +30,7 @@ void PoisonWizard::setSubscriptions() {
     attachSubToVisibility(mFireballTimerSub);
 }
 void PoisonWizard::setUpgrades() {
-    PoisonWizard::Params params;
+    Params params;
     Crystal::Params cryParams;
 
     // Poison gain
@@ -55,56 +55,47 @@ void PoisonWizard::setUpgrades() {
     mPoisonDisplay = mUpgrades->subscribe(dUp);
 
     // Shard multiplier
-    UpgradePtr up = std::make_shared<Upgrade>(
-        params[PoisonWizard::Param::ShardMultUpLvl], 5);
+    UpgradePtr up = std::make_shared<Upgrade>(params[Param::ShardMultUpLvl], 5);
     up->setImage("");
     up->setDescription(
         {"Triple {i} gain",
          {MoneyIcons::GetMoneyIcon(UpgradeDefaults::CRYSTAL_MAGIC)}});
-    up->setCost(UpgradeDefaults::CRYSTAL_MAGIC,
-                params[PoisonWizard::Param::ShardMultUpCost]);
-    up->setEffects(params[PoisonWizard::Param::ShardMultUp],
+    up->setCost(UpgradeDefaults::CRYSTAL_MAGIC, params[Param::ShardMultUpCost]);
+    up->setEffects(params[Param::ShardMultUp],
                    UpgradeDefaults::MultiplicativeEffect);
-    mParamSubs.push_back(
-        params[PoisonWizard::Param::ShardMultUpCost].subscribeTo(
-            up->level(), [](const Number& lvl) {
-                return Number(1, 20 + 10 * lvl.toInt());
-            }));
-    mParamSubs.push_back(params[PoisonWizard::Param::ShardMultUp].subscribeTo(
+    mParamSubs.push_back(params[Param::ShardMultUpCost].subscribeTo(
+        up->level(),
+        [](const Number& lvl) { return Number(1, 20 + 10 * lvl.toInt()); }));
+    mParamSubs.push_back(params[Param::ShardMultUp].subscribeTo(
         up->level(), [](const Number& lvl) { return 3 ^ lvl; }));
     mShardMultUp = mUpgrades->subscribe(up);
 
     // Increase poison gain from poison fbs
-    up =
-        std::make_shared<Upgrade>(params[PoisonWizard::Param::PoisonFbUpLvl], 5);
+    up = std::make_shared<Upgrade>(params[Param::PoisonFbUpLvl], 5);
     up->setImage("");
     up->setDescription(
         {"{i} increase the {i} gain rate by +10%/lvl",
          {IconSystem::Get(Wizard::Constants::FB_POISON_IMG()),
           MoneyIcons::GetMoneyIcon(UpgradeDefaults::CRYSTAL_MAGIC)}});
-    up->setCost(UpgradeDefaults::CRYSTAL_MAGIC,
-                params[PoisonWizard::Param::PoisonFbUpCost]);
-    up->setEffects(params[PoisonWizard::Param::PoisonFbUp],
-                   UpgradeDefaults::PercentEffect);
-    mParamSubs.push_back(params[PoisonWizard::Param::PoisonFbUpCost].subscribeTo(
+    up->setCost(UpgradeDefaults::CRYSTAL_MAGIC, params[Param::PoisonFbUpCost]);
+    up->setEffects(params[Param::PoisonFbUp], UpgradeDefaults::PercentEffect);
+    mParamSubs.push_back(params[Param::PoisonFbUpCost].subscribeTo(
         up->level(),
         [](const Number& lvl) { return Number(1, 15) * (4.5 ^ lvl); }));
-    mParamSubs.push_back(params[PoisonWizard::Param::PoisonFbUp].subscribeTo(
+    mParamSubs.push_back(params[Param::PoisonFbUp].subscribeTo(
         up->level(), [](const Number& lvl) { return lvl / 10; }));
     mPoisonFbUp = mUpgrades->subscribe(up);
 
     // Increase globs fired
-    up = std::make_shared<Upgrade>(params[PoisonWizard::Param::GlobCntUpLvl], 3);
+    up = std::make_shared<Upgrade>(params[Param::GlobCntUpLvl], 3);
     up->setImage("");
     up->setDescription({"Increases {i} count by +2",
                         {IconSystem::Get(Constants::GLOB_IMG())}});
-    up->setCost(UpgradeDefaults::CRYSTAL_SHARDS,
-                params[PoisonWizard::Param::GlobCntCost]);
-    up->setEffects(params[PoisonWizard::Param::GlobCntUp],
-                   UpgradeDefaults::AdditiveEffect);
-    mParamSubs.push_back(params[PoisonWizard::Param::GlobCntCost].subscribeTo(
+    up->setCost(UpgradeDefaults::CRYSTAL_SHARDS, params[Param::GlobCntCost]);
+    up->setEffects(params[Param::GlobCntUp], UpgradeDefaults::AdditiveEffect);
+    mParamSubs.push_back(params[Param::GlobCntCost].subscribeTo(
         up->level(), [](const Number& lvl) { return 50 * (1.5 ^ lvl); }));
-    mParamSubs.push_back(params[PoisonWizard::Param::GlobCntUp].subscribeTo(
+    mParamSubs.push_back(params[Param::GlobCntUp].subscribeTo(
         up->level(), [](const Number& lvl) { return 2 * lvl; }));
     mGlobCntUp = mUpgrades->subscribe(up);
 
@@ -121,33 +112,34 @@ void PoisonWizard::setUpgrades() {
           IconSystem::Get(Wizard::Constants::FB_IMG()),
           IconSystem::Get(Wizard::Constants::FB_POISON_IMG())}});
     uUp->setCost(UpgradeDefaults::CATALYST_MAGIC,
-                 params[PoisonWizard::Param::CatPoisonUpCost]);
+                 params[Param::CatPoisonUpCost]);
     mCatPoisUp = mUpgrades->subscribe(uUp);
 }
 void PoisonWizard::setParamTriggers() {
-    PoisonWizard::Params params;
+    Params params;
+    Crystal::Params cryParams;
 
-    mParamSubs.push_back(params[PoisonWizard::Param::Speed].subscribeTo(
-        {params[PoisonWizard::Param::BaseSpeed]}, {},
-        [this]() { return calcSpeed(); }));
-
-    mParamSubs.push_back(
-        params[PoisonWizard::Param::Speed].subscribe([this]() { calcTimer(); }));
-
-    mParamSubs.push_back(params[PoisonWizard::Param::GlobCnt].subscribeTo(
-        {params[PoisonWizard::Param::BaseGlobCnt],
-         params[PoisonWizard::Param::GlobCntUp]},
-        {}, [this]() { return calcBlobCount(); }));
+    mParamSubs.push_back(params[Param::Speed].subscribeTo(
+        {params[Param::BaseSpeed]}, {}, [this]() { return calcSpeed(); }));
 
     mParamSubs.push_back(
-        params[Crystal::Param::BoughtPoisonWizard].subscribe([this](bool bought) {
-            WizardSystem::GetHideObservable()->next(mId, !bought);
-        }));
+        params[Param::Speed].subscribe([this]() { calcTimer(); }));
 
-    mParamSubs.push_back(ParameterSystem::subscribe(
-        {},
-        {params[Param::BoughtPoisWizCatPois], params[Crystal::Param::BoughtCatalyst]},
-        [this]() { setTargets(); }));
+    mParamSubs.push_back(params[Param::GlobCnt].subscribeTo(
+        {params[Param::BaseGlobCnt], params[Param::GlobCntUp]}, {},
+        [this]() { return calcBlobCount(); }));
+
+    mParamSubs.push_back(
+        cryParams[Crystal::Param::BoughtPoisonWizard].subscribe(
+            [this](bool bought) {
+                WizardSystem::GetHideObservable()->next(mId, !bought);
+            }));
+
+    mParamSubs.push_back(
+        ParameterSystem::subscribe({},
+                                   {params[Param::BoughtPoisWizCatPois],
+                                    cryParams[Crystal::Param::BoughtCatalyst]},
+                                   [this]() { setTargets(); }));
 }
 
 void PoisonWizard::onRender(SDL_Renderer* r) {
@@ -180,14 +172,14 @@ void PoisonWizard::onT1Reset() {
 }
 
 Number PoisonWizard::calcSpeed() {
-    PoisonWizard::Params params;
-    return params[PoisonWizard::Param::BaseSpeed].get();
+    Params params;
+    return params[Param::BaseSpeed].get();
 }
 void PoisonWizard::calcTimer() {
-    PoisonWizard::Params params;
+    Params params;
 
     Timer& timer = mFireballTimerSub->get<TimerObservable::DATA>();
-    float div = params[PoisonWizard::Param::Speed].get().toFloat();
+    float div = params[Param::Speed].get().toFloat();
     if (div <= 0) {
         div = 1;
     }
@@ -196,22 +188,20 @@ void PoisonWizard::calcTimer() {
     timer.timer *= timer.length / prevLen;
 }
 Number PoisonWizard::calcBlobCount() {
-    PoisonWizard::Params params;
-    return params[PoisonWizard::Param::BaseGlobCnt].get() +
-           params[PoisonWizard::Param::GlobCntUp].get();
+    Params params;
+    return params[Param::BaseGlobCnt].get() + params[Param::GlobCntUp].get();
 }
 
 void PoisonWizard::setTargets() {
-
     mTargets.clear();
-    if (params[Param::BoughtPoisWizCatPois].get() &&
-        params[Crystal::Param::BoughtCatalyst].get()) {
+    if (Params::get(Param::BoughtPoisWizCatPois).get() &&
+        Crystal::Params::get(Crystal::Param::BoughtCatalyst).get()) {
         mTargets.push_back(CATALYST);
     }
 }
 
 void PoisonWizard::shootFireball() {
-    PoisonWizard::Params params;
+    Params params;
 
     if (!mTargets.empty()) {
         auto data = newFireballData();
@@ -220,7 +210,7 @@ void PoisonWizard::shootFireball() {
             mTargets.at((int)(rDist(gen) * mTargets.size())), data));
     }
 
-    Number cnt = params[PoisonWizard::Param::GlobCnt].get();
+    Number cnt = params[Param::GlobCnt].get();
     for (int i = 0; i < cnt; i++) {
         float theta = rDist(gen) * 2 * M_PI;
         mGlobs.push_back(ComponentFactory<Glob>::New(

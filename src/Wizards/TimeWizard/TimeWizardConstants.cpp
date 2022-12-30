@@ -21,19 +21,18 @@ const std::string FREEZE_UP_IMG = "res/upgrades/time_freeze_upgrade.png",
 void setDefaults() {
     using WizardSystem::Event;
 
-    TimeWizard::Params params;
+    Params params;
 
-    params[TimeWizard::Param::SpeedBaseEffect]->init(1.5);
-    params[TimeWizard::Param::FreezeBaseEffect]->init(1.1);
-    params[TimeWizard::Param::FreezeDelay]->init(1000000);
-    params[TimeWizard::Param::FreezeDuration]->init(15000);
-    params[TimeWizard::Param::TimeWarpEffect]->init(1, Event::ResetT1);
+    params[Param::SpeedBaseEffect]->init(1.5);
+    params[Param::FreezeBaseEffect]->init(1.1);
+    params[Param::FreezeDelay]->init(1000000);
+    params[Param::FreezeDuration]->init(15000);
+    params[Param::TimeWarpEffect]->init(1, Event::ResetT1);
 
-    params[TimeWizard::Param::SpeedUpLvl]->init(Event::ResetT1);
-    params[TimeWizard::Param::FBSpeedUpLvl]->init(Event::ResetT1);
-    params[TimeWizard::Param::FreezeUpLvl]->init(Event::ResetT1);
-    params[TimeWizard::Param::SpeedUpUpLvl]->init(Event::ResetT1);
-
+    params[Param::SpeedUpLvl]->init(Event::ResetT1);
+    params[Param::FBSpeedUpLvl]->init(Event::ResetT1);
+    params[Param::FreezeUpLvl]->init(Event::ResetT1);
+    params[Param::SpeedUpUpLvl]->init(Event::ResetT1);
 
     params[Param::TimeWizActive]->init(false, Event::ResetT1);
     params[Param::TimeWizFrozen]->init(false, Event::ResetT1);

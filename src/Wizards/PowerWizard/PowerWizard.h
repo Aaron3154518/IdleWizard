@@ -14,9 +14,12 @@
 #include <Systems/WizardSystem/WizardEvents.h>
 #include <Systems/WizardSystem/WizardObservables.h>
 #include <Utils/AnimationData.h>
+#include <Wizards/Crystal/CrystalParameters.h>
 #include <Wizards/PowerWizard/PowerFireball.h>
 #include <Wizards/PowerWizard/PowerWizardConstants.h>
+#include <Wizards/PowerWizard/PowerWizardParameters.h>
 #include <Wizards/TimeWizard/TimeWizardConstants.h>
+#include <Wizards/TimeWizard/TimeWizardParameters.h>
 #include <Wizards/Wizard/WizardConstants.h>
 #include <Wizards/Wizard/WizardFireball.h>
 #include <Wizards/WizardIds.h>

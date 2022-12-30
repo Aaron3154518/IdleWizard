@@ -23,7 +23,7 @@ void TimeWizard::setSubscriptions() {
             [this](Timer& t) {
                 mImg->nextFrame();
                 WizardSystem::GetWizardImageObservable()->next(mId, mImg);
-                if (ParameterSystem::Param(Param::TimeWizFrozen).get()) {
+                if (Params::get(Param::TimeWizFrozen).get()) {
                     t.length = mImg->getFrame() != 0
                                    ? Constants::FREEZE_IMG().frame_ms
                                    : (int)(rDist(gen) * 500) + 1000;
@@ -47,33 +47,30 @@ void TimeWizard::setSubscriptions() {
     attachSubToVisibility(mGlobHitSub);
 }
 void TimeWizard::setUpgrades() {
-    TimeWizard::Params params;
+    Params params;
 
     // Power Display
     DisplayPtr dUp = std::make_shared<Display>();
     dUp->setImage(mId);
     dUp->setDescription({"Speed multiplier"});
-    dUp->setEffects({params[TimeWizard::Param::FreezeDelay],
-                     params[TimeWizard::Param::FreezeDuration],
-                     params[TimeWizard::Param::FreezeEffect]},
-                    {}, []() -> TextUpdateData {
-                        TimeWizard::Params params;
-                        std::stringstream ss;
-                        ss << "Cooldown: "
-                           << params[TimeWizard::Param::FreezeDelay].get() / 1000
-                           << "s\nDuration: "
-                           << params[TimeWizard::Param::FreezeDuration].get() /
-                                  1000
-                           << "s\nUnfreeze Effect: Power ^ "
-                           << params[TimeWizard::Param::FreezeEffect].get();
-                        return {ss.str()};
-                    });
+    dUp->setEffects(
+        {params[Param::FreezeDelay], params[Param::FreezeDuration],
+         params[Param::FreezeEffect]},
+        {}, []() -> TextUpdateData {
+            Params params;
+            std::stringstream ss;
+            ss << "Cooldown: " << params[Param::FreezeDelay].get() / 1000
+               << "s\nDuration: " << params[Param::FreezeDuration].get() / 1000
+               << "s\nUnfreeze Effect: Power ^ "
+               << params[Param::FreezeEffect].get();
+            return {ss.str()};
+        });
     mEffectDisplay = mUpgrades->subscribe(dUp);
 
     // Active toggle
     mActiveToggle = std::make_shared<Toggle>(
         [this](unsigned int state, Toggle& tUp) {
-            auto active = ParameterSystem::Param(Param::TimeWizActive);
+            auto active = Params::get(Param::TimeWizActive);
             active.set(state == 1);
             tUp.setImage(active.get() ? Constants::ACTIVE_UP_IMG
                                       : WIZ_IMGS.at(mId));
@@ -85,128 +82,117 @@ void TimeWizard::setUpgrades() {
           IconSystem::Get(Wizard::Constants::IMG()),
           IconSystem::Get(PowerWizard::Constants::IMG())}});
     mActiveToggle->setEffects(
-        {params[TimeWizard::Param::SpeedCost],
-         params[TimeWizard::Param::SpeedEffect]},
-        {}, []() -> TextUpdateData {
-            TimeWizard::Params params;
+        {params[Param::SpeedCost], params[Param::SpeedEffect]}, {},
+        []() -> TextUpdateData {
+            Params params;
             std::stringstream ss;
-            ss << params[TimeWizard::Param::SpeedEffect].get() << "x\n-"
-               << (params[TimeWizard::Param::SpeedCost].get() * 100) << "%{i}/s";
+            ss << params[Param::SpeedEffect].get() << "x\n-"
+               << (params[Param::SpeedCost].get() * 100) << "%{i}/s";
             return {ss.str(),
                     {MoneyIcons::GetMoneyIcon(UpgradeDefaults::CRYSTAL_MAGIC)}};
         });
     mActiveUp = mUpgrades->subscribe(mActiveToggle);
 
     // Speed upgrade
-    UpgradePtr up =
-        std::make_shared<Upgrade>(params[TimeWizard::Param::SpeedUpLvl], 10);
+    UpgradePtr up = std::make_shared<Upgrade>(params[Param::SpeedUpLvl], 10);
     up->setImage(Constants::SPEED_UP_IMG);
     up->setDescription(
         {"Increase speed boost multiplier by +.05\nThis will also increase "
          "the {i} cost!",
          {MoneyIcons::GetMoneyIcon(UpgradeDefaults::CRYSTAL_MAGIC)}});
-    up->setCost(UpgradeDefaults::CRYSTAL_MAGIC,
-                params[TimeWizard::Param::SpeedUpCost]);
-    up->setEffects(params[TimeWizard::Param::SpeedUp],
-                   UpgradeDefaults::AdditiveEffect);
+    up->setCost(UpgradeDefaults::CRYSTAL_MAGIC, params[Param::SpeedUpCost]);
+    up->setEffects(params[Param::SpeedUp], UpgradeDefaults::AdditiveEffect);
     mParamSubs.push_back(UpgradeDefaults::subscribeT1UpCost(
-        up->level(), params[TimeWizard::Param::SpeedUpCost],
+        up->level(), params[Param::SpeedUpCost],
         [](const Number& lvl) { return 250 ^ (lvl / 12 + 1); }));
-    mParamSubs.push_back(params[TimeWizard::Param::SpeedUp].subscribeTo(
+    mParamSubs.push_back(params[Param::SpeedUp].subscribeTo(
         up->level(), [](const Number& lvl) { return lvl * .05; }));
     mSpeedUp = mUpgrades->subscribe(up);
 
     // Speed effect upgrade
-    up = std::make_shared<Upgrade>(params[TimeWizard::Param::SpeedUpUpLvl], 8);
+    up = std::make_shared<Upgrade>(params[Param::SpeedUpUpLvl], 8);
     up->setImage(Constants::POW_SPEED_UP_IMG);
     up->setDescription(
         {"Increases the speed boost upgrade effect by *1.1 and reduces the "
          "speed boost cost percent by *0.9"});
-    up->setCost(UpgradeDefaults::CRYSTAL_MAGIC,
-                params[TimeWizard::Param::SpeedUpUpCost]);
-    up->setEffects({params[TimeWizard::Param::SpeedUpUp],
-                    params[TimeWizard::Param::SpeedUpCostUp]},
-                   {}, []() -> TextUpdateData {
-                       TimeWizard::Params params;
+    up->setCost(UpgradeDefaults::CRYSTAL_MAGIC, params[Param::SpeedUpUpCost]);
+    up->setEffects({params[Param::SpeedUpUp], params[Param::SpeedUpCostUp]}, {},
+                   []() -> TextUpdateData {
+                       Params params;
                        std::stringstream ss;
                        ss << "Speed "
                           << UpgradeDefaults::MultiplicativeEffect(
-                                 params[TimeWizard::Param::SpeedUpUp].get())
+                                 params[Param::SpeedUpUp].get())
                                  .text
                           << "\nCost "
                           << UpgradeDefaults::MultiplicativeEffect(
-                                 params[TimeWizard::Param::SpeedUpCostUp].get())
+                                 params[Param::SpeedUpCostUp].get())
                                  .text;
                        return {ss.str()};
                    });
-    mParamSubs.push_back(params[TimeWizard::Param::SpeedUpUpCost].subscribeTo(
+    mParamSubs.push_back(params[Param::SpeedUpUpCost].subscribeTo(
         up->level(),
         [](const Number& lvl) { return Number(1, 7) * (2.1 ^ lvl); }));
-    mParamSubs.push_back(params[TimeWizard::Param::SpeedUpUp].subscribeTo(
+    mParamSubs.push_back(params[Param::SpeedUpUp].subscribeTo(
         up->level(), [](const Number& lvl) { return 1.1 ^ lvl; }));
-    mParamSubs.push_back(params[TimeWizard::Param::SpeedUpCostUp].subscribeTo(
+    mParamSubs.push_back(params[Param::SpeedUpCostUp].subscribeTo(
         up->level(), [](const Number& lvl) { return .9 ^ lvl; }));
     mSpeedUpUp = mUpgrades->subscribe(up);
 
     // Fireball Speed upgrade
-    up = std::make_shared<Upgrade>(params[TimeWizard::Param::FBSpeedUpLvl], 6);
+    up = std::make_shared<Upgrade>(params[Param::FBSpeedUpLvl], 6);
     up->setImage(Constants::FB_SPEED_UP_IMG);
     up->setDescription(
         {"Increase {i} speed *1.075\nHigher speed gives more power",
          {IconSystem::Get(Wizard::Constants::FB_IMG())}});
-    up->setCost(UpgradeDefaults::CRYSTAL_MAGIC,
-                params[TimeWizard::Param::FBSpeedCost]);
-    up->setEffects(params[TimeWizard::Param::FBSpeedUp],
+    up->setCost(UpgradeDefaults::CRYSTAL_MAGIC, params[Param::FBSpeedCost]);
+    up->setEffects(params[Param::FBSpeedUp],
                    UpgradeDefaults::MultiplicativeEffect);
     mParamSubs.push_back(UpgradeDefaults::subscribeT1UpCost(
-        up->level(), params[TimeWizard::Param::FBSpeedCost],
+        up->level(), params[Param::FBSpeedCost],
         [](const Number& lvl) { return 100 * (2.5 ^ lvl); }));
-    mParamSubs.push_back(params[TimeWizard::Param::FBSpeedUp].subscribeTo(
+    mParamSubs.push_back(params[Param::FBSpeedUp].subscribeTo(
         up->level(), [](const Number& lvl) { return 1.075 ^ lvl; }));
     mFBSpeedUp = mUpgrades->subscribe(up);
 
     // Freeze upgrade
-    up = std::make_shared<Upgrade>(params[TimeWizard::Param::FreezeUpLvl], 8);
+    up = std::make_shared<Upgrade>(params[Param::FreezeUpLvl], 8);
     up->setImage(Constants::FREEZE_UP_IMG);
     up->setDescription({"Multiply unfreeze boost exponent by 1.03"});
-    up->setCost(UpgradeDefaults::CRYSTAL_MAGIC,
-                params[TimeWizard::Param::FreezeUpCost]);
-    up->setEffects(params[TimeWizard::Param::FreezeUp],
+    up->setCost(UpgradeDefaults::CRYSTAL_MAGIC, params[Param::FreezeUpCost]);
+    up->setEffects(params[Param::FreezeUp],
                    UpgradeDefaults::MultiplicativeEffect);
     mParamSubs.push_back(UpgradeDefaults::subscribeT1UpCost(
-        up->level(), params[TimeWizard::Param::FreezeUpCost],
+        up->level(), params[Param::FreezeUpCost],
         [](const Number& lvl) { return 150 * (1.6 ^ lvl); }));
-    mParamSubs.push_back(params[TimeWizard::Param::FreezeUp].subscribeTo(
+    mParamSubs.push_back(params[Param::FreezeUp].subscribeTo(
         up->level(), [](const Number& lvl) { return 1.03 ^ lvl; }));
     mFreezeUp = mUpgrades->subscribe(up);
 }
 void TimeWizard::setParamTriggers() {
-    TimeWizard::Params params;
+    Params params;
+    Crystal::Params cryParams;
 
-    mParamSubs.push_back(params[TimeWizard::Param::FreezeEffect].subscribeTo(
-        {params[TimeWizard::Param::FreezeBaseEffect],
-         params[TimeWizard::Param::FreezeUp]},
-        {}, [this]() { return calcFreezeEffect(); }));
+    mParamSubs.push_back(params[Param::FreezeEffect].subscribeTo(
+        {params[Param::FreezeBaseEffect], params[Param::FreezeUp]}, {},
+        [this]() { return calcFreezeEffect(); }));
 
-    mParamSubs.push_back(params[TimeWizard::Param::SpeedEffect].subscribeTo(
-        {params[TimeWizard::Param::SpeedBaseEffect],
-         params[TimeWizard::Param::SpeedUp],
-         params[TimeWizard::Param::SpeedUpUp]},
+    mParamSubs.push_back(params[Param::SpeedEffect].subscribeTo(
+        {params[Param::SpeedBaseEffect], params[Param::SpeedUp],
+         params[Param::SpeedUpUp]},
         {params[Param::TimeWizActive], params[Param::TimeWizFrozen]},
         [this]() { return calcSpeedEffect(); }));
 
-    mParamSubs.push_back(params[TimeWizard::Param::SpeedCost].subscribeTo(
-        {params[TimeWizard::Param::SpeedEffect],
-         params[TimeWizard::Param::SpeedUpCostUp]},
-        {}, [this]() { return calcCost(); }));
+    mParamSubs.push_back(params[Param::SpeedCost].subscribeTo(
+        {params[Param::SpeedEffect], params[Param::SpeedUpCostUp]}, {},
+        [this]() { return calcCost(); }));
 
-    mParamSubs.push_back(params[TimeWizard::Param::ClockSpeed].subscribeTo(
-        {params[TimeWizard::Param::FreezeBaseEffect],
-         params[TimeWizard::Param::FreezeEffect]},
-        {}, [this]() { return calcClockSpeed(); }));
+    mParamSubs.push_back(params[Param::ClockSpeed].subscribeTo(
+        {params[Param::FreezeBaseEffect], params[Param::FreezeEffect]}, {},
+        [this]() { return calcClockSpeed(); }));
 
-    mParamSubs.push_back(params[TimeWizard::Param::SpeedEffect].subscribe(
-        [this](const Number& val) {
+    mParamSubs.push_back(
+        params[Param::SpeedEffect].subscribe([this](const Number& val) {
             mImgAnimData.frame_ms =
                 (unsigned int)(Constants::IMG().frame_ms / val.toFloat());
             if (mAnimTimerSub) {
@@ -214,8 +200,8 @@ void TimeWizard::setParamTriggers() {
             }
         }));
 
-    mParamSubs.push_back(
-        params[Crystal::Param::BoughtTimeWizard].subscribe([this](bool bought) {
+    mParamSubs.push_back(cryParams[Crystal::Param::BoughtTimeWizard].subscribe(
+        [this](bool bought) {
             WizardSystem::GetHideObservable()->next(mId, !bought);
         }));
 
@@ -224,22 +210,20 @@ void TimeWizard::setParamTriggers() {
 
     // Upgrade unlock constraints
     mParamSubs.push_back(ParameterSystem::subscribe(
-        {params[TimeWizard::Param::SpeedUpLvl]}, {params[Param::BoughtSecondT1]},
-        [this]() {
+        {params[Param::SpeedUpLvl]},
+        {cryParams[Crystal::Param::BoughtSecondT1]}, [this]() {
             mSpeedUpUp->setActive(
-                TimeWizard::Params::get(
-                    TimeWizard::Param::SpeedUpLvl)
-                        .get() > 0 &&
-                ParameterSystem::Param(Param::BoughtSecondT1).get());
+                Params::get(Param::SpeedUpLvl).get() > 0 &&
+                Crystal::Params::get(Crystal::Param::BoughtSecondT1).get());
         }));
 }
 
 bool TimeWizard::onCostTimer(Timer& timer) {
+    Params params;
 
     if (!params[Param::TimeWizFrozen].get() &&
         params[Param::TimeWizActive].get()) {
-        auto speedCost =
-            TimeWizard::Params::get(TimeWizard::Param::SpeedCost);
+        auto speedCost = Params::get(Param::SpeedCost);
         auto money = Crystal::Params::get(Crystal::Param::Magic);
         money.set(money.get() * (1 - speedCost.get() * timer.length / 1000));
     }
@@ -261,7 +245,7 @@ void TimeWizard::onHide(bool hide) {
     if (hide) {
         mActiveToggle->setLevel(0);
     }
-    ParameterSystem::Param(Param::TimeWizFrozen).set(false);
+    Params::get(Param::TimeWizFrozen).set(false);
 }
 
 void TimeWizard::onT1Reset() {
@@ -281,16 +265,13 @@ void TimeWizard::onFreezeChange(bool frozen) {
             mFreezeTimerSub =
                 ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
                     [this](Timer& t) {
-                        ParameterSystem::Param(Param::TimeWizFrozen).set(false);
+                        Params::get(Param::TimeWizFrozen).set(false);
                         return false;
                     },
                     [this](Time dt, Timer& timer) {
                         mFreezePb.set(1 - timer.getPercent());
                     },
-                    Timer(TimeWizard::Params::get(
-                              TimeWizard::Param::FreezeDuration)
-                              .get()
-                              .toFloat()));
+                    Timer(Params::get(Param::FreezeDuration).get().toFloat()));
         }
     } else {
         mFreezePb.mColor = BLUE;
@@ -300,30 +281,27 @@ void TimeWizard::onFreezeChange(bool frozen) {
             mFreezeDelaySub =
                 ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
                     [this](Timer& t) {
-                        ParameterSystem::Param(Param::TimeWizFrozen).set(true);
+                        Params::get(Param::TimeWizFrozen).set(true);
                         return false;
                     },
                     [this](Time dt, Timer& timer) {
                         mFreezePb.set(timer.getPercent());
                     },
-                    Timer(TimeWizard::Params::get(
-                              TimeWizard::Param::FreezeDelay)
-                              .get()
-                              .toFloat()));
+                    Timer(Params::get(Param::FreezeDelay).get().toFloat()));
         }
     }
     updateImg();
 }
 
 void TimeWizard::onPowFireballHit(const PowerWizard::Fireball& fireball) {
-    TimeWizard::Params params;
-    params[TimeWizard::Param::TimeWarpEffect].set(fireball.getPower());
+    Params params;
+    params[Param::TimeWarpEffect].set(fireball.getPower());
     WizardSystem::GetWizardEventObservable()->next(
         WizardSystem::Event::TimeWarp);
 }
 
 void TimeWizard::onGlobHit() {
-    if (ParameterSystem::Param(Param::TimeWizFrozen).get()) {
+    if (Params::get(Param::TimeWizFrozen).get()) {
         Timer& t = mFreezeTimerSub->get<TimerObservable::DATA>();
         t.timer += t.length / 15;
     } else {
@@ -333,46 +311,46 @@ void TimeWizard::onGlobHit() {
 }
 
 Number TimeWizard::calcFreezeEffect() {
-    TimeWizard::Params params;
-    return params[TimeWizard::Param::FreezeBaseEffect].get() *
-           params[TimeWizard::Param::FreezeUp].get();
+    Params params;
+    return params[Param::FreezeBaseEffect].get() *
+           params[Param::FreezeUp].get();
 }
 
 Number TimeWizard::calcSpeedEffect() {
-    TimeWizard::Params params;
+    Params params;
     Number effect = 1;
     if (params[Param::TimeWizActive].get() ||
         params[Param::TimeWizFrozen].get()) {
-        effect = params[TimeWizard::Param::SpeedBaseEffect].get() +
-                 (params[TimeWizard::Param::SpeedUp].get() *
-                  params[TimeWizard::Param::SpeedUpUp].get());
+        effect =
+            params[Param::SpeedBaseEffect].get() +
+            (params[Param::SpeedUp].get() * params[Param::SpeedUpUp].get());
     }
     return effect;
 }
 
 Number TimeWizard::calcCost() {
-    TimeWizard::Params params;
-    Number effect = params[TimeWizard::Param::SpeedEffect].get();
+    Params params;
+    Number effect = params[Param::SpeedEffect].get();
     Number result = min(effect - 1, .5) / 50;
     effect -= 1.5;
     if (effect > 0) {
         result += effect / 50;
     }
-    result *= params[TimeWizard::Param::SpeedUpCostUp].get();
+    result *= params[Param::SpeedUpCostUp].get();
     return result;
 }
 
 Number TimeWizard::calcClockSpeed() {
-    TimeWizard::Params params;
-    return (params[TimeWizard::Param::FreezeEffect].get() /
-            params[TimeWizard::Param::FreezeBaseEffect].get()) ^
+    Params params;
+    return (params[Param::FreezeEffect].get() /
+            params[Param::FreezeBaseEffect].get()) ^
            2;
 }
 
 void TimeWizard::updateImg() {
     Rect imgR = mImg.getRect();
     imgR.setPos(mPos->rect.cX(), mPos->rect.cY(), Rect::Align::CENTER);
-    bool frozen = ParameterSystem::Param(Param::TimeWizFrozen).get();
+    bool frozen = Params::get(Param::TimeWizFrozen).get();
     mImg.set(frozen ? Constants::FREEZE_IMG() : mImgAnimData);
     if (mAnimTimerSub) {
         mAnimTimerSub->get<TimerObservable::DATA>() =

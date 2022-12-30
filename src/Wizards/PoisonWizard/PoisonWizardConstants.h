@@ -5,6 +5,7 @@
 #include <ServiceSystem/UpdateServices/TimerService.h>
 #include <Systems/ParameterSystem/ParameterAccess.h>
 #include <Systems/WizardSystem/WizardObservables.h>
+#include <Wizards/PoisonWizard/PoisonWizardParameters.h>
 #include <Wizards/WizardIds.h>
 
 #include <string>

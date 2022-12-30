@@ -7,12 +7,13 @@ FractureButton::FractureButton()
     setImage(Crystal::Constants::FRACTURE_IMG);
     setDescription({"Blast {i} with all your strength\nDestroys your wizards",
                     {IconSystem::Get(Crystal::Constants::IMG())}});
-    setEffects(Crystal::Params::get(Crystal::Param::ShardGain),
-               [](const Number& gain) -> TextUpdateData {
-                   return {
-                       "+{i}" + gain.toString(),
-                       {MoneyIcons::GetMoneyIcon(UpgradeDefaults::CRYSTAL_SHARDS)}};
-               });
+    setEffects(
+        Crystal::Params::get(Crystal::Param::ShardGain),
+        [](const Number& gain) -> TextUpdateData {
+            return {
+                "+{i}" + gain.toString(),
+                {MoneyIcons::GetMoneyIcon(UpgradeDefaults::CRYSTAL_SHARDS)}};
+        });
 }
 
 void FractureButton::init() {
@@ -36,11 +37,10 @@ void FractureButton::onRender(SDL_Renderer* r) {
 void FractureButton::onClick(Event::MouseButton b, bool clicked) {
     if (clicked) {
         auto shards = Crystal::Params::get(Crystal::Param::Shards);
-        auto shardGain =
-            Crystal::Params::get(Crystal::Param::ShardGain);
+        auto shardGain = Crystal::Params::get(Crystal::Param::ShardGain);
         shards.set(shards.get() + shardGain.get());
 
-        auto resetT1 = ParameterSystem::Param(Param::ResetT1);
+        auto resetT1 = Params::get(Param::ResetT1);
         if (!resetT1.get()) {
             resetT1.set(true);
         }

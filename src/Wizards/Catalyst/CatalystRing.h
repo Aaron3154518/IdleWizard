@@ -15,6 +15,7 @@
 #include <Systems/TimeSystem.h>
 #include <Systems/WizardSystem/WizardObservables.h>
 #include <Utils/Number.h>
+#include <Wizards/Catalyst/CatalystParameters.h>
 
 #include <random>
 

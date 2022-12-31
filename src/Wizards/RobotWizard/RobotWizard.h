@@ -51,8 +51,8 @@ class RobotWizard : public WizardBase {
 
     TimerObservable::SubscriptionPtr mAnimTimerSub, mWaitSub;
     TimeSystem::UpdateObservable::SubscriptionPtr mMoveUpdateSub;
-    UpgradeList::SubscriptionPtr mWizCritUp;
-    std::vector<UpgradeList::SubscriptionPtr> mUps;
+    UpgradeList::SubscriptionPtr mWizCritUp, mUpBotUp, mWizSynBotUp,
+        mCrysSynBotUp, mTimeWizSynBotUp;
 };
 }  // namespace RobotWizard
 

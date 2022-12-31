@@ -52,6 +52,75 @@ const AnimationData& PORTAL_BOT() {
     return PORTAL_BOT;
 }
 
+RenderTextureCPtr BOT_FLOAT_IMG(WizardId id) {
+    static float maxHover = 0;
+    static RectShape fill(TRANSPARENT);
+    static RenderAnimation bot;
+    static std::unordered_map<WizardId, float> hovers;
+    static std::unordered_map<WizardId, RenderData> hats;
+    static std::unordered_map<WizardId, RenderTexturePtr> imgs;
+    static std::unordered_map<WizardId, TextureBuilder> texs;
+    static std::unordered_map<WizardId, TimerObservable::SubscriptionPtr>
+        timerSubs;
+
+    auto& img = imgs[id];
+
+    if (!img) {
+        std::mt19937 gen = std::mt19937(rand());
+        std::uniform_real_distribution<float> rDist;
+        hovers[id] = (rDist(gen) - .5) * M_PI;
+
+        auto& hat = hats[id];
+        auto& tex = texs[id];
+
+        bot.set(BOT_IMG());
+        hat.set(BOT_HAT_IMG(id));
+
+        SDL_Point botDim = bot->getTextureDim();
+        botDim = {botDim.x * 2, botDim.y * 2};
+        SDL_Point hatDim = hat->getTextureDim();
+        hatDim = {hatDim.x * 2, hatDim.y * 2};
+        maxHover = (float)botDim.y / 4;
+        int h = botDim.y + hatDim.y;
+
+        tex = TextureBuilder(botDim.x, h);
+        fill.set(Rect(0, 0, botDim.x, h));
+        bot.setDest(Rect(0, h - botDim.y, botDim.x, botDim.y));
+        Rect hatRect(0, 0, hatDim.x, hatDim.y);
+        hatRect.setPosX(botDim.x / 2, Rect::Align::CENTER);
+        hat.setDest(hatRect);
+
+        img = std::make_shared<RenderTexture>(tex.getTexture());
+
+        timerSubs[id] =
+            ServiceSystem::Get<TimerService, TimerObservable>()->subscribe(
+                [id](Timer& t) {
+                    auto& hover = hovers[id];
+                    auto& hat = hats[id];
+                    auto& tex = texs[id];
+
+                    bot->nextFrame();
+
+                    hover = fmodf(hover + M_PI * t.length / 600, 2 * M_PI);
+                    Rect hatRect = hat.getDest();
+                    hatRect.setPosY((sinf(hover) + 1) / 2 * maxHover,
+                                    Rect::Align::TOP_LEFT);
+                    hat.setDest(hatRect);
+
+                    tex.draw(fill);
+                    tex.draw(bot);
+                    tex.draw(hat);
+
+                    imgs[id]->update();
+
+                    return true;
+                },
+                BOT_IMG());
+    }
+
+    return img;
+}
+
 void setDefaults() {
     using WizardSystem::Event;
 
@@ -59,7 +128,12 @@ void setDefaults() {
 
     params[Param::ShardAmnt]->init(0, Event::ResetT2);
 
-    params[Param::WizCritUpCost]->init(Number(1, 20));
+    params[Param::WizCritUpCost]->init(Number(1, 7));
+
+    params[Param::UpBotCost]->init(Number(1, 1));
+    params[Param::WizSynBotCost]->init(Number(1, 2));
+    params[Param::CrysSynBotCost]->init(Number(1, 3));
+    params[Param::TimeWizSynBotCost]->init(Number(1, 5));
 
     params[Param::CrysSynBotActive]->init(true);
     params[Param::WizSynBotActive]->init(true);

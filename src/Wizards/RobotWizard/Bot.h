@@ -118,10 +118,7 @@ class SynergyBot : public Component {
     std::uniform_real_distribution<float> rDist;
 
     UIComponentPtr mPos;
-    Rect mHatRect;
-    RenderAnimation mImg;
-    RenderData mHat;
-    float mHatTheta = 0;
+    RenderData mImg;
 
     bool mChase = false;
     const WizardId mTarget;
@@ -133,7 +130,6 @@ class SynergyBot : public Component {
 
     RenderObservable::SubscriptionPtr mRenderSub;
     TimeSystem::UpdateObservable::SubscriptionPtr mUpdateSub;
-    TimeSystem::TimerObservable::SubscriptionPtr mAnimTimerSub;
     PowerWizard::FireballList::HitObservable::SubscriptionPtr mFbHitSub;
     PowerWizard::FireballList::PosObservable::SubscriptionPtr mFbPosSub;
     ParameterSystem::ParameterSubscriptionPtr mFreezeSub;

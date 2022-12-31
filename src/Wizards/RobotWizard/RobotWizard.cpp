@@ -37,38 +37,51 @@ void RobotWizard::setSubscriptions() {
 void RobotWizard::setUpgrades() {
     Params params;
 
+    // Wizard crit boost
     UnlockablePtr uUp =
         std::make_shared<Unlockable>(params[Param::BoughtWizCritUp]);
     uUp->setImage("");
     uUp->setDescription(
-        {"{i} crit is *10^crit instead of *crit\nUnlocks new {i} "
+        {"{i} crit is *10^x instead of *x\nUnlocks new {i} "
          "crit upgrade",
          {IconSystem::Get(Wizard::Constants::FB_IMG()),
           IconSystem::Get(Wizard::Constants::IMG())}});
     uUp->setCost(UpgradeDefaults::CRYSTAL_SHARDS, params[Param::WizCritUpCost]);
     mWizCritUp = mUpgrades->subscribe(uUp);
 
-    using Param::P_B;
-    params[P_B::U1]->init(0);
-    params[P_B::U2]->init(0.1);
-    params[P_B::U3]->init(0.5);
-    params[P_B::U4]->init(1);
-    params[P_B::U5]->init(5);
-    params[P_B::U6]->init(100);
-    params[P_B::U7]->init(100);
-    params[P_B::U8]->init(Number(1, 10));
-    params[P_B::U9]->init(Number(1, 5));
-    params[P_B::U10]->init(Number(5, 15));
-    int i = 0;
-    for (auto p : {P_B::U1, P_B::U2, P_B::U3, P_B::U4, P_B::U5, P_B::U6,
-                   P_B::U7, P_B::U8, P_B::U9, P_B::U10}) {
-        uUp = std::make_shared<Unlockable>(params[Param::BoughtWizCritUp]);
-        uUp->setImage(p == P_B::U7 ? Constants::IMG().file : "");
-        uUp->setDescription({"{i} " + std::to_string(i++),
-                             {IconSystem::Get(Constants::IMG())}});
-        uUp->setCost(UpgradeDefaults::CRYSTAL_SHARDS, params[p]);
-        mUps.push_back(mUpgrades->subscribe(uUp));
-    }
+    // Upgrade bot
+    uUp = std::make_shared<Unlockable>(params[Param::UpBotActive]);
+    uUp->setImage("");
+    uUp->setDescription({"Unlock {i} to automatically purchase wizard upgrades",
+                         {IconSystem::Get(Constants::BOT_IMG())}});
+    uUp->setCost(UpgradeDefaults::CRYSTAL_SHARDS, params[Param::UpBotCost]);
+    mUpBotUp = mUpgrades->subscribe(uUp);
+
+    // Synergy bots - Wizard
+    uUp = std::make_shared<Unlockable>(params[Param::WizSynBotActive]);
+    uUp->setImage("");
+    uUp->setDescription({"Unlock {i} to automatically purchase wizard upgrades",
+                         {Constants::BOT_FLOAT_IMG(WIZARD)}});
+    uUp->setCost(UpgradeDefaults::CRYSTAL_SHARDS, params[Param::WizSynBotCost]);
+    mWizSynBotUp = mUpgrades->subscribe(uUp);
+
+    // Crystal
+    uUp = std::make_shared<Unlockable>(params[Param::CrysSynBotActive]);
+    uUp->setImage("");
+    uUp->setDescription({"Unlock {i} to automatically purchase wizard upgrades",
+                         {Constants::BOT_FLOAT_IMG(CRYSTAL)}});
+    uUp->setCost(UpgradeDefaults::CRYSTAL_SHARDS,
+                 params[Param::CrysSynBotCost]);
+    mCrysSynBotUp = mUpgrades->subscribe(uUp);
+
+    // Time wizard
+    uUp = std::make_shared<Unlockable>(params[Param::TimeWizSynBotActive]);
+    uUp->setImage("");
+    uUp->setDescription({"Unlock {i} to automatically purchase wizard upgrades",
+                         {Constants::BOT_FLOAT_IMG(TIME_WIZARD)}});
+    uUp->setCost(UpgradeDefaults::CRYSTAL_SHARDS,
+                 params[Param::TimeWizSynBotCost]);
+    mTimeWizSynBotUp = mUpgrades->subscribe(uUp);
 }
 void RobotWizard::setParamTriggers() {
     Params params;

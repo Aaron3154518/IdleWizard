@@ -8,6 +8,7 @@
 #include <Wizards/RobotWizard/RobotWizardParameters.h>
 #include <Wizards/WizardIds.h>
 
+#include <random>
 #include <string>
 #include <vector>
 
@@ -22,6 +23,8 @@ const AnimationData& BOT_IMG();
 const std::string& BOT_HAT_IMG(WizardId id);
 const AnimationData& PORTAL_TOP();
 const AnimationData& PORTAL_BOT();
+
+RenderTextureCPtr BOT_FLOAT_IMG(WizardId id);
 
 void setDefaults();
 }  // namespace Constants

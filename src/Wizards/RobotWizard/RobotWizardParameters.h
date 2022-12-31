@@ -10,18 +10,12 @@ using ParameterSystem::key_t;
 enum P_B : key_t {
     ShardAmnt = 0,
 
-    U1,
-    U2,
-    U3,
-    U4,
-    U5,
-    U6,
-    U7,
-    U8,
-    U9,
-    U10,
-
     WizCritUpCost,
+
+    UpBotCost,
+    WizSynBotCost,
+    CrysSynBotCost,
+    TimeWizSynBotCost,
 };
 
 enum P_N : key_t {};
@@ -29,6 +23,7 @@ enum P_N : key_t {};
 enum S_B : key_t {
     BoughtWizCritUp = 0,
 
+    UpBotActive,
     WizSynBotActive,
     CrysSynBotActive,
     TimeWizSynBotActive,

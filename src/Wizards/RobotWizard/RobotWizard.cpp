@@ -6,6 +6,7 @@ RobotWizard::RobotWizard() : WizardBase(ROBOT_WIZARD) {}
 
 void RobotWizard::init() {
     mUpBot = ComponentFactory<UpgradeBot>::New();
+    mChargeBtn = ComponentFactory<ChargeButton>::New();
 
     mImg.set(Constants::IMG());
     mImg.setDest(IMG_RECT);
@@ -119,6 +120,14 @@ void RobotWizard::setParamTriggers() {
     mParamSubs.push_back(params[Param::Shards].subscribe([this]() {
         mUpgrades->upgradeThreshhold(UpgradeDefaults::ROBOT_SHARDS);
     }));
+}
+
+void RobotWizard::onRender(SDL_Renderer* r) {
+    WizardBase::onRender(r);
+
+    if (mUpgrades->isOpen()) {
+        mChargeBtn->onRender(r);
+    }
 }
 
 void RobotWizard::onMoveUpdate(Time dt) {

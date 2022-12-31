@@ -87,7 +87,7 @@ class Crystal : public WizardBase {
     bool mGlowFinishing = false;
     Number mGlowMagic;
     std::vector<std::unique_ptr<FireRing>> mFireRings;
-    std::unique_ptr<FractureButton> mFractureBtn;
+    FractureButtonPtr mFractureBtn;
 
     TextDataPtr mMagicText = std::make_shared<TextData>();
     RenderData mMagicRender;

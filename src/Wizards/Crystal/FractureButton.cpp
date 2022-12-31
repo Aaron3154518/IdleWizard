@@ -3,20 +3,18 @@
 namespace Crystal {
 // FractureButton
 FractureButton::FractureButton()
-    : mPos(std::make_shared<UIComponent>(Rect(), Elevation::WIZARDS)) {
+    : mPos(std::make_shared<UIComponent>(Rect(), Elevation::WIZARDS)) {}
+
+void FractureButton::init() {
     setImage(Crystal::Constants::FRACTURE_IMG);
     setDescription({"Blast {i} with all your strength\nDestroys your wizards",
                     {IconSystem::Get(Crystal::Constants::IMG())}});
-    setEffects(
-        Crystal::Params::get(Crystal::Param::ShardGain),
-        [](const Number& gain) -> TextUpdateData {
-            return {
-                "+{i}" + gain.toString(),
-                {MoneyIcons::Get(UpgradeDefaults::CRYSTAL_SHARDS)}};
-        });
-}
+    setEffects(Crystal::Params::get(Crystal::Param::ShardGain),
+               [](const Number& gain) -> TextUpdateData {
+                   return {"+{i}" + gain.toString(),
+                           {MoneyIcons::Get(UpgradeDefaults::CRYSTAL_SHARDS)}};
+               });
 
-void FractureButton::init() {
     mMouseSub = ServiceSystem::Get<MouseService, MouseObservable>()->subscribe(
         [this](Event::MouseButton b, bool clicked) { onClick(b, clicked); },
         mPos);

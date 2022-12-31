@@ -1,5 +1,5 @@
-#ifndef FRACTURE_BUTTON_H
-#define FRACTURE_BUTTON_H
+#ifndef CHARGE_BUTTON_H
+#define CHARGE_BUTTON_H
 
 #include <Components/Upgrade.h>
 #include <RenderSystem/AssetManager.h>
@@ -14,14 +14,15 @@
 #include <Systems/ParameterSystem/ParameterAccess.h>
 #include <Systems/WizardSystem/WizardObservables.h>
 #include <Wizards/Crystal/CrystalConstants.h>
+#include <Wizards/RobotWizard/RobotWizardConstants.h>
 #include <Wizards/WizardIds.h>
 
 #include <memory>
 
-namespace Crystal {
-class FractureButton : public Component, private Display {
+namespace RobotWizard {
+class ChargeButton : public Component, private Display {
    public:
-    FractureButton();
+    ChargeButton();
 
     bool isHidden() const;
     void setHidden(bool hidden);
@@ -34,17 +35,17 @@ class FractureButton : public Component, private Display {
     void onClick(Event::MouseButton b, bool clicked);
     void onMouseEnter();
     void onMouseLeave();
-    void onCrystalPos(const Rect& r);
+    void onRobotPos(const Rect& r);
 
     RenderObservable::SubscriptionPtr mDescRenderSub;
     MouseObservable::SubscriptionPtr mMouseSub;
     HoverObservable::SubscriptionPtr mHoverSub;
-    WizardSystem::WizardPosObservable::IdSubscriptionPtr mCrysPosSub;
+    WizardSystem::WizardPosObservable::IdSubscriptionPtr mRobotPosSub;
 
     UIComponentPtr mPos;
 };
 
-typedef std::unique_ptr<FractureButton> FractureButtonPtr;
-}  // namespace Crystal
+typedef std::unique_ptr<ChargeButton> ChargeButtonPtr;
+}  // namespace RobotWizard
 
 #endif

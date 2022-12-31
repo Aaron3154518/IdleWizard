@@ -16,6 +16,7 @@
 #include <Wizards/Crystal/CrystalParameters.h>
 #include <Wizards/PowerWizard/PowerFireball.h>
 #include <Wizards/RobotWizard/Bot.h>
+#include <Wizards/RobotWizard/ChargeButton.h>
 #include <Wizards/RobotWizard/RobotWizardConstants.h>
 #include <Wizards/RobotWizard/RobotWizardParameters.h>
 #include <Wizards/TimeWizard/TimeWizardConstants.h>
@@ -38,6 +39,7 @@ class RobotWizard : public WizardBase {
     void setUpgrades();
     void setParamTriggers();
 
+    void onRender(SDL_Renderer* r);
     void onMoveUpdate(Time dt);
     void onResize(ResizeData data);
     void onHide(bool hide);
@@ -50,6 +52,8 @@ class RobotWizard : public WizardBase {
 
     UpgradeBotPtr mUpBot;
     std::unordered_map<WizardId, SynergyBotPtr> mSynBots;
+
+    ChargeButtonPtr mChargeBtn;
 
     TimerObservable::SubscriptionPtr mAnimTimerSub, mWaitSub;
     TimeSystem::UpdateObservable::SubscriptionPtr mMoveUpdateSub;

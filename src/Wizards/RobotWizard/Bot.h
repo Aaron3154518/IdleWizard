@@ -118,7 +118,10 @@ class SynergyBot : public Component {
     std::uniform_real_distribution<float> rDist;
 
     UIComponentPtr mPos;
+    Rect mHatRect;
     RenderAnimation mImg;
+    RenderData mHat;
+    float mHatTheta = 0;
 
     bool mChase = false;
     const WizardId mTarget;

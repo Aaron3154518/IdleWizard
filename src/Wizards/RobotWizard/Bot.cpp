@@ -111,7 +111,7 @@ UpgradeBot::UpgradeBot()
 }
 
 void UpgradeBot::init() {
-    mImg.set(RobotWizard::Constants::UP_BOT_IMG());
+    mImg.set(RobotWizard::Constants::BOT_IMG());
     Rect r = WizardSystem::GetWizardPosObservable()->get(ROBOT_WIZARD);
     setPos(r.cX(), r.cY());
     mPBar.set(RED, BLACK);
@@ -130,7 +130,7 @@ void UpgradeBot::init() {
             mImg->nextFrame();
             return true;
         },
-        RobotWizard::Constants::UP_BOT_IMG());
+        RobotWizard::Constants::BOT_IMG());
     mPauseTimerSub = TimeSystem::GetTimerObservable()->subscribe(
         [this](Timer& t) {
             switch (mAiMode) {
@@ -285,13 +285,16 @@ void UpgradeBot::setPos(float x, float y) {
 SynergyBot::SynergyBot(WizardId id)
     : mTarget(id),
       mHoverData(BotAi::randomHover()),
-      mPos(std::make_shared<UIComponent>(Rect(0, 0, 60, 30), Elevation::BOTS)) {
+      mPos(std::make_shared<UIComponent>(Rect(0, 0, 60, 40), Elevation::BOTS)) {
+    float w = mPos->rect.w() / 3;
+    mHatRect = Rect(0, 0, w, w);
 }
 
 void SynergyBot::init() {
     mFireballs = ComponentFactory<PowerWizard::RobotFireballList>::New();
 
-    mImg.set(RobotWizard::Constants::UP_BOT_IMG());
+    mImg.set(RobotWizard::Constants::BOT_IMG());
+    mHat.set(RobotWizard::Constants::BOT_HAT_IMG(mTarget));
     Rect r = WizardSystem::GetWizardPosObservable()->get(mTarget);
     mPos->rect.setPos(r.cX(), r.cY(), Rect::Align::CENTER);
 
@@ -305,7 +308,7 @@ void SynergyBot::init() {
             mImg->nextFrame();
             return true;
         },
-        RobotWizard::Constants::UP_BOT_IMG());
+        RobotWizard::Constants::BOT_IMG());
     mFbHitSub = PowerWizard::FireballList::GetHitObservable()->subscribe(
         [this](const PowerWizard::Fireball& fb) { onFbHit(fb); },
         [this](const PowerWizard::Fireball& fb) { return fireballFilter(fb); },
@@ -327,9 +330,21 @@ void SynergyBot::onRender(SDL_Renderer* r) {
 
     mImg.setDest(mPos->rect);
     tex.draw(mImg);
+
+    // Hat
+    float rad =
+        mPos->rect.halfH() + (sinf(mHatTheta) + 1) * mHatRect.halfH() / 4;
+    float x = mPos->rect.cX() + rad * cosf(-mImg.getRotationRad() + M_PI / 2),
+          y = mPos->rect.cY() - rad * sinf(-mImg.getRotationRad() + M_PI / 2);
+    mHatRect.setPos(x, y, Rect::Align::CENTER);
+    mHat.setDest(mHatRect);
+    mHat.setRotationRad(mImg.getRotationRad());
+    tex.draw(mHat);
 }
 
 void SynergyBot::onUpdate(Time dt) {
+    mHatTheta = fmodf(mHatTheta + dt.s() * M_PI, 2 * M_PI);
+
     if (mChase) {
         BotAi::beeline(mPos->rect, mBeelineData, dt);
         mImg.setRotationRad(mBeelineData.tilt);

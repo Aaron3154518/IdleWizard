@@ -39,7 +39,6 @@ class RobotWizard : public WizardBase {
     void setParamTriggers();
 
     void onMoveUpdate(Time dt);
-    void onRender(SDL_Renderer* r);
     void onResize(ResizeData data);
     void onHide(bool hide);
 
@@ -47,10 +46,6 @@ class RobotWizard : public WizardBase {
 
     SDL_FPoint mTargetPos;
 
-    RenderAnimation mTpImg;
-
-    std::unordered_map<WizardId, PowerWizard::FireballData> mStoredFireballs;
-    PowerWizard::RobotFireballListPtr mFireballs;
     UpgradeBotPtr mUpBot;
     std::unordered_map<WizardId, SynergyBotPtr> mSynBots;
 

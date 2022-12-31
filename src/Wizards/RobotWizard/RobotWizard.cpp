@@ -5,7 +5,6 @@ namespace RobotWizard {
 RobotWizard::RobotWizard() : WizardBase(ROBOT_WIZARD) {}
 
 void RobotWizard::init() {
-    mFireballs = ComponentFactory<PowerWizard::RobotFireballList>::New();
     mUpBot = ComponentFactory<UpgradeBot>::New();
 
     mImg.set(Constants::IMG());
@@ -113,43 +112,6 @@ void RobotWizard::onMoveUpdate(Time dt) {
         float frac = 100 * dt.s() / mag;
         setPos(mPos->rect.cX() + dx * fminf(frac, 1),
                mPos->rect.cY() + dy * fminf(frac, 1));
-    }
-}
-void RobotWizard::onRender(SDL_Renderer* r) {
-    WizardBase::onRender(r);
-
-    TextureBuilder tex;
-
-    RenderData fImg, wImg;
-    fImg.set(IconSystem::Get(PowerWizard::Constants::FB_IMG()));
-    float w = IMG_RECT.minDim() / 3;
-    Rect imgR(0, 0, w, w);
-    for (WizardId id : {WIZARD, CRYSTAL, TIME_WIZARD}) {
-        switch (id) {
-            case WIZARD:
-                imgR.setPos(mPos->rect.x(), mPos->rect.y2(),
-                            Rect::Align::CENTER);
-                wImg.set(IconSystem::Get(Wizard::Constants::IMG()));
-                break;
-            case CRYSTAL:
-                imgR.setPos(mPos->rect.cX(), mPos->rect.y2(),
-                            Rect::Align::CENTER, Rect::Align::TOP_LEFT);
-                wImg.set(IconSystem::Get(Crystal::Constants::IMG()));
-                break;
-            case TIME_WIZARD:
-                imgR.setPos(mPos->rect.x2(), mPos->rect.y2(),
-                            Rect::Align::CENTER);
-                wImg.set(IconSystem::Get(TimeWizard::Constants::IMG()));
-                break;
-        }
-
-        if (mStoredFireballs.find(id) == mStoredFireballs.end()) {
-            wImg.setDest(imgR);
-            tex.draw(wImg);
-        } else {
-            fImg.setDest(imgR);
-            tex.draw(fImg);
-        }
     }
 }
 void RobotWizard::onResize(ResizeData data) {

@@ -95,7 +95,7 @@ bool beeline(Rect& pos, BeelineData& data, Time dt) {
         return true;
     }
 
-    float frac = fminf(s * 150 / mag, 1);
+    float frac = fminf(s * data.speed / mag, 1);
     pos.move(dx * frac, dy * frac);
 
     return false;
@@ -348,6 +348,9 @@ void SynergyBot::onFbHit(const PowerWizard::Fireball& fb) {
         data.power = max(data.power, currData.power);
         data.duration = max(data.duration, currData.duration);
         data.sizeFactor = fmaxf(data.sizeFactor, currData.sizeFactor);
+    } else {  // Slow down
+        mHoverData.baseSpd /= 2;
+        mBeelineData.speed /= 2;
     }
     mFireball = ComponentFactory<PowerWizard::Fireball>::New(SDL_FPoint{0, 0},
                                                              mTarget, data);
@@ -391,6 +394,10 @@ void SynergyBot::onTimeFreeze(bool frozen) {
     if (!frozen && mTarget != CRYSTAL && mTarget != TIME_WIZARD) {
         return;
     }
+
+    // Speed up
+    mHoverData.baseSpd *= 2;
+    mBeelineData.speed *= 2;
 
     SDL_FPoint pos =
         WizardSystem::GetWizardPos(mTarget).getPos(Rect::Align::CENTER);

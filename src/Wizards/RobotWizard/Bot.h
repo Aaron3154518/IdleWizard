@@ -34,6 +34,7 @@ void hover(Rect& pos, HoverData& data, WizardId target, Time dt);
 struct BeelineData {
     SDL_FPoint target;
     float tilt = 0;
+    float speed = 150;
 };
 bool beeline(Rect& pos, BeelineData& data, Time dt);
 bool beeline(Rect& pos, BeelineData& data, WizardId target, Time dt);

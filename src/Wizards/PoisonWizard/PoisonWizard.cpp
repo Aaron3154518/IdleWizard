@@ -39,7 +39,7 @@ void PoisonWizard::setUpgrades() {
     dUp->setDescription(
         {"{i} gains % of best {i} gain over time",
          {IconSystem::Get(Crystal::Constants::IMG()),
-          MoneyIcons::GetMoneyIcon(UpgradeDefaults::CRYSTAL_MAGIC)}});
+          MoneyIcons::Get(UpgradeDefaults::CRYSTAL_MAGIC)}});
     dUp->setEffects(
         {cryParams[Crystal::Param::PoisonMagic],
          cryParams[Crystal::Param::PoisonRate]},
@@ -50,7 +50,7 @@ void PoisonWizard::setUpgrades() {
                << " of " << cryParams[Crystal::Param::PoisonMagic].get()
                << "{i}/s";
             return {ss.str(),
-                    {MoneyIcons::GetMoneyIcon(UpgradeDefaults::CRYSTAL_MAGIC)}};
+                    {MoneyIcons::Get(UpgradeDefaults::CRYSTAL_MAGIC)}};
         });
     mPoisonDisplay = mUpgrades->subscribe(dUp);
 
@@ -59,7 +59,7 @@ void PoisonWizard::setUpgrades() {
     up->setImage("");
     up->setDescription(
         {"Triple {i} gain",
-         {MoneyIcons::GetMoneyIcon(UpgradeDefaults::CRYSTAL_MAGIC)}});
+         {MoneyIcons::Get(UpgradeDefaults::CRYSTAL_MAGIC)}});
     up->setCost(UpgradeDefaults::CRYSTAL_MAGIC, params[Param::ShardMultUpCost]);
     up->setEffects(params[Param::ShardMultUp],
                    UpgradeDefaults::MultiplicativeEffect);
@@ -76,7 +76,7 @@ void PoisonWizard::setUpgrades() {
     up->setDescription(
         {"{i} increase the {i} gain rate by +10%/lvl",
          {IconSystem::Get(Wizard::Constants::FB_POISON_IMG()),
-          MoneyIcons::GetMoneyIcon(UpgradeDefaults::CRYSTAL_MAGIC)}});
+          MoneyIcons::Get(UpgradeDefaults::CRYSTAL_MAGIC)}});
     up->setCost(UpgradeDefaults::CRYSTAL_MAGIC, params[Param::PoisonFbUpCost]);
     up->setEffects(params[Param::PoisonFbUp], UpgradeDefaults::PercentEffect);
     mParamSubs.push_back(params[Param::PoisonFbUpCost].subscribeTo(

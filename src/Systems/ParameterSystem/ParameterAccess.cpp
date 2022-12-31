@@ -16,6 +16,9 @@ ParamImpl& ParamImpl::operator=(const ParamImpl& other) {
 bool ParamImpl::operator==(const ParamImpl& other) const {
     return mId == other.mId && mKey == other.mKey;
 }
+bool ParamImpl::operator!=(const ParamImpl& other) const {
+    return !operator==(other);
+}
 
 WizardId ParamImpl::id() const { return mId; }
 key_t ParamImpl::key() const { return mKey; }

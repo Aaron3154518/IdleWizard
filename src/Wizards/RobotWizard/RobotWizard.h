@@ -44,6 +44,8 @@ class RobotWizard : public WizardBase {
 
     void showUpgrades();
 
+    Number calcShardPowerUp();
+
     SDL_FPoint mTargetPos;
 
     UpgradeBotPtr mUpBot;
@@ -51,8 +53,8 @@ class RobotWizard : public WizardBase {
 
     TimerObservable::SubscriptionPtr mAnimTimerSub, mWaitSub;
     TimeSystem::UpdateObservable::SubscriptionPtr mMoveUpdateSub;
-    UpgradeList::SubscriptionPtr mWizCritUp, mUpBotUp, mWizSynBotUp,
-        mCrysSynBotUp, mTimeWizSynBotUp;
+    UpgradeList::SubscriptionPtr mShardPowerUp, mWizCritUp, mUpBotUp,
+        mWizSynBotUp, mCrysSynBotUp, mTimeWizSynBotUp;
 };
 }  // namespace RobotWizard
 

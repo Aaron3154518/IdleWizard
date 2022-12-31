@@ -21,6 +21,7 @@ struct ParamImpl {
 
     ParamImpl& operator=(const ParamImpl& other);
     bool operator==(const ParamImpl& other) const;
+    bool operator!=(const ParamImpl& other) const;
 
     WizardId id() const;
     key_t key() const;

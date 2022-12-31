@@ -16,7 +16,7 @@ void Catalyst::init() {
     WizardSystem::GetWizardImageObservable()->next(mId, mImg);
 
     mMagicText->setFont(FONT);
-    mMagicText->setImgs({MoneyIcons::GetMoneyIcon(params[Param::Magic])});
+    mMagicText->setImgs({MoneyIcons::Get(params[Param::Magic])});
     mMagicRender.set(mMagicText);
     mMagicRender.setFit(RenderData::FitMode::Texture);
     mMagicRender.setFitAlign(Rect::Align::CENTER, Rect::Align::TOP_LEFT);
@@ -67,7 +67,7 @@ void Catalyst::setUpgrades() {
                       params[Param::FBCntEffect].get())
                << "\nRange: " << params[Param::Range].get();
             return {ss.str(),
-                    {MoneyIcons::GetMoneyIcon(UpgradeDefaults::CATALYST_MAGIC),
+                    {MoneyIcons::Get(UpgradeDefaults::CATALYST_MAGIC),
                      IconSystem::Get(Wizard::Constants::FB_IMG())}};
         });
     mMagicEffectDisplay = mUpgrades->subscribe(dUp);
@@ -109,8 +109,8 @@ void Catalyst::setUpgrades() {
     uUp->setImage("");
     uUp->setDescription(
         {"{i} boosts {i} gain",
-         {MoneyIcons::GetMoneyIcon(UpgradeDefaults::CATALYST_MAGIC),
-          MoneyIcons::GetMoneyIcon(UpgradeDefaults::CRYSTAL_SHARDS)}});
+         {MoneyIcons::Get(UpgradeDefaults::CATALYST_MAGIC),
+          MoneyIcons::Get(UpgradeDefaults::CRYSTAL_SHARDS)}});
     uUp->setCost(UpgradeDefaults::CRYSTAL_SHARDS,
                  params[Param::ShardGainUpCost]);
     uUp->setEffects(params[Param::ShardGainUp],
@@ -132,9 +132,9 @@ void Catalyst::setUpgrades() {
         {"{i} multiplier to {i},{i} is increased based on log({i})",
          {
              IconSystem::Get(Constants::IMG()),
-             MoneyIcons::GetMoneyIcon(UpgradeDefaults::CRYSTAL_MAGIC),
-             MoneyIcons::GetMoneyIcon(UpgradeDefaults::CRYSTAL_SHARDS),
-             MoneyIcons::GetMoneyIcon(UpgradeDefaults::CATALYST_MAGIC),
+             MoneyIcons::Get(UpgradeDefaults::CRYSTAL_MAGIC),
+             MoneyIcons::Get(UpgradeDefaults::CRYSTAL_SHARDS),
+             MoneyIcons::Get(UpgradeDefaults::CATALYST_MAGIC),
          }});
     uUp->setCost(UpgradeDefaults::CRYSTAL_SHARDS, params[Param::MultUpCost]);
     uUp->setEffects({params[Param::CatMultUp], params[Param::ShardMultUp]}, {},
@@ -250,7 +250,7 @@ void Catalyst::setUpgrades() {
                 if (i < maxLvl - 1) {
                     desc_str << ",{i}";
                 }
-                imgs.push_back(MoneyIcons::GetMoneyIcon(
+                imgs.push_back(MoneyIcons::Get(
                     Constants::FB_CNT_TYPES.at(i + 1)));
             }
             desc_str << " boosts {i} power";
@@ -258,7 +258,7 @@ void Catalyst::setUpgrades() {
 
             imgs.insert(imgs.begin(), IconSystem::Get(Constants::IMG()));
             if (lvl < maxLvl) {
-                imgs.push_back(MoneyIcons::GetMoneyIcon(
+                imgs.push_back(MoneyIcons::Get(
                     Constants::FB_CNT_TYPES.at(lvl + 1)));
             }
             imgs.push_back(IconSystem::Get(Wizard::Constants::IMG()));

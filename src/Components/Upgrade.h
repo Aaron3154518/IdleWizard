@@ -5,6 +5,9 @@
 #include <Systems/IconSystem/MoneyIcons.h>
 #include <Systems/ParameterSystem/ParameterAccess.h>
 #include <Systems/WizardSystem/WizardObservables.h>
+#include <Wizards/Catalyst/CatalystParameters.h>
+#include <Wizards/Crystal/CrystalParameters.h>
+#include <Wizards/RobotWizard/RobotWizardParameters.h>
 
 #include <array>
 #include <initializer_list>
@@ -45,7 +48,7 @@ struct UpgradeCost {
 
 namespace UpgradeDefaults {
 extern const ParameterSystem::BaseValue CRYSTAL_MAGIC, CRYSTAL_SHARDS,
-    CATALYST_MAGIC;
+    CATALYST_MAGIC, ROBOT_SHARDS;
 
 std::string NoEffectText(const Number& effect);
 TextUpdateData NoEffect(const Number& effect);

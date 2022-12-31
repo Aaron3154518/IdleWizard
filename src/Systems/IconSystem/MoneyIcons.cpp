@@ -1,7 +1,7 @@
 #include "MoneyIcons.h"
 
 namespace MoneyIcons {
-RenderTextureCPtr GetMoneyIcon(const ParameterSystem::ValueParam& param) {
+RenderTextureCPtr Get(const ParameterSystem::ValueParam& param) {
     static const AnimationData CRYSTAL_MAGIC{"res/money/crystal_magic.png", 6,
                                              150},
         CRYSTAL_SHARDS{"res/money/crystal_shard.png", 10, 100},
@@ -32,6 +32,12 @@ RenderTextureCPtr GetMoneyIcon(const ParameterSystem::ValueParam& param) {
                     return IconSystem::Get(PoisonWizard::Constants::GLOB_IMG());
             };
             break;
+        case ROBOT_WIZARD:
+            switch (param.key()) {
+                case RobotWizard::Param::Shards:
+                    data = CRYSTAL_SHARDS;
+                    break;
+            };
     };
 
     return IconSystem::Get(data);

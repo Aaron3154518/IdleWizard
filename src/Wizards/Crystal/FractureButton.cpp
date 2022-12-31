@@ -12,7 +12,7 @@ FractureButton::FractureButton()
         [](const Number& gain) -> TextUpdateData {
             return {
                 "+{i}" + gain.toString(),
-                {MoneyIcons::GetMoneyIcon(UpgradeDefaults::CRYSTAL_SHARDS)}};
+                {MoneyIcons::Get(UpgradeDefaults::CRYSTAL_SHARDS)}};
         });
 }
 

@@ -19,7 +19,7 @@ const ParameterSystem::BaseValue& UpgradeCost::getMoneyParam() const {
 const Number& UpgradeCost::getCost() const { return mCost.get(); }
 const Number& UpgradeCost::getMoney() const { return mMoney.get(); }
 RenderTextureCPtr UpgradeCost::getMoneyIcon() const {
-    return MoneyIcons::GetMoneyIcon(mMoney);
+    return MoneyIcons::Get(mMoney);
 }
 bool UpgradeCost::canBuy() const { return mCost.get() <= mMoney.get(); }
 void UpgradeCost::buy() const { mMoney.set(mMoney.get() - mCost.get()); }
@@ -31,12 +31,11 @@ ParameterSystem::ParameterSubscriptionPtr UpgradeCost::subscribe(
 
 // UpgradeDefaults
 namespace UpgradeDefaults {
-const ParameterSystem::BaseValue CRYSTAL_MAGIC = Crystal::Params::get(
-                                     Crystal::Param::Magic),
-                                 CRYSTAL_SHARDS = Crystal::Params::get(
-                                     Crystal::Param::Shards),
-                                 CATALYST_MAGIC = Catalyst::Params::get(
-                                     Catalyst::Param::Magic);
+const ParameterSystem::BaseValue
+    CRYSTAL_MAGIC = Crystal::Params::get(Crystal::Param::Magic),
+    CRYSTAL_SHARDS = Crystal::Params::get(Crystal::Param::Shards),
+    CATALYST_MAGIC = Catalyst::Params::get(Catalyst::Param::Magic),
+    ROBOT_SHARDS = RobotWizard::Params::get(RobotWizard::Param::Shards);
 
 std::string NoEffectText(const Number& effect) { return effect.toString(); }
 TextUpdateData NoEffect(const Number& effect) { return {NoEffectText(effect)}; }

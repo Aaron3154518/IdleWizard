@@ -55,6 +55,7 @@ class UpgradeList : public UpgradeListBase {
     UpgradeResults upgradeAll(ParameterSystem::BaseValue money,
                               Number max = -1);
     void maxAll(ParameterSystem::BaseValue money);
+    void upgradeThreshhold(ParameterSystem::BaseValue money);
 
    private:
     float mScroll = 0;

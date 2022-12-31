@@ -175,7 +175,8 @@ void Wizard::setParamTriggers() {
          params[Param::PowerWizEffect], cryParams[Crystal::Param::MagicEffect],
          cryParams[Crystal::Param::WizardCntEffect],
          catParams[Catalyst::Param::MagicEffect],
-         catParams[Catalyst::Param::FBCntEffect]},
+         catParams[Catalyst::Param::FBCntEffect],
+         roboParams[RobotWizard::Param::ShardPowerUp]},
         {}, [this]() { return calcPower(); }));
 
     mParamSubs.push_back(params[Param::Speed].subscribeTo(
@@ -397,6 +398,7 @@ Number Wizard::calcPower() {
     Params params;
     Crystal::Params crysParams;
     Catalyst::Params catParams;
+    RobotWizard::Params roboParams;
 
     return (params[Param::BasePower].get() + params[Param::PowerUp].get()) *
            params[Param::PowerWizEffect].get() *
@@ -404,6 +406,7 @@ Number Wizard::calcPower() {
            crysParams[Crystal::Param::WizardCntEffect].get() *
            catParams[Catalyst::Param::MagicEffect].get() *
            catParams[Catalyst::Param::FBCntEffect].get() *
+           roboParams[RobotWizard::Param::ShardPowerUp].get() *
            max(1, params[Param::Speed].get() * 16 / 1000);
 }
 

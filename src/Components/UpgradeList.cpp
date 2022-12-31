@@ -55,10 +55,25 @@ UpgradeList::UpgradeResults UpgradeList::upgradeAll(
 }
 void UpgradeList::maxAll(ParameterSystem::BaseValue money) {
     for (auto sub : *this) {
-        auto& up = sub->get<DATA>();
+        auto up = sub->get<DATA>();
         const auto& upCost = up->getCost();
         if (upCost && upCost->getMoneyParam() == money) {
             up->max(true);
+        }
+    }
+}
+
+void UpgradeList::upgradeThreshhold(ParameterSystem::BaseValue money) {
+    Number val = money.get();
+    for (auto sub : *this) {
+        auto up = sub->get<DATA>();
+        const auto& upCost = up->getCost();
+        if (!upCost || upCost->getMoneyParam() != money) {
+            continue;
+        }
+        while (up->status() != Upgrade::Status::BOUGHT &&
+               upCost->getCost() <= val) {
+            up->buy(true);
         }
     }
 }
@@ -288,9 +303,8 @@ RenderObservable::SubscriptionPtr UpgradeProgressBar::onHover(
         ss << "Current: " << mValParam.get() << "{i}\nNext: " << mNextCost
            << "{i}\nUnlocked: " << mUnlocked << "/" << mUpgrades->size();
         std::string desc = ss.str();
-        std::vector<RenderTextureCPtr> imgs = {
-            MoneyIcons::GetMoneyIcon(mMoneyParam),
-            MoneyIcons::GetMoneyIcon(mMoneyParam)};
+        std::vector<RenderTextureCPtr> imgs = {MoneyIcons::Get(mMoneyParam),
+                                               MoneyIcons::Get(mMoneyParam)};
         return ServiceSystem::Get<RenderService, RenderObservable>()->subscribe(
             [pos, desc, imgs](SDL_Renderer* r) {
                 Display u;

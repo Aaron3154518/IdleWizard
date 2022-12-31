@@ -25,8 +25,8 @@ void Crystal::init() {
                                    mPos->rect.h() * glowDim.y / imgDim.y));
 
     mMagicText->setFont(FONT).setImgs(
-        {MoneyIcons::GetMoneyIcon(params[Param::Magic]),
-         MoneyIcons::GetMoneyIcon(params[Param::Shards])});
+        {MoneyIcons::Get(params[Param::Magic]),
+         MoneyIcons::Get(params[Param::Shards])});
     mMagicRender.set(mMagicText);
     mMagicRender.setFit(RenderData::FitMode::Texture);
     mMagicRender.setFitAlign(Rect::Align::CENTER, Rect::Align::TOP_LEFT);
@@ -87,7 +87,7 @@ void Crystal::setUpgrades() {
     dUp->setImage(mId);
     dUp->setDescription(
         {"Multiplier based on {i}",
-         {MoneyIcons::GetMoneyIcon(UpgradeDefaults::CRYSTAL_MAGIC)}});
+         {MoneyIcons::Get(UpgradeDefaults::CRYSTAL_MAGIC)}});
     dUp->setEffects(params[Param::MagicEffect],
                     UpgradeDefaults::MultiplicativeEffect);
     mMagicEffectDisplay = mUpgrades->subscribe(dUp);
@@ -300,7 +300,7 @@ void Crystal::onClick(Event::MouseButton b, bool clicked) {
         param = Params::get(Param::Shards);
         param.set(param.get() * 3);
 
-        auto p = RobotWizard::Params::get(RobotWizard::Param::ShardAmnt);
+        auto p = RobotWizard::Params::get(RobotWizard::Param::Shards);
         if (p.get() == 0) {
             p.set(0.1);
         } else {

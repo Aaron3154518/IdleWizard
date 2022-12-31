@@ -125,18 +125,22 @@ void setDefaults() {
 
     Params params;
 
-    params[Param::ShardAmnt]->init(0, Event::ResetT2);
+    params[Param::Shards]->init(0, Event::ResetT2);
 
+    params[Param::ShardPowerUpCost]->init(1);
     params[Param::WizCritUpCost]->init(Number(1, 7));
 
-    params[Param::UpBotCost]->init(Number(1, 1));
-    params[Param::WizSynBotCost]->init(Number(1, 2));
-    params[Param::CrysSynBotCost]->init(Number(1, 3));
+    params[Param::UpBotCost]->init(10);
+    params[Param::WizSynBotCost]->init(100);
+    params[Param::CrysSynBotCost]->init(1000);
     params[Param::TimeWizSynBotCost]->init(Number(1, 5));
 
-    params[Param::CrysSynBotActive]->init(true);
-    params[Param::WizSynBotActive]->init(true);
-    params[Param::TimeWizSynBotActive]->init(true);
+    params[Param::BoughtShardPowerUp]->init(false, Event::ResetT2);
+    params[Param::BoughtWizCritUp]->init(false, Event::ResetT2);
+
+    params[Param::CrysSynBotActive]->init(false, Event::ResetT2);
+    params[Param::WizSynBotActive]->init(false, Event::ResetT2);
+    params[Param::TimeWizSynBotActive]->init(false, Event::ResetT2);
 }
 }  // namespace Constants
 }  // namespace RobotWizard

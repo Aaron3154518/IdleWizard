@@ -8,8 +8,9 @@ namespace Param {
 using ParameterSystem::key_t;
 
 enum P_B : key_t {
-    ShardAmnt = 0,
+    Shards = 0,
 
+    ShardPowerUpCost,
     WizCritUpCost,
 
     UpBotCost,
@@ -18,10 +19,13 @@ enum P_B : key_t {
     TimeWizSynBotCost,
 };
 
-enum P_N : key_t {};
+enum P_N : key_t {
+    ShardPowerUp = 0,
+};
 
 enum S_B : key_t {
-    BoughtWizCritUp = 0,
+    BoughtShardPowerUp = 0,
+    BoughtWizCritUp,
 
     UpBotActive,
     WizSynBotActive,

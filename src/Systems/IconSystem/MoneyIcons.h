@@ -10,11 +10,12 @@
 #include <Wizards/Crystal/CrystalParameters.h>
 #include <Wizards/PoisonWizard/PoisonWizardConstants.h>
 #include <Wizards/PowerWizard/PowerWizardConstants.h>
+#include <Wizards/RobotWizard/RobotWizardParameters.h>
 #include <Wizards/Wizard/WizardConstants.h>
 #include <Wizards/WizardIds.h>
 
 namespace MoneyIcons {
-RenderTextureCPtr GetMoneyIcon(const ParameterSystem::ValueParam& param);
+RenderTextureCPtr Get(const ParameterSystem::ValueParam& param);
 }
 
 #endif

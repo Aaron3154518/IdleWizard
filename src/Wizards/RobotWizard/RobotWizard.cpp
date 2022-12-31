@@ -37,16 +37,28 @@ void RobotWizard::setSubscriptions() {
 void RobotWizard::setUpgrades() {
     Params params;
 
-    // Wizard crit boost
+    // Multiplier from shards
     UnlockablePtr uUp =
-        std::make_shared<Unlockable>(params[Param::BoughtWizCritUp]);
+        std::make_shared<Unlockable>(params[Param::BoughtShardPowerUp]);
+    uUp->setImage("");
+    uUp->setDescription({"Multiplier to {i} from {i} charge",
+                         {MoneyIcons::Get(UpgradeDefaults::CRYSTAL_MAGIC),
+                          MoneyIcons::Get(UpgradeDefaults::ROBOT_SHARDS)}});
+    uUp->setCost(UpgradeDefaults::ROBOT_SHARDS,
+                 params[Param::ShardPowerUpCost]);
+    uUp->setEffects(params[Param::ShardPowerUp],
+                    UpgradeDefaults::MultiplicativeEffect);
+    mShardPowerUp = mUpgrades->subscribe(uUp);
+
+    // Wizard crit boost
+    uUp = std::make_shared<Unlockable>(params[Param::BoughtWizCritUp]);
     uUp->setImage("");
     uUp->setDescription(
         {"{i} crit is *10^x instead of *x\nUnlocks new {i} "
          "crit upgrade",
          {IconSystem::Get(Wizard::Constants::FB_IMG()),
           IconSystem::Get(Wizard::Constants::IMG())}});
-    uUp->setCost(UpgradeDefaults::CRYSTAL_SHARDS, params[Param::WizCritUpCost]);
+    uUp->setCost(UpgradeDefaults::ROBOT_SHARDS, params[Param::WizCritUpCost]);
     mWizCritUp = mUpgrades->subscribe(uUp);
 
     // Upgrade bot
@@ -54,7 +66,7 @@ void RobotWizard::setUpgrades() {
     uUp->setImage("");
     uUp->setDescription({"Unlock {i} to automatically purchase wizard upgrades",
                          {IconSystem::Get(Constants::BOT_IMG())}});
-    uUp->setCost(UpgradeDefaults::CRYSTAL_SHARDS, params[Param::UpBotCost]);
+    uUp->setCost(UpgradeDefaults::ROBOT_SHARDS, params[Param::UpBotCost]);
     mUpBotUp = mUpgrades->subscribe(uUp);
 
     // Synergy bots - Wizard
@@ -62,7 +74,7 @@ void RobotWizard::setUpgrades() {
     uUp->setImage("");
     uUp->setDescription({"Unlock {i} to automatically purchase wizard upgrades",
                          {Constants::BOT_FLOAT_IMG(WIZARD)}});
-    uUp->setCost(UpgradeDefaults::CRYSTAL_SHARDS, params[Param::WizSynBotCost]);
+    uUp->setCost(UpgradeDefaults::ROBOT_SHARDS, params[Param::WizSynBotCost]);
     mWizSynBotUp = mUpgrades->subscribe(uUp);
 
     // Crystal
@@ -70,8 +82,7 @@ void RobotWizard::setUpgrades() {
     uUp->setImage("");
     uUp->setDescription({"Unlock {i} to automatically purchase wizard upgrades",
                          {Constants::BOT_FLOAT_IMG(CRYSTAL)}});
-    uUp->setCost(UpgradeDefaults::CRYSTAL_SHARDS,
-                 params[Param::CrysSynBotCost]);
+    uUp->setCost(UpgradeDefaults::ROBOT_SHARDS, params[Param::CrysSynBotCost]);
     mCrysSynBotUp = mUpgrades->subscribe(uUp);
 
     // Time wizard
@@ -79,7 +90,7 @@ void RobotWizard::setUpgrades() {
     uUp->setImage("");
     uUp->setDescription({"Unlock {i} to automatically purchase wizard upgrades",
                          {Constants::BOT_FLOAT_IMG(TIME_WIZARD)}});
-    uUp->setCost(UpgradeDefaults::CRYSTAL_SHARDS,
+    uUp->setCost(UpgradeDefaults::ROBOT_SHARDS,
                  params[Param::TimeWizSynBotCost]);
     mTimeWizSynBotUp = mUpgrades->subscribe(uUp);
 }
@@ -93,6 +104,10 @@ void RobotWizard::setParamTriggers() {
             WizardSystem::GetHideObservable()->next(mId, !bought);
         }));
 
+    mParamSubs.push_back(params[Param::ShardPowerUp].subscribeTo(
+        {params[Param::Shards]}, {params[Param::BoughtShardPowerUp]},
+        [this]() { return calcShardPowerUp(); }));
+
     for (auto pair : Constants::SYN_TARGETS) {
         WizardId id = pair.first;
         mParamSubs.push_back(pair.second.subscribe([this, id](bool active) {
@@ -100,6 +115,10 @@ void RobotWizard::setParamTriggers() {
                 active ? ComponentFactory<SynergyBot>::New(id) : nullptr;
         }));
     }
+
+    mParamSubs.push_back(params[Param::Shards].subscribe([this]() {
+        mUpgrades->upgradeThreshhold(UpgradeDefaults::ROBOT_SHARDS);
+    }));
 }
 
 void RobotWizard::onMoveUpdate(Time dt) {
@@ -138,14 +157,19 @@ void RobotWizard::onHide(bool hide) {
 
     if (hide) {
         mWaitSub.reset();
-    } else {
-        // mUpTimerSub->setActive(false);
     }
 }
 
 void RobotWizard::showUpgrades() {
     ServiceSystem::Get<UpgradeService, UpgradeListObservable>()->next(
-        mUpgrades, UpgradeDefaults::CRYSTAL_SHARDS,
-        Params::get(Param::ShardAmnt));
+        mUpgrades, UpgradeDefaults::CRYSTAL_SHARDS, Params::get(Param::Shards));
+}
+
+Number RobotWizard::calcShardPowerUp() {
+    Params params;
+
+    return params[Param::BoughtShardPowerUp].get()
+               ? params[Param::Shards].get() + 1
+               : 1;
 }
 }  // namespace RobotWizard

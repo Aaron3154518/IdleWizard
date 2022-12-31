@@ -78,7 +78,7 @@ void TimeWizard::setUpgrades() {
         2);
     mActiveToggle->setDescription(
         {"Consume {i} for a fire rate multiplier to {i}, {i}",
-         {MoneyIcons::GetMoneyIcon(UpgradeDefaults::CRYSTAL_MAGIC),
+         {MoneyIcons::Get(UpgradeDefaults::CRYSTAL_MAGIC),
           IconSystem::Get(Wizard::Constants::IMG()),
           IconSystem::Get(PowerWizard::Constants::IMG())}});
     mActiveToggle->setEffects(
@@ -89,7 +89,7 @@ void TimeWizard::setUpgrades() {
             ss << params[Param::SpeedEffect].get() << "x\n-"
                << (params[Param::SpeedCost].get() * 100) << "%{i}/s";
             return {ss.str(),
-                    {MoneyIcons::GetMoneyIcon(UpgradeDefaults::CRYSTAL_MAGIC)}};
+                    {MoneyIcons::Get(UpgradeDefaults::CRYSTAL_MAGIC)}};
         });
     mActiveUp = mUpgrades->subscribe(mActiveToggle);
 
@@ -99,7 +99,7 @@ void TimeWizard::setUpgrades() {
     up->setDescription(
         {"Increase speed boost multiplier by +.05\nThis will also increase "
          "the {i} cost!",
-         {MoneyIcons::GetMoneyIcon(UpgradeDefaults::CRYSTAL_MAGIC)}});
+         {MoneyIcons::Get(UpgradeDefaults::CRYSTAL_MAGIC)}});
     up->setCost(UpgradeDefaults::CRYSTAL_MAGIC, params[Param::SpeedUpCost]);
     up->setEffects(params[Param::SpeedUp], UpgradeDefaults::AdditiveEffect);
     mParamSubs.push_back(UpgradeDefaults::subscribeT1UpCost(

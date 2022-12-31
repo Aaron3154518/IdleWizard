@@ -11,8 +11,8 @@ void ChargeButton::init() {
                     {IconSystem::Get(RobotWizard::Constants::IMG()),
                      MoneyIcons::Get(UpgradeDefaults::CRYSTAL_SHARDS)}});
     setEffects(UpgradeDefaults::CRYSTAL_SHARDS,
-               [](const Number& val) -> TextUpdateData {
-                   return {"+{i}" + (val / 10).toString(),
+               [this](const Number& val) -> TextUpdateData {
+                   return {"+{i}" + getGainAmnt().toString(),
                            {MoneyIcons::Get(UpgradeDefaults::CRYSTAL_SHARDS)}};
                });
 
@@ -37,7 +37,7 @@ void ChargeButton::onClick(Event::MouseButton b, bool clicked) {
     if (clicked) {
         auto shards = UpgradeDefaults::CRYSTAL_SHARDS;
         auto roboShards = UpgradeDefaults::ROBOT_SHARDS;
-        Number amnt = shards.get() / 10;
+        Number amnt = getGainAmnt();
         shards.set(shards.get() - amnt);
         roboShards.set(roboShards.get() + amnt);
     }
@@ -58,6 +58,19 @@ void ChargeButton::onRobotPos(const Rect& r) {
     mPos->rect.setDim(w, w);
     mPos->rect.setPos(r.cX(), r.y(), Rect::Align::CENTER,
                       Rect::Align::BOT_RIGHT);
+}
+
+Number ChargeButton::getGainAmnt() {
+    Number shards = UpgradeDefaults::CRYSTAL_SHARDS.get();
+    if (shards < 1) {
+        return 0;
+    }
+
+    if (shards < 10) {
+        return 1;
+    }
+
+    return (shards / 10 + .5).floorNum();
 }
 
 bool ChargeButton::isHidden() const { return !mPos->visible; }

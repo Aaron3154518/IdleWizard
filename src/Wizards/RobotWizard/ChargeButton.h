@@ -37,6 +37,8 @@ class ChargeButton : public Component, private Display {
     void onMouseLeave();
     void onRobotPos(const Rect& r);
 
+    Number getGainAmnt();
+
     RenderObservable::SubscriptionPtr mDescRenderSub;
     MouseObservable::SubscriptionPtr mMouseSub;
     HoverObservable::SubscriptionPtr mHoverSub;

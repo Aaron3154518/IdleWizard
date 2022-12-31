@@ -106,6 +106,8 @@ bool beeline(Rect& pos, BeelineData& data, Time dt) {
 UpgradeBot::UpgradeBot()
     : mHoverData(BotAi::randomHover()),
       mPos(std::make_shared<UIComponent>(Rect(0, 0, 60, 30), Elevation::BOTS)) {
+    mPos->mouse = false;
+
     mCap = Number(1, 2);
     mRate = Number(3, 3);
 }
@@ -285,7 +287,9 @@ void UpgradeBot::setPos(float x, float y) {
 SynergyBot::SynergyBot(WizardId id)
     : mTarget(id),
       mHoverData(BotAi::randomHover()),
-      mPos(std::make_shared<UIComponent>(Rect(0, 0, 0, 0), Elevation::BOTS)) {}
+      mPos(std::make_shared<UIComponent>(Rect(0, 0, 0, 0), Elevation::BOTS)) {
+    mPos->mouse = false;
+}
 
 void SynergyBot::init() {
     mFireballs = ComponentFactory<PowerWizard::RobotFireballList>::New();

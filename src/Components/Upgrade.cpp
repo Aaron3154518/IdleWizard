@@ -158,7 +158,34 @@ void UpgradeBase::setEffectImgs(const std::vector<RenderTextureCPtr>& imgs) {
 }
 
 void UpgradeBase::drawIcon(TextureBuilder& tex, const Rect& r,
-                           const Rect& bounds) {
+                           UpgradeDrawOptions opts, const Rect& bounds) {
+    RectShape rd;
+    rd.boundary = bounds;
+    if (opts.bkgrnd) {
+        rd.mColor = GRAY;
+        tex.draw(rd.set(r));
+    }
+    if (opts.border) {
+        switch (status()) {
+            case Upgrade::Status::BOUGHT:
+                rd.mColor = BLUE;
+                break;
+            case Upgrade::Status::CAN_BUY:
+                rd.mColor = GREEN;
+                break;
+            case Upgrade::Status::CANT_BUY:
+                rd.mColor = RED;
+                break;
+            case Upgrade::Status::NOT_BUYABLE:
+                rd.mColor = BLACK;
+                break;
+            default:
+                rd.mColor = GRAY;
+                break;
+        }
+        tex.draw(rd.set(r, (int)(r.minDim() / 15 + .5)));
+    }
+
     mImg.setDest(r);
     mImg.setBoundary(bounds);
     tex.draw(mImg);

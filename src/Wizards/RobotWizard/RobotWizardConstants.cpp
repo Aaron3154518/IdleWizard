@@ -42,16 +42,6 @@ const std::string& BOT_HAT_IMG(WizardId id) {
     const static std::string EMPTY;
     return EMPTY;
 }
-const AnimationData& PORTAL_TOP() {
-    const static AnimationData PORTAL_TOP{"res/wizards/portal_top.png", 6, 150};
-    return PORTAL_TOP;
-}
-const AnimationData& PORTAL_BOT() {
-    const static AnimationData PORTAL_BOT{"res/wizards/portal_bottom.png", 6,
-                                          150};
-    return PORTAL_BOT;
-}
-
 RenderTextureCPtr BOT_FLOAT_IMG(WizardId id) {
     static float maxHover = 0;
     static RectShape fill(TRANSPARENT);
@@ -119,6 +109,15 @@ RenderTextureCPtr BOT_FLOAT_IMG(WizardId id) {
     }
 
     return img;
+}
+const AnimationData& PORTAL_TOP() {
+    const static AnimationData PORTAL_TOP{"res/wizards/portal_top.png", 6, 150};
+    return PORTAL_TOP;
+}
+const AnimationData& PORTAL_BOT() {
+    const static AnimationData PORTAL_BOT{"res/wizards/portal_bottom.png", 6,
+                                          150};
+    return PORTAL_BOT;
 }
 
 void setDefaults() {

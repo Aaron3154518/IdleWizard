@@ -146,27 +146,8 @@ RenderObservable::SubscriptionPtr UpgradeScroller::onHover(SDL_Point mouse,
 
 void UpgradeScroller::draw(TextureBuilder tex) {
     auto drawUpgrade = [this, &tex](Rect r, UpgradeList::SubscriptionPtr sub) {
-        RectShape rd;
-        rd.mColor = GRAY;
-        tex.draw(rd.set(r));
         if (sub) {
-            auto up = sub->get<UpgradeList::DATA>();
-            switch (up->status()) {
-                case Upgrade::Status::BOUGHT:
-                    rd.mColor = BLUE;
-                    break;
-                case Upgrade::Status::CAN_BUY:
-                    rd.mColor = GREEN;
-                    break;
-                case Upgrade::Status::CANT_BUY:
-                    rd.mColor = RED;
-                    break;
-                case Upgrade::Status::NOT_BUYABLE:
-                    rd.mColor = BLACK;
-                    break;
-            }
-            tex.draw(rd.set(r, 3));
-            up->drawIcon(tex, r);
+            sub->get<UpgradeList::DATA>()->drawIcon(tex, r, {true, true});
         }
     };
 
@@ -308,7 +289,8 @@ RenderObservable::SubscriptionPtr UpgradeProgressBar::onHover(
            << "{i}\nUnlocked: " << mUnlocked << "/" << mUpgrades->size();
         std::string desc = ss.str();
         std::vector<RenderTextureCPtr> imgs = {
-            MoneyIcons::GetMoneyIcon(mMoneyParam), MoneyIcons::GetMoneyIcon(mMoneyParam)};
+            MoneyIcons::GetMoneyIcon(mMoneyParam),
+            MoneyIcons::GetMoneyIcon(mMoneyParam)};
         return ServiceSystem::Get<RenderService, RenderObservable>()->subscribe(
             [pos, desc, imgs](SDL_Renderer* r) {
                 Display u;
@@ -321,15 +303,16 @@ RenderObservable::SubscriptionPtr UpgradeProgressBar::onHover(
 }
 
 void UpgradeProgressBar::draw(TextureBuilder tex) {
+    tex.draw(mPb);
+
     for (auto pair : mRects) {
         auto up = pair.second.lock();
         if (up) {
             up->get<UpgradeList::DATA>()->drawIcon(tex, pair.first,
-                                                   mRs.get().r1);
+                                                   {true, true}, mRs.get().r1);
         }
     }
 
-    tex.draw(mPb);
     tex.draw(mRs);
 }
 

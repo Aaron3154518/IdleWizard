@@ -2,9 +2,9 @@
 #define UPGRADE_H
 
 #include <RenderSystem/RenderSystem.h>
+#include <Systems/IconSystem/MoneyIcons.h>
 #include <Systems/ParameterSystem/ParameterAccess.h>
 #include <Systems/WizardSystem/WizardObservables.h>
-#include <Systems/IconSystem/MoneyIcons.h>
 
 #include <array>
 #include <initializer_list>
@@ -63,6 +63,10 @@ ParameterSystem::ParameterSubscriptionPtr subscribeT1UpCost(
     std::function<Number(const Number&)> costFunc);
 }  // namespace UpgradeDefaults
 
+struct UpgradeDrawOptions {
+    bool border = false, bkgrnd = false;
+};
+
 class UpgradeBase {
    public:
     enum Status : uint8_t {
@@ -89,7 +93,7 @@ class UpgradeBase {
     void setEffectImgs(const std::vector<RenderTextureCPtr>& imgs);
 
     void drawIcon(TextureBuilder& tex, const Rect& r,
-                  const Rect& bounds = Rect());
+                  UpgradeDrawOptions opts = {}, const Rect& bounds = Rect());
     void drawDescription(TextureBuilder tex, SDL_FPoint offset = {0, 0});
 
     static int GetDescWidth();

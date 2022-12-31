@@ -349,11 +349,15 @@ void UpgradeProgressBar::update(Rect pos, float scroll) {
     }
 
     int marginX = Upgrade::GetDescWidth() / 2;
-    int marginY = pos.h() / 10;
+    int marginY = pos.h() / 15;
     Rect bounds(marginX, marginY, pos.w() - marginX * 2, pos.h() - marginY * 2);
     float pbH = bounds.h() / 5;
     float upW = (bounds.h() - pbH) / 2;
-    float scrollMargin = upW / 2;
+
+    int borderW = (int)(upW / 15 + .5);
+    pbH -= borderW * 2;
+
+    float scrollMargin = upW / 2 + borderW;
 
     float maxCost = toValue(upCosts.back().first);
 
@@ -369,9 +373,10 @@ void UpgradeProgressBar::update(Rect pos, float scroll) {
     float val_end = fminf(end, maxCost);
     float amnt = toValue(mValParam.get());
 
-    mRs.set(bounds, 2);
-    mPb.set(Rect(bounds.x() + BUCKET_W * (val_start - start), bounds.y() + upW,
-                 BUCKET_W * (val_end - val_start), pbH))
+    mRs.set(bounds, Rect(bounds.x() - borderW, bounds.y(),
+                         bounds.w() + borderW * 2, bounds.h()));
+    mPb.set(Rect(bounds.x() + BUCKET_W * (val_start - start),
+                 bounds.cY() - pbH / 2, BUCKET_W * (val_end - val_start), pbH))
         .set(amnt - val_start, val_end - val_start);
 
     for (int i = 0; i < upCosts.size(); i++) {
@@ -387,6 +392,7 @@ void UpgradeProgressBar::update(Rect pos, float scroll) {
                 r.setPos(bounds.x() + BUCKET_W * (val - start),
                          i % 2 == 0 ? bounds.y() : bounds.y2() - r.h(),
                          Rect::Align::CENTER, Rect::Align::TOP_LEFT);
+                r.move(0, borderW * (i % 2 == 0 ? 1 : -1));
                 mRects.push_back(std::make_pair(r, pair.second));
             }
         }

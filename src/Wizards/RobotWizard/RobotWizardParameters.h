@@ -14,6 +14,11 @@ enum P_B : key_t {
     WizCritUpCost,
 
     UpBotCost,
+    UpBotBaseCap,
+    UpBotBaseRate,
+
+    UpBotCapRateUpCost,
+
     WizSynBotCost,
     CrysSynBotCost,
     TimeWizSynBotCost,
@@ -21,6 +26,11 @@ enum P_B : key_t {
 
 enum P_N : key_t {
     ShardPowerUp = 0,
+
+    UpBotCap,
+    UpBotCapUp,
+    UpBotRate,
+    UpBotRateUp,
 };
 
 enum S_B : key_t {
@@ -28,6 +38,8 @@ enum S_B : key_t {
     BoughtWizCritUp,
 
     UpBotActive,
+    BoughtUpBotCapRateUp,
+
     WizSynBotActive,
     CrysSynBotActive,
     TimeWizSynBotActive,

@@ -47,6 +47,8 @@ class RobotWizard : public WizardBase {
     void showUpgrades();
 
     Number calcShardPowerUp();
+    Number calcUpBotCap();
+    Number calcUpBotRate();
 
     SDL_FPoint mTargetPos;
 
@@ -58,7 +60,7 @@ class RobotWizard : public WizardBase {
     TimerObservable::SubscriptionPtr mAnimTimerSub, mWaitSub;
     TimeSystem::UpdateObservable::SubscriptionPtr mMoveUpdateSub;
     UpgradeList::SubscriptionPtr mShardPowerUp, mWizCritUp, mUpBotUp,
-        mWizSynBotUp, mCrysSynBotUp, mTimeWizSynBotUp;
+        mWizSynBotUp, mCrysSynBotUp, mTimeWizSynBotUp, mUpBotCapRateUp;
 };
 }  // namespace RobotWizard
 

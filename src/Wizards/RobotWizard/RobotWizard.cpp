@@ -5,7 +5,6 @@ namespace RobotWizard {
 RobotWizard::RobotWizard() : WizardBase(ROBOT_WIZARD) {}
 
 void RobotWizard::init() {
-    mUpBot = ComponentFactory<UpgradeBot>::New();
     mChargeBtn = ComponentFactory<ChargeButton>::New();
 
     mImg.set(Constants::IMG());
@@ -15,7 +14,9 @@ void RobotWizard::init() {
 
     WizardBase::init();
 
-    mUpBot->setPos(mPos->rect.cX(), mPos->rect.cY());
+    if (mUpBot) {
+        mUpBot->setPos(mPos->rect.cX(), mPos->rect.cY());
+    }
 
     mDragSub.reset();
 
@@ -68,7 +69,52 @@ void RobotWizard::setUpgrades() {
     uUp->setDescription({"Unlock {i} to automatically purchase wizard upgrades",
                          {IconSystem::Get(Constants::BOT_IMG())}});
     uUp->setCost(UpgradeDefaults::ROBOT_SHARDS, params[Param::UpBotCost]);
+    uUp->setEffects({params[Param::UpBotCap], params[Param::UpBotRate]}, {},
+                    [params]() -> TextUpdateData {
+                        std::stringstream ss;
+                        ss << "Capacity: " << params[Param::UpBotCap].get()
+                           << "\nCharge Rate: "
+                           << params[Param::UpBotRate].get();
+
+                        return {ss.str()};
+                    });
     mUpBotUp = mUpgrades->subscribe(uUp);
+
+    // Upgrade bot cap
+    uUp = std::make_shared<Unlockable>(params[Param::BoughtUpBotCapRateUp]);
+    uUp->setImage("");
+    uUp->setDescription(
+        {"Multiply {i} capacity by {i} charge\nIncrease charge rate based on "
+         "capacity",
+         {IconSystem::Get(Constants::BOT_IMG()),
+          MoneyIcons::Get(UpgradeDefaults::ROBOT_SHARDS)}});
+    uUp->setCost(UpgradeDefaults::ROBOT_SHARDS,
+                 params[Param::UpBotCapRateUpCost]);
+    uUp->setEffects({params[Param::UpBotCapUp], params[Param::UpBotRateUp]}, {},
+                    [params]() -> TextUpdateData {
+                        std::stringstream ss;
+                        ss << "Capacity "
+                           << UpgradeDefaults::MultiplicativeEffectText(
+                                  params[Param::UpBotCapUp].get())
+                           << "\nCharge Rate +"
+                           << UpgradeDefaults::PercentEffectText(
+                                  params[Param::UpBotRateUp].get());
+
+                        return {ss.str()};
+                    });
+    mParamSubs.push_back(params[Param::UpBotCapUp].subscribeTo(
+        {UpgradeDefaults::ROBOT_SHARDS}, {uUp->level()}, [params]() {
+            return params[Param::BoughtUpBotCapRateUp].get()
+                       ? params[Param::Shards].get() + 1
+                       : 1;
+        }));
+    mParamSubs.push_back(params[Param::UpBotRateUp].subscribeTo(
+        {params[Param::UpBotCap]}, {uUp->level()}, [params]() {
+            return params[Param::BoughtUpBotCapRateUp].get()
+                       ? params[Param::UpBotCap].get().logTenCopy() / 25
+                       : 0;
+        }));
+    mUpBotCapRateUp = mUpgrades->subscribe(uUp);
 
     // Synergy bots - Wizard
     uUp = std::make_shared<Unlockable>(params[Param::WizSynBotActive]);
@@ -109,6 +155,11 @@ void RobotWizard::setParamTriggers() {
         {params[Param::Shards]}, {params[Param::BoughtShardPowerUp]},
         [this]() { return calcShardPowerUp(); }));
 
+    mParamSubs.push_back(
+        params[Param::UpBotActive].subscribe([this](bool active) {
+            mUpBot = active ? ComponentFactory<UpgradeBot>::New() : nullptr;
+        }));
+
     for (auto pair : Constants::SYN_TARGETS) {
         WizardId id = pair.first;
         mParamSubs.push_back(pair.second.subscribe([this, id](bool active) {
@@ -120,6 +171,15 @@ void RobotWizard::setParamTriggers() {
     mParamSubs.push_back(params[Param::Shards].subscribe([this]() {
         mUpgrades->upgradeThreshhold(UpgradeDefaults::ROBOT_SHARDS);
     }));
+
+    mParamSubs.push_back(params[Param::UpBotCap].subscribeTo(
+        {params[Param::UpBotBaseCap], params[Param::UpBotCapUp]}, {},
+        [this]() { return calcUpBotCap(); }));
+
+    mParamSubs.push_back(params[Param::UpBotRate].subscribeTo(
+        {params[Param::UpBotCap], params[Param::UpBotBaseRate],
+         params[Param::UpBotRateUp]},
+        {}, [this]() { return calcUpBotRate(); }));
 }
 
 void RobotWizard::onRender(SDL_Renderer* r) {
@@ -180,5 +240,16 @@ Number RobotWizard::calcShardPowerUp() {
     return params[Param::BoughtShardPowerUp].get()
                ? params[Param::Shards].get() + 1
                : 1;
+}
+Number RobotWizard::calcUpBotCap() {
+    Params params;
+
+    return params[Param::UpBotBaseCap].get() * params[Param::UpBotCapUp].get();
+}
+Number RobotWizard::calcUpBotRate() {
+    Params params;
+
+    return params[Param::UpBotCap].get() * (params[Param::UpBotBaseRate].get() +
+                                            params[Param::UpBotRateUp].get());
 }
 }  // namespace RobotWizard

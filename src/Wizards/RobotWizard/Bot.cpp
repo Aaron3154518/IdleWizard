@@ -107,9 +107,6 @@ UpgradeBot::UpgradeBot()
     : mHoverData(BotAi::randomHover()),
       mPos(std::make_shared<UIComponent>(Rect(0, 0, 60, 30), Elevation::BOTS)) {
     mPos->mouse = false;
-
-    mCap = Number(1, 2);
-    mRate = Number(3, 3);
 }
 
 void UpgradeBot::init() {
@@ -161,7 +158,13 @@ void UpgradeBot::onRender(SDL_Renderer* r) {
     mImg.setDest(mPos->rect);
     tex.draw(mImg);
 
-    mPBar.set((mAmnt / mCap).toFloat());
+    RobotWizard::Params roboParams;
+    Number cap = roboParams[RobotWizard::Param::UpBotCap].get();
+    if (cap == 0) {
+        mPBar.set(1);
+    } else {
+        mPBar.set((mAmnt / cap).toFloat());
+    }
     if (mPBar.get().perc < 1) {
         mPBar.set(Rect(mPos->rect.x(), mPos->rect.y2(), mPos->rect.w(),
                        mPos->rect.h() / 4));
@@ -188,11 +191,15 @@ void UpgradeBot::onUpdate(Time dt) {
         }
     }
 
+    RobotWizard::Params roboParams;
+    Number cap = roboParams[RobotWizard::Param::UpBotCap].get(),
+           rate = roboParams[RobotWizard::Param::UpBotRate].get();
+
     switch (mAiMode) {
         case AiMode::HoverRobot:  // Hover around robot when full
             BotAi::hover(mPos->rect, mHoverData, ROBOT_WIZARD, dt);
             mImg.setRotationRad(mHoverData.tilt);
-            if (mAmnt < mCap) {
+            if (mAmnt < cap) {
                 mAiMode = AiMode::HoverCrystal;
             }
             break;
@@ -215,10 +222,10 @@ void UpgradeBot::onUpdate(Time dt) {
                     break;
                 }
 
-                Number gain = min(avail, min(mRate * dt.s(), mCap - mAmnt));
+                Number gain = min(avail, min(rate * dt.s(), cap - mAmnt));
                 mSource.set(mSource.get() - gain);
                 mAmnt += gain;
-                if (mAmnt == mCap) {
+                if (mAmnt == cap) {
                     mAiMode = AiMode::HoverRobot;
                 }
             }

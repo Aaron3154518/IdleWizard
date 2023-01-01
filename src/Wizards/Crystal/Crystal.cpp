@@ -24,9 +24,8 @@ void Crystal::init() {
     mGlowFinishBkgrnd.setDest(Rect(0, 0, mPos->rect.w() * glowDim.x / imgDim.x,
                                    mPos->rect.h() * glowDim.y / imgDim.y));
 
-    mMagicText->setFont(FONT).setImgs(
-        {MoneyIcons::Get(params[Param::Magic]),
-         MoneyIcons::Get(params[Param::Shards])});
+    mMagicText->setFont(FONT).setImgs({MoneyIcons::Get(params[Param::Magic]),
+                                       MoneyIcons::Get(params[Param::Shards])});
     mMagicRender.set(mMagicText);
     mMagicRender.setFit(RenderData::FitMode::Texture);
     mMagicRender.setFitAlign(Rect::Align::CENTER, Rect::Align::TOP_LEFT);
@@ -85,9 +84,8 @@ void Crystal::setUpgrades() {
     // Power Display
     DisplayPtr dUp = std::make_shared<Display>();
     dUp->setImage(mId);
-    dUp->setDescription(
-        {"Multiplier based on {i}",
-         {MoneyIcons::Get(UpgradeDefaults::CRYSTAL_MAGIC)}});
+    dUp->setDescription({"Multiplier based on {i}",
+                         {MoneyIcons::Get(UpgradeDefaults::CRYSTAL_MAGIC)}});
     dUp->setEffects(params[Param::MagicEffect],
                     UpgradeDefaults::MultiplicativeEffect);
     mMagicEffectDisplay = mUpgrades->subscribe(dUp);
@@ -299,13 +297,6 @@ void Crystal::onClick(Event::MouseButton b, bool clicked) {
         param.set(param.get() * 3);
         param = Params::get(Param::Shards);
         param.set(param.get() * 3);
-
-        auto p = RobotWizard::Params::get(RobotWizard::Param::Shards);
-        if (p.get() == 0) {
-            p.set(0.1);
-        } else {
-            p.set(p.get() * 3);
-        }
     }
     _addMagic = clicked;
 

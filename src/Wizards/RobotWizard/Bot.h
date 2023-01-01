@@ -86,13 +86,14 @@ class UpgradeBot : public Component {
     BotAi::BeelineData mBeelineData;
 
     ParameterSystem::BaseValue mSource = UpgradeDefaults::CRYSTAL_MAGIC;
-    Number mAmnt, mCap = 1000, mRate = 10;
+    Number mAmnt;
     int mNextTargetIdx = 0;
 
     RenderObservable::SubscriptionPtr mRenderSub;
     TimeSystem::UpdateObservable::SubscriptionPtr mUpdateSub;
     TimeSystem::TimerObservable::SubscriptionPtr mAnimTimerSub, mUpTimerSub,
         mPauseTimerSub;
+    ParameterSystem::ParameterSubscriptionPtr mCapSub;
 };
 
 typedef std::unique_ptr<UpgradeBot> UpgradeBotPtr;

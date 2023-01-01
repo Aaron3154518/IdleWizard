@@ -125,19 +125,27 @@ void setDefaults() {
 
     Params params;
 
+    // Values
     params[Param::Shards]->init(0, Event::ResetT2);
+    params[Param::UpBotBaseCap]->init(100);
+    params[Param::UpBotBaseRate]->init(0.05);
 
+    // Upgrade costs
     params[Param::ShardPowerUpCost]->init(1);
-    params[Param::WizCritUpCost]->init(Number(1, 7));
-
-    params[Param::UpBotCost]->init(10);
+    params[Param::UpBotCost]->init(5);
+    params[Param::UpBotCapRateUpCost]->init(25);
     params[Param::WizSynBotCost]->init(100);
     params[Param::CrysSynBotCost]->init(1000);
     params[Param::TimeWizSynBotCost]->init(Number(1, 5));
+    params[Param::WizCritUpCost]->init(Number(1, 7));
 
+    // Bought upgrades
     params[Param::BoughtShardPowerUp]->init(false, Event::ResetT2);
     params[Param::BoughtWizCritUp]->init(false, Event::ResetT2);
+    params[Param::BoughtUpBotCapRateUp]->init(false, Event::ResetT2);
 
+    // Active bots
+    params[Param::UpBotActive]->init(false, Event::ResetT2);
     params[Param::CrysSynBotActive]->init(false, Event::ResetT2);
     params[Param::WizSynBotActive]->init(false, Event::ResetT2);
     params[Param::TimeWizSynBotActive]->init(false, Event::ResetT2);

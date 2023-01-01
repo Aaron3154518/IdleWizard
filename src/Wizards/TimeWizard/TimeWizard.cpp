@@ -70,10 +70,8 @@ void TimeWizard::setUpgrades() {
     // Active toggle
     mActiveToggle = std::make_shared<Toggle>(
         [this](unsigned int state, Toggle& tUp) {
-            auto active = Params::get(Param::Active);
+            auto active = Params::get(Param::SpeedToggleActive);
             active.set(state == 1);
-            tUp.setImage(active.get() ? Constants::ACTIVE_UP_IMG
-                                      : WIZ_IMGS.at(mId));
         },
         2);
     mActiveToggle->setDescription(
@@ -172,6 +170,7 @@ void TimeWizard::setUpgrades() {
 void TimeWizard::setParamTriggers() {
     Params params;
     Crystal::Params cryParams;
+    RobotWizard::Params roboParams;
 
     mParamSubs.push_back(params[Param::FreezeEffect].subscribeTo(
         {params[Param::FreezeBaseEffect], params[Param::FreezeUp]}, {},
@@ -180,16 +179,32 @@ void TimeWizard::setParamTriggers() {
     mParamSubs.push_back(params[Param::SpeedEffect].subscribeTo(
         {params[Param::SpeedBaseEffect], params[Param::SpeedUp],
          params[Param::SpeedUpUp]},
-        {params[Param::Active], params[Param::Frozen]},
+        {params[Param::SpeedActive], params[Param::Frozen]},
         [this]() { return calcSpeedEffect(); }));
 
     mParamSubs.push_back(params[Param::SpeedCost].subscribeTo(
-        {params[Param::SpeedEffect], params[Param::SpeedUpCostUp]}, {},
+        {params[Param::SpeedEffect], params[Param::SpeedUpCostUp]},
+        {roboParams[RobotWizard::Param::BoughtNoTimeCostUp]},
         [this]() { return calcCost(); }));
 
     mParamSubs.push_back(params[Param::ClockSpeed].subscribeTo(
         {params[Param::FreezeBaseEffect], params[Param::FreezeEffect]}, {},
         [this]() { return calcClockSpeed(); }));
+
+    mParamSubs.push_back(params[Param::SpeedActive].subscribeTo(
+        {},
+        {params[Param::SpeedToggleActive],
+         roboParams[RobotWizard::Param::BoughtNoTimeCostUp]},
+        [params, roboParams]() {
+            return params[Param::SpeedToggleActive].get() ||
+                   roboParams[RobotWizard::Param::BoughtNoTimeCostUp].get();
+        }));
+
+    mParamSubs.push_back(
+        params[Param::SpeedActive].subscribe([this](bool active) {
+            mActiveToggle->setImage(active ? Constants::ACTIVE_UP_IMG
+                                           : WIZ_IMGS.at(mId));
+        }));
 
     mParamSubs.push_back(
         params[Param::SpeedEffect].subscribe([this](const Number& val) {
@@ -221,7 +236,7 @@ void TimeWizard::setParamTriggers() {
 bool TimeWizard::onCostTimer(Timer& timer) {
     Params params;
 
-    if (!params[Param::Frozen].get() && params[Param::Active].get()) {
+    if (!params[Param::Frozen].get() && params[Param::SpeedActive].get()) {
         auto speedCost = Params::get(Param::SpeedCost);
         auto money = Crystal::Params::get(Crystal::Param::Magic);
         money.set(money.get() * (1 - speedCost.get() * timer.length / 1000));
@@ -329,7 +344,7 @@ Number TimeWizard::calcFreezeEffect() {
 Number TimeWizard::calcSpeedEffect() {
     Params params;
     Number effect = 1;
-    if (params[Param::Active].get() || params[Param::Frozen].get()) {
+    if (params[Param::SpeedActive].get() || params[Param::Frozen].get()) {
         effect =
             params[Param::SpeedBaseEffect].get() +
             (params[Param::SpeedUp].get() * params[Param::SpeedUpUp].get());
@@ -338,6 +353,11 @@ Number TimeWizard::calcSpeedEffect() {
 }
 
 Number TimeWizard::calcCost() {
+    if (RobotWizard::Params::get(RobotWizard::Param::BoughtNoTimeCostUp)
+            .get()) {
+        return 0;
+    }
+
     Params params;
     Number effect = params[Param::SpeedEffect].get();
     Number result = min(effect - 1, .5) / 50;

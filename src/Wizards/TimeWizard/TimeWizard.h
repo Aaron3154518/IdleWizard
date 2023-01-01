@@ -61,8 +61,6 @@ class TimeWizard : public WizardBase {
 
     void setPos(float x, float y);
 
-    bool mActive = false;
-
     WizardSystem::WizardEventObservable::IdSubscriptionPtr mT1ResetSub;
     PowerWizard::FireballList::HitObservable::SubscriptionPtr
         mPowFireballHitSub;

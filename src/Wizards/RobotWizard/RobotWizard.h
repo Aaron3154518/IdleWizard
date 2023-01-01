@@ -61,7 +61,7 @@ class RobotWizard : public WizardBase {
     TimeSystem::UpdateObservable::SubscriptionPtr mMoveUpdateSub;
     UpgradeList::SubscriptionPtr mShardPowerUp, mWizCritUp, mUpBotUp,
         mWizSynBotUp, mCrysSynBotUp, mTimeWizSynBotUp, mUpBotCapRateUp,
-        mNewCatUps;
+        mNewCatUps, mNoTimeCostUp;
 };
 }  // namespace RobotWizard
 

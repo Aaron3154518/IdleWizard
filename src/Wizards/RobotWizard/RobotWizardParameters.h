@@ -16,6 +16,7 @@ enum P_B : key_t {
     WizCritUpCost,
     UpBotCapRateUpCost,
     NewCatUpsCost,
+    NoTimeCostCost,
 
     UpBotCost,
     WizSynBotCost,
@@ -37,6 +38,7 @@ enum S_B : key_t {
     BoughtWizCritUp,
     BoughtUpBotCapRateUp,
     BoughtNewCatUps,
+    BoughtNoTimeCostUp,
 
     UpBotActive,
     WizSynBotActive,

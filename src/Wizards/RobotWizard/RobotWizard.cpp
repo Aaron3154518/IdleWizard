@@ -71,6 +71,15 @@ void RobotWizard::setUpgrades() {
     uUp->setCost(UpgradeDefaults::ROBOT_SHARDS, params[Param::NewCatUpsCost]);
     mNewCatUps = mUpgrades->subscribe(uUp);
 
+    // Remove time wizard speed up cost
+    uUp = std::make_shared<Unlockable>(params[Param::BoughtNoTimeCostUp]);
+    uUp->setImage("");
+    uUp->setDescription({"{i} speed up is always active and doesn't cost {i}",
+                         {IconSystem::Get(TimeWizard::Constants::IMG()),
+                          MoneyIcons::Get(UpgradeDefaults::CRYSTAL_MAGIC)}});
+    uUp->setCost(UpgradeDefaults::ROBOT_SHARDS, params[Param::NoTimeCostCost]);
+    mNoTimeCostUp = mUpgrades->subscribe(uUp);
+
     // Upgrade bot
     uUp = std::make_shared<Unlockable>(params[Param::UpBotActive]);
     uUp->setImage("");

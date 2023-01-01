@@ -63,6 +63,14 @@ void RobotWizard::setUpgrades() {
     uUp->setCost(UpgradeDefaults::ROBOT_SHARDS, params[Param::WizCritUpCost]);
     mWizCritUp = mUpgrades->subscribe(uUp);
 
+    // New catalyst upgrades
+    uUp = std::make_shared<Unlockable>(params[Param::BoughtNewCatUps]);
+    uUp->setImage("");
+    uUp->setDescription({"Unlock new {i} upgrades",
+                         {IconSystem::Get(Catalyst::Constants::IMG())}});
+    uUp->setCost(UpgradeDefaults::ROBOT_SHARDS, params[Param::NewCatUpsCost]);
+    mNewCatUps = mUpgrades->subscribe(uUp);
+
     // Upgrade bot
     uUp = std::make_shared<Unlockable>(params[Param::UpBotActive]);
     uUp->setImage("");

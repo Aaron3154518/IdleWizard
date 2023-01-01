@@ -42,6 +42,7 @@ class Catalyst : public WizardBase {
     void onMagic(const Number& amnt);
 
     Number calcMagicEffect();
+    Number calcCap();
     Number calcRange();
     Number calcFbCntEffect();
     void drawMagic();
@@ -54,7 +55,7 @@ class Catalyst : public WizardBase {
     PoisonWizard::FireballList::HitObservable::SubscriptionPtr mPoisFireballSub;
     WizardSystem::CatalystMagicObservable::SubscriptionPtr mMagicSub;
     UpgradeList::SubscriptionPtr mMagicEffectDisplay, mRangeUp, mZapCntUp,
-        mZapperCntUp, mShardUp, mGainUp1, mGainUp2, mFbCountUp, mMultUp;
+        mZapperCntUp, mShardUp, mGainUp1, mGainUp2, mFbCountUp, mMultUp, mCapUp;
 
     MessageHandlerPtr mMessages;
 

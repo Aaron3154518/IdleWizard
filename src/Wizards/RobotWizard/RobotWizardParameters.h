@@ -9,16 +9,15 @@ using ParameterSystem::key_t;
 
 enum P_B : key_t {
     Shards = 0,
-
-    ShardPowerUpCost,
-    WizCritUpCost,
-
-    UpBotCost,
     UpBotBaseCap,
     UpBotBaseRate,
 
+    ShardPowerUpCost,
+    WizCritUpCost,
     UpBotCapRateUpCost,
+    NewCatUpsCost,
 
+    UpBotCost,
     WizSynBotCost,
     CrysSynBotCost,
     TimeWizSynBotCost,
@@ -36,10 +35,10 @@ enum P_N : key_t {
 enum S_B : key_t {
     BoughtShardPowerUp = 0,
     BoughtWizCritUp,
+    BoughtUpBotCapRateUp,
+    BoughtNewCatUps,
 
     UpBotActive,
-    BoughtUpBotCapRateUp,
-
     WizSynBotActive,
     CrysSynBotActive,
     TimeWizSynBotActive,

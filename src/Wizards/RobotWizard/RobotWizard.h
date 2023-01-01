@@ -60,7 +60,8 @@ class RobotWizard : public WizardBase {
     TimerObservable::SubscriptionPtr mAnimTimerSub, mWaitSub;
     TimeSystem::UpdateObservable::SubscriptionPtr mMoveUpdateSub;
     UpgradeList::SubscriptionPtr mShardPowerUp, mWizCritUp, mUpBotUp,
-        mWizSynBotUp, mCrysSynBotUp, mTimeWizSynBotUp, mUpBotCapRateUp;
+        mWizSynBotUp, mCrysSynBotUp, mTimeWizSynBotUp, mUpBotCapRateUp,
+        mNewCatUps;
 };
 }  // namespace RobotWizard
 

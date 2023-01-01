@@ -48,28 +48,29 @@ void Catalyst::setSubscriptions() {
 void Catalyst::setUpgrades() {
     Params params;
     Crystal::Params cryParams;
+    RobotWizard::Params roboParams;
 
     // Power Display
     DisplayPtr dUp = std::make_shared<Display>();
     dUp->setImage(WIZ_IMGS.at(mId));
-    dUp->setEffects(
-        {params[Param::MagicEffect], params[Param::FBCntEffect],
-         params[Param::Range]},
-        {}, []() -> TextUpdateData {
-            Params params;
+    dUp->setEffects({params[Param::MagicEffect], params[Param::FBCntEffect],
+                     params[Param::Range]},
+                    {}, []() -> TextUpdateData {
+                        Params params;
 
-            std::stringstream ss;
-            ss << "{i} Multiplier: "
-               << UpgradeDefaults::MultiplicativeEffectText(
-                      params[Param::MagicEffect].get())
-               << "\n{i} Multiplier: "
-               << UpgradeDefaults::MultiplicativeEffectText(
-                      params[Param::FBCntEffect].get())
-               << "\nRange: " << params[Param::Range].get();
-            return {ss.str(),
-                    {MoneyIcons::Get(UpgradeDefaults::CATALYST_MAGIC),
-                     IconSystem::Get(Wizard::Constants::FB_IMG())}};
-        });
+                        std::stringstream ss;
+                        ss << "{i} Multiplier: "
+                           << UpgradeDefaults::MultiplicativeEffectText(
+                                  params[Param::MagicEffect].get())
+                           << "\n{i} Multiplier: "
+                           << UpgradeDefaults::MultiplicativeEffectText(
+                                  params[Param::FBCntEffect].get())
+                           << "\nRange: " << params[Param::Range].get();
+                        return {
+                            ss.str(),
+                            {MoneyIcons::Get(UpgradeDefaults::CATALYST_MAGIC),
+                             IconSystem::Get(Wizard::Constants::FB_IMG())}};
+                    });
     mMagicEffectDisplay = mUpgrades->subscribe(dUp);
 
     // Boost catalyst gain
@@ -103,14 +104,26 @@ void Catalyst::setUpgrades() {
         up->level(), [](const Number& lvl) { return lvl / 10; }));
     mGainUp2 = mUpgrades->subscribe(up);
 
+    // Increase catalyst cap
+    up = std::make_shared<Upgrade>(params[Param::CapUpLvl], 5);
+    up->setImage("");
+    up->setDescription(
+        {"{i} capacity x100", {IconSystem::Get(Constants::IMG())}});
+    up->setCost(UpgradeDefaults::CATALYST_MAGIC, params[Param::CapUpCost]);
+    up->setEffects(params[Param::CapUp], UpgradeDefaults::MultiplicativeEffect);
+    mParamSubs.push_back(params[Param::CapUpCost].subscribeTo(
+        up->level(), [](const Number& lvl) { return 200 ^ (lvl + 1); }));
+    mParamSubs.push_back(params[Param::CapUp].subscribeTo(
+        up->level(), [](const Number& lvl) { return 100 ^ lvl; }));
+    mCapUp = mUpgrades->subscribe(up);
+
     // Boost shard gain
     UnlockablePtr uUp =
         std::make_shared<Unlockable>(params[Param::BoughtShardMult]);
     uUp->setImage("");
-    uUp->setDescription(
-        {"{i} boosts {i} gain",
-         {MoneyIcons::Get(UpgradeDefaults::CATALYST_MAGIC),
-          MoneyIcons::Get(UpgradeDefaults::CRYSTAL_SHARDS)}});
+    uUp->setDescription({"{i} boosts {i} gain",
+                         {MoneyIcons::Get(UpgradeDefaults::CATALYST_MAGIC),
+                          MoneyIcons::Get(UpgradeDefaults::CRYSTAL_SHARDS)}});
     uUp->setCost(UpgradeDefaults::CRYSTAL_SHARDS,
                  params[Param::ShardGainUpCost]);
     uUp->setEffects(params[Param::ShardGainUp],
@@ -148,7 +161,9 @@ void Catalyst::setUpgrades() {
     mParamSubs.push_back(params[Param::CatMultUp].subscribeTo(
         {params[Param::Magic]}, {uUp->level()}, [params]() {
             return params[Param::BoughtMultUp].get()
-                       ? (params[Param::Magic].get() + 10).logTen() / 2
+                       ? 1 + .5 *
+                                 ((params[Param::Magic].get() + 1).logTen() + 1)
+                                     .logTen()
                        : 1;
         }));
     mParamSubs.push_back(params[Param::ShardMultUp].subscribeTo(
@@ -204,9 +219,9 @@ void Catalyst::setUpgrades() {
     mParamSubs.push_back(params[Param::FBCntMaxLvl].subscribeTo(
         {},
         {cryParams[Crystal::Param::BoughtPoisonWizard],
-         cryParams[Crystal::Param::BoughtRobotWizard]},
-        [cryParams]() {
-            return cryParams[Crystal::Param::BoughtRobotWizard].get()    ? 3
+         roboParams[RobotWizard::Param::BoughtNewCatUps]},
+        [cryParams, roboParams]() {
+            return roboParams[RobotWizard::Param::BoughtNewCatUps].get() ? 3
                    : cryParams[Crystal::Param::BoughtPoisonWizard].get() ? 2
                                                                          : 1;
         }));
@@ -250,16 +265,16 @@ void Catalyst::setUpgrades() {
                 if (i < maxLvl - 1) {
                     desc_str << ",{i}";
                 }
-                imgs.push_back(MoneyIcons::Get(
-                    Constants::FB_CNT_TYPES.at(i + 1)));
+                imgs.push_back(
+                    MoneyIcons::Get(Constants::FB_CNT_TYPES.at(i + 1)));
             }
             desc_str << " boosts {i} power";
             up->setEffectImgs(imgs);
 
             imgs.insert(imgs.begin(), IconSystem::Get(Constants::IMG()));
             if (lvl < maxLvl) {
-                imgs.push_back(MoneyIcons::Get(
-                    Constants::FB_CNT_TYPES.at(lvl + 1)));
+                imgs.push_back(
+                    MoneyIcons::Get(Constants::FB_CNT_TYPES.at(lvl + 1)));
             }
             imgs.push_back(IconSystem::Get(Wizard::Constants::IMG()));
 
@@ -270,14 +285,15 @@ void Catalyst::setUpgrades() {
 void Catalyst::setParamTriggers() {
     Params params;
     Crystal::Params cryParams;
+    RobotWizard::Params roboParams;
 
     mParamSubs.push_back(params[Param::MagicEffect].subscribeTo(
         {params[Param::Magic], params[Param::CatMultUp]}, {},
         [this]() { return calcMagicEffect(); }));
 
     mParamSubs.push_back(params[Param::Capacity].subscribeTo(
-        cryParams[Crystal::Param::BestMagic],
-        [](const Number& magic) { return (magic ^ 0.2) / 10; }));
+        {cryParams[Crystal::Param::BestMagic], params[Param::CapUp]}, {},
+        [this]() { return calcCap(); }));
 
     mParamSubs.push_back(params[Param::Range].subscribeTo(
         {params[Param::BaseRange], params[Param::RangeUp]}, {},
@@ -313,6 +329,9 @@ void Catalyst::setParamTriggers() {
             }));
     mParamSubs.push_back(params[Param::BoughtShardMult].subscribe(
         [this](bool bought) { mMultUp->setActive(bought); }));
+    mParamSubs.push_back(
+        roboParams[RobotWizard::Param::BoughtNewCatUps].subscribe(
+            [this](bool bought) { mCapUp->setActive(bought); }));
 }
 
 void Catalyst::onWizFireballHit(const Wizard::Fireball& fireball) {
@@ -368,6 +387,14 @@ Number Catalyst::calcMagicEffect() {
 
     return (params[Param::Magic].get() + 1) ^
            (.5 * params[Param::CatMultUp].get());
+}
+
+Number Catalyst::calcCap() {
+    Params params;
+    Crystal::Params cryParams;
+
+    return ((cryParams[Crystal::Param::BestMagic].get() ^ 0.2) / 10) *
+           params[Param::CapUp].get();
 }
 
 Number Catalyst::calcRange() {

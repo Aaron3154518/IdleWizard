@@ -22,6 +22,7 @@ enum P_B : key_t {
     ZapperUpLvl,
     GainUp1Lvl,
     GainUp2Lvl,
+    CapUpLvl,
     FBCntLvl,
 
     ShardGainUpCost,
@@ -49,6 +50,8 @@ enum P_N : key_t {
     GainUp1Cost,
     GainUp2,
     GainUp2Cost,
+    CapUp,
+    CapUpCost,
 
     ShardGainUp,
     CatMultUp,

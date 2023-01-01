@@ -38,6 +38,7 @@ void setDefaults() {
     params[Param::ZapperUpLvl]->init(Event::ResetT2);
     params[Param::GainUp1Lvl]->init(Event::ResetT2);
     params[Param::GainUp2Lvl]->init(Event::ResetT2);
+    params[Param::CapUpLvl]->init(Event::ResetT2);
     params[Param::FBCntLvl]->init(Event::ResetT2);
 
     params[Param::BoughtShardMult]->init(false, Event::ResetT2);

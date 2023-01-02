@@ -8,7 +8,7 @@ Fireball::Fireball(SDL_FPoint c, WizardId target, const Data& data)
       mPower(data.power),
       mDuration(data.duration) {
     setSize(data.sizeFactor);
-    setSpeed(data.speed);
+    setSpeedFactor(data.speed);
     setImg(IconSystem::Get(PoisonWizard::Constants::GLOB_IMG()));
     mBubbleAImg.set(IconSystem::Get(PoisonWizard::Constants::BUBBLE1_IMG()));
     mBubbleBImg.set(IconSystem::Get(PoisonWizard::Constants::BUBBLE2_IMG()));

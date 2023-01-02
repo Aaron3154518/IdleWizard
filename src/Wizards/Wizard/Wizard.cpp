@@ -367,7 +367,7 @@ void Wizard::onTimeWarp() {
     Number effect =
         TimeWizard::Params::get(TimeWizard::Param::TimeWarpEffect).get();
     for (auto& fireball : *mFireballs) {
-        fireball.setSpeed(fireball.getSpeed() * 10);
+        fireball.setSpeedFactor(fireball.getSpeedFactor() * 10);
         fireball.setPower(fireball.getPower() * effect);
     }
 }

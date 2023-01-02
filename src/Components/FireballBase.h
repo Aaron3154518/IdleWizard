@@ -5,7 +5,6 @@
 #include <RenderSystem/RenderTypes.h>
 #include <RenderSystem/Shapes.h>
 #include <RenderSystem/TextureBuilder.h>
-#include <SDL.h>
 #include <ServiceSystem/Component.h>
 #include <ServiceSystem/CoreServices/RenderService.h>
 #include <ServiceSystem/EventServices/ResizeService.h>
@@ -14,6 +13,7 @@
 #include <Systems/TimeSystem.h>
 #include <Systems/WizardSystem/WizardObservables.h>
 #include <Utils/AnimationData.h>
+#include <Utils/Math.h>
 #include <Utils/Time.h>
 #include <Wizards/PoisonWizard/Glob.h>
 #include <Wizards/WizardIds.h>
@@ -27,7 +27,7 @@ class FireballBase : public Component {
 
    public:
     const static Rect IMG_RECT;
-    const static int MAX_SPEED;
+    const static int BASE_SPEED;
 
     FireballBase(SDL_FPoint c, WizardId target);
     virtual ~FireballBase() = default;
@@ -40,7 +40,8 @@ class FireballBase : public Component {
     void setSize(float size);
 
     float getSpeed() const;
-    void setSpeed(float speed);
+    float getSpeedFactor() const;
+    void setSpeedFactor(float speed);
 
     Rect getPos() const;
     void setPos(float x, float y);

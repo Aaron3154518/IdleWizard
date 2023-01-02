@@ -25,8 +25,8 @@ void setDefaults() {
 
     params[Param::SpeedBaseEffect]->init(1.5);
     params[Param::FreezeBaseEffect]->init(1.1);
-    params[Param::FreezeDelay]->init(1000000);
-    params[Param::FreezeDuration]->init(15000);
+    params[Param::FreezeDelay]->init(20000);
+    params[Param::FreezeDuration]->init(5000);
     params[Param::TimeWarpEffect]->init(1, Event::ResetT1);
 
     params[Param::SpeedUpLvl]->init(Event::ResetT1);

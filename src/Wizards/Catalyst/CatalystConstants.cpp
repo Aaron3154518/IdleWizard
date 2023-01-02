@@ -21,8 +21,7 @@ void setDefaults() {
 
     Params params;
 
-    params[Param::Magic]->init(Number(1, 10));
-
+    params[Param::Magic]->init(0, Event::ResetT1);
     params[Param::FBRegCnt]->init(0, Event::ResetT1);
     params[Param::FBPowCnt]->init(0, Event::ResetT1);
     params[Param::FBPoiCnt]->init(0, Event::ResetT1);

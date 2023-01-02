@@ -36,6 +36,10 @@ void setDefaults() {
     params[Param::PoisonMagic]->init(0, Event::ResetT1);
     params[Param::PoisonRate]->init(0, Event::ResetT1);
 
+    params[Param::GlowMagic]->init(0, Event::ResetT1);
+    params[Param::GlowPower]->init(0, Event::ResetT1);
+    params[Param::GlowFbCnt]->init(0, Event::ResetT1);
+
     params[Param::WizardCntUpCost]->init(Number(1, 4));
     params[Param::GlowUpCost]->init(Number(1, 11));
     params[Param::CatalystCost]->init(1);

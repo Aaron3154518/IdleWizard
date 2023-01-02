@@ -51,7 +51,7 @@ int main(int argc, char* argv[]) {
 
     {  // Configure starting conditions
         enum Start { None = 0, FirstT1, SecondT1, Fracture, T2 };
-        Start start = Start::T2;
+        Start start = Start::Fracture;
         WizardId t1Wiz = POWER_WIZARD, t2Wiz = CATALYST;
 
         Wizard::Params wParams;
@@ -63,10 +63,10 @@ int main(int argc, char* argv[]) {
             case Start::T2:
                 cryParams[Crystal::Param::ResetT1].set(true);
 
-                // GetWizardUpgrades(CRYSTAL)->maxAll(
-                // UpgradeDefaults::CRYSTAL_SHARDS);
-                // GetWizardUpgrades(CRYSTAL)->maxAll(
-                // UpgradeDefaults::CRYSTAL_SHARDS);
+                GetWizardUpgrades(CRYSTAL)->maxAll(
+                    UpgradeDefaults::CRYSTAL_SHARDS);
+                GetWizardUpgrades(CRYSTAL)->maxAll(
+                    UpgradeDefaults::CRYSTAL_SHARDS);
                 cryParams[Crystal::Param::BoughtRobotWizard].set(true);
                 cryParams[Crystal::Param::Shards].set(Number(1, 2));
             case Start::Fracture:
@@ -76,9 +76,8 @@ int main(int argc, char* argv[]) {
                 cryParams[Crystal::Param::Magic].set(
                     cryParams[Crystal::Param::T1ResetCost].get());
 
-                for (WizardId id : {
-                         CRYSTAL,
-                     }) {  // WIZARD, POWER_WIZARD, TIME_WIZARD}) {
+                for (WizardId id :
+                     {CRYSTAL, WIZARD, POWER_WIZARD, TIME_WIZARD}) {
                     GetWizardUpgrades(id)->maxAll(
                         UpgradeDefaults::CRYSTAL_MAGIC);
                 }

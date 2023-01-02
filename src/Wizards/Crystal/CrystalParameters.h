@@ -14,6 +14,10 @@ enum P_B : key_t {
     PoisonMagic,
     PoisonRate,
 
+    GlowMagic,
+    GlowPower,
+    GlowFbCnt,
+
     WizardCntUpCost,
     GlowUpCost,
     CatalystCost,

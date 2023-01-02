@@ -28,6 +28,7 @@
 #include <Wizards/WizardIds.h>
 
 #include <memory>
+#include <queue>
 #include <vector>
 
 namespace Crystal {
@@ -55,7 +56,7 @@ class Crystal : public WizardBase {
     void onPowFireballHit(const PowerWizard::Fireball& fireball);
     bool powFireballFilter(const PowerWizard::Fireball& fireball);
     bool onGlowTimer(Timer& t);
-    bool onGlowFinishTimer(Timer& t, const Number& magic);
+    bool onGlowFinishTimer(Timer& t);
     bool onPoisonTimer(Timer& t);
 
     Number calcMagicEffect();
@@ -84,8 +85,7 @@ class Crystal : public WizardBase {
 
     MessageHandlerPtr mMessages;
 
-    bool mGlowFinishing = false;
-    Number mGlowMagic;
+    std::queue<Number> mGlowMagicQueue;
     std::vector<std::unique_ptr<FireRing>> mFireRings;
     FractureButtonPtr mFractureBtn;
 

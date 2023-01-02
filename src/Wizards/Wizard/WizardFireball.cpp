@@ -12,7 +12,7 @@ Fireball::Fireball(SDL_FPoint c, WizardId target, const Data& data)
       mPoisoned(data.poisoned),
       mOnPoisoned([]() {}) {
     setSize(data.sizeFactor);
-    setSpeed(data.speed);
+    setSpeedFactor(data.speed);
     updateImage();
 }
 

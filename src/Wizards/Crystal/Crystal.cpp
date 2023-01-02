@@ -107,10 +107,10 @@ void Crystal::setUpgrades() {
     uUp = std::make_shared<Unlockable>(params[Param::BoughtGlowUp]);
     uUp->setImage(Constants::CRYS_GLOW_UP_IMG);
     uUp->setDescription(
-        {"After begin struck by {i}, {i} will absorb {i}\nWhen the effect "
-         "expires, their power will be multiplied",
+        {"{i} can hit {i} which will glow and absorb {i}\nAfter glow, "
+         "multiplies consumed magic based on number of absorbed fireballs",
          {IconSystem::Get(PowerWizard::Constants::IMG()),
-          IconSystem::Get(Constants::IMG()),
+          IconSystem::Get(Constants::IMG()), IconSystem::Get(Constants::IMG()),
           IconSystem::Get(Wizard::Constants::FB_IMG())}});
     uUp->setCost(UpgradeDefaults::CRYSTAL_MAGIC, params[Param::GlowUpCost]);
     uUp->setEffects(params[Param::GlowEffect],
@@ -198,8 +198,19 @@ void Crystal::setParamTriggers() {
         [this]() { return calcWizCntEffect(); }));
 
     mParamSubs.push_back(params[Param::GlowEffect].subscribeTo(
-        {params[Param::WizardCntEffect]}, {params[Param::BoughtGlowUp]},
+        {params[Param::GlowFbCnt], params[Param::GlowPower]}, {},
         [this]() { return calcGlowEffect(); }));
+
+    // Reset glow factors
+    mParamSubs.push_back(
+        params[Param::GlowActive].subscribe([params](bool active) {
+            if (active) {
+                return;
+            }
+            params[Param::GlowMagic].set(0);
+            params[Param::GlowPower].set(0);
+            params[Param::GlowFbCnt].set(0);
+        }));
 
     mParamSubs.push_back(ParameterSystem::subscribe(
         {params[Param::Magic], params[Param::Shards]}, {},
@@ -257,7 +268,7 @@ void Crystal::setParamTriggers() {
 void Crystal::onRender(SDL_Renderer* r) {
     TextureBuilder tex;
 
-    if (mGlowFinishing) {
+    if (!mGlowMagicQueue.empty()) {
         Rect glowRect = mGlowFinishBkgrnd.getRect();
         glowRect.setPos(mPos->rect.cX(), mPos->rect.cY(), Rect::Align::CENTER);
         mGlowFinishBkgrnd.setDest(glowRect);
@@ -313,14 +324,18 @@ void Crystal::onHide(bool hide) {
 void Crystal::onT1Reset() {
     mFireRings.clear();
     mGlowTimerSub.reset();
-    mGlowFinishing = false;
     mGlowFinishTimerSub.reset();
     mGlowAnimTimerSub.reset();
+    mGlowMagicQueue = std::queue<Number>();
 }
 
 void Crystal::onWizFireballHit(const Wizard::Fireball& fireball) {
-    if (Params::get(Param::GlowActive).get()) {
-        mGlowMagic += fireball.getPower();
+    Params params;
+
+    if (params[Param::GlowActive].get()) {
+        params[Param::GlowMagic].set(params[Param::GlowMagic].get() +
+                                     fireball.getPower());
+        params[Param::GlowFbCnt].set(params[Param::GlowFbCnt].get() + 1);
         mGlowAnimTimerSub->get<TimerObservableBase::DATA>().timer = 0;
         mGlowAnimTimerSub->setActive(true);
     } else {
@@ -338,40 +353,47 @@ void Crystal::onWizFireballHit(const Wizard::Fireball& fireball) {
 
 void Crystal::onPowFireballHit(const PowerWizard::Fireball& fireball) {
     createFireRing(fireball.getPower());
-    if (Params::get(Param::BoughtGlowUp).get()) {
-        mGlowTimerSub = TimeSystem::GetTimerObservable()->subscribe(
-            [this](Timer& t) { return onGlowTimer(t); },
-            Timer(fireball.getDuration().toFloat()));
-        Params::get(Param::GlowActive).set(true);
+
+    Params params;
+    if (params[Param::BoughtGlowUp].get()) {
+        params[Param::GlowPower].set(max(params[Param::GlowPower].get(),
+                                         fireball.getPower().sqrtCopy()));
+        float duration = fireball.getDuration().toFloat();
+        if (!params[Param::GlowActive].get()) {  // Start new timer
+            mGlowTimerSub = TimeSystem::GetTimerObservable()->subscribe(
+                [this](Timer& t) { return onGlowTimer(t); }, duration);
+            params[Param::GlowActive].set(true);
+        } else {  // Extend current timer
+            mGlowTimerSub->get<TimerObservable::DATA>().timer += duration / 4;
+        }
     }
 }
 
 bool Crystal::onGlowTimer(Timer& t) {
     Params params;
-    Number magic = mGlowMagic * params[Param::GlowEffect].get();
-    mGlowMagic = 0;
+    mGlowMagicQueue.push(params[Param::GlowMagic].get() *
+                         params[Param::GlowEffect].get());
+    // Reset glow factors
     params[Param::GlowActive].set(false);
 
-    if (mGlowFinishing) {
-        mGlowFinishTimerSub->get<TimerObservable::ON_TRIGGER>()(
-            mGlowFinishTimerSub->get<TimerObservable::DATA>());
+    if (mGlowMagicQueue.size() == 1) {
+        mGlowFinishTimerSub = TimeSystem::GetTimerObservable()->subscribe(
+            [this](Timer& t) { return onGlowFinishTimer(t); },
+            Constants::GLOW_FINISH_IMG().frame_ms);
     }
-
-    mGlowFinishing = true;
-    mGlowFinishTimerSub = TimeSystem::GetTimerObservable()->subscribe(
-        [this, magic](Timer& t) { return onGlowFinishTimer(t, magic); },
-        Timer(Constants::GLOW_FINISH_IMG().frame_ms));
     return false;
 }
 
-bool Crystal::onGlowFinishTimer(Timer& t, const Number& magic) {
+bool Crystal::onGlowFinishTimer(Timer& t) {
     mGlowFinishBkgrnd->nextFrame();
-    if (mGlowFinishBkgrnd->getFrame() == 0) {
-        addMagic(MagicSource::Glow, magic, Constants::GLOW_MSG_COLOR);
-        mGlowFinishing = false;
-        return false;
+    if (mGlowFinishBkgrnd->getFrame() != 0) {
+        return true;
     }
-    return true;
+
+    addMagic(MagicSource::Glow, mGlowMagicQueue.front(),
+             Constants::GLOW_MSG_COLOR);
+    mGlowMagicQueue.pop();
+    return !mGlowMagicQueue.empty();
 }
 
 bool Crystal::onPoisonTimer(Timer& t) {
@@ -408,7 +430,7 @@ Number Crystal::calcShardGain() {
     Catalyst::Params catParams;
     PoisonWizard::Params poiParams;
 
-    Number shards = ((params[Param::Magic].get() + 1).logTen() - 14) *
+    Number shards = (((params[Param::Magic].get() + 1).logTen() / 15) ^ 2.5) *
                     catParams[Catalyst::Param::ShardGainUp].get() *
                     poiParams[PoisonWizard::Param::ShardMultUp].get();
     if (shards < 1) {
@@ -440,11 +462,7 @@ Number Crystal::calcWizCntEffect() {
 Number Crystal::calcGlowEffect() {
     Params params;
 
-    if (!params[Param::BoughtGlowUp].get()) {
-        return 1;
-    }
-
-    return params[Param::WizardCntEffect].get() ^ 1.5;
+    return params[Param::GlowFbCnt].get() * params[Param::GlowPower].get();
 }
 
 void Crystal::drawMagic() {

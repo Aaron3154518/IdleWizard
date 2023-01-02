@@ -150,9 +150,9 @@ void setDefaults() {
 
     // Active bots
     params[Param::UpBotActive]->init(false, Event::ResetT2);
-    params[Param::CrysSynBotActive]->init(false, Event::ResetT2);
-    params[Param::WizSynBotActive]->init(false, Event::ResetT2);
-    params[Param::TimeWizSynBotActive]->init(false, Event::ResetT2);
+    params[Param::CrysSynBotActive]->init(true, Event::ResetT2);
+    params[Param::WizSynBotActive]->init(true, Event::ResetT2);
+    params[Param::TimeWizSynBotActive]->init(true, Event::ResetT2);
 }
 }  // namespace Constants
 }  // namespace RobotWizard

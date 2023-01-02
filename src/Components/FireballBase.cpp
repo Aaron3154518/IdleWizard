@@ -1,7 +1,7 @@
 #include "FireballBase.h"
 
 // FireballBase
-const int FireballBase::MAX_SPEED = 150;
+const int FireballBase::BASE_SPEED = 150;
 
 const Rect FireballBase::IMG_RECT(0, 0, 40, 40);
 
@@ -23,7 +23,7 @@ void FireballBase::onUpdate(Time dt) { move(dt); }
 void FireballBase::move(Time dt) {
     float sec = dt.s();
     float aCoeff = sec * sec / 2;
-    float maxSpeed = mSpeed * MAX_SPEED;
+    float maxSpeed = getSpeed();
 
     SDL_FPoint target =
         WizardSystem::GetWizardPos(mTargetId).getPos(Rect::Align::CENTER);
@@ -34,8 +34,8 @@ void FireballBase::move(Time dt) {
     mA.x = dx * frac;
     mA.y = dy * frac;
 
-    float moveX = mV.x * sec + mA.x * aCoeff,
-          moveY = mV.y * sec + mA.y * aCoeff;
+    float moveX = Math::min_mag(dx, mV.x * sec + mA.x * aCoeff),
+          moveY = Math::min_mag(dy, mV.y * sec + mA.y * aCoeff);
     mV.x += mA.x * sec;
     mV.y += mA.y * sec;
 
@@ -66,9 +66,9 @@ void FireballBase::move(Time dt) {
 void FireballBase::draw(TextureBuilder& tex) { tex.draw(mImg); }
 
 void FireballBase::launch(SDL_FPoint target) {
-    // Start at half max speed
+    // Start at third max speed
     float dx = target.x - mPos->rect.cX(), dy = target.y - mPos->rect.cY();
-    float frac = mSpeed * MAX_SPEED / 3 / sqrtf(dx * dx + dy * dy);
+    float frac = getSpeed() / 3 / sqrtf(dx * dx + dy * dy);
     mV.x = dx * frac;
     mV.y = dy * frac;
 }
@@ -83,8 +83,9 @@ void FireballBase::setSize(float size) {
     mPos->rect = mImg.getDest();
 }
 
-float FireballBase::getSpeed() const { return mSpeed; }
-void FireballBase::setSpeed(float speed) { mSpeed = speed; }
+float FireballBase::getSpeed() const { return mSpeed * BASE_SPEED; }
+float FireballBase::getSpeedFactor() const { return mSpeed; }
+void FireballBase::setSpeedFactor(float speed) { mSpeed = speed; }
 
 Rect FireballBase::getPos() const { return mPos->rect; }
 void FireballBase::setPos(float x, float y) {

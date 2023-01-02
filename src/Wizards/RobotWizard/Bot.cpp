@@ -355,8 +355,8 @@ void SynergyBot::onFbHit(const PowerWizard::Fireball& fb) {
         data.duration = max(data.duration, currData.duration);
         data.sizeFactor = fmaxf(data.sizeFactor, currData.sizeFactor);
     } else {  // Slow down
-        mHoverData.baseSpd /= 2;
-        mBeelineData.speed /= 2;
+        mHoverData.baseSpd = BotAi::HoverData{}.baseSpd / 2;
+        mBeelineData.speed = BotAi::BeelineData{}.speed / 2;
     }
     mFireball = ComponentFactory<PowerWizard::Fireball>::New(SDL_FPoint{0, 0},
                                                              mTarget, data);
@@ -402,8 +402,8 @@ void SynergyBot::onTimeFreeze(bool frozen) {
     }
 
     // Speed up
-    mHoverData.baseSpd *= 2;
-    mBeelineData.speed *= 2;
+    mHoverData.baseSpd = BotAi::HoverData{}.baseSpd;
+    mBeelineData.speed = BotAi::BeelineData{}.speed;
 
     SDL_FPoint pos =
         WizardSystem::GetWizardPos(mTarget).getPos(Rect::Align::CENTER);

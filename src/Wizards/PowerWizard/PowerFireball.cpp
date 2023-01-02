@@ -9,7 +9,7 @@ Fireball::Fireball(SDL_FPoint c, WizardId target, const FireballData& data)
       mDuration(data.duration),
       mFromBot(data.fromBot) {
     setSize(data.sizeFactor);
-    setSpeed(data.speed);
+    setSpeedFactor(data.speed);
     setImg(IconSystem::Get(PowerWizard::Constants::FB_IMG()));
 }
 
@@ -39,7 +39,7 @@ void Fireball::addFireball(const FireballData& data) {
     setSize(mSize * sizeFactor / prevSizeFactor);
 }
 
-bool Fireball::Fireball::filter(const PowerWizard::Fireball& fb, WizardId id) {
+bool Fireball::filter(const PowerWizard::Fireball& fb, WizardId id) {
     if (fb.getTargetId() != id) {
         return false;
     }

@@ -29,6 +29,12 @@ void FireballBase::move(Time dt) {
         WizardSystem::GetWizardPos(mTargetId).getPos(Rect::Align::CENTER);
     float dx = target.x - mPos->rect.cX(), dy = target.y - mPos->rect.cY();
     float d = fminf(sqrtf(dx * dx + dy * dy) / 2, maxSpeed);
+
+    if (fabsf(d) < 1e-5 || fabsf(maxSpeed) < 1e-5) {
+        mImg.setRotationDeg(FIREBALL_BASE_ROT_DEG);
+        return;
+    }
+
     float v_squared = fmaxf(mV.x * mV.x + mV.y * mV.y, maxSpeed * maxSpeed / 4);
     float frac = v_squared / (d * d);
     mA.x = dx * frac;
@@ -47,13 +53,7 @@ void FireballBase::move(Time dt) {
         mV.y *= frac;
     }
 
-    float theta = 0;
-    if (moveX != 0) {
-        theta = atanf(moveY / moveX) / DEG_TO_RAD;
-        if (moveX < 0) {
-            theta += 180;
-        }
-    }
+    float theta = atan2f(moveY, moveX) / DEG_TO_RAD;
     theta += FIREBALL_BASE_ROT_DEG;
 
     mImg.setRotationDeg(theta);

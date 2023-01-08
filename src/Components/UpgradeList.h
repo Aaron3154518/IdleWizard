@@ -152,7 +152,7 @@ class UpgradeProgressBar : public UpgradeRenderer {
     const ParameterSystem::ValueParam mValParam;
 
     Number mNextCost;
-    int mUnlocked = 0;
+    unsigned int mUnlocked = 0;
     RectShape mRs;
     ProgressBar mPb;
 

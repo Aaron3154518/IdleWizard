@@ -8,7 +8,7 @@ bool UpgradeSnapshot::operator!=(const UpgradeSnapshot& rhs) const {
 // UpgradeCost
 UpgradeCost::UpgradeCost(ParameterSystem::BaseValue money,
                          ParameterSystem::ValueParam cost)
-    : mMoney(money), mCost(cost) {}
+    : mCost(cost), mMoney(money) {}
 
 const ParameterSystem::ValueParam& UpgradeCost::getCostParam() const {
     return mCost;
@@ -272,7 +272,7 @@ UpgradeBase::Status Display::_status() { return NOT_BUYABLE; }
 
 // Toggle
 Toggle::Toggle(LevelFunc onLevel, unsigned int numStates)
-    : mOnLevel(onLevel), mNumStates(numStates) {
+    : mNumStates(numStates), mOnLevel(onLevel) {
     setLevel(0);
 }
 

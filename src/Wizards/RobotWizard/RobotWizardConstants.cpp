@@ -34,6 +34,8 @@ const std::string& BOT_HAT_IMG(WizardId id) {
             return CRYS_HAT;
         case TIME_WIZARD:
             return TIME_WIZ_HAT;
+        default:
+            break;
     }
 
     throw std::runtime_error("SYN_BOT_IMG(): Invalid Wizard Id (" +

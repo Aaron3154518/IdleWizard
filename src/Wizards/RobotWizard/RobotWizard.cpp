@@ -161,7 +161,6 @@ void RobotWizard::setUpgrades() {
 void RobotWizard::setParamTriggers() {
     Params params;
     Crystal::Params cryParams;
-    TimeWizard::Params timeParams;
 
     mParamSubs.push_back(cryParams[Crystal::Param::BoughtRobotWizard].subscribe(
         [this](bool bought) {

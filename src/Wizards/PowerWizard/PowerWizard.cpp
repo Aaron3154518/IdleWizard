@@ -290,6 +290,8 @@ FireballData PowerWizard::newFireballData(WizardId target) {
             data.duration = params[Param::Duration].get() * 2;
             data.power = params[Param::FireRingEffect].get() * speedEffect;
             break;
+        default:
+            break;
     };
     data.sizeFactor = 1;
     data.speed = params[Param::FBSpeed].get().toFloat();

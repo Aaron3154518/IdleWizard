@@ -6,10 +6,10 @@ namespace Wizard {
 // Fireball
 Fireball::Fireball(SDL_FPoint c, WizardId target, const Data& data)
     : FireballBase(c, target),
-      mSizeSum(data.sizeFactor),
       mPower(data.power),
       mBoosted(data.boosted),
       mPoisoned(data.poisoned),
+      mSizeSum(data.sizeFactor),
       mOnPoisoned([]() {}) {
     setSize(data.sizeFactor);
     setSpeedFactor(data.speed);

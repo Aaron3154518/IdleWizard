@@ -17,7 +17,9 @@ RenderTextureCPtr Get(const ParameterSystem::ValueParam& param) {
                 case Crystal::Param::Shards:
                     data = CRYSTAL_SHARDS;
                     break;
-            }
+                default:
+                    break;
+            };
             break;
         case CATALYST:
             switch (param.key()) {
@@ -30,6 +32,8 @@ RenderTextureCPtr Get(const ParameterSystem::ValueParam& param) {
                     return IconSystem::Get(PowerWizard::Constants::FB_IMG());
                 case Catalyst::Param::FBPoiCnt:
                     return IconSystem::Get(PoisonWizard::Constants::GLOB_IMG());
+                default:
+                    break;
             };
             break;
         case ROBOT_WIZARD:
@@ -37,7 +41,11 @@ RenderTextureCPtr Get(const ParameterSystem::ValueParam& param) {
                 case RobotWizard::Param::Shards:
                     data = CRYSTAL_SHARDS;
                     break;
+                default:
+                    break;
             };
+        default:
+            break;
     };
 
     return IconSystem::Get(data);

@@ -25,8 +25,8 @@ std::shared_ptr<Glob::HitObservable> Glob::GetHitObservable() {
 const Rect Glob::IMG_RECT(0, 0, 20, 20);
 
 Glob::Glob(SDL_FPoint c, SDL_FPoint v)
-    : mPos(std::make_shared<UIComponent>(Rect(), Elevation::PROJECTILES)),
-      mV(v) {
+    : mV(v),
+      mPos(std::make_shared<UIComponent>(Rect(), Elevation::PROJECTILES)) {
     Rect imgR = IMG_RECT;
     imgR.setPos(c.x, c.y, Rect::Align::CENTER);
     mImg.set(PoisonWizard::Constants::GLOB_IMG());
@@ -34,9 +34,8 @@ Glob::Glob(SDL_FPoint c, SDL_FPoint v)
 }
 
 void Glob::init() {
-    mResizeSub =
-        EventServices::GetResizeObservable()->subscribe(
-            [this](EventServices::ResizeData d) { onResize(d); });
+    mResizeSub = EventServices::GetResizeObservable()->subscribe(
+        [this](EventServices::ResizeData d) { onResize(d); });
     mUpdateSub = TimeSystem::GetUpdateObservable()->subscribe(
         [this](Time dt) { onUpdate(dt); });
     mRenderSub =

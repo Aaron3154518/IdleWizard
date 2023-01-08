@@ -71,7 +71,7 @@ void HitObservable::onRender(SDL_Renderer* r) {
 }
 
 bool HitObservable::onTimer(Timer& timer) {
-    mReady = std::min(++mReady, mMaxZaps);
+    mReady = std::min(mReady + 1, mMaxZaps);
     return true;
 }
 

@@ -8,8 +8,8 @@ const Rect FireballBase::IMG_RECT(0, 0, 40, 40);
 constexpr int FIREBALL_BASE_ROT_DEG = -45;
 
 FireballBase::FireballBase(SDL_FPoint c, WizardId target)
-    : mPos(std::make_shared<UIComponent>(Rect(), Elevation::PROJECTILES)),
-      mTargetId(target) {
+    : mTargetId(target),
+      mPos(std::make_shared<UIComponent>(Rect(), Elevation::PROJECTILES)) {
     mImg.setDest(Rect(c.x, c.y, 0, 0));
     mPos->rect = mImg.getDest();
 }
@@ -119,9 +119,8 @@ void FireballListImpl::remove(WizardId target) {
 void FireballListImpl::clear() { mFireballs.clear(); }
 
 void FireballListImpl::init() {
-    mResizeSub =
-        EventServices::GetResizeObservable()->subscribe(
-            [this](EventServices::ResizeData d) { onResize(d); });
+    mResizeSub = EventServices::GetResizeObservable()->subscribe(
+        [this](EventServices::ResizeData d) { onResize(d); });
     mUpdateSub = TimeSystem::GetUpdateObservable()->subscribe(
         [this](Time dt) { onUpdate(dt); });
     mRenderSub =

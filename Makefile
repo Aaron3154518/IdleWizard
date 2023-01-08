@@ -1,5 +1,5 @@
 CXX := g++
-CXXFLAGS :=  
+CXXFLAGS := -Wall
 
 INC := include
 BIN := bin

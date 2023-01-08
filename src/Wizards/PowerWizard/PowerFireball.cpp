@@ -32,6 +32,8 @@ void Fireball::addFireball(const FireballData& data) {
         case WIZARD:
             mDuration += data.duration / mFireballFreezeCnt;
             break;
+        default:
+            break;
     }
     float prevSizeFactor = fmin(pow(mSizeSum, 1.0 / 3.0), 10);
     mSizeSum += data.sizeFactor;

@@ -104,8 +104,8 @@ bool beeline(Rect& pos, BeelineData& data, Time dt) {
 
 // UpgradeBot
 UpgradeBot::UpgradeBot()
-    : mHoverData(BotAi::randomHover()),
-      mPos(std::make_shared<UIComponent>(Rect(0, 0, 60, 30), Elevation::BOTS)) {
+    : mPos(std::make_shared<UIComponent>(Rect(0, 0, 60, 30), Elevation::BOTS)),
+      mHoverData(BotAi::randomHover()) {
     mPos->mouse = false;
 }
 
@@ -293,9 +293,9 @@ void UpgradeBot::setPos(float x, float y) {
 
 // SynergyBot
 SynergyBot::SynergyBot(WizardId id)
-    : mTarget(id),
-      mHoverData(BotAi::randomHover()),
-      mPos(std::make_shared<UIComponent>(Rect(0, 0, 0, 0), Elevation::BOTS)) {
+    : mPos(std::make_shared<UIComponent>(Rect(0, 0, 0, 0), Elevation::BOTS)),
+      mTarget(id),
+      mHoverData(BotAi::randomHover()) {
     mPos->mouse = false;
 }
 

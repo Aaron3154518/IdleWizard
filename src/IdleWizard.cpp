@@ -52,11 +52,8 @@ int main(int argc, char* argv[]) {
     {  // Configure starting conditions
         enum Start { None = 0, FirstT1, SecondT1, Fracture, T2 };
         Start start = Start::Fracture;
-        WizardId t1Wiz = POWER_WIZARD, t2Wiz = CATALYST;
+        WizardId t1Wiz = POWER_WIZARD;
 
-        Wizard::Params wParams;
-        PowerWizard::Params pwParams;
-        TimeWizard::Params twParams;
         Crystal::Params cryParams;
         // Buy upgrades
         switch (start) {
@@ -94,12 +91,14 @@ int main(int argc, char* argv[]) {
                         GetWizardUpgrades(POWER_WIZARD)
                             ->maxAll(UpgradeDefaults::CRYSTAL_MAGIC);
                         break;
+                    default:
+                        break;
                 }
                 GetWizardUpgrades(CRYSTAL)->maxAll(
                     UpgradeDefaults::CRYSTAL_MAGIC);
             case Start::FirstT1:
-                // GetWizardUpgrades(WIZARD)->maxAll(
-                // UpgradeDefaults::CRYSTAL_MAGIC);
+                GetWizardUpgrades(WIZARD)->maxAll(
+                    UpgradeDefaults::CRYSTAL_MAGIC);
                 switch (t1Wiz) {
                     case POWER_WIZARD:
                         cryParams[Crystal::Param::BoughtPowerWizard].set(true);
@@ -107,7 +106,11 @@ int main(int argc, char* argv[]) {
                     case TIME_WIZARD:
                         cryParams[Crystal::Param::BoughtTimeWizard].set(true);
                         break;
+                    default:
+                        break;
                 }
+                break;
+            default:
                 break;
         };
     }

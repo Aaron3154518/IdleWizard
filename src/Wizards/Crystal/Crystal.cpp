@@ -356,8 +356,8 @@ void Crystal::onPowFireballHit(const PowerWizard::Fireball& fireball) {
 
     Params params;
     if (params[Param::BoughtGlowUp].get()) {
-        params[Param::GlowPower].set(Number::max(params[Param::GlowPower].get(),
-                                         fireball.getPower().sqrtCopy()));
+        params[Param::GlowPower].set(Number::max(
+            params[Param::GlowPower].get(), fireball.getPower().sqrtCopy()));
         float duration = fireball.getDuration().toFloat();
         if (!params[Param::GlowActive].get()) {  // Start new timer
             mGlowTimerSub = TimeSystem::GetTimerObservable()->subscribe(
@@ -488,6 +488,8 @@ void Crystal::addMagic(MagicSource source, const Number& amnt,
             if (amnt > poisonMagic.get()) {
                 poisonMagic.set(amnt);
             }
+            break;
+        default:
             break;
     };
 }

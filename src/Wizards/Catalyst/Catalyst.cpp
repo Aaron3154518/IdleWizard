@@ -337,7 +337,6 @@ void Catalyst::setParamTriggers() {
 void Catalyst::onWizFireballHit(const Wizard::Fireball& fireball) {
     WizardSystem::GetCatalystMagicObservable()->next(fireball);
 
-    Params params;
     bool buffed = fireball.isBoosted(), poisoned = fireball.isPoisoned();
     if (buffed || poisoned) {
         if (buffed) {

@@ -2,7 +2,6 @@
 #define POWER_WIZ_FIREBALL_H
 
 // #include <Wizards/RobotWizard/Bot.h>
-#include <Wizards/Crystal/FireRing.h>
 #include <Components/FireballBase.h>
 #include <ServiceSystem/Observable.h>
 #include <ServiceSystem/Service.h>
@@ -10,6 +9,7 @@
 #include <Systems/ParameterSystem/ParameterAccess.h>
 #include <Systems/TargetSystem.h>
 #include <Utils/Number.h>
+#include <Wizards/Crystal/FireRing.h>
 #include <Wizards/PowerWizard/PowerWizardConstants.h>
 #include <Wizards/RobotWizard/RobotWizardConstants.h>
 
@@ -43,10 +43,10 @@ class Fireball : public FireballBase {
     static bool filter(const PowerWizard::Fireball& fb, WizardId id);
 
    private:
-    const bool mFromBot;
     int mFireballFreezeCnt = 1;
     float mSizeSum;
     Number mPower, mDuration;
+    const bool mFromBot;
 
     ParameterSystem::ParameterSubscriptionPtr mRobotBoughtSub, mSynActiveSub;
     // SynergyBot::HitObservable::FbSubscriptionPtr mSynBotHitSub;

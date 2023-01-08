@@ -393,7 +393,7 @@ void UpgradeProgressBar::update(Rect pos, float scroll) {
                  bounds.cY() - pbH / 2, BUCKET_W * (val_end - val_start), pbH))
         .set(amnt - val_start, val_end - val_start);
 
-    for (int i = 0; i < upCosts.size(); i++) {
+    for (unsigned int i = 0; i < upCosts.size(); i++) {
         auto& pair = upCosts.at(i);
         float val = toValue(pair.first);
         if (val >= end + scrollMargin) {

@@ -17,6 +17,11 @@ const AnimationData& WIZ_IMG(WizardId id) {
             return PoisonWizard::Constants::IMG();
         case ROBOT_WIZARD:
             return RobotWizard::Constants::IMG();
+        default:
+            break;
     }
+
+    const static AnimationData EMPTY;
+    return EMPTY;
 };
 }  // namespace Definitions

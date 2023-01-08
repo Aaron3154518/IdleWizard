@@ -36,10 +36,9 @@ void PoisonWizard::setUpgrades() {
     // Poison gain
     DisplayPtr dUp = std::make_shared<Display>();
     dUp->setImage(mId);
-    dUp->setDescription(
-        {"{i} gains % of best {i} gain over time",
-         {IconSystem::Get(Crystal::Constants::IMG()),
-          MoneyIcons::Get(UpgradeDefaults::CRYSTAL_MAGIC)}});
+    dUp->setDescription({"{i} gains % of best {i} gain over time",
+                         {IconSystem::Get(Crystal::Constants::IMG()),
+                          MoneyIcons::Get(UpgradeDefaults::CRYSTAL_MAGIC)}});
     dUp->setEffects(
         {cryParams[Crystal::Param::PoisonMagic],
          cryParams[Crystal::Param::PoisonRate]},
@@ -58,8 +57,7 @@ void PoisonWizard::setUpgrades() {
     UpgradePtr up = std::make_shared<Upgrade>(params[Param::ShardMultUpLvl], 5);
     up->setImage("");
     up->setDescription(
-        {"Triple {i} gain",
-         {MoneyIcons::Get(UpgradeDefaults::CRYSTAL_MAGIC)}});
+        {"Triple {i} gain", {MoneyIcons::Get(UpgradeDefaults::CRYSTAL_MAGIC)}});
     up->setCost(UpgradeDefaults::CRYSTAL_MAGIC, params[Param::ShardMultUpCost]);
     up->setEffects(params[Param::ShardMultUp],
                    UpgradeDefaults::MultiplicativeEffect);
@@ -73,10 +71,9 @@ void PoisonWizard::setUpgrades() {
     // Increase poison gain from poison fbs
     up = std::make_shared<Upgrade>(params[Param::PoisonFbUpLvl], 5);
     up->setImage("");
-    up->setDescription(
-        {"{i} increase the {i} gain rate by +10%/lvl",
-         {IconSystem::Get(Wizard::Constants::FB_POISON_IMG()),
-          MoneyIcons::Get(UpgradeDefaults::CRYSTAL_MAGIC)}});
+    up->setDescription({"{i} increase the {i} gain rate by +10%/lvl",
+                        {IconSystem::Get(Wizard::Constants::FB_POISON_IMG()),
+                         MoneyIcons::Get(UpgradeDefaults::CRYSTAL_MAGIC)}});
     up->setCost(UpgradeDefaults::CRYSTAL_MAGIC, params[Param::PoisonFbUpCost]);
     up->setEffects(params[Param::PoisonFbUp], UpgradeDefaults::PercentEffect);
     mParamSubs.push_back(params[Param::PoisonFbUpCost].subscribeTo(
@@ -220,8 +217,6 @@ void PoisonWizard::shootFireball() {
 }
 
 Fireball::Data PoisonWizard::newFireballData() {
-    Wizard::Params params;
-
     Fireball::Data data;
     data.duration = 7500;
 

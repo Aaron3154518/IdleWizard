@@ -222,7 +222,8 @@ void UpgradeBot::onUpdate(Time dt) {
                     break;
                 }
 
-                Number gain = Number::min(avail, Number::min(rate * dt.s(), cap - mAmnt));
+                Number gain =
+                    Number::min(avail, Number::min(rate * dt.s(), cap - mAmnt));
                 mSource.set(mSource.get() - gain);
                 mAmnt += gain;
                 if (mAmnt == cap) {
@@ -321,6 +322,8 @@ void SynergyBot::init() {
 
     mFreezeSub = TimeWizard::Params::get(TimeWizard::Param::Frozen)
                      .subscribe([this](bool frozen) { onTimeFreeze(frozen); });
+    mResetSub = WizardSystem::GetWizardEventObservable()->subscribe(
+        [this]() { onT1Reset(); }, WizardSystem::Event::ResetT1);
 }
 
 void SynergyBot::onRender(SDL_Renderer* r) {
@@ -409,6 +412,11 @@ void SynergyBot::onTimeFreeze(bool frozen) {
         WizardSystem::GetWizardPos(mTarget).getPos(Rect::Align::CENTER);
     mFireball->launch(pos);
     mFireballs->push_back(std::move(mFireball));
+}
+
+void SynergyBot::onT1Reset() {
+    mFireballs->clear();
+    mFireball.reset();
 }
 
 void SynergyBot::setPos(float x, float y) {

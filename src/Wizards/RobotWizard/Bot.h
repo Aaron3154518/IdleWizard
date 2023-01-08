@@ -10,6 +10,7 @@
 #include <Systems/ParameterSystem/ParameterAccess.h>
 #include <Systems/TargetSystem.h>
 #include <Systems/TimeSystem.h>
+#include <Systems/WizardSystem/WizardEvents.h>
 #include <Systems/WizardSystem/WizardObservables.h>
 #include <Wizards/PowerWizard/PowerFireball.h>
 #include <Wizards/RobotWizard/RobotWizardConstants.h>
@@ -112,6 +113,7 @@ class SynergyBot : public Component {
     void onFbHit(const PowerWizard::Fireball& fb);
     void onFbPos(const PowerWizard::FireballList& list);
     void onTimeFreeze(bool frozen);
+    void onT1Reset();
 
     bool fireballFilter(const PowerWizard::Fireball& fb) const;
 
@@ -134,6 +136,7 @@ class SynergyBot : public Component {
     PowerWizard::FireballList::HitObservable::SubscriptionPtr mFbHitSub;
     PowerWizard::FireballList::PosObservable::SubscriptionPtr mFbPosSub;
     ParameterSystem::ParameterSubscriptionPtr mFreezeSub;
+    WizardSystem::WizardEventObservable::IdSubscriptionPtr mResetSub;
 };
 
 typedef std::unique_ptr<SynergyBot> SynergyBotPtr;

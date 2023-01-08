@@ -107,7 +107,7 @@ void Wizard::setUpgrades() {
         up->level(), [](const Number& lvl) { return 25 * (1.55 ^ lvl); }));
     mParamSubs.push_back(params[Param::PowerUp].subscribeTo(
         up->level(),
-        [](const Number& lvl) { return min(lvl, 5) + 2 * max(lvl - 5, 0); }));
+        [](const Number& lvl) { return Number::min(lvl, 5) + 2 * Number::max(lvl - 5, 0); }));
     mPowerUp = mUpgrades->subscribe(up);
 
     // Crit Upgrade
@@ -407,7 +407,7 @@ Number Wizard::calcPower() {
            catParams[Catalyst::Param::MagicEffect].get() *
            catParams[Catalyst::Param::FBCntEffect].get() *
            roboParams[RobotWizard::Param::ShardPowerUp].get() *
-           max(1, params[Param::Speed].get() * 16 / 1000);
+           Number::max(1, params[Param::Speed].get() * 16 / 1000);
 }
 
 Number Wizard::calcSpeed() {
@@ -429,7 +429,7 @@ Number Wizard::calcFBSpeed() {
 
 Number Wizard::calcFBSpeedEffect() {
     Params params;
-    Number fbSpeed = max(params[Param::FBSpeed].get(), 1);
+    Number fbSpeed = Number::max(params[Param::FBSpeed].get(), 1);
 
     Number twoFbSpeed = 2 * fbSpeed;
 

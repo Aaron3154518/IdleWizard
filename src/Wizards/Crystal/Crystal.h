@@ -9,7 +9,7 @@
 #include <RenderSystem/Shapes.h>
 #include <RenderSystem/TextureBuilder.h>
 #include <ServiceSystem/CoreServices/RenderService.h>
-#include <ServiceSystem/EventServices/MouseService.h>
+#include <ServiceSystem/EventServices/EventService.h>
 #include <Systems/IconSystem/IconSystem.h>
 #include <Systems/IconSystem/MoneyIcons.h>
 #include <Systems/ParameterSystem/ParameterAccess.h>

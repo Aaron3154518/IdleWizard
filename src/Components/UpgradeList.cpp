@@ -423,7 +423,7 @@ const Rect UpgradeDisplay::RECT(0, 0, 100, 100);
 
 UpgradeDisplay::UpgradeDisplay()
     : mPos(std::make_shared<UIComponent>(Rect(), Elevation::UPGRADES)),
-      mDrag(std::make_shared<DragComponent>(-1)) {
+      mDrag(std::make_shared<EventServices::DragComponent>(-1)) {
     SDL_Point screenDim = RenderSystem::getWindowSize();
     mPos->rect = Rect(0, 0, screenDim.x, fmin(screenDim.y / 5, RECT.h()));
     mPos->rect.setPosX(screenDim.x / 2, Rect::Align::CENTER);
@@ -433,22 +433,21 @@ UpgradeDisplay::UpgradeDisplay()
 }
 
 void UpgradeDisplay::init() {
-    mResizeSub =
-        ServiceSystem::Get<ResizeService, ResizeObservable>()->subscribe(
-            [this](ResizeData d) { onResize(d); });
+    mResizeSub = EventServices::GetResizeObservable()->subscribe(
+        [this](EventServices::ResizeData d) { onResize(d); });
     mUpdateSub =
         ServiceSystem::Get<UpdateService, UpdateObservable>()->subscribe(
             [this](Time dt) { onUpdate(dt); });
     mRenderSub =
         ServiceSystem::Get<RenderService, RenderObservable>()->subscribe(
             [this](SDL_Renderer* r) { onRender(r); }, mPos);
-    mMouseSub = ServiceSystem::Get<MouseService, MouseObservable>()->subscribe(
+    mMouseSub = EventServices::GetMouseObservable()->subscribeLeftClick(
         [this](Event::MouseButton b, bool c) { onClick(b, c); }, mPos);
-    mDragSub = ServiceSystem::Get<DragService, DragObservable>()->subscribe(
+    mDragSub = EventServices::GetDragObservable()->subscribe(
         [this]() { onDragStart(); },
         [this](float x, float y, float dx, float dy) { onDrag(x, y, dx, dy); },
         []() {}, mPos, mDrag);
-    mHoverSub = ServiceSystem::Get<HoverService, HoverObservable>()->subscribe(
+    mHoverSub = EventServices::GetHoverObservable()->subscribe(
         []() {}, [this](SDL_Point m) { onHover(m); },
         [this]() { onMouseLeave(); }, mPos);
     mUpgradeSub =
@@ -462,7 +461,7 @@ void UpgradeDisplay::init() {
             });
 }
 
-void UpgradeDisplay::onResize(ResizeData data) {
+void UpgradeDisplay::onResize(EventServices::ResizeData data) {
     mPos->rect = Rect(0, 0, data.newW, fmin(data.newH / 5, RECT.h()));
     mPos->rect.setPosX(data.newW / 2, Rect::Align::CENTER);
 

@@ -7,8 +7,8 @@
 #include <RenderSystem/TextureBuilder.h>
 #include <ServiceSystem/Component.h>
 #include <ServiceSystem/CoreServices/RenderService.h>
-#include <ServiceSystem/EventServices/HoverService.h>
-#include <ServiceSystem/EventServices/MouseService.h>
+#include <ServiceSystem/EventServices/EventService.h>
+#include <ServiceSystem/EventServices/EventService.h>
 #include <Systems/IconSystem/IconSystem.h>
 #include <Systems/IconSystem/MoneyIcons.h>
 #include <Systems/ParameterSystem/ParameterAccess.h>
@@ -37,8 +37,8 @@ class FractureButton : public Component, private Display {
     void onCrystalPos(const Rect& r);
 
     RenderObservable::SubscriptionPtr mDescRenderSub;
-    MouseObservable::SubscriptionPtr mMouseSub;
-    HoverObservable::SubscriptionPtr mHoverSub;
+    EventServices::MouseObservable::SubscriptionPtr mMouseSub;
+    EventServices::HoverObservable::SubscriptionPtr mHoverSub;
     WizardSystem::WizardPosObservable::IdSubscriptionPtr mCrysPosSub;
 
     UIComponentPtr mPos;

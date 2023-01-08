@@ -41,7 +41,7 @@ class RobotWizard : public WizardBase {
 
     void onRender(SDL_Renderer* r);
     void onMoveUpdate(Time dt);
-    void onResize(ResizeData data);
+    void onResize(EventServices::ResizeData data);
     void onHide(bool hide);
 
     void showUpgrades();

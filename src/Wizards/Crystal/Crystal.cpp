@@ -356,7 +356,7 @@ void Crystal::onPowFireballHit(const PowerWizard::Fireball& fireball) {
 
     Params params;
     if (params[Param::BoughtGlowUp].get()) {
-        params[Param::GlowPower].set(max(params[Param::GlowPower].get(),
+        params[Param::GlowPower].set(Number::max(params[Param::GlowPower].get(),
                                          fireball.getPower().sqrtCopy()));
         float duration = fireball.getDuration().toFloat();
         if (!params[Param::GlowActive].get()) {  // Start new timer
@@ -412,7 +412,7 @@ bool Crystal::onPoisonTimer(Timer& t) {
              Constants::POISON_MSG_COLOR);
     if (poisonRate > basePoisonRate) {
         poisonRateParam.set(
-            max(basePoisonRate, poisonRate * (poisonDecay ^ s)));
+            Number::max(basePoisonRate, poisonRate * (poisonDecay ^ s)));
     } else if (poisonRate < basePoisonRate) {
         poisonRateParam.set(basePoisonRate);
     }

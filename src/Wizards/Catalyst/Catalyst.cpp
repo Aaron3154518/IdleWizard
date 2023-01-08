@@ -364,7 +364,8 @@ void Catalyst::onPoisFireballHit(const PoisonWizard::Fireball& fireball) {
 void Catalyst::onMagic(const Number& amnt) {
     Params params;
     auto magic = params[Param::Magic];
-    magic.set(max(0, min(magic.get() + amnt, params[Param::Capacity].get())));
+    magic.set(Number::max(
+        0, Number::min(magic.get() + amnt, params[Param::Capacity].get())));
     mMessages->addMessage(mPos->rect, "+" + amnt.toString(), RED);
 }
 

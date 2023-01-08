@@ -16,10 +16,10 @@ void ChargeButton::init() {
                            {MoneyIcons::Get(UpgradeDefaults::CRYSTAL_SHARDS)}};
                });
 
-    mMouseSub = ServiceSystem::Get<MouseService, MouseObservable>()->subscribe(
+    mMouseSub = EventServices::GetMouseObservable()->subscribeLeftClick(
         [this](Event::MouseButton b, bool clicked) { onClick(b, clicked); },
         mPos);
-    mHoverSub = ServiceSystem::Get<HoverService, HoverObservable>()->subscribe(
+    mHoverSub = EventServices::GetHoverObservable()->subscribe(
         [this]() { onMouseEnter(); }, [](SDL_Point p) {},
         [this]() { onMouseLeave(); }, mPos);
     mRobotPosSub = WizardSystem::GetWizardPosObservable()->subscribe(

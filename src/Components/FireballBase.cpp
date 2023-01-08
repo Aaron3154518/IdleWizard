@@ -120,8 +120,8 @@ void FireballListImpl::clear() { mFireballs.clear(); }
 
 void FireballListImpl::init() {
     mResizeSub =
-        ServiceSystem::Get<ResizeService, ResizeObservable>()->subscribe(
-            [this](ResizeData d) { onResize(d); });
+        EventServices::GetResizeObservable()->subscribe(
+            [this](EventServices::ResizeData d) { onResize(d); });
     mUpdateSub = TimeSystem::GetUpdateObservable()->subscribe(
         [this](Time dt) { onUpdate(dt); });
     mRenderSub =
@@ -130,7 +130,7 @@ void FireballListImpl::init() {
             std::make_shared<UIComponent>(Rect(), Elevation::PROJECTILES));
 }
 
-void FireballListImpl::onResize(ResizeData data) {
+void FireballListImpl::onResize(EventServices::ResizeData data) {
     for (auto& fb : mFireballs) {
         fb->mPos->rect.moveFactor((float)data.newW / data.oldW,
                                   (float)data.newH / data.oldH);

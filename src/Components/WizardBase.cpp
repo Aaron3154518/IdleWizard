@@ -9,7 +9,7 @@ WizardBase::WizardBase(WizardId id)
     : mId(id),
       mShowStar(false),
       mPos(std::make_shared<UIComponent>(Rect(), Elevation::WIZARDS)),
-      mDrag(std::make_shared<DragComponent>(250)) {}
+      mDrag(std::make_shared<EventServices::DragComponent>(250)) {}
 WizardBase::~WizardBase() {}
 
 void WizardBase::init() {
@@ -19,16 +19,15 @@ void WizardBase::init() {
 
     mStar.set(STAR_IMG);
 
-    mResizeSub =
-        ServiceSystem::Get<ResizeService, ResizeObservable>()->subscribe(
-            [this](ResizeData data) { onResize(data); });
+    mResizeSub = EventServices::GetResizeObservable()->subscribe(
+        [this](EventServices::ResizeData data) { onResize(data); });
     mRenderSub =
         ServiceSystem::Get<RenderService, RenderObservable>()->subscribe(
             [this](SDL_Renderer* r) { onRender(r); }, mPos);
-    mMouseSub = ServiceSystem::Get<MouseService, MouseObservable>()->subscribe(
+    mMouseSub = EventServices::GetMouseObservable()->subscribeLeftClick(
         [this](Event::MouseButton b, bool clicked) { onClick(b, clicked); },
         mPos);
-    mDragSub = ServiceSystem::Get<DragService, DragObservable>()->subscribe(
+    mDragSub = EventServices::GetDragObservable()->subscribe(
         []() {}, [this](int x, int y, float dx, float dy) { setPos(x, y); },
         []() {}, mPos, mDrag);
     mStarTimerSub =
@@ -58,7 +57,7 @@ void WizardBase::setSubscriptions() {}
 void WizardBase::setUpgrades() {}
 void WizardBase::setParamTriggers() {}
 
-void WizardBase::onResize(ResizeData data) {
+void WizardBase::onResize(EventServices::ResizeData data) {
     setPos(mPos->rect.cX() * data.newW / data.oldW,
            mPos->rect.cY() * data.newH / data.oldH);
 }

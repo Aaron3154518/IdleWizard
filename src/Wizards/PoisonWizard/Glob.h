@@ -9,7 +9,7 @@
 #include <SDL.h>
 #include <ServiceSystem/Component.h>
 #include <ServiceSystem/CoreServices/RenderService.h>
-#include <ServiceSystem/EventServices/ResizeService.h>
+#include <ServiceSystem/EventServices/EventService.h>
 #include <ServiceSystem/ServiceSystem.h>
 #include <Systems/TimeSystem.h>
 #include <Systems/WizardSystem/WizardObservables.h>
@@ -48,7 +48,7 @@ class Glob : public Component {
     void init();
 
     void onUpdate(Time dt);
-    void onResize(ResizeData data);
+    void onResize(EventServices::ResizeData data);
     void onRender(SDL_Renderer* renderer);
 
     void onDeath();
@@ -60,7 +60,7 @@ class Glob : public Component {
 
     RenderAnimation mImg;
 
-    ResizeObservable::SubscriptionPtr mResizeSub;
+    EventServices::ResizeObservable::SubscriptionPtr mResizeSub;
     TimerObservable::SubscriptionPtr mAnimTimerSub;
     TimeSystem::UpdateObservable::SubscriptionPtr mUpdateSub;
     RenderObservable::SubscriptionPtr mRenderSub;

@@ -299,7 +299,7 @@ FireballData PowerWizard::newFireballData(WizardId target) {
 Number PowerWizard::calcPower() {
     Params params;
     return params[Param::BasePower].get() * params[Param::PowerUp].get() *
-           max(1, params[Param::Speed].get() * 16 / 1000);
+           Number::max(1, params[Param::Speed].get() * 16 / 1000);
 }
 
 Number PowerWizard::calcSpeed() {
@@ -319,7 +319,7 @@ Number PowerWizard::calcFBSpeed() {
 
 Number PowerWizard::calcFBSpeedEffect() {
     Params params;
-    Number fbSpeed = max(params[Param::FBSpeed].get(), 1);
+    Number fbSpeed = Number::max(params[Param::FBSpeed].get(), 1);
 
     Number twoFbSpeed = 2 * fbSpeed;
 

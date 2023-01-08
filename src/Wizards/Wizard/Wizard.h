@@ -8,8 +8,8 @@
 #include <RenderSystem/Shapes.h>
 #include <RenderSystem/TextureBuilder.h>
 #include <ServiceSystem/CoreServices/RenderService.h>
-#include <ServiceSystem/EventServices/DragService.h>
-#include <ServiceSystem/EventServices/ResizeService.h>
+#include <ServiceSystem/EventServices/EventService.h>
+#include <ServiceSystem/EventServices/EventService.h>
 #include <ServiceSystem/ServiceSystem.h>
 #include <ServiceSystem/UpdateServices/TimerService.h>
 #include <Systems/IconSystem/IconSystem.h>

@@ -7,7 +7,7 @@
 #include <RenderSystem/TextureBuilder.h>
 #include <ServiceSystem/Component.h>
 #include <ServiceSystem/CoreServices/RenderService.h>
-#include <ServiceSystem/EventServices/ResizeService.h>
+#include <ServiceSystem/EventServices/EventService.h>
 #include <ServiceSystem/ServiceSystem.h>
 #include <Systems/IconSystem/IconSystem.h>
 #include <Systems/TimeSystem.h>
@@ -90,10 +90,10 @@ class FireballListImpl : public Component {
     virtual void init();
 
     virtual void onUpdate(Time dt);
-    virtual void onResize(ResizeData data);
+    virtual void onResize(EventServices::ResizeData data);
     virtual void onRender(SDL_Renderer* renderer);
 
-    ResizeObservable::SubscriptionPtr mResizeSub;
+    EventServices::ResizeObservable::SubscriptionPtr mResizeSub;
     TimeSystem::UpdateObservable::SubscriptionPtr mUpdateSub;
     RenderObservable::SubscriptionPtr mRenderSub;
 

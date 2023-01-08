@@ -7,9 +7,7 @@
 #include <RenderSystem/TextureBuilder.h>
 #include <ServiceSystem/Component.h>
 #include <ServiceSystem/CoreServices/RenderService.h>
-#include <ServiceSystem/EventServices/DragService.h>
-#include <ServiceSystem/EventServices/MouseService.h>
-#include <ServiceSystem/EventServices/ResizeService.h>
+#include <ServiceSystem/EventServices/EventService.h>
 #include <ServiceSystem/Service.h>
 #include <ServiceSystem/ServiceSystem.h>
 #include <Systems/ParameterSystem/ParameterObservable.h>
@@ -41,7 +39,7 @@ class WizardBase : public Component {
     virtual void setUpgrades();
     virtual void setParamTriggers();
 
-    virtual void onResize(ResizeData data);
+    virtual void onResize(EventServices::ResizeData data);
     virtual void onRender(SDL_Renderer* r);
     virtual void onClick(Event::MouseButton b, bool clicked);
     bool onStarTimer(Timer& t);
@@ -61,11 +59,11 @@ class WizardBase : public Component {
     RenderAnimation mImg, mStar;
 
     UIComponentPtr mPos;
-    DragComponentPtr mDrag;
-    ResizeObservable::SubscriptionPtr mResizeSub;
+    EventServices::DragComponentPtr mDrag;
+    EventServices::ResizeObservable::SubscriptionPtr mResizeSub;
     RenderObservable::SubscriptionPtr mRenderSub;
-    MouseObservable::SubscriptionPtr mMouseSub;
-    DragObservable::SubscriptionPtr mDragSub;
+    EventServices::MouseObservable::SubscriptionPtr mMouseSub;
+    EventServices::DragObservable::SubscriptionPtr mDragSub;
     TimerObservable::SubscriptionPtr mStarTimerSub;
     TimeSystem::TimerObservable::SubscriptionPtr mStarAnimSub;
     WizardSystem::HideObservable::IdSubscriptionPtr mHideSub;

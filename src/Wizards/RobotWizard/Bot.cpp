@@ -222,7 +222,7 @@ void UpgradeBot::onUpdate(Time dt) {
                     break;
                 }
 
-                Number gain = min(avail, min(rate * dt.s(), cap - mAmnt));
+                Number gain = Number::min(avail, Number::min(rate * dt.s(), cap - mAmnt));
                 mSource.set(mSource.get() - gain);
                 mAmnt += gain;
                 if (mAmnt == cap) {
@@ -351,8 +351,8 @@ void SynergyBot::onFbHit(const PowerWizard::Fireball& fb) {
     data.speed = PowerWizard::FireballData{}.speed * 5;
     if (mFireball) {
         auto currData = mFireball->getData();
-        data.power = max(data.power, currData.power);
-        data.duration = max(data.duration, currData.duration);
+        data.power = Number::max(data.power, currData.power);
+        data.duration = Number::max(data.duration, currData.duration);
         data.sizeFactor = fmaxf(data.sizeFactor, currData.sizeFactor);
     } else {  // Slow down
         mHoverData.baseSpd = BotAi::HoverData{}.baseSpd / 2;

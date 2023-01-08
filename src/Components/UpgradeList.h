@@ -7,10 +7,7 @@
 #include <ServiceSystem/Component.h>
 #include <ServiceSystem/CoreServices/RenderService.h>
 #include <ServiceSystem/CoreServices/UpdateService.h>
-#include <ServiceSystem/EventServices/DragService.h>
-#include <ServiceSystem/EventServices/HoverService.h>
-#include <ServiceSystem/EventServices/MouseService.h>
-#include <ServiceSystem/EventServices/ResizeService.h>
+#include <ServiceSystem/EventServices/EventService.h>
 #include <ServiceSystem/Observable.h>
 #include <ServiceSystem/Service.h>
 #include <ServiceSystem/ServiceSystem.h>
@@ -173,7 +170,7 @@ class UpgradeDisplay : public Component {
    private:
     void init();
 
-    void onResize(ResizeData data);
+    void onResize(EventServices::ResizeData data);
     void onUpdate(Time dt);
     void onRender(SDL_Renderer* r);
     void onClick(Event::MouseButton b, bool clicked);
@@ -194,16 +191,16 @@ class UpgradeDisplay : public Component {
     RenderData mTexData;
 
     UIComponentPtr mPos;
-    DragComponentPtr mDrag;
+    EventServices::DragComponentPtr mDrag;
 
     UpgradeRendererPtr mUpRenderer;
 
-    ResizeObservable::SubscriptionPtr mResizeSub;
+    EventServices::ResizeObservable::SubscriptionPtr mResizeSub;
     UpdateObservable::SubscriptionPtr mUpdateSub;
     RenderObservable::SubscriptionPtr mRenderSub, mUpDescRenderSub;
-    MouseObservable::SubscriptionPtr mMouseSub;
-    DragObservable::SubscriptionPtr mDragSub;
-    HoverObservable::SubscriptionPtr mHoverSub;
+    EventServices::MouseObservable::SubscriptionPtr mMouseSub;
+    EventServices::DragObservable::SubscriptionPtr mDragSub;
+    EventServices::HoverObservable::SubscriptionPtr mHoverSub;
     TimerObservable::SubscriptionPtr mTimerSub;
     UpgradeListObservable::SubscriptionPtr mUpgradeSub;
 };

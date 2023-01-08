@@ -232,7 +232,7 @@ void RobotWizard::onMoveUpdate(Time dt) {
                mPos->rect.cY() + dy * fminf(frac, 1));
     }
 }
-void RobotWizard::onResize(ResizeData data) {
+void RobotWizard::onResize(EventServices::ResizeData data) {
     WizardBase::onResize(data);
 
     mTargetPos = {mTargetPos.x * data.newW / data.oldW,

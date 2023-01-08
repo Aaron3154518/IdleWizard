@@ -360,7 +360,7 @@ Number TimeWizard::calcCost() {
 
     Params params;
     Number effect = params[Param::SpeedEffect].get();
-    Number result = min(effect - 1, .5) / 50;
+    Number result = Number::min(effect - 1, .5) / 50;
     effect -= 1.5;
     if (effect > 0) {
         result += effect / 50;

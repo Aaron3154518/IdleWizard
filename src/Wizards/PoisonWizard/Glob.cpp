@@ -35,8 +35,8 @@ Glob::Glob(SDL_FPoint c, SDL_FPoint v)
 
 void Glob::init() {
     mResizeSub =
-        ServiceSystem::Get<ResizeService, ResizeObservable>()->subscribe(
-            [this](ResizeData d) { onResize(d); });
+        EventServices::GetResizeObservable()->subscribe(
+            [this](EventServices::ResizeData d) { onResize(d); });
     mUpdateSub = TimeSystem::GetUpdateObservable()->subscribe(
         [this](Time dt) { onUpdate(dt); });
     mRenderSub =
@@ -60,7 +60,7 @@ void Glob::setPos(float x, float y) {
     mPos->rect = mImg.getDest();
 }
 
-void Glob::onResize(ResizeData data) {
+void Glob::onResize(EventServices::ResizeData data) {
     Rect imgR = mImg.getRect();
     imgR.moveFactor((float)data.newW / data.oldW, (float)data.newH / data.oldH);
     mImg.setDest(imgR);
